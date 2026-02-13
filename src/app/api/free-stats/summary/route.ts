@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 type LeagueKey = "NBA" | "NFL" | string;
 
@@ -68,86 +70,112 @@ function toTrendScore(params: {
   return { score, signal, confidence: Number(confidence.toFixed(2)) };
 }
 
+async function readProcessedFallback() {
+  const fallbackPath = path.join(process.cwd(), "data", "processed", "latest-summary.json");
+  const raw = await readFile(fallbackPath, "utf-8");
+  const parsed = JSON.parse(raw) as {
+    generatedAt?: string;
+    recordsIngested?: number;
+    leagues?: unknown[];
+    latestByLeague?: unknown[];
+  };
+
+  return {
+    generatedAt: parsed.generatedAt ?? new Date().toISOString(),
+    ready: Array.isArray(parsed.leagues) && parsed.leagues.length > 0,
+    recordsIngested: parsed.recordsIngested ?? 0,
+    leagues: parsed.leagues ?? [],
+    latestByLeague: parsed.latestByLeague ?? [],
+    source: "processed-fallback",
+  };
+}
+
 export async function GET() {
-  const grouped = await prisma.freeStat.groupBy({
-    by: ["league"],
-    _count: { _all: true },
-    _avg: {
-      points: true,
-      rebounds: true,
-      assists: true,
-      yards: true,
-    },
-  });
+  try {
+    const grouped = await prisma.freeStat.groupBy({
+      by: ["league"],
+      _count: { _all: true },
+      _avg: {
+        points: true,
+        rebounds: true,
+        assists: true,
+        yards: true,
+      },
+    });
 
-  const all = await prisma.freeStat.findMany({
-    orderBy: [{ league: "asc" }, { gameDate: "desc" }],
-    select: {
-      league: true,
-      gameDate: true,
-      team: true,
-      opponent: true,
-      points: true,
-      rebounds: true,
-      assists: true,
-      yards: true,
-      source: true,
-    },
-  });
+    const all = await prisma.freeStat.findMany({
+      orderBy: [{ league: "asc" }, { gameDate: "desc" }],
+      select: {
+        league: true,
+        gameDate: true,
+        team: true,
+        opponent: true,
+        points: true,
+        rebounds: true,
+        assists: true,
+        yards: true,
+        source: true,
+      },
+    });
 
-  const recentByLeague = all.reduce<Record<string, typeof all>>((acc, row) => {
-    if (!acc[row.league]) acc[row.league] = [];
-    if (acc[row.league].length < 5) acc[row.league].push(row);
-    return acc;
-  }, {});
+    const recentByLeague = all.reduce<Record<string, typeof all>>((acc, row) => {
+      if (!acc[row.league]) acc[row.league] = [];
+      if (acc[row.league].length < 5) acc[row.league].push(row);
+      return acc;
+    }, {});
 
-  const leagues = grouped.map((g) => {
-    const recent = recentByLeague[g.league] ?? [];
-    const latest = recent[0];
+    const leagues = grouped.map((g) => {
+      const recent = recentByLeague[g.league] ?? [];
+      const latest = recent[0];
 
-    const recentAvgPoints = avg(recent.map((r) => r.points));
-    const recentAvgYards = avg(recent.map((r) => r.yards));
+      const recentAvgPoints = avg(recent.map((r) => r.points));
+      const recentAvgYards = avg(recent.map((r) => r.yards));
 
-    const trend = latest
-      ? toTrendScore({
-          league: g.league,
-          games: g._count._all,
-          avgPoints: g._avg.points,
-          avgRebounds: g._avg.rebounds,
-          avgAssists: g._avg.assists,
-          avgYards: g._avg.yards,
-          latestPoints: latest.points,
-          latestRebounds: latest.rebounds,
-          latestAssists: latest.assists,
-          latestYards: latest.yards,
-        })
-      : { score: 50, signal: "flat", confidence: 0.35 };
+      const trend = latest
+        ? toTrendScore({
+            league: g.league,
+            games: g._count._all,
+            avgPoints: g._avg.points,
+            avgRebounds: g._avg.rebounds,
+            avgAssists: g._avg.assists,
+            avgYards: g._avg.yards,
+            latestPoints: latest.points,
+            latestRebounds: latest.rebounds,
+            latestAssists: latest.assists,
+            latestYards: latest.yards,
+          })
+        : { score: 50, signal: "flat", confidence: 0.35 };
 
-    return {
-      league: g.league,
-      games: g._count._all,
-      avgPoints: g._avg.points,
-      avgRebounds: g._avg.rebounds,
-      avgAssists: g._avg.assists,
-      avgYards: g._avg.yards,
-      recentAvgPoints,
-      recentAvgYards,
-      trendScore: trend.score,
-      trendSignal: trend.signal,
-      confidence: trend.confidence,
-    };
-  });
+      return {
+        league: g.league,
+        games: g._count._all,
+        avgPoints: g._avg.points,
+        avgRebounds: g._avg.rebounds,
+        avgAssists: g._avg.assists,
+        avgYards: g._avg.yards,
+        recentAvgPoints,
+        recentAvgYards,
+        trendScore: trend.score,
+        trendSignal: trend.signal,
+        confidence: trend.confidence,
+      };
+    });
 
-  const latestByLeague = Object.values(recentByLeague)
-    .map((rows) => rows[0])
-    .filter(Boolean)
-    .sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
+    const latestByLeague = Object.values(recentByLeague)
+      .map((rows) => rows[0])
+      .filter(Boolean)
+      .sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
 
-  return NextResponse.json({
-    generatedAt: new Date().toISOString(),
-    ready: leagues.length > 0,
-    recordsIngested: all.length,
-    leagues,
-    latestByLeague,
-  });
+    return NextResponse.json({
+      generatedAt: new Date().toISOString(),
+      ready: leagues.length > 0,
+      recordsIngested: all.length,
+      leagues,
+      latestByLeague,
+      source: "prisma",
+    });
+  } catch {
+    const fallback = await readProcessedFallback();
+    return NextResponse.json(fallback);
+  }
 }
