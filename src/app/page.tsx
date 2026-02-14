@@ -94,6 +94,10 @@ export default function Home() {
 
   const leagueOptions = ["ALL", "NBA", "NFL", "NCAAB", "MLB"];
 
+  const top5BestBets = useMemo(() => {
+    return (data?.bestBets ?? []).slice(0, 5);
+  }, [data?.bestBets]);
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -148,6 +152,25 @@ export default function Home() {
 
         {data && (
           <>
+            <section className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-950/20 p-4 sm:p-5">
+              <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <h2 className="text-lg font-semibold text-emerald-200">Top 5 Best Bets of the Day</h2>
+                <p className="text-xs text-emerald-100/80">Last updated: {generatedAt || "—"}</p>
+              </div>
+              <div className="space-y-2">
+                {top5BestBets.map((item, idx) => (
+                  <div key={`${item.league}-${item.team}-${idx}`} className="rounded-md border border-emerald-500/20 bg-slate-900/80 p-3">
+                    <p className="text-sm font-semibold text-white">
+                      #{idx + 1} {item.team} ({item.league}{item.conference ? ` / ${item.conference}` : ""})
+                    </p>
+                    <p className="text-xs text-slate-300 sm:text-sm">
+                      Score {item.score} | L10 {fmt(item.last10Momentum, 2)} | ATS {fmt(item.atsForm, 2)} | Upset {item.upsetAlertScore ?? "—"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
                 <p className="text-xs uppercase tracking-wide text-slate-400">Ingest readiness</p>
@@ -201,7 +224,7 @@ export default function Home() {
             </section>
 
             <section className="mb-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h3 className="mb-3 text-lg font-semibold">Best Bets Ranking (NBA / NFL / NCAAB / MLB)</h3>
+              <h3 className="mb-3 text-lg font-semibold">Full Best Bets Ranking (NBA / NFL / NCAAB / MLB)</h3>
               <div className="space-y-2 text-sm text-slate-200">
                 {data.bestBets.map((item) => (
                   <div key={`${item.league}-${item.team}`} className="rounded-md bg-slate-800/70 p-3">
