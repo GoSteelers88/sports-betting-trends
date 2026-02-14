@@ -151,22 +151,166 @@ function computeNcaabMetrics(rows: FreeStatLike[]) {
   };
 }
 
-function computeMlbMetrics(rows: FreeStatLike[]) {
+type TeamForm = {
+  momentum: number;
+  atsForm: number | null;
+  upsetProxy: number;
+};
+
+type BestBetGame = {
+  league: string;
+  conference: string | null;
+  gameDate: Date;
+  matchup: string;
+  pickTeam: string;
+  opponent: string;
+  spread: number | null;
+  line: string | null;
+  score: number;
+  confidence: number;
+  rationaleSignals: string[];
+  momentumEdge: number;
+  atsEdge: number | null;
+};
+
+function dayKeyInEt(date: Date) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function gameKey(row: FreeStatLike) {
+  const a = row.team.localeCompare(row.opponent) <= 0 ? row.team : row.opponent;
+  const b = row.team.localeCompare(row.opponent) <= 0 ? row.opponent : row.team;
+  const event = row.sourceEventId ?? "";
+  return `${row.league}|${dayKeyInEt(row.gameDate)}|${a}|${b}|${event}`;
+}
+
+function computeTeamForm(league: string, rows: FreeStatLike[]): TeamForm {
+  if (!rows.length) return { momentum: 0, atsForm: null, upsetProxy: 50 };
+
+  if (league === "NCAAB") {
+    const m = computeNcaabMetrics(rows);
+    return { momentum: m.last10Momentum ?? 0, atsForm: m.atsForm, upsetProxy: m.upsetAlertScore };
+  }
+
   const last10 = rows.slice(0, 10);
   const wins = last10.filter((r) => r.won === true).length;
   const losses = last10.filter((r) => r.won === false).length;
-  const last10Momentum = last10.length ? Number(((wins - losses) / last10.length).toFixed(2)) : null;
+  const momentum = last10.length ? Number(((wins - losses) / last10.length).toFixed(2)) : 0;
 
-  const runDiff = avg(last10.map((r) => (r.opponentPoints == null ? null : r.points - r.opponentPoints)));
   const atsGames = last10.filter((r) => r.atsResult === "W" || r.atsResult === "L");
   const atsWins = atsGames.filter((r) => r.atsResult === "W").length;
   const atsForm = atsGames.length ? Number((atsWins / atsGames.length).toFixed(2)) : null;
 
-  const upsetAlertScore = Math.round(
-    clamp(50 + clamp((runDiff ?? 0) * 8, -18, 20) + clamp(((atsForm ?? 0.5) - 0.5) * 40, -12, 15), 1, 99),
-  );
+  const margin = avg(last10.map((r) => (r.opponentPoints == null ? null : r.points - r.opponentPoints))) ?? 0;
+  const upsetProxy = Math.round(clamp(50 + margin * 7 + ((atsForm ?? 0.5) - 0.5) * 25, 1, 99));
 
-  return { last10Momentum, atsForm, upsetAlertScore };
+  return { momentum, atsForm, upsetProxy };
+}
+
+function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStatLike[]) {
+  if (!allRows.length) return [] as BestBetGame[];
+
+  const todayEt = dayKeyInEt(new Date());
+  const todaysRows = allRows.filter((row) => dayKeyInEt(row.gameDate) === todayEt);
+
+  const historyByTeam = completedRows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
+    const key = `${row.league}|${row.team}`;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(row);
+    return acc;
+  }, {});
+
+  Object.values(historyByTeam).forEach((rows) => rows.sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime()));
+
+  const byGame = todaysRows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
+    const key = gameKey(row);
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(row);
+    return acc;
+  }, {});
+
+  return Object.values(byGame)
+    .map((rowsForGame) => {
+      const sides = rowsForGame
+        .slice()
+        .sort((a, b) => a.team.localeCompare(b.team))
+        .filter((row, idx, arr) => arr.findIndex((x) => x.team === row.team) === idx)
+        .slice(0, 2);
+
+      const primary = sides[0];
+      if (!primary) return null;
+
+      const other = sides.find((s) => s.team === primary.opponent) ?? sides[1] ?? null;
+      const pickHistory = (historyByTeam[`${primary.league}|${primary.team}`] ?? []).filter(
+        (r) => r.gameDate.getTime() < primary.gameDate.getTime(),
+      );
+      const oppHistory = other
+        ? (historyByTeam[`${other.league}|${other.team}`] ?? []).filter((r) => r.gameDate.getTime() < primary.gameDate.getTime())
+        : [];
+
+      const aForm = computeTeamForm(primary.league, pickHistory.slice(0, 10));
+      const bForm = computeTeamForm(primary.league, oppHistory.slice(0, 10));
+
+      let pick = primary;
+      let pickForm = aForm;
+      let oppForm = bForm;
+
+      const edgeAB = aForm.momentum * 22 + ((aForm.atsForm ?? 0.5) - 0.5) * 26 + (aForm.upsetProxy - bForm.upsetProxy) * 0.3;
+      const edgeBA = bForm.momentum * 22 + ((bForm.atsForm ?? 0.5) - 0.5) * 26 + (bForm.upsetProxy - aForm.upsetProxy) * 0.3;
+
+      if (other && edgeBA > edgeAB) {
+        pick = other;
+        pickForm = bForm;
+        oppForm = aForm;
+      }
+
+      const momentumEdge = Number((pickForm.momentum - oppForm.momentum).toFixed(2));
+      const atsEdge =
+        pickForm.atsForm == null || oppForm.atsForm == null
+          ? null
+          : Number((pickForm.atsForm - oppForm.atsForm).toFixed(2));
+
+      const rawScore =
+        56 +
+        momentumEdge * 24 +
+        ((pickForm.atsForm ?? 0.5) - (oppForm.atsForm ?? 0.5)) * 28 +
+        (pickForm.upsetProxy - oppForm.upsetProxy) * 0.35;
+      const score = Math.round(clamp(rawScore, 1, 99));
+      const confidence = Number((clamp(0.45 + Math.abs(score - 50) / 70, 0.35, 0.95) * 100).toFixed(0));
+
+      const rationaleSignals = [
+        `Momentum edge ${momentumEdge >= 0 ? "+" : ""}${momentumEdge.toFixed(2)} (last-10 trend)`,
+        atsEdge == null ? "ATS edge unavailable (insufficient ATS history)" : `ATS edge ${atsEdge >= 0 ? "+" : ""}${atsEdge.toFixed(2)}`,
+        `Model edge ${(pickForm.upsetProxy - oppForm.upsetProxy) >= 0 ? "+" : ""}${(pickForm.upsetProxy - oppForm.upsetProxy).toFixed(1)} (context signal)`,
+      ];
+
+      const spread = pick.spread ?? null;
+      const line = spread == null ? null : `${pick.team} ${spread > 0 ? "+" : ""}${spread}`;
+
+      return {
+        league: pick.league,
+        conference: pick.conference ?? null,
+        gameDate: pick.gameDate,
+        matchup: `${pick.team} vs ${pick.opponent}`,
+        pickTeam: pick.team,
+        opponent: pick.opponent,
+        spread,
+        line,
+        score,
+        confidence,
+        rationaleSignals,
+        momentumEdge,
+        atsEdge,
+      };
+    })
+    .filter((game): game is BestBetGame => Boolean(game))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 20);
 }
 
 function calibrateBestBetModel(rows: FreeStatLike[]) {
@@ -194,7 +338,11 @@ function calibrateBestBetModel(rows: FreeStatLike[]) {
               const game = sorted[i - 1];
               if (!history.length || (game.atsResult !== "W" && game.atsResult !== "L")) continue;
               const metrics = computeNcaabMetrics(history);
-              const score = 50 + (metrics.last10Momentum ?? 0) * momentumWeight + ((metrics.atsForm ?? 0.5) - 0.5) * atsWeight + (metrics.upsetAlertScore - 50) * upsetWeight;
+              const score =
+                50 +
+                (metrics.last10Momentum ?? 0) * momentumWeight +
+                ((metrics.atsForm ?? 0.5) - 0.5) * atsWeight +
+                (metrics.upsetAlertScore - 50) * upsetWeight;
               if (score < threshold) continue;
 
               picks += 1;
@@ -206,7 +354,8 @@ function calibrateBestBetModel(rows: FreeStatLike[]) {
           if (picks < 20) continue;
           const hitRate = wins / Math.max(1, wins + losses);
           const objective = hitRate - Math.max(0, 40 - picks) * 0.001;
-          if (objective > best.score) best = { momentumWeight, atsWeight, upsetWeight: Number(upsetWeight.toFixed(2)), threshold, score: objective };
+          if (objective > best.score)
+            best = { momentumWeight, atsWeight, upsetWeight: Number(upsetWeight.toFixed(2)), threshold, score: objective };
         }
       }
     }
@@ -265,73 +414,13 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     .sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
 
   const ncaabRows = completed.filter((r) => r.league === "NCAAB");
-  const mlbRows = completed.filter((r) => r.league === "MLB");
   const params = calibrateBestBetModel(ncaabRows);
-
-  const ncaabByTeam = ncaabRows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
-    if (!acc[row.team]) acc[row.team] = [];
-    if (acc[row.team].length < 10) acc[row.team].push(row);
-    return acc;
-  }, {});
-
-  const ncaabBets = Object.entries(ncaabByTeam)
-    .map(([team, teamRows]) => {
-      const metrics = computeNcaabMetrics(teamRows);
-      const score = Math.round(
-        clamp(
-          50 +
-            (metrics.last10Momentum ?? 0) * params.momentumWeight +
-            ((metrics.atsForm ?? 0.5) - 0.5) * params.atsWeight +
-            (metrics.upsetAlertScore - 50) * params.upsetWeight,
-          1,
-          99,
-        ),
-      );
-
-      return {
-        league: "NCAAB",
-        team,
-        conference: teamRows[0]?.conference ?? null,
-        score,
-        last10Momentum: metrics.last10Momentum,
-        atsForm: metrics.atsForm,
-        upsetAlertScore: metrics.upsetAlertScore,
-        bubbleStatus: teamRows[0]?.bubbleStatus ?? null,
-        autoBidStatus: teamRows[0]?.autoBidStatus ?? null,
-      };
-    })
-    .filter((b) => b.score >= params.threshold);
-
-  const mlbByTeam = mlbRows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
-    if (!acc[row.team]) acc[row.team] = [];
-    if (acc[row.team].length < 10) acc[row.team].push(row);
-    return acc;
-  }, {});
-
-  const mlbBets = Object.entries(mlbByTeam)
-    .map(([team, teamRows]) => {
-      const metrics = computeMlbMetrics(teamRows);
-      const score = Math.round(
-        clamp(50 + (metrics.last10Momentum ?? 0) * 24 + ((metrics.atsForm ?? 0.5) - 0.5) * 30 + (metrics.upsetAlertScore - 50) * 0.45, 1, 99),
-      );
-
-      return {
-        league: "MLB",
-        team,
-        conference: teamRows[0]?.conference ?? null,
-        score,
-        last10Momentum: metrics.last10Momentum,
-        atsForm: metrics.atsForm,
-        upsetAlertScore: metrics.upsetAlertScore,
-        bubbleStatus: null,
-        autoBidStatus: null,
-      };
-    })
-    .filter((b) => b.score >= 60);
-
-  const combinedBets = [...ncaabBets, ...mlbBets].sort((a, b) => b.score - a.score);
-  const topMlb = combinedBets.filter((b) => b.league === "MLB").slice(0, 2);
-  const topOther = combinedBets.filter((b) => b.league !== "MLB").slice(0, 10);
+  const bestBets = buildGameLevelBestBets(sorted, completed);
+  const topTarget = 5;
+  const bestBetsNote =
+    bestBets.length >= topTarget
+      ? null
+      : `Only ${bestBets.length} eligible game${bestBets.length === 1 ? "" : "s"} found for today (America/New_York).`;
 
   return {
     generatedAt: new Date().toISOString(),
@@ -342,7 +431,9 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     leagues,
     latestByLeague,
     conferences: [...new Set(completed.map((r) => r.conference).filter(Boolean))].sort(),
-    bestBets: [...topOther, ...topMlb].sort((a, b) => b.score - a.score).slice(0, 12),
+    bestBets,
+    topBestBetsTarget: topTarget,
+    bestBetsNote,
     bestBetModel: params,
   };
 }

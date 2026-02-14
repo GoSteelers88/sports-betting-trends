@@ -4,13 +4,56 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { buildFreeStatsSummary, type FreeStatLike } from "@/lib/free-stats-summary";
 
+type SummaryShape = {
+  leagues?: Array<{ league?: string }>;
+  latestByLeague?: Array<{ league?: string; conference?: string | null }>;
+  bestBets?: Array<{ league?: string; conference?: string | null }>;
+  conferences?: string[];
+  [key: string]: unknown;
+};
+
 async function readProcessedFallback() {
   const fallbackPath = path.join(process.cwd(), "data", "processed", "latest-summary.json");
   const raw = await readFile(fallbackPath, "utf-8");
-  const parsed = JSON.parse(raw) as Record<string, unknown>;
+  const parsed = JSON.parse(raw) as SummaryShape;
   return {
     ...parsed,
     source: "processed-fallback",
+  };
+}
+
+function applyFiltersToSummary(summary: SummaryShape, league?: string, conference?: string) {
+  const leagueMatch = (value?: string | null) => !league || value === league;
+  const conferenceMatch = (value?: string | null) => !conference || value === conference;
+
+  const leagues = (summary.leagues ?? []).filter((l) => leagueMatch(l.league));
+  const latestByLeague = (summary.latestByLeague ?? []).filter(
+    (item) => leagueMatch(item.league) && conferenceMatch(item.conference),
+  );
+  const bestBets = (summary.bestBets ?? []).filter(
+    (item) => leagueMatch(item.league) && conferenceMatch(item.conference),
+  );
+
+  const conferencesFromData = new Set<string>();
+  latestByLeague.forEach((item) => {
+    if (item.conference) conferencesFromData.add(item.conference);
+  });
+  bestBets.forEach((item) => {
+    if (item.conference) conferencesFromData.add(item.conference);
+  });
+
+  const conferences = [...conferencesFromData].sort();
+
+  return {
+    ...summary,
+    leagues,
+    latestByLeague,
+    bestBets,
+    conferences,
+    filtersApplied: {
+      league: league ?? "ALL",
+      conference: conference ?? "ALL",
+    },
   };
 }
 
@@ -62,13 +105,7 @@ export async function GET(req: NextRequest) {
 
     if (all.length === 0) {
       const fallback = await readProcessedFallback();
-      return NextResponse.json({
-        ...fallback,
-        filtersApplied: {
-          league: league ?? "ALL",
-          conference: conference ?? "ALL",
-        },
-      });
+      return NextResponse.json(applyFiltersToSummary(fallback, league, conference));
     }
 
     const rows: FreeStatLike[] = all.map((r) => ({ ...r }));
@@ -84,22 +121,9 @@ export async function GET(req: NextRequest) {
       orderBy: { conference: "asc" },
     });
 
-    const leagueBetCards = summary.leagues.map((l) => ({
-      league: l.league,
-      team: l.league,
-      conference: null,
-      score: l.trendScore,
-      last10Momentum: l.ncaab?.last10Momentum ?? null,
-      atsForm: l.ncaab?.atsForm ?? null,
-      upsetAlertScore: l.ncaab?.upsetAlertScore ?? null,
-      bubbleStatus: null,
-      autoBidStatus: null,
-    }));
-
     return NextResponse.json({
       ...summary,
       conferences: conferenceUniverse.map((c) => c.conference).filter(Boolean),
-      bestBets: [...summary.bestBets, ...leagueBetCards].sort((a, b) => b.score - a.score).slice(0, 12),
       filtersApplied: {
         league: league ?? "ALL",
         conference: conference ?? "ALL",
@@ -108,6 +132,6 @@ export async function GET(req: NextRequest) {
     });
   } catch {
     const fallback = await readProcessedFallback();
-    return NextResponse.json(fallback);
+    return NextResponse.json(applyFiltersToSummary(fallback, league, conference));
   }
 }

@@ -39,16 +39,20 @@ type Latest = {
   source: string;
 };
 
-type BestBet = {
+type BestBetGame = {
   league: string;
-  team: string;
   conference: string | null;
+  gameDate: string;
+  matchup: string;
+  pickTeam: string;
+  opponent: string;
+  spread: number | null;
+  line: string | null;
   score: number;
-  last10Momentum: number | null;
-  atsForm: number | null;
-  upsetAlertScore: number | null;
-  bubbleStatus: string | null;
-  autoBidStatus: string | null;
+  confidence: number;
+  rationaleSignals: string[];
+  momentumEdge: number;
+  atsEdge: number | null;
 };
 
 type ApiResponse = {
@@ -58,7 +62,9 @@ type ApiResponse = {
   leagues: LeagueSummary[];
   latestByLeague: Latest[];
   conferences: string[];
-  bestBets: BestBet[];
+  bestBets: BestBetGame[];
+  topBestBetsTarget?: number;
+  bestBetsNote?: string | null;
 };
 
 function fmt(n: number | null | undefined, digits = 1) {
@@ -154,18 +160,20 @@ export default function Home() {
           <>
             <section className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-950/20 p-4 sm:p-5">
               <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                <h2 className="text-lg font-semibold text-emerald-200">Top 5 Best Bets of the Day</h2>
+                <h2 className="text-lg font-semibold text-emerald-200">Top 5 Game Picks of the Day</h2>
                 <p className="text-xs text-emerald-100/80">Last updated: {generatedAt || "—"}</p>
               </div>
               <div className="space-y-2">
                 {top5BestBets.map((item, idx) => (
-                  <div key={`${item.league}-${item.team}-${idx}`} className="rounded-md border border-emerald-500/20 bg-slate-900/80 p-3">
+                  <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md border border-emerald-500/20 bg-slate-900/80 p-3">
                     <p className="text-sm font-semibold text-white">
-                      #{idx + 1} {item.team} ({item.league}{item.conference ? ` / ${item.conference}` : ""})
+                      #{idx + 1} {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""})
                     </p>
                     <p className="text-xs text-slate-300 sm:text-sm">
-                      Score {item.score} | L10 {fmt(item.last10Momentum, 2)} | ATS {fmt(item.atsForm, 2)} | Upset {item.upsetAlertScore ?? "—"}
+                      Pick {item.pickTeam}
+                      {item.line ? ` (${item.line})` : ""} | Score {item.score} | Confidence {item.confidence}%
                     </p>
+                    <p className="text-xs text-slate-400">{item.rationaleSignals?.[0] ?? "Signal details unavailable"}</p>
                   </div>
                 ))}
               </div>
@@ -195,7 +203,7 @@ export default function Home() {
                   </div>
 
                   <p className="mb-3 text-sm text-slate-300">
-                    Trend score: <span className="font-semibold text-white">{league.trendScore}</span> / 99 ({league.trendSignal})
+                    League trend score: <span className="font-semibold text-white">{league.trendScore}</span> / 99 ({league.trendSignal})
                   </p>
 
                   <div className="grid grid-cols-2 gap-2 text-sm">
@@ -209,9 +217,9 @@ export default function Home() {
 
                   {league.league === "NCAAB" && league.ncaab && (
                     <div className="mt-3 space-y-1 text-sm text-slate-200">
-                      <p>Last-10 momentum: {fmt(league.ncaab.last10Momentum, 2)}</p>
-                      <p>ATS form: {fmt(league.ncaab.atsForm, 2)}</p>
-                      <p>Upset-alert score: {league.ncaab.upsetAlertScore}</p>
+                      <p>NCAAB last-10 momentum: {fmt(league.ncaab.last10Momentum, 2)}</p>
+                      <p>NCAAB ATS form: {fmt(league.ncaab.atsForm, 2)}</p>
+                      <p>NCAAB upset-alert score: {league.ncaab.upsetAlertScore}</p>
                       <p className="text-xs text-slate-400">
                         Bubble hooks: {league.ncaab.bubbleWatchTeams.join(", ") || "—"} | Auto-bid hooks: {league.ncaab.autoBidWatchTeams.join(", ") || "—"}
                       </p>
@@ -224,23 +232,29 @@ export default function Home() {
             </section>
 
             <section className="mb-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h3 className="mb-3 text-lg font-semibold">Full Best Bets Ranking (NBA / NFL / NCAAB / MLB)</h3>
+              <h3 className="mb-3 text-lg font-semibold">Full Game-Pick Ranking (NBA / NFL / NCAAB / MLB)</h3>
               <div className="space-y-2 text-sm text-slate-200">
-                {data.bestBets.map((item) => (
-                  <div key={`${item.league}-${item.team}`} className="rounded-md bg-slate-800/70 p-3">
+                {data.bestBets.map((item, idx) => (
+                  <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md bg-slate-800/70 p-3">
                     <p className="font-medium">
-                      {item.team} ({item.league}{item.conference ? ` / ${item.conference}` : ""}) — Score {item.score}
+                      {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""}) — Pick {item.pickTeam}
+                      {item.line ? ` (${item.line})` : ""} — Score {item.score}
                     </p>
                     <p className="text-slate-300">
-                      L10 {fmt(item.last10Momentum, 2)} | ATS {fmt(item.atsForm, 2)} | Upset {item.upsetAlertScore ?? "—"}
+                      Confidence {item.confidence}% | Momentum edge {fmt(item.momentumEdge, 2)} | ATS edge {fmt(item.atsEdge, 2)}
                     </p>
+                    <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-slate-400">
+                      {(item.rationaleSignals ?? ["Signal details unavailable"]).map((signal) => (
+                        <li key={signal}>{signal}</li>
+                      ))}
+                    </ul>
                   </div>
                 ))}
               </div>
             </section>
 
             <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h3 className="mb-3 text-lg font-semibold">Latest game per league</h3>
+              <h3 className="mb-3 text-lg font-semibold">Latest completed game per league</h3>
               <div className="space-y-2 text-sm text-slate-200">
                 {data.latestByLeague.map((item) => (
                   <div key={`${item.league}-${item.gameDate}`} className="rounded-md bg-slate-800/70 p-3">
