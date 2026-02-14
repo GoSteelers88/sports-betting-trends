@@ -56,8 +56,11 @@ model FreeStat {
   opponentRank   Int?
   bubbleStatus   String?
   autoBidStatus  String?
-  source         String
-  createdAt      DateTime @default(now())
+  source             String
+  sourceEventId      String?
+  gameStatus         String?
+  completionEvidence String?
+  createdAt          DateTime @default(now())
 
   @@index([league, gameDate])
   @@index([league, conference])

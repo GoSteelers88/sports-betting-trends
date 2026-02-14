@@ -1,7 +1,9 @@
 {
-  "generatedAt": "2026-02-14T10:15:50.916Z",
+  "generatedAt": "2026-02-14T10:37:01.818Z",
   "ready": true,
   "recordsIngested": 386,
+  "recordsCompleted": 386,
+  "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
@@ -130,7 +132,10 @@
       "opponentRank": 10,
       "bubbleStatus": "WORK",
       "autoBidStatus": "AUTO_BID",
-      "source": "espn-public-api"
+      "source": "espn-public-api",
+      "sourceEventId": "401825512",
+      "gameStatus": "Final",
+      "completionEvidence": "espn-status-completed"
     },
     {
       "league": "NBA",
@@ -150,7 +155,10 @@
       "opponentRank": null,
       "bubbleStatus": null,
       "autoBidStatus": null,
-      "source": "Manual export from Basketball-Reference box score"
+      "source": "Manual export from Basketball-Reference box score",
+      "sourceEventId": null,
+      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
+      "completionEvidence": "manual-boxscore-export"
     },
     {
       "league": "MLB",
@@ -170,7 +178,10 @@
       "opponentRank": null,
       "bubbleStatus": null,
       "autoBidStatus": null,
-      "source": "Manual export from public MLB game box score"
+      "source": "Manual export from public MLB game box score",
+      "sourceEventId": null,
+      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
+      "completionEvidence": "scored-game"
     },
     {
       "league": "NFL",
@@ -190,7 +201,10 @@
       "opponentRank": null,
       "bubbleStatus": null,
       "autoBidStatus": null,
-      "source": "Manual export from Pro-Football-Reference game finder"
+      "source": "Manual export from Pro-Football-Reference game finder",
+      "sourceEventId": null,
+      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
+      "completionEvidence": "manual-game-finder-export"
     }
   ],
   "conferences": [

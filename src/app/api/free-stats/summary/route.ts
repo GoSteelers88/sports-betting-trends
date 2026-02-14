@@ -54,6 +54,9 @@ export async function GET(req: NextRequest) {
         bubbleStatus: true,
         autoBidStatus: true,
         source: true,
+        sourceEventId: true,
+        gameStatus: true,
+        completionEvidence: true,
       },
     });
 

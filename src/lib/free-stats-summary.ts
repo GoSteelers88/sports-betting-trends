@@ -17,6 +17,9 @@ export type FreeStatLike = {
   bubbleStatus: string | null;
   autoBidStatus: string | null;
   source: string;
+  sourceEventId?: string | null;
+  gameStatus?: string | null;
+  completionEvidence?: string | null;
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -71,15 +74,42 @@ function groupByLeague(rows: FreeStatLike[]) {
   }, {});
 }
 
+function normalizeStatus(status?: string | null) {
+  return (status ?? "").trim().toUpperCase();
+}
+
+function statusSuggestsCompleted(status?: string | null) {
+  const s = normalizeStatus(status);
+  if (!s) return false;
+  return s.includes("FINAL") || s.includes("POST") || s.includes("COMPLETE") || s.includes("COMPLETED");
+}
+
+function statusSuggestsIncomplete(status?: string | null) {
+  const s = normalizeStatus(status);
+  if (!s) return false;
+  return s.includes("SCHEDULED") || s.includes("PRE") || s.includes("LIVE") || s.includes("IN_PROGRESS");
+}
+
+function inferCompletionEvidence(row: FreeStatLike) {
+  if (row.completionEvidence) return row.completionEvidence;
+  if (row.won != null) return "won-field";
+  if (row.atsResult === "W" || row.atsResult === "L" || row.atsResult === "P") return "ats-result";
+  if (row.opponentPoints != null) return "has-opponent-points";
+  if (row.yards != null) return "has-yards";
+  if (row.rebounds != null || row.assists != null) return "has-boxscore-stats";
+  if (Number.isFinite(row.points) && row.points > 0) return "has-points";
+  return null;
+}
+
 function isCompletedGame(row: FreeStatLike, nowMs: number) {
   const gameMs = row.gameDate.getTime();
   if (gameMs > nowMs) return false;
 
-  const hasOutcome = row.won != null || row.atsResult === "W" || row.atsResult === "L" || row.atsResult === "P";
-  const hasSupportingStats = row.opponentPoints != null || row.yards != null || row.rebounds != null || row.assists != null;
-  const hasScoring = Number.isFinite(row.points) && row.points > 0;
+  const explicitCompleted = statusSuggestsCompleted(row.gameStatus);
+  const evidence = inferCompletionEvidence(row);
 
-  return hasOutcome || hasSupportingStats || hasScoring;
+  if (statusSuggestsIncomplete(row.gameStatus)) return false;
+  return explicitCompleted || evidence != null;
 }
 
 function computeNcaabMetrics(rows: FreeStatLike[]) {
@@ -223,7 +253,14 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     .sort((a, b) => a.league.localeCompare(b.league));
 
   const latestByLeague = Object.values(byLeague)
-    .map((leagueRows) => leagueRows[0])
+    .map((leagueRows) => {
+      const latest = leagueRows[0];
+      return {
+        ...latest,
+        gameStatus: latest.gameStatus ?? "UNKNOWN",
+        completionEvidence: inferCompletionEvidence(latest),
+      };
+    })
     .filter(Boolean)
     .sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
 
@@ -300,6 +337,8 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     generatedAt: new Date().toISOString(),
     ready: leagues.length > 0,
     recordsIngested: sorted.length,
+    recordsCompleted: completed.length,
+    recordsRejected: sorted.length - completed.length,
     leagues,
     latestByLeague,
     conferences: [...new Set(completed.map((r) => r.conference).filter(Boolean))].sort(),

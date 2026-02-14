@@ -48,6 +48,8 @@ type NBARecord = {
   rebounds: string;
   assists: string;
   source: string;
+  game_status?: string;
+  completion_evidence?: string;
 };
 
 type NFLRecord = {
@@ -57,6 +59,8 @@ type NFLRecord = {
   points: number;
   yards: number;
   source: string;
+  game_status?: string;
+  completion_evidence?: string;
 };
 
 type NCAABRecord = {
@@ -75,6 +79,9 @@ type NCAABRecord = {
   bubble_status: string;
   auto_bid_status: string;
   source: string;
+  source_event_id?: string;
+  game_status?: string;
+  completion_evidence?: string;
 };
 
 type MLBRecord = {
@@ -89,14 +96,17 @@ type MLBRecord = {
   spread: string;
   ats_result: string;
   source: string;
+  source_event_id?: string;
+  game_status?: string;
+  completion_evidence?: string;
 };
 
 type EspnEvent = {
   id: string;
   date: string;
   competitions?: Array<{
-    status?: { type?: { completed?: boolean } };
-    competitors?: Array<{
+    status?: { type?: { completed?: boolean; name?: string; state?: string; description?: string; detail?: string } };
+    competitors?: Array<{ 
       homeAway?: "home" | "away";
       score?: string;
       records?: Array<{ type?: string; summary?: string }>;
@@ -171,6 +181,11 @@ function parseRecord(summary?: string | null) {
   const losses = Number(m[2]);
   const total = wins + losses;
   return { wins, losses, pct: total > 0 ? wins / total : 0 };
+}
+
+function getEspnGameStatus(event: EspnEvent) {
+  const type = event.competitions?.[0]?.status?.type;
+  return type?.description || type?.detail || type?.name || type?.state || (type?.completed ? "STATUS_FINAL" : "STATUS_UNKNOWN");
 }
 
 function classifyBubbleStatus(teamRank: number | null, overallPct: number, confPct: number, conference: string) {
@@ -280,6 +295,9 @@ async function fetchNcaabRecentRows(daysBack: number): Promise<NCAABRecord[]> {
           bubble_status: bubbleStatus,
           auto_bid_status: autoBidStatus,
           source: "espn-public-api",
+          source_event_id: event.id,
+          game_status: getEspnGameStatus(event),
+          completion_evidence: "espn-status-completed",
         });
       }
     }
@@ -340,12 +358,48 @@ async function fetchMlbRecentRows(daysBack: number): Promise<MLBRecord[]> {
           spread: teamSpread == null ? "" : String(teamSpread),
           ats_result: ats ?? "",
           source: "espn-public-api",
+          source_event_id: event.id,
+          game_status: getEspnGameStatus(event),
+          completion_evidence: "espn-status-completed",
         });
       }
     }
   }
 
   return rows;
+}
+
+function statusLooksCompleted(status?: string | null) {
+  const s = (status ?? "").toUpperCase();
+  if (!s) return false;
+  if (s.includes("SCHEDULED") || s.includes("LIVE") || s.includes("IN_PROGRESS") || s.includes("PRE")) return false;
+  return s.includes("FINAL") || s.includes("COMPLETE") || s.includes("POST");
+}
+
+function defaultGameStatus(source: string, status?: string) {
+  if (status && status.trim()) return status;
+  if (source.toLowerCase().includes("manual")) return "MANUAL_FINAL_UNVERIFIED";
+  return "STATUS_UNKNOWN";
+}
+
+function hasCompletionEvidence(row: {
+  gameDate: Date;
+  points: number;
+  opponentPoints?: number | null;
+  yards?: number | null;
+  rebounds?: number | null;
+  assists?: number | null;
+  won?: boolean | null;
+  atsResult?: string | null;
+  gameStatus?: string | null;
+}) {
+  if (row.gameDate.getTime() > Date.now()) return false;
+  if (statusLooksCompleted(row.gameStatus)) return true;
+  if (row.won != null) return true;
+  if (row.atsResult === "W" || row.atsResult === "L" || row.atsResult === "P") return true;
+  if (row.opponentPoints != null) return true;
+  if (row.yards != null || row.rebounds != null || row.assists != null) return true;
+  return Number.isFinite(row.points) && row.points > 0;
 }
 
 async function main() {
@@ -393,6 +447,9 @@ async function main() {
       bubbleStatus: null,
       autoBidStatus: null,
       source: row.source,
+      sourceEventId: null,
+      gameStatus: row.game_status ?? "MANUAL_FINAL_UNVERIFIED",
+      completionEvidence: row.completion_evidence ?? "manual-boxscore-export",
     })),
     ...nflRows.map((row) => ({
       league: "NFL",
@@ -413,6 +470,9 @@ async function main() {
       bubbleStatus: null,
       autoBidStatus: null,
       source: row.source,
+      sourceEventId: null,
+      gameStatus: row.game_status ?? "MANUAL_FINAL_UNVERIFIED",
+      completionEvidence: row.completion_evidence ?? "manual-game-finder-export",
     })),
     ...ncaabRows.map((row) => {
       const points = Number(row.points);
@@ -438,6 +498,9 @@ async function main() {
         bubbleStatus: row.bubble_status || null,
         autoBidStatus: row.auto_bid_status || null,
         source: row.source,
+        sourceEventId: row.source_event_id ?? null,
+        gameStatus: defaultGameStatus(row.source, row.game_status),
+        completionEvidence: row.completion_evidence ?? "scored-game",
       };
     }),
     ...mlbRows.map((row) => {
@@ -464,14 +527,20 @@ async function main() {
         bubbleStatus: null,
         autoBidStatus: null,
         source: row.source,
+        sourceEventId: row.source_event_id ?? null,
+        gameStatus: defaultGameStatus(row.source, row.game_status),
+        completionEvidence: row.completion_evidence ?? "scored-game",
       };
     }),
   ];
 
-  await prisma.freeStat.deleteMany();
-  await prisma.freeStat.createMany({ data: records });
+  const acceptedRecords = records.filter((r) => hasCompletionEvidence(r));
+  const rejectedRecords = records.filter((r) => !hasCompletionEvidence(r));
 
-  const mapped: FreeStatLike[] = records.map((r) => ({
+  await prisma.freeStat.deleteMany();
+  await prisma.freeStat.createMany({ data: acceptedRecords });
+
+  const mapped: FreeStatLike[] = acceptedRecords.map((r) => ({
     ...r,
     conference: r.conference ?? null,
     gameDate: new Date(r.gameDate),
@@ -481,7 +550,8 @@ async function main() {
   const processedPath = path.join(root, "data", "processed", "latest-summary.json");
   fs.writeFileSync(processedPath, JSON.stringify(summary, null, 2));
 
-  console.log(`Ingested ${records.length} free stat rows (${ncaabRows.length} NCAAB, ${mlbRows.length} MLB).`);
+  console.log(`Ingested ${acceptedRecords.length}/${records.length} free stat rows (${ncaabRows.length} NCAAB, ${mlbRows.length} MLB).`);
+  if (rejectedRecords.length) console.log(`Rejected ${rejectedRecords.length} rows lacking completion evidence.`);
   console.log(`NCAAB source used: ${fetchedNcaabRows.length ? "espn-public-api" : "fallback-csv"}`);
   console.log(`MLB source used: ${fetchedMlbRows.length ? "espn-public-api" : "fallback-csv"}`);
   console.log(`Wrote summary to ${processedPath}`);

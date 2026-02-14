@@ -1,0 +1,53 @@
+{
+  "generatedAt": "2026-02-14T10:37:02.726Z",
+  "summaryGeneratedAt": "2026-02-14T10:37:01.818Z",
+  "pass": true,
+  "failures": [],
+  "checks": [
+    {
+      "league": "NCAAB",
+      "gameDate": "2026-02-14T00:00:00.000Z",
+      "team": "Wisconsin",
+      "opponent": "Michigan St",
+      "gameStatus": "Final",
+      "completionEvidence": "espn-status-completed",
+      "source": "espn-public-api",
+      "basicPass": true
+    },
+    {
+      "league": "NBA",
+      "gameDate": "2026-01-17T00:00:00.000Z",
+      "team": "DEN",
+      "opponent": "PHX",
+      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
+      "completionEvidence": "manual-boxscore-export",
+      "source": "Manual export from Basketball-Reference box score",
+      "basicPass": true
+    },
+    {
+      "league": "MLB",
+      "gameDate": "2026-01-17T00:00:00.000Z",
+      "team": "LAD",
+      "opponent": "SD",
+      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
+      "completionEvidence": "scored-game",
+      "source": "Manual export from public MLB game box score",
+      "basicPass": true
+    },
+    {
+      "league": "NFL",
+      "gameDate": "2026-01-13T00:00:00.000Z",
+      "team": "KC",
+      "opponent": "CIN",
+      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
+      "completionEvidence": "manual-game-finder-export",
+      "source": "Manual export from Pro-Football-Reference game finder",
+      "basicPass": true
+    },
+    {
+      "league": "NCAAB",
+      "sourceCrossCheck": "espn-scoreboard",
+      "matchCompleted": true
+    }
+  ]
+}
