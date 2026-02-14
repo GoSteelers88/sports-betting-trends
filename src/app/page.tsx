@@ -201,7 +201,7 @@ export default function Home() {
             </section>
 
             <section className="mb-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h3 className="mb-3 text-lg font-semibold">Best Bets Ranking (including NCAAB)</h3>
+              <h3 className="mb-3 text-lg font-semibold">Best Bets Ranking (NBA / NFL / NCAAB / MLB)</h3>
               <div className="space-y-2 text-sm text-slate-200">
                 {data.bestBets.map((item) => (
                   <div key={`${item.league}-${item.team}`} className="rounded-md bg-slate-800/70 p-3">

@@ -57,6 +57,17 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    if (all.length === 0) {
+      const fallback = await readProcessedFallback();
+      return NextResponse.json({
+        ...fallback,
+        filtersApplied: {
+          league: league ?? "ALL",
+          conference: conference ?? "ALL",
+        },
+      });
+    }
+
     const rows: FreeStatLike[] = all.map((r) => ({ ...r }));
     const summary = buildFreeStatsSummary(rows);
 
