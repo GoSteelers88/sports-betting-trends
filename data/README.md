@@ -4,15 +4,17 @@
   - `data/raw/nba/` - NBA files (CSV or JSON)
   - `data/raw/nfl/` - NFL files (CSV or JSON)
   - `data/raw/ncaab/` - NCAAB files (CSV preferred for conference + ATS tags)
+  - `data/raw/mlb/` - MLB files (CSV fallback with division + run line fields)
 - `data/processed/` - derived files generated from ingest/transform scripts.
 
 ## Workflow
 
-1. Drop fresh free/public exports in `data/raw/nba` and `data/raw/nfl`.
+1. Drop fresh free/public exports in `data/raw/nba` and `data/raw/nfl` (optional fallback in `data/raw/mlb`).
 2. Run `npm run ingest:free` to load into SQLite via Prisma.
    - NCAAB is pulled from ESPN public APIs each run (with CSV fallback if feed fails).
-   - Optional: set `NCAAB_DAYS_BACK` to control lookback window.
-3. Use `/api/free-stats/summary?league=ALL&conference=ALL` for filtered summaries.
+   - MLB is pulled from ESPN public APIs each run (with CSV fallback if feed fails).
+   - Optional: set `NCAAB_DAYS_BACK` / `MLB_DAYS_BACK` to control lookback windows.
+3. Use `/api/free-stats/summary?league=ALL&conference=ALL` for filtered summaries (`conference` also carries MLB division values).
 4. Generated snapshot is written to `data/processed/latest-summary.json`.
 
 ## NCAAB sample schema

@@ -92,7 +92,7 @@ export default function Home() {
     return new Date(data.generatedAt).toLocaleString();
   }, [data?.generatedAt]);
 
-  const leagueOptions = ["ALL", "NBA", "NFL", "NCAAB"];
+  const leagueOptions = ["ALL", "NBA", "NFL", "NCAAB", "MLB"];
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -100,7 +100,7 @@ export default function Home() {
         <header className="mb-6 rounded-xl border border-slate-800 bg-slate-900/80 p-5">
           <h1 className="text-2xl font-semibold tracking-tight">BJ Free-Data Betting Trends</h1>
           <p className="mt-2 text-sm text-slate-300">
-            March Madness-ready snapshot across NBA, NFL, and NCAAB. Signals are directional support only, not betting advice.
+            Free-data snapshot across NBA, NFL, NCAAB, and MLB. Signals are directional support only, not betting advice.
           </p>
           {generatedAt && <p className="mt-1 text-xs text-slate-400">Last generated: {generatedAt}</p>}
         </header>
@@ -121,7 +121,7 @@ export default function Home() {
             </select>
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Conference (NCAAB)</span>
+            <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Conference / Division</span>
             <select
               className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-2"
               value={conferenceFilter}
@@ -136,7 +136,7 @@ export default function Home() {
             </select>
           </label>
           <div className="rounded-md bg-slate-800/60 p-3 text-sm text-slate-300">
-            <p>Conference filtering applies only to NCAAB rows.</p>
+            <p>Conference/division filter applies to leagues that provide grouping data (NCAAB + MLB).</p>
           </div>
         </section>
 

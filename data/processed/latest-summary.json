@@ -1,8 +1,26 @@
 {
-  "generatedAt": "2026-02-14T10:00:44.537Z",
+  "generatedAt": "2026-02-14T10:10:50.721Z",
   "ready": true,
-  "recordsIngested": 382,
+  "recordsIngested": 386,
   "leagues": [
+    {
+      "league": "MLB",
+      "games": 4,
+      "conferences": [
+        "NL West",
+        "AL East"
+      ],
+      "avgPoints": 4.5,
+      "avgRebounds": 7.5,
+      "avgAssists": 1,
+      "avgYards": null,
+      "recentAvgPoints": 4.5,
+      "recentAvgYards": null,
+      "trendScore": 50,
+      "trendSignal": "flat",
+      "confidence": 0.4,
+      "ncaab": null
+    },
     {
       "league": "NBA",
       "games": 3,
@@ -135,6 +153,26 @@
       "source": "Manual export from Basketball-Reference box score"
     },
     {
+      "league": "MLB",
+      "conference": "NL West",
+      "gameDate": "2026-01-17T00:00:00.000Z",
+      "team": "LAD",
+      "opponent": "SD",
+      "points": 5,
+      "opponentPoints": 3,
+      "rebounds": 8,
+      "assists": 0,
+      "yards": null,
+      "spread": -1.5,
+      "atsResult": "W",
+      "won": true,
+      "teamRank": null,
+      "opponentRank": null,
+      "bubbleStatus": null,
+      "autoBidStatus": null,
+      "source": "Manual export from public MLB game box score"
+    },
+    {
       "league": "NFL",
       "conference": null,
       "gameDate": "2026-01-13T00:00:00.000Z",
@@ -156,6 +194,7 @@
     }
   ],
   "conferences": [
+    "AL East",
     "ASUN Conference",
     "America East Conference",
     "American Conference",
@@ -176,6 +215,7 @@
     "Mid-Eastern Athletic Conference",
     "Missouri Valley Conference",
     "Mountain West Conference",
+    "NL West",
     "Northeast Conference",
     "Ohio Valley Conference",
     "Patriot League",
@@ -298,6 +338,28 @@
       "upsetAlertScore": 99,
       "bubbleStatus": "OUT",
       "autoBidStatus": "AT_LARGE_TRACK"
+    },
+    {
+      "league": "MLB",
+      "team": "LAD",
+      "conference": "NL West",
+      "score": 99,
+      "last10Momentum": 1,
+      "atsForm": 1,
+      "upsetAlertScore": 81,
+      "bubbleStatus": null,
+      "autoBidStatus": null
+    },
+    {
+      "league": "MLB",
+      "team": "NYY",
+      "conference": "AL East",
+      "score": 99,
+      "last10Momentum": 1,
+      "atsForm": 1,
+      "upsetAlertScore": 81,
+      "bubbleStatus": null,
+      "autoBidStatus": null
     }
   ],
   "bestBetModel": {

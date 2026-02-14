@@ -61,7 +61,10 @@ export async function GET(req: NextRequest) {
     const summary = buildFreeStatsSummary(rows);
 
     const conferenceUniverse = await prisma.freeStat.findMany({
-      where: { league: "NCAAB", conference: { not: null } },
+      where: {
+        conference: { not: null },
+        ...(league ? { league } : {}),
+      },
       distinct: ["conference"],
       select: { conference: true },
       orderBy: { conference: "asc" },

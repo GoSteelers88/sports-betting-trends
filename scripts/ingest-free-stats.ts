@@ -7,6 +7,39 @@ import { normalizeAtsResult, normalizeSpread } from "../src/lib/ats";
 const prisma = new PrismaClient();
 const root = process.cwd();
 
+const MLB_DIVISIONS: Record<string, string> = {
+  BAL: "AL East",
+  BOS: "AL East",
+  NYY: "AL East",
+  TB: "AL East",
+  TOR: "AL East",
+  CWS: "AL Central",
+  CLE: "AL Central",
+  DET: "AL Central",
+  KC: "AL Central",
+  MIN: "AL Central",
+  HOU: "AL West",
+  LAA: "AL West",
+  OAK: "AL West",
+  SEA: "AL West",
+  TEX: "AL West",
+  ATL: "NL East",
+  MIA: "NL East",
+  NYM: "NL East",
+  PHI: "NL East",
+  WSH: "NL East",
+  CHC: "NL Central",
+  CIN: "NL Central",
+  MIL: "NL Central",
+  PIT: "NL Central",
+  STL: "NL Central",
+  ARI: "NL West",
+  COL: "NL West",
+  LAD: "NL West",
+  SD: "NL West",
+  SF: "NL West",
+};
+
 type NBARecord = {
   date: string;
   team: string;
@@ -44,6 +77,20 @@ type NCAABRecord = {
   source: string;
 };
 
+type MLBRecord = {
+  date: string;
+  division: string;
+  team: string;
+  opponent: string;
+  points: string;
+  opponent_points: string;
+  rebounds: string;
+  assists: string;
+  spread: string;
+  ats_result: string;
+  source: string;
+};
+
 type EspnEvent = {
   id: string;
   date: string;
@@ -54,7 +101,7 @@ type EspnEvent = {
       score?: string;
       records?: Array<{ type?: string; summary?: string }>;
       curatedRank?: { current?: number };
-      team?: { shortDisplayName?: string; displayName?: string; id?: string };
+      team?: { shortDisplayName?: string; displayName?: string; id?: string; abbreviation?: string };
       statistics?: Array<{ name?: string; displayValue?: string }>;
     }>;
   }>;
@@ -241,21 +288,90 @@ async function fetchNcaabRecentRows(daysBack: number): Promise<NCAABRecord[]> {
   return rows;
 }
 
+async function fetchMlbRecentRows(daysBack: number): Promise<MLBRecord[]> {
+  const rows: MLBRecord[] = [];
+  const seen = new Set<string>();
+
+  for (let d = 0; d < daysBack; d += 1) {
+    const day = new Date();
+    day.setDate(day.getDate() - d);
+    const date = `${day.getFullYear()}${String(day.getMonth() + 1).padStart(2, "0")}${String(day.getDate()).padStart(2, "0")}`;
+
+    const boardUrl = `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?limit=200&dates=${date}`;
+    const boardRes = await fetch(boardUrl, { headers: { "User-Agent": "sports-betting-trends/1.0" }, signal: AbortSignal.timeout(10000) });
+    if (!boardRes.ok) continue;
+
+    const board = (await boardRes.json()) as { events?: EspnEvent[] };
+    for (const event of board.events ?? []) {
+      if (seen.has(event.id)) continue;
+      seen.add(event.id);
+
+      const competition = event.competitions?.[0];
+      const competitors = competition?.competitors ?? [];
+      if (!competition?.status?.type?.completed || competitors.length !== 2) continue;
+
+      const pick = ((competition as unknown as { odds?: Array<Record<string, unknown>> }).odds ?? [])[0] ?? undefined;
+      const spreadValue = normalizeSpread((pick?.spread as number | string | undefined) ?? (pick?.details as string | undefined) ?? "");
+
+      for (const comp of competitors) {
+        const opponent = competitors.find((c) => c.team?.id !== comp.team?.id);
+        if (!opponent) continue;
+
+        const runs = nullableNumber(comp.score) ?? 0;
+        const oppRuns = nullableNumber(opponent.score) ?? 0;
+        const stats = comp.statistics ?? [];
+        const hits = nullableNumber(stats.find((s) => s.name === "hits")?.displayValue ?? "");
+        const errors = nullableNumber(stats.find((s) => s.name === "errors")?.displayValue ?? "");
+        const abbr = comp.team?.abbreviation ?? comp.team?.shortDisplayName ?? "";
+        const division = MLB_DIVISIONS[abbr] ?? "Unknown";
+
+        const teamSpread = comp.homeAway === "home" ? spreadValue : spreadValue == null ? null : -spreadValue;
+        const ats = normalizeAtsResult(null, runs, oppRuns, teamSpread);
+
+        rows.push({
+          date: event.date.slice(0, 10),
+          division,
+          team: comp.team?.shortDisplayName ?? comp.team?.displayName ?? abbr ?? "Unknown",
+          opponent: opponent.team?.shortDisplayName ?? opponent.team?.displayName ?? "Unknown",
+          points: String(runs),
+          opponent_points: String(oppRuns),
+          rebounds: hits == null ? "" : String(hits),
+          assists: errors == null ? "" : String(errors),
+          spread: teamSpread == null ? "" : String(teamSpread),
+          ats_result: ats ?? "",
+          source: "espn-public-api",
+        });
+      }
+    }
+  }
+
+  return rows;
+}
+
 async function main() {
   const nbaCsvPath = path.join(root, "data", "raw", "nba", "sample_team_stats.csv");
   const nflJsonPath = path.join(root, "data", "raw", "nfl", "sample_team_stats.json");
   const ncaabCsvPath = path.join(root, "data", "raw", "ncaab", "sample_team_stats.csv");
+  const mlbCsvPath = path.join(root, "data", "raw", "mlb", "sample_team_stats.csv");
 
   const nbaRows = parseCsv<NBARecord>(fs.readFileSync(nbaCsvPath, "utf8"));
   const nflRows: NFLRecord[] = JSON.parse(fs.readFileSync(nflJsonPath, "utf8"));
 
-  const lookbackDays = Number(process.env.NCAAB_DAYS_BACK ?? "7");
-  const fetchedNcaabRows = await fetchNcaabRecentRows(lookbackDays);
+  const ncaabLookbackDays = Number(process.env.NCAAB_DAYS_BACK ?? "7");
+  const fetchedNcaabRows = await fetchNcaabRecentRows(ncaabLookbackDays);
   const fallbackNcaabRows = fs.existsSync(ncaabCsvPath) ? parseCsv<NCAABRecord>(fs.readFileSync(ncaabCsvPath, "utf8")) : [];
   const ncaabRows = fetchedNcaabRows.length ? fetchedNcaabRows : fallbackNcaabRows;
 
+  const mlbLookbackDays = Number(process.env.MLB_DAYS_BACK ?? "7");
+  const fetchedMlbRows = await fetchMlbRecentRows(mlbLookbackDays);
+  const fallbackMlbRows = fs.existsSync(mlbCsvPath) ? parseCsv<MLBRecord>(fs.readFileSync(mlbCsvPath, "utf8")) : [];
+  const mlbRows = fetchedMlbRows.length ? fetchedMlbRows : fallbackMlbRows;
+
   fs.mkdirSync(path.join(root, "data", "raw", "ncaab"), { recursive: true });
   fs.writeFileSync(path.join(root, "data", "raw", "ncaab", "latest_espn_ncaab.json"), JSON.stringify(ncaabRows, null, 2));
+
+  fs.mkdirSync(path.join(root, "data", "raw", "mlb"), { recursive: true });
+  fs.writeFileSync(path.join(root, "data", "raw", "mlb", "latest_espn_mlb.json"), JSON.stringify(mlbRows, null, 2));
 
   const records = [
     ...nbaRows.map((row) => ({
@@ -324,6 +440,32 @@ async function main() {
         source: row.source,
       };
     }),
+    ...mlbRows.map((row) => {
+      const runs = Number(row.points);
+      const opponentRuns = nullableNumber(row.opponent_points);
+      const spread = normalizeSpread(row.spread);
+      const ats = normalizeAtsResult(row.ats_result, runs, opponentRuns, spread);
+      return {
+        league: "MLB",
+        conference: row.division || null,
+        gameDate: new Date(row.date),
+        team: row.team,
+        opponent: row.opponent,
+        points: runs,
+        opponentPoints: opponentRuns,
+        rebounds: nullableNumber(row.rebounds),
+        assists: nullableNumber(row.assists),
+        yards: null,
+        spread,
+        atsResult: ats,
+        won: opponentRuns == null ? null : runs > opponentRuns,
+        teamRank: null,
+        opponentRank: null,
+        bubbleStatus: null,
+        autoBidStatus: null,
+        source: row.source,
+      };
+    }),
   ];
 
   await prisma.freeStat.deleteMany();
@@ -339,8 +481,9 @@ async function main() {
   const processedPath = path.join(root, "data", "processed", "latest-summary.json");
   fs.writeFileSync(processedPath, JSON.stringify(summary, null, 2));
 
-  console.log(`Ingested ${records.length} free stat rows (${ncaabRows.length} NCAAB).`);
+  console.log(`Ingested ${records.length} free stat rows (${ncaabRows.length} NCAAB, ${mlbRows.length} MLB).`);
   console.log(`NCAAB source used: ${fetchedNcaabRows.length ? "espn-public-api" : "fallback-csv"}`);
+  console.log(`MLB source used: ${fetchedMlbRows.length ? "espn-public-api" : "fallback-csv"}`);
   console.log(`Wrote summary to ${processedPath}`);
 }
 

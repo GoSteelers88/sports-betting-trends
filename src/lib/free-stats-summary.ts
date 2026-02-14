@@ -110,6 +110,24 @@ function computeNcaabMetrics(rows: FreeStatLike[]) {
   };
 }
 
+function computeMlbMetrics(rows: FreeStatLike[]) {
+  const last10 = rows.slice(0, 10);
+  const wins = last10.filter((r) => r.won === true).length;
+  const losses = last10.filter((r) => r.won === false).length;
+  const last10Momentum = last10.length ? Number(((wins - losses) / last10.length).toFixed(2)) : null;
+
+  const runDiff = avg(last10.map((r) => (r.opponentPoints == null ? null : r.points - r.opponentPoints)));
+  const atsGames = last10.filter((r) => r.atsResult === "W" || r.atsResult === "L");
+  const atsWins = atsGames.filter((r) => r.atsResult === "W").length;
+  const atsForm = atsGames.length ? Number((atsWins / atsGames.length).toFixed(2)) : null;
+
+  const upsetAlertScore = Math.round(
+    clamp(50 + clamp((runDiff ?? 0) * 8, -18, 20) + clamp(((atsForm ?? 0.5) - 0.5) * 40, -12, 15), 1, 99),
+  );
+
+  return { last10Momentum, atsForm, upsetAlertScore };
+}
+
 function calibrateBestBetModel(rows: FreeStatLike[]) {
   const defaults = { momentumWeight: 20, atsWeight: 30, upsetWeight: 0.4, threshold: 62 };
   const byTeam = rows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
@@ -197,14 +215,16 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     .sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
 
   const ncaabRows = sorted.filter((r) => r.league === "NCAAB");
+  const mlbRows = sorted.filter((r) => r.league === "MLB");
   const params = calibrateBestBetModel(ncaabRows);
-  const byTeam = ncaabRows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
+
+  const ncaabByTeam = ncaabRows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
     if (!acc[row.team]) acc[row.team] = [];
     if (acc[row.team].length < 10) acc[row.team].push(row);
     return acc;
   }, {});
 
-  const bestBets = Object.entries(byTeam)
+  const ncaabBets = Object.entries(ncaabByTeam)
     .map(([team, teamRows]) => {
       const metrics = computeNcaabMetrics(teamRows);
       const score = Math.round(
@@ -230,9 +250,38 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
         autoBidStatus: teamRows[0]?.autoBidStatus ?? null,
       };
     })
-    .filter((b) => b.score >= params.threshold)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
+    .filter((b) => b.score >= params.threshold);
+
+  const mlbByTeam = mlbRows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
+    if (!acc[row.team]) acc[row.team] = [];
+    if (acc[row.team].length < 10) acc[row.team].push(row);
+    return acc;
+  }, {});
+
+  const mlbBets = Object.entries(mlbByTeam)
+    .map(([team, teamRows]) => {
+      const metrics = computeMlbMetrics(teamRows);
+      const score = Math.round(
+        clamp(50 + (metrics.last10Momentum ?? 0) * 24 + ((metrics.atsForm ?? 0.5) - 0.5) * 30 + (metrics.upsetAlertScore - 50) * 0.45, 1, 99),
+      );
+
+      return {
+        league: "MLB",
+        team,
+        conference: teamRows[0]?.conference ?? null,
+        score,
+        last10Momentum: metrics.last10Momentum,
+        atsForm: metrics.atsForm,
+        upsetAlertScore: metrics.upsetAlertScore,
+        bubbleStatus: null,
+        autoBidStatus: null,
+      };
+    })
+    .filter((b) => b.score >= 60);
+
+  const combinedBets = [...ncaabBets, ...mlbBets].sort((a, b) => b.score - a.score);
+  const topMlb = combinedBets.filter((b) => b.league === "MLB").slice(0, 2);
+  const topOther = combinedBets.filter((b) => b.league !== "MLB").slice(0, 10);
 
   return {
     generatedAt: new Date().toISOString(),
@@ -240,8 +289,8 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     recordsIngested: sorted.length,
     leagues,
     latestByLeague,
-    conferences: [...new Set(ncaabRows.map((r) => r.conference).filter(Boolean))].sort(),
-    bestBets,
+    conferences: [...new Set(sorted.map((r) => r.conference).filter(Boolean))].sort(),
+    bestBets: [...topOther, ...topMlb].sort((a, b) => b.score - a.score).slice(0, 12),
     bestBetModel: params,
   };
 }

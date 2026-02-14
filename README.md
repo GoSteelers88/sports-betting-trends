@@ -66,7 +66,7 @@ npm run dev
 - `GET /api/props?league=ALL&minEdge=4`
 - `GET /api/bankroll`
 - `GET /api/strategy-notes`
-- `GET /api/free-stats/summary?league=ALL&conference=ALL` (NBA/NFL/NCAAB ingested free-data summary + trend scoring + best bets)
+- `GET /api/free-stats/summary?league=ALL&conference=ALL` (NBA/NFL/NCAAB/MLB ingested free-data summary + trend scoring + best bets)
 
 ## Database Schema
 
@@ -89,19 +89,21 @@ SQLite file: `prisma/dev.db`
 - `npm run db:seed`
 - `npm run ingest:free`
 
-## Free stats ingestion starter (NBA + NFL + NCAAB)
+## Free stats ingestion starter (NBA + NFL + NCAAB + MLB)
 
 This starter uses only free/publicly available data workflows (no paid API keys, no bypassing auth/paywalls):
 
 - **NBA sample source pattern:** manual CSV exports from public game box scores (e.g., Basketball-Reference)
 - **NFL sample source pattern:** manual JSON exports from public game summaries/game finder pages (e.g., Pro-Football-Reference)
 - **NCAAB live source:** ESPN public scoreboard + game summary endpoints (repeatable scripted ingest with manual CSV fallback)
+- **MLB live source:** ESPN public scoreboard endpoint (repeatable scripted ingest with manual CSV fallback)
 
 Sample files included:
 
 - `data/raw/nba/sample_team_stats.csv`
 - `data/raw/nfl/sample_team_stats.json`
 - `data/raw/ncaab/sample_team_stats.csv`
+- `data/raw/mlb/sample_team_stats.csv`
 
 Documented data layout:
 
@@ -117,7 +119,8 @@ Documented data layout:
    npm run ingest:free
    ```
    - NCAAB auto-fetches from ESPN public endpoints.
-   - Configure depth with `NCAAB_DAYS_BACK` (default `7`).
+   - MLB auto-fetches from ESPN public endpoints.
+   - Configure depth with `NCAAB_DAYS_BACK` and `MLB_DAYS_BACK` (default `7`).
 3. Verify API response:
    ```bash
    curl http://localhost:3000/api/free-stats/summary
@@ -134,7 +137,7 @@ Documented data layout:
 - `recentAvgPoints` and `recentAvgYards`
 - `ncaab.last10Momentum`, `ncaab.atsForm`, `ncaab.upsetAlertScore`
 - `ncaab.bubbleWatchTeams`, `ncaab.autoBidWatchTeams`
-- `bestBets` (combined ranking output, including NCAAB teams)
-- `conferences` + `league/conference` filter support
+- `bestBets` (combined ranking output, including NCAAB + MLB teams)
+- `conferences` + `league/conference` filter support (`conference` includes MLB divisions)
 
 Scoring remains bounded heuristics for directional support only, not betting advice.
