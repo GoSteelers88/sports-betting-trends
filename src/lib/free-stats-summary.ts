@@ -417,10 +417,11 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
   const params = calibrateBestBetModel(ncaabRows);
   const bestBets = buildGameLevelBestBets(sorted, completed);
   const topTarget = 5;
+  const todayEt = dayKeyInEt(new Date());
   const bestBetsNote =
     bestBets.length >= topTarget
       ? null
-      : `Only ${bestBets.length} eligible game${bestBets.length === 1 ? "" : "s"} found for today (America/New_York).`;
+      : `Only ${bestBets.length} eligible game${bestBets.length === 1 ? "" : "s"} found on ${todayEt} (America/New_York). Top 5 is not backfilled from other dates.`;
 
   return {
     generatedAt: new Date().toISOString(),
@@ -433,6 +434,8 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     conferences: [...new Set(completed.map((r) => r.conference).filter(Boolean))].sort(),
     bestBets,
     topBestBetsTarget: topTarget,
+    topBestBetsDateEt: todayEt,
+    topBestBetsFallbackUsed: false,
     bestBetsNote,
     bestBetModel: params,
   };

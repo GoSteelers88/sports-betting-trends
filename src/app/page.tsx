@@ -64,6 +64,8 @@ type ApiResponse = {
   conferences: string[];
   bestBets: BestBetGame[];
   topBestBetsTarget?: number;
+  topBestBetsDateEt?: string;
+  topBestBetsFallbackUsed?: boolean;
   bestBetsNote?: string | null;
 };
 
@@ -101,8 +103,9 @@ export default function Home() {
   const leagueOptions = ["ALL", "NBA", "NFL", "NCAAB", "MLB"];
 
   const top5BestBets = useMemo(() => {
-    return (data?.bestBets ?? []).slice(0, 5);
-  }, [data?.bestBets]);
+    const target = data?.topBestBetsTarget ?? 5;
+    return (data?.bestBets ?? []).slice(0, target);
+  }, [data?.bestBets, data?.topBestBetsTarget]);
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -161,9 +164,21 @@ export default function Home() {
             <section className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-950/20 p-4 sm:p-5">
               <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <h2 className="text-lg font-semibold text-emerald-200">Top 5 Game Picks of the Day</h2>
-                <p className="text-xs text-emerald-100/80">Last updated: {generatedAt || "—"}</p>
+                <p className="text-xs text-emerald-100/80">
+                  Date: {data.topBestBetsDateEt ?? "Today"} (America/New_York) · Last updated: {generatedAt || "—"}
+                </p>
               </div>
               <div className="space-y-2">
+                {data.bestBetsNote && (
+                  <div className="rounded-md border border-amber-500/30 bg-amber-950/20 p-3 text-sm text-amber-100">
+                    {data.bestBetsNote}
+                  </div>
+                )}
+                {top5BestBets.length === 0 && (
+                  <div className="rounded-md border border-emerald-500/20 bg-slate-900/80 p-3 text-sm text-slate-300">
+                    No eligible game-level picks found for this date.
+                  </div>
+                )}
                 {top5BestBets.map((item, idx) => (
                   <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md border border-emerald-500/20 bg-slate-900/80 p-3">
                     <p className="text-sm font-semibold text-white">
