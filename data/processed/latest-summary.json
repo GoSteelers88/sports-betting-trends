@@ -1,26 +1,225 @@
-[
-  {
-    "_count": {
-      "_all": 3
+{
+  "generatedAt": "2026-02-14T02:30:07.373Z",
+  "ready": true,
+  "recordsIngested": 27,
+  "leagues": [
+    {
+      "league": "NBA",
+      "games": 3,
+      "conferences": [],
+      "avgPoints": 117.66666666666667,
+      "avgRebounds": 47.333333333333336,
+      "avgAssists": 28,
+      "avgYards": null,
+      "recentAvgPoints": 117.66666666666667,
+      "recentAvgYards": null,
+      "trendScore": 55,
+      "trendSignal": "flat",
+      "confidence": 0.35,
+      "ncaab": null
     },
-    "_avg": {
-      "points": 117.6666666666667,
-      "rebounds": 47.33333333333334,
-      "assists": 28,
-      "yards": null
+    {
+      "league": "NCAAB",
+      "games": 21,
+      "conferences": [
+        "Big East",
+        "SEC",
+        "ACC",
+        "Big Ten",
+        "Big 12",
+        "Mountain West",
+        "AAC"
+      ],
+      "avgPoints": 73.14285714285714,
+      "avgRebounds": 34,
+      "avgAssists": 14.666666666666666,
+      "avgYards": null,
+      "recentAvgPoints": 74.8,
+      "recentAvgYards": null,
+      "trendScore": 63,
+      "trendSignal": "up",
+      "confidence": 1,
+      "ncaab": {
+        "last10Momentum": 0.6,
+        "atsForm": 0.8,
+        "upsetAlertScore": 99,
+        "bubbleWatchTeams": [
+          "Indiana",
+          "Boise State"
+        ],
+        "autoBidWatchTeams": [
+          "UConn",
+          "Auburn",
+          "Duke",
+          "Houston",
+          "Memphis"
+        ]
+      }
     },
-    "league": "NBA"
-  },
-  {
-    "_count": {
-      "_all": 3
+    {
+      "league": "NFL",
+      "games": 3,
+      "conferences": [],
+      "avgPoints": 27.333333333333332,
+      "avgRebounds": null,
+      "avgAssists": null,
+      "avgYards": 382.3333333333333,
+      "recentAvgPoints": 27.333333333333332,
+      "recentAvgYards": 382.3333333333333,
+      "trendScore": 50,
+      "trendSignal": "flat",
+      "confidence": 0.35,
+      "ncaab": null
+    }
+  ],
+  "latestByLeague": [
+    {
+      "league": "NCAAB",
+      "conference": "Big East",
+      "gameDate": "2026-02-13T00:00:00.000Z",
+      "team": "UConn",
+      "opponent": "Marquette",
+      "points": 79,
+      "opponentPoints": 72,
+      "rebounds": 37,
+      "assists": 17,
+      "yards": null,
+      "spread": 1.5,
+      "atsResult": "W",
+      "won": true,
+      "teamRank": 14,
+      "opponentRank": 11,
+      "bubbleStatus": "WORK",
+      "autoBidStatus": "AUTO_BID",
+      "source": "manual-public-boxscore"
     },
-    "_avg": {
-      "points": 27.33333333333333,
+    {
+      "league": "NBA",
+      "conference": null,
+      "gameDate": "2026-01-17T00:00:00.000Z",
+      "team": "DEN",
+      "opponent": "PHX",
+      "points": 124,
+      "opponentPoints": null,
+      "rebounds": 51,
+      "assists": 31,
+      "yards": null,
+      "spread": null,
+      "atsResult": null,
+      "won": null,
+      "teamRank": null,
+      "opponentRank": null,
+      "bubbleStatus": null,
+      "autoBidStatus": null,
+      "source": "Manual export from Basketball-Reference box score"
+    },
+    {
+      "league": "NFL",
+      "conference": null,
+      "gameDate": "2026-01-13T00:00:00.000Z",
+      "team": "KC",
+      "opponent": "CIN",
+      "points": 27,
+      "opponentPoints": null,
       "rebounds": null,
       "assists": null,
-      "yards": 382.3333333333333
+      "yards": 389,
+      "spread": null,
+      "atsResult": null,
+      "won": null,
+      "teamRank": null,
+      "opponentRank": null,
+      "bubbleStatus": null,
+      "autoBidStatus": null,
+      "source": "Manual export from Pro-Football-Reference game finder"
+    }
+  ],
+  "conferences": [
+    "AAC",
+    "ACC",
+    "Big 12",
+    "Big East",
+    "Big Ten",
+    "Mountain West",
+    "SEC"
+  ],
+  "bestBets": [
+    {
+      "league": "NCAAB",
+      "team": "UConn",
+      "conference": "Big East",
+      "score": 79,
+      "last10Momentum": 0.33,
+      "atsForm": 0.67,
+      "upsetAlertScore": 92,
+      "bubbleStatus": "WORK",
+      "autoBidStatus": "AUTO_BID"
     },
-    "league": "NFL"
-  }
-]
+    {
+      "league": "NCAAB",
+      "team": "Indiana",
+      "conference": "Big Ten",
+      "score": 73,
+      "last10Momentum": 0.33,
+      "atsForm": 0.67,
+      "upsetAlertScore": 77,
+      "bubbleStatus": "BUBBLE",
+      "autoBidStatus": "AT_LARGE_TRACK"
+    },
+    {
+      "league": "NCAAB",
+      "team": "Houston",
+      "conference": "Big 12",
+      "score": 71,
+      "last10Momentum": 0.33,
+      "atsForm": 0.67,
+      "upsetAlertScore": 73,
+      "bubbleStatus": "LOCK",
+      "autoBidStatus": "AUTO_BID"
+    },
+    {
+      "league": "NCAAB",
+      "team": "Auburn",
+      "conference": "SEC",
+      "score": 70,
+      "last10Momentum": 0.33,
+      "atsForm": 0.67,
+      "upsetAlertScore": 70,
+      "bubbleStatus": "LOCK",
+      "autoBidStatus": "AUTO_BID"
+    },
+    {
+      "league": "NCAAB",
+      "team": "Boise State",
+      "conference": "Mountain West",
+      "score": 68,
+      "last10Momentum": 0.33,
+      "atsForm": 0.67,
+      "upsetAlertScore": 65,
+      "bubbleStatus": "BUBBLE",
+      "autoBidStatus": "AT_LARGE_TRACK"
+    },
+    {
+      "league": "NCAAB",
+      "team": "Memphis",
+      "conference": "AAC",
+      "score": 62,
+      "last10Momentum": 0.33,
+      "atsForm": 0.67,
+      "upsetAlertScore": 50,
+      "bubbleStatus": "WORK",
+      "autoBidStatus": "AUTO_BID"
+    },
+    {
+      "league": "NCAAB",
+      "team": "Duke",
+      "conference": "ACC",
+      "score": 61,
+      "last10Momentum": 0.33,
+      "atsForm": 0.67,
+      "upsetAlertScore": 48,
+      "bubbleStatus": "LOCK",
+      "autoBidStatus": "AUTO_BID"
+    }
+  ]
+}

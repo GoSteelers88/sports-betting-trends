@@ -66,7 +66,7 @@ npm run dev
 - `GET /api/props?league=ALL&minEdge=4`
 - `GET /api/bankroll`
 - `GET /api/strategy-notes`
-- `GET /api/free-stats/summary` (NBA/NFL ingested free-data summary + trend scoring)
+- `GET /api/free-stats/summary?league=ALL&conference=ALL` (NBA/NFL/NCAAB ingested free-data summary + trend scoring + best bets)
 
 ## Database Schema
 
@@ -89,17 +89,19 @@ SQLite file: `prisma/dev.db`
 - `npm run db:seed`
 - `npm run ingest:free`
 
-## Free stats ingestion starter (NBA + NFL)
+## Free stats ingestion starter (NBA + NFL + NCAAB)
 
 This starter uses only free/publicly available data workflows (no paid API keys, no bypassing auth/paywalls):
 
 - **NBA sample source pattern:** manual CSV exports from public game box scores (e.g., Basketball-Reference)
 - **NFL sample source pattern:** manual JSON exports from public game summaries/game finder pages (e.g., Pro-Football-Reference)
+- **NCAAB sample source pattern:** manual CSV exports from public box score pages + selection committee context tags
 
 Sample files included:
 
 - `data/raw/nba/sample_team_stats.csv`
 - `data/raw/nfl/sample_team_stats.json`
+- `data/raw/ncaab/sample_team_stats.csv`
 
 Documented data layout:
 
@@ -128,5 +130,9 @@ Documented data layout:
 - `trendSignal` (`up`, `flat`, `down`)
 - `confidence` (0.35-1.0 based on sample count)
 - `recentAvgPoints` and `recentAvgYards`
+- `ncaab.last10Momentum`, `ncaab.atsForm`, `ncaab.upsetAlertScore`
+- `ncaab.bubbleWatchTeams`, `ncaab.autoBidWatchTeams`
+- `bestBets` (combined ranking output, including NCAAB teams)
+- `conferences` + `league/conference` filter support
 
-Scoring is a bounded heuristic using latest-game momentum vs league averages, weighted by confidence. This is directional signal support only, not betting advice.
+Scoring remains bounded heuristics for directional support only, not betting advice.

@@ -38,17 +38,28 @@ model StrategyNote {
 }
 
 model FreeStat {
-  id        Int      @id @default(autoincrement())
-  league    String
-  gameDate  DateTime
-  team      String
-  opponent  String
-  points    Int
-  rebounds  Int?
-  assists   Int?
-  yards     Int?
-  source    String
-  createdAt DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  league         String
+  conference     String?
+  gameDate       DateTime
+  team           String
+  opponent       String
+  points         Int
+  opponentPoints Int?
+  rebounds       Int?
+  assists        Int?
+  yards          Int?
+  spread         Float?
+  atsResult      String?
+  won            Boolean?
+  teamRank       Int?
+  opponentRank   Int?
+  bubbleStatus   String?
+  autoBidStatus  String?
+  source         String
+  createdAt      DateTime @default(now())
 
   @@index([league, gameDate])
+  @@index([league, conference])
+  @@index([team, gameDate])
 }
