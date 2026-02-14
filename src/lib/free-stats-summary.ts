@@ -110,6 +110,58 @@ function computeNcaabMetrics(rows: FreeStatLike[]) {
   };
 }
 
+function calibrateBestBetModel(rows: FreeStatLike[]) {
+  const defaults = { momentumWeight: 20, atsWeight: 30, upsetWeight: 0.4, threshold: 62 };
+  const byTeam = rows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
+    if (!acc[row.team]) acc[row.team] = [];
+    acc[row.team].push(row);
+    return acc;
+  }, {});
+
+  let best = { ...defaults, score: -1 };
+
+  for (let momentumWeight = 12; momentumWeight <= 28; momentumWeight += 4) {
+    for (let atsWeight = 18; atsWeight <= 42; atsWeight += 6) {
+      for (let upsetWeight = 0.2; upsetWeight <= 0.6; upsetWeight += 0.1) {
+        for (let threshold = 55; threshold <= 72; threshold += 3) {
+          let wins = 0;
+          let losses = 0;
+          let picks = 0;
+
+          Object.values(byTeam).forEach((teamRows) => {
+            const sorted = [...teamRows].sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
+            for (let i = 3; i < sorted.length; i += 1) {
+              const history = sorted.slice(i, i + 10);
+              const game = sorted[i - 1];
+              if (!history.length || (game.atsResult !== "W" && game.atsResult !== "L")) continue;
+              const metrics = computeNcaabMetrics(history);
+              const score = 50 + (metrics.last10Momentum ?? 0) * momentumWeight + ((metrics.atsForm ?? 0.5) - 0.5) * atsWeight + (metrics.upsetAlertScore - 50) * upsetWeight;
+              if (score < threshold) continue;
+
+              picks += 1;
+              if (game.atsResult === "W") wins += 1;
+              else losses += 1;
+            }
+          });
+
+          if (picks < 20) continue;
+          const hitRate = wins / Math.max(1, wins + losses);
+          const objective = hitRate - Math.max(0, 40 - picks) * 0.001;
+          if (objective > best.score) best = { momentumWeight, atsWeight, upsetWeight: Number(upsetWeight.toFixed(2)), threshold, score: objective };
+        }
+      }
+    }
+  }
+
+  return {
+    momentumWeight: best.momentumWeight,
+    atsWeight: best.atsWeight,
+    upsetWeight: best.upsetWeight,
+    threshold: best.threshold,
+    calibrated: best.score >= 0,
+  };
+}
+
 export function buildFreeStatsSummary(rows: FreeStatLike[]) {
   const sorted = [...rows].sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
   const byLeague = groupByLeague(sorted);
@@ -145,6 +197,7 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     .sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
 
   const ncaabRows = sorted.filter((r) => r.league === "NCAAB");
+  const params = calibrateBestBetModel(ncaabRows);
   const byTeam = ncaabRows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
     if (!acc[row.team]) acc[row.team] = [];
     if (acc[row.team].length < 10) acc[row.team].push(row);
@@ -156,7 +209,10 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
       const metrics = computeNcaabMetrics(teamRows);
       const score = Math.round(
         clamp(
-          50 + (metrics.last10Momentum ?? 0) * 20 + ((metrics.atsForm ?? 0.5) - 0.5) * 30 + (metrics.upsetAlertScore - 50) * 0.4,
+          50 +
+            (metrics.last10Momentum ?? 0) * params.momentumWeight +
+            ((metrics.atsForm ?? 0.5) - 0.5) * params.atsWeight +
+            (metrics.upsetAlertScore - 50) * params.upsetWeight,
           1,
           99,
         ),
@@ -174,6 +230,7 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
         autoBidStatus: teamRows[0]?.autoBidStatus ?? null,
       };
     })
+    .filter((b) => b.score >= params.threshold)
     .sort((a, b) => b.score - a.score)
     .slice(0, 10);
 
@@ -185,5 +242,6 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     latestByLeague,
     conferences: [...new Set(ncaabRows.map((r) => r.conference).filter(Boolean))].sort(),
     bestBets,
+    bestBetModel: params,
   };
 }

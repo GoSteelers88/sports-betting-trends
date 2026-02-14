@@ -95,7 +95,7 @@ This starter uses only free/publicly available data workflows (no paid API keys,
 
 - **NBA sample source pattern:** manual CSV exports from public game box scores (e.g., Basketball-Reference)
 - **NFL sample source pattern:** manual JSON exports from public game summaries/game finder pages (e.g., Pro-Football-Reference)
-- **NCAAB sample source pattern:** manual CSV exports from public box score pages + selection committee context tags
+- **NCAAB live source:** ESPN public scoreboard + game summary endpoints (repeatable scripted ingest with manual CSV fallback)
 
 Sample files included:
 
@@ -109,13 +109,15 @@ Documented data layout:
 - `data/processed/` for derived outputs (e.g., generated summaries)
 - See `data/README.md` for details
 
-### Manual refresh steps
+### Refresh steps
 
-1. Replace sample files in `data/raw/nba` and/or `data/raw/nfl` with your latest manual exports.
+1. (Optional) Replace sample files in `data/raw/nba` and/or `data/raw/nfl` with your latest manual exports.
 2. Run:
    ```bash
    npm run ingest:free
    ```
+   - NCAAB auto-fetches from ESPN public endpoints.
+   - Configure depth with `NCAAB_DAYS_BACK` (default `7`).
 3. Verify API response:
    ```bash
    curl http://localhost:3000/api/free-stats/summary

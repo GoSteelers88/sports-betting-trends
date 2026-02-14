@@ -8,8 +8,10 @@
 
 ## Workflow
 
-1. Drop fresh free/public exports in `data/raw/nba`, `data/raw/nfl`, and `data/raw/ncaab`.
+1. Drop fresh free/public exports in `data/raw/nba` and `data/raw/nfl`.
 2. Run `npm run ingest:free` to load into SQLite via Prisma.
+   - NCAAB is pulled from ESPN public APIs each run (with CSV fallback if feed fails).
+   - Optional: set `NCAAB_DAYS_BACK` to control lookback window.
 3. Use `/api/free-stats/summary?league=ALL&conference=ALL` for filtered summaries.
 4. Generated snapshot is written to `data/processed/latest-summary.json`.
 
