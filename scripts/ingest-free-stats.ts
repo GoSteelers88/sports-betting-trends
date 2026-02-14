@@ -546,7 +546,12 @@ async function main() {
     gameDate: new Date(r.gameDate),
   }));
 
-  const summary = buildFreeStatsSummary(mapped);
+  const oddsPath = path.join(root, "data", "processed", "latest-odds-api.json");
+  const oddsPayload = fs.existsSync(oddsPath)
+    ? (JSON.parse(fs.readFileSync(oddsPath, "utf8")) as { events?: unknown[] })
+    : null;
+
+  const summary = buildFreeStatsSummary(mapped, { oddsEvents: (oddsPayload?.events as never[] | undefined) ?? [] });
   const processedPath = path.join(root, "data", "processed", "latest-summary.json");
   fs.writeFileSync(processedPath, JSON.stringify(summary, null, 2));
 

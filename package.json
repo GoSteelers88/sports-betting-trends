@@ -11,8 +11,9 @@
     "prisma:migrate": "prisma migrate dev --name init",
     "db:seed": "prisma db seed",
     "ingest:free": "tsx scripts/ingest-free-stats.ts",
+    "ingest:odds": "tsx scripts/ingest-odds-api.ts",
     "validate:latest-games": "tsx scripts/validate-latest-games.ts",
-    "qa:data": "npm run ingest:free && npm run validate:latest-games && npm run lint && npm run build"
+    "qa:data": "npm run ingest:free && npm run validate:latest-games && npm run ingest:odds && npm run lint && npm run build"
   },
   "dependencies": {
     "lucide-react": "^0.563.0",

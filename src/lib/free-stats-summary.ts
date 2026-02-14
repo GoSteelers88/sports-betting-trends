@@ -173,6 +173,19 @@ type BestBetGame = {
   atsEdge: number | null;
 };
 
+type OddsEventLike = {
+  id?: string;
+  commence_time?: string;
+  home_team?: string;
+  away_team?: string;
+  bookmakers?: Array<{
+    markets?: Array<{
+      key?: string;
+      outcomes?: Array<{ name?: string; point?: number }>;
+    }>;
+  }>;
+};
+
 function dayKeyInEt(date: Date) {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
@@ -313,6 +326,135 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
     .slice(0, 20);
 }
 
+function spreadForTeamFromOdds(event: OddsEventLike, team: string) {
+  const points = (event.bookmakers ?? [])
+    .flatMap((b) => b.markets ?? [])
+    .filter((m) => m.key === "spreads")
+    .flatMap((m) => m.outcomes ?? [])
+    .filter((o) => o.name === team)
+    .map((o) => o.point)
+    .filter((p): p is number => typeof p === "number" && Number.isFinite(p));
+
+  if (!points.length) return null;
+  return Number((points.reduce((sum, p) => sum + p, 0) / points.length).toFixed(1));
+}
+
+function normalizeTeamName(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/\buniversity\b/g, "")
+    .replace(/\bstate\b/g, "st")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function resolveHistoryForOddsTeam(oddsTeam: string, historyByTeam: Record<string, FreeStatLike[]>) {
+  const entries = Object.entries(historyByTeam);
+  const normalizedOdds = normalizeTeamName(oddsTeam);
+
+  const exact = entries.find(([team]) => normalizeTeamName(team) === normalizedOdds);
+  if (exact) return exact;
+
+  const containment = entries.find(([team]) => {
+    const t = normalizeTeamName(team);
+    return normalizedOdds.includes(t) || t.includes(normalizedOdds);
+  });
+  if (containment) return containment;
+
+  const byTokenOverlap = entries
+    .map(([team, rows]) => {
+      const tokensA = new Set(normalizedOdds.split(" ").filter(Boolean));
+      const tokensB = new Set(normalizeTeamName(team).split(" ").filter(Boolean));
+      const overlap = [...tokensA].filter((token) => tokensB.has(token)).length;
+      return { team, rows, overlap };
+    })
+    .sort((a, b) => b.overlap - a.overlap)[0];
+
+  if (!byTokenOverlap || byTokenOverlap.overlap === 0) return [oddsTeam, []] as const;
+  return [byTokenOverlap.team, byTokenOverlap.rows] as const;
+}
+
+function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsEventLike[]) {
+  const ncaabCompleted = completedRows.filter((r) => r.league === "NCAAB");
+  if (!ncaabCompleted.length || !oddsEvents.length) return [] as BestBetGame[];
+
+  const todayEt = dayKeyInEt(new Date());
+  const historyByTeam = ncaabCompleted.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
+    if (!acc[row.team]) acc[row.team] = [];
+    acc[row.team].push(row);
+    return acc;
+  }, {});
+
+  Object.values(historyByTeam).forEach((rows) => rows.sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime()));
+
+  const gamesToday = oddsEvents.filter((event) => {
+    if (!event.home_team || !event.away_team || !event.commence_time) return false;
+    return dayKeyInEt(new Date(event.commence_time)) === todayEt;
+  });
+
+  return gamesToday
+    .map((event) => {
+      const home = event.home_team!;
+      const away = event.away_team!;
+
+      const [resolvedHome, homeHistory] = resolveHistoryForOddsTeam(home, historyByTeam);
+      const [resolvedAway, awayHistory] = resolveHistoryForOddsTeam(away, historyByTeam);
+
+      const homeForm = computeTeamForm("NCAAB", homeHistory.slice(0, 10));
+      const awayForm = computeTeamForm("NCAAB", awayHistory.slice(0, 10));
+
+      const homeEdge =
+        homeForm.momentum * 22 + ((homeForm.atsForm ?? 0.5) - 0.5) * 26 + (homeForm.upsetProxy - awayForm.upsetProxy) * 0.3;
+      const awayEdge =
+        awayForm.momentum * 22 + ((awayForm.atsForm ?? 0.5) - 0.5) * 26 + (awayForm.upsetProxy - homeForm.upsetProxy) * 0.3;
+
+      const pickHome = homeEdge >= awayEdge;
+      const pickTeam = pickHome ? home : away;
+      const opponent = pickHome ? away : home;
+      const pickForm = pickHome ? homeForm : awayForm;
+      const oppForm = pickHome ? awayForm : homeForm;
+
+      const momentumEdge = Number((pickForm.momentum - oppForm.momentum).toFixed(2));
+      const atsEdge =
+        pickForm.atsForm == null || oppForm.atsForm == null
+          ? null
+          : Number((pickForm.atsForm - oppForm.atsForm).toFixed(2));
+
+      const modelEdge = pickHome ? homeEdge : awayEdge;
+      const score = Math.round(clamp(52 + modelEdge * 0.32, 1, 99));
+      const confidence = Number((clamp(0.45 + Math.abs(score - 50) / 95, 0.35, 0.9) * 100).toFixed(0));
+
+      const spread = spreadForTeamFromOdds(event, pickTeam);
+      const line = spread == null ? null : `${pickTeam} ${spread > 0 ? "+" : ""}${spread}`;
+
+      const pickHistoryCount = pickTeam === home ? homeHistory.length : awayHistory.length;
+      const oppHistoryCount = opponent === home ? homeHistory.length : awayHistory.length;
+
+      return {
+        league: "NCAAB",
+        conference: null,
+        gameDate: new Date(event.commence_time!),
+        matchup: `${away} at ${home}`,
+        pickTeam,
+        opponent,
+        spread,
+        line,
+        score,
+        confidence,
+        rationaleSignals: [
+          `Momentum edge ${momentumEdge >= 0 ? "+" : ""}${momentumEdge.toFixed(2)} (last-10 trend proxy)`,
+          atsEdge == null ? "ATS edge unavailable (limited ATS sample)" : `ATS edge ${atsEdge >= 0 ? "+" : ""}${atsEdge.toFixed(2)}`,
+          `History sample ${pickTeam}: ${pickHistoryCount} games (mapped ${pickTeam === home ? resolvedHome : resolvedAway}) vs ${opponent}: ${oppHistoryCount} games`,
+        ],
+        momentumEdge,
+        atsEdge,
+      } as BestBetGame;
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 20);
+}
+
 function calibrateBestBetModel(rows: FreeStatLike[]) {
   const defaults = { momentumWeight: 20, atsWeight: 30, upsetWeight: 0.4, threshold: 62 };
   const byTeam = rows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
@@ -370,7 +512,7 @@ function calibrateBestBetModel(rows: FreeStatLike[]) {
   };
 }
 
-export function buildFreeStatsSummary(rows: FreeStatLike[]) {
+export function buildFreeStatsSummary(rows: FreeStatLike[], options?: { oddsEvents?: OddsEventLike[] }) {
   const sorted = [...rows].sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
   const nowMs = Date.now();
   const completed = sorted.filter((row) => isCompletedGame(row, nowMs));
@@ -415,7 +557,8 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
 
   const ncaabRows = completed.filter((r) => r.league === "NCAAB");
   const params = calibrateBestBetModel(ncaabRows);
-  const bestBets = buildGameLevelBestBets(sorted, completed);
+  const oddsBasedBets = buildNcaabOddsBestBets(completed, options?.oddsEvents ?? []);
+  const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed);
   const topTarget = 5;
   const todayEt = dayKeyInEt(new Date());
   const bestBetsNote =

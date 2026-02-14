@@ -109,7 +109,17 @@ export async function GET(req: NextRequest) {
     }
 
     const rows: FreeStatLike[] = all.map((r) => ({ ...r }));
-    const summary = buildFreeStatsSummary(rows);
+    const oddsPath = path.join(process.cwd(), "data", "processed", "latest-odds-api.json");
+    let oddsEvents: unknown[] = [];
+    try {
+      const oddsRaw = await readFile(oddsPath, "utf-8");
+      const parsed = JSON.parse(oddsRaw) as { events?: unknown[] };
+      oddsEvents = parsed.events ?? [];
+    } catch {
+      oddsEvents = [];
+    }
+
+    const summary = buildFreeStatsSummary(rows, { oddsEvents: oddsEvents as never[] });
 
     const conferenceUniverse = await prisma.freeStat.findMany({
       where: {
