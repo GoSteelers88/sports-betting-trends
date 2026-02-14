@@ -71,6 +71,17 @@ function groupByLeague(rows: FreeStatLike[]) {
   }, {});
 }
 
+function isCompletedGame(row: FreeStatLike, nowMs: number) {
+  const gameMs = row.gameDate.getTime();
+  if (gameMs > nowMs) return false;
+
+  const hasOutcome = row.won != null || row.atsResult === "W" || row.atsResult === "L" || row.atsResult === "P";
+  const hasSupportingStats = row.opponentPoints != null || row.yards != null || row.rebounds != null || row.assists != null;
+  const hasScoring = Number.isFinite(row.points) && row.points > 0;
+
+  return hasOutcome || hasSupportingStats || hasScoring;
+}
+
 function computeNcaabMetrics(rows: FreeStatLike[]) {
   const last10 = rows.slice(0, 10);
   const wins = last10.filter((r) => r.won === true).length;
@@ -182,7 +193,9 @@ function calibrateBestBetModel(rows: FreeStatLike[]) {
 
 export function buildFreeStatsSummary(rows: FreeStatLike[]) {
   const sorted = [...rows].sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
-  const byLeague = groupByLeague(sorted);
+  const nowMs = Date.now();
+  const completed = sorted.filter((row) => isCompletedGame(row, nowMs));
+  const byLeague = groupByLeague(completed);
 
   const leagues = Object.entries(byLeague)
     .map(([league, leagueRows]) => {
@@ -214,8 +227,8 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     .filter(Boolean)
     .sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
 
-  const ncaabRows = sorted.filter((r) => r.league === "NCAAB");
-  const mlbRows = sorted.filter((r) => r.league === "MLB");
+  const ncaabRows = completed.filter((r) => r.league === "NCAAB");
+  const mlbRows = completed.filter((r) => r.league === "MLB");
   const params = calibrateBestBetModel(ncaabRows);
 
   const ncaabByTeam = ncaabRows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
@@ -289,7 +302,7 @@ export function buildFreeStatsSummary(rows: FreeStatLike[]) {
     recordsIngested: sorted.length,
     leagues,
     latestByLeague,
-    conferences: [...new Set(sorted.map((r) => r.conference).filter(Boolean))].sort(),
+    conferences: [...new Set(completed.map((r) => r.conference).filter(Boolean))].sort(),
     bestBets: [...topOther, ...topMlb].sort((a, b) => b.score - a.score).slice(0, 12),
     bestBetModel: params,
   };
