@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-02-16T10:02:30.436Z",
-  "summaryGeneratedAt": "2026-02-16T10:02:01.898Z",
+  "generatedAt": "2026-02-17T23:29:09.726Z",
+  "summaryGeneratedAt": "2026-02-17T23:28:38.664Z",
   "pass": true,
   "failures": [],
   "checks": [
     {
       "league": "NCAAB",
-      "gameDate": "2026-02-16T00:00:00.000Z",
-      "team": "Monmouth",
-      "opponent": "Towson",
+      "gameDate": "2026-02-17T00:00:00.000Z",
+      "team": "Iowa State",
+      "opponent": "Houston",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed",
       "source": "espn-public-api",
@@ -16,12 +16,22 @@
     },
     {
       "league": "NBA",
-      "gameDate": "2026-01-17T00:00:00.000Z",
-      "team": "DEN",
-      "opponent": "PHX",
-      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
-      "completionEvidence": "manual-boxscore-export",
-      "source": "Manual export from Basketball-Reference box score",
+      "gameDate": "2026-02-16T00:00:00.000Z",
+      "team": "Team Stripes",
+      "opponent": "Team Stars",
+      "gameStatus": "Final",
+      "completionEvidence": "espn-status-completed",
+      "source": "espn-public-api",
+      "basicPass": true
+    },
+    {
+      "league": "NFL",
+      "gameDate": "2026-02-08T00:00:00.000Z",
+      "team": "NE",
+      "opponent": "SEA",
+      "gameStatus": "Final",
+      "completionEvidence": "espn-status-completed",
+      "source": "espn-public-api",
       "basicPass": true
     },
     {
@@ -32,16 +42,6 @@
       "gameStatus": "MANUAL_FINAL_UNVERIFIED",
       "completionEvidence": "scored-game",
       "source": "Manual export from public MLB game box score",
-      "basicPass": true
-    },
-    {
-      "league": "NFL",
-      "gameDate": "2026-01-13T00:00:00.000Z",
-      "team": "KC",
-      "opponent": "CIN",
-      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
-      "completionEvidence": "manual-game-finder-export",
-      "source": "Manual export from Pro-Football-Reference game finder",
       "basicPass": true
     },
     {
