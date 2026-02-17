@@ -10,10 +10,12 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "db:seed": "prisma db seed",
+    "ingest:context": "tsx scripts/ingest-context.ts",
     "ingest:free": "tsx scripts/ingest-free-stats.ts",
     "ingest:odds": "tsx scripts/ingest-odds-api.ts",
+    "ingest:all": "npm run ingest:context && npm run ingest:odds && npm run ingest:free",
     "validate:latest-games": "tsx scripts/validate-latest-games.ts",
-    "qa:data": "npm run ingest:free && npm run validate:latest-games && npm run ingest:odds && npm run lint && npm run build"
+    "qa:data": "npm run ingest:all && npm run validate:latest-games && npm run lint && npm run build"
   },
   "dependencies": {
     "lucide-react": "^0.563.0",

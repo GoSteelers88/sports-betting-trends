@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { buildFreeStatsSummary, type FreeStatLike } from "@/lib/free-stats-summary";
+import { buildFreeStatsSummary, type FreeStatLike, type InjuryEntry } from "@/lib/free-stats-summary";
+import type { StandingsEntry } from "@/lib/advanced-metrics";
 
 type SummaryShape = {
   leagues?: Array<{ league?: string }>;
@@ -20,6 +21,15 @@ async function readProcessedFallback() {
     ...parsed,
     source: "processed-fallback",
   };
+}
+
+async function loadJsonFile<T>(filePath: string): Promise<T | null> {
+  try {
+    const raw = await readFile(filePath, "utf-8");
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
 }
 
 function applyFiltersToSummary(summary: SummaryShape, league?: string, conference?: string) {
@@ -100,6 +110,31 @@ export async function GET(req: NextRequest) {
         sourceEventId: true,
         gameStatus: true,
         completionEvidence: true,
+        // New box score fields
+        fgm: true,
+        fga: true,
+        threepm: true,
+        threepa: true,
+        ftm: true,
+        fta: true,
+        offRebounds: true,
+        defRebounds: true,
+        steals: true,
+        blocks: true,
+        turnovers: true,
+        passingYards: true,
+        rushingYards: true,
+        opponentYards: true,
+        turnoversFor: true,
+        turnoversAgainst: true,
+        thirdDownConv: true,
+        thirdDownAtt: true,
+        redZoneConv: true,
+        redZoneAtt: true,
+        timeOfPossession: true,
+        homeAway: true,
+        hits: true,
+        errors: true,
       },
     });
 
@@ -109,6 +144,8 @@ export async function GET(req: NextRequest) {
     }
 
     const rows: FreeStatLike[] = all.map((r) => ({ ...r }));
+
+    // Load odds
     const oddsPath = path.join(process.cwd(), "data", "processed", "latest-odds-api.json");
     let oddsEvents: unknown[] = [];
     try {
@@ -119,7 +156,26 @@ export async function GET(req: NextRequest) {
       oddsEvents = [];
     }
 
-    const summary = buildFreeStatsSummary(rows, { oddsEvents: oddsEvents as never[] });
+    // Load standings
+    const processedDir = path.join(process.cwd(), "data", "processed");
+    const standingsMap: Record<string, StandingsEntry[]> = {};
+    for (const key of ["nba", "nfl", "mlb", "ncaab"]) {
+      const data = await loadJsonFile<StandingsEntry[]>(path.join(processedDir, `standings-${key}.json`));
+      if (data) standingsMap[key] = data;
+    }
+
+    // Load injuries
+    const injuriesMap: Record<string, InjuryEntry[]> = {};
+    for (const key of ["nba", "nfl"]) {
+      const data = await loadJsonFile<InjuryEntry[]>(path.join(processedDir, `injuries-${key}.json`));
+      if (data) injuriesMap[key] = data;
+    }
+
+    const summary = buildFreeStatsSummary(rows, {
+      oddsEvents: oddsEvents as never[],
+      standings: standingsMap,
+      injuries: injuriesMap,
+    });
 
     const conferenceUniverse = await prisma.freeStat.findMany({
       where: {

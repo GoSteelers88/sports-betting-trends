@@ -1,3 +1,14 @@
+import {
+  computeBasketballAdvanced,
+  computeFootballAdvanced,
+  computeBaseballAdvanced,
+  type StandingsEntry,
+  type BoxScoreRow,
+  type BasketballAdvanced,
+  type FootballAdvanced,
+  type BaseballAdvanced,
+} from "./advanced-metrics";
+
 export type FreeStatLike = {
   league: string;
   conference: string | null;
@@ -20,6 +31,42 @@ export type FreeStatLike = {
   sourceEventId?: string | null;
   gameStatus?: string | null;
   completionEvidence?: string | null;
+  // Box score (basketball)
+  fgm?: number | null;
+  fga?: number | null;
+  threepm?: number | null;
+  threepa?: number | null;
+  ftm?: number | null;
+  fta?: number | null;
+  offRebounds?: number | null;
+  defRebounds?: number | null;
+  steals?: number | null;
+  blocks?: number | null;
+  turnovers?: number | null;
+  // NFL box score
+  passingYards?: number | null;
+  rushingYards?: number | null;
+  opponentYards?: number | null;
+  turnoversFor?: number | null;
+  turnoversAgainst?: number | null;
+  thirdDownConv?: number | null;
+  thirdDownAtt?: number | null;
+  redZoneConv?: number | null;
+  redZoneAtt?: number | null;
+  timeOfPossession?: number | null;
+  // Universal
+  homeAway?: string | null;
+  hits?: number | null;
+  errors?: number | null;
+};
+
+export type InjuryEntry = {
+  player: string;
+  team: string;
+  position: string;
+  status: string;
+  injuryType: string;
+  returnDate: string;
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -70,6 +117,14 @@ function groupByLeague(rows: FreeStatLike[]) {
   return rows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
     if (!acc[row.league]) acc[row.league] = [];
     acc[row.league].push(row);
+    return acc;
+  }, {});
+}
+
+function groupByTeam(rows: FreeStatLike[]) {
+  return rows.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
+    if (!acc[row.team]) acc[row.team] = [];
+    acc[row.team].push(row);
     return acc;
   }, {});
 }
@@ -155,6 +210,9 @@ type TeamForm = {
   momentum: number;
   atsForm: number | null;
   upsetProxy: number;
+  netRating: number | null;
+  sos: number | null;
+  turnoverMargin: number | null;
 };
 
 type BestBetGame = {
@@ -175,6 +233,7 @@ type BestBetGame = {
 
 type OddsEventLike = {
   id?: string;
+  sport_key?: string;
   commence_time?: string;
   home_team?: string;
   away_team?: string;
@@ -202,12 +261,51 @@ function gameKey(row: FreeStatLike) {
   return `${row.league}|${dayKeyInEt(row.gameDate)}|${a}|${b}|${event}`;
 }
 
-function computeTeamForm(league: string, rows: FreeStatLike[]): TeamForm {
-  if (!rows.length) return { momentum: 0, atsForm: null, upsetProxy: 50 };
+function toBoxScoreRow(r: FreeStatLike): BoxScoreRow {
+  return {
+    team: r.team,
+    opponent: r.opponent,
+    points: r.points,
+    opponentPoints: r.opponentPoints ?? null,
+    fgm: r.fgm ?? null,
+    fga: r.fga ?? null,
+    threepm: r.threepm ?? null,
+    threepa: r.threepa ?? null,
+    ftm: r.ftm ?? null,
+    fta: r.fta ?? null,
+    offRebounds: r.offRebounds ?? null,
+    defRebounds: r.defRebounds ?? null,
+    turnovers: r.turnovers ?? null,
+    passingYards: r.passingYards ?? null,
+    rushingYards: r.rushingYards ?? null,
+    opponentYards: r.opponentYards ?? null,
+    turnoversFor: r.turnoversFor ?? null,
+    turnoversAgainst: r.turnoversAgainst ?? null,
+    thirdDownConv: r.thirdDownConv ?? null,
+    thirdDownAtt: r.thirdDownAtt ?? null,
+    redZoneConv: r.redZoneConv ?? null,
+    redZoneAtt: r.redZoneAtt ?? null,
+    timeOfPossession: r.timeOfPossession ?? null,
+    hits: r.hits ?? null,
+    errors: r.errors ?? null,
+  };
+}
+
+function computeTeamForm(league: string, rows: FreeStatLike[], standings?: StandingsEntry[]): TeamForm {
+  if (!rows.length) return { momentum: 0, atsForm: null, upsetProxy: 50, netRating: null, sos: null, turnoverMargin: null };
 
   if (league === "NCAAB") {
     const m = computeNcaabMetrics(rows);
-    return { momentum: m.last10Momentum ?? 0, atsForm: m.atsForm, upsetProxy: m.upsetAlertScore };
+    const boxRows = rows.map(toBoxScoreRow);
+    const adv = computeBasketballAdvanced(boxRows, standings ?? []);
+    return {
+      momentum: m.last10Momentum ?? 0,
+      atsForm: m.atsForm,
+      upsetProxy: m.upsetAlertScore,
+      netRating: adv.netRating,
+      sos: adv.sos,
+      turnoverMargin: null,
+    };
   }
 
   const last10 = rows.slice(0, 10);
@@ -222,10 +320,30 @@ function computeTeamForm(league: string, rows: FreeStatLike[]): TeamForm {
   const margin = avg(last10.map((r) => (r.opponentPoints == null ? null : r.points - r.opponentPoints))) ?? 0;
   const upsetProxy = Math.round(clamp(50 + margin * 7 + ((atsForm ?? 0.5) - 0.5) * 25, 1, 99));
 
-  return { momentum, atsForm, upsetProxy };
+  const boxRows = last10.map(toBoxScoreRow);
+  let netRating: number | null = null;
+  let sos: number | null = null;
+  let turnoverMargin: number | null = null;
+
+  if (league === "NBA") {
+    const adv = computeBasketballAdvanced(boxRows, standings ?? []);
+    netRating = adv.netRating;
+    sos = adv.sos;
+  } else if (league === "NFL") {
+    const adv = computeFootballAdvanced(boxRows, standings ?? []);
+    netRating = adv.ppg != null && adv.oppPpg != null ? Math.round((adv.ppg - adv.oppPpg) * 100) / 100 : null;
+    sos = adv.sos;
+    turnoverMargin = adv.turnoverMargin;
+  } else if (league === "MLB") {
+    const adv = computeBaseballAdvanced(boxRows, standings ?? []);
+    netRating = adv.rpg != null && adv.oppRpg != null ? Math.round((adv.rpg - adv.oppRpg) * 100) / 100 : null;
+    sos = adv.sos;
+  }
+
+  return { momentum, atsForm, upsetProxy, netRating, sos, turnoverMargin };
 }
 
-function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStatLike[]) {
+function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStatLike[], standings?: Record<string, StandingsEntry[]>) {
   if (!allRows.length) return [] as BestBetGame[];
 
   const todayEt = dayKeyInEt(new Date());
@@ -259,6 +377,7 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
       if (!primary) return null;
 
       const other = sides.find((s) => s.team === primary.opponent) ?? sides[1] ?? null;
+      const leagueStandings = standings?.[primary.league.toLowerCase()] ?? standings?.[primary.league] ?? [];
       const pickHistory = (historyByTeam[`${primary.league}|${primary.team}`] ?? []).filter(
         (r) => r.gameDate.getTime() < primary.gameDate.getTime(),
       );
@@ -266,15 +385,31 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
         ? (historyByTeam[`${other.league}|${other.team}`] ?? []).filter((r) => r.gameDate.getTime() < primary.gameDate.getTime())
         : [];
 
-      const aForm = computeTeamForm(primary.league, pickHistory.slice(0, 10));
-      const bForm = computeTeamForm(primary.league, oppHistory.slice(0, 10));
+      const aForm = computeTeamForm(primary.league, pickHistory.slice(0, 10), leagueStandings);
+      const bForm = computeTeamForm(primary.league, oppHistory.slice(0, 10), leagueStandings);
 
       let pick = primary;
       let pickForm = aForm;
       let oppForm = bForm;
 
-      const edgeAB = aForm.momentum * 22 + ((aForm.atsForm ?? 0.5) - 0.5) * 26 + (aForm.upsetProxy - bForm.upsetProxy) * 0.3;
-      const edgeBA = bForm.momentum * 22 + ((bForm.atsForm ?? 0.5) - 0.5) * 26 + (bForm.upsetProxy - aForm.upsetProxy) * 0.3;
+      // Enhanced edge calculation with net rating and SOS
+      const netRatingBonus = (form: TeamForm, oppF: TeamForm) => {
+        if (form.netRating != null && oppF.netRating != null) return (form.netRating - oppF.netRating) * 0.5;
+        return 0;
+      };
+      const sosBonus = (form: TeamForm, oppF: TeamForm) => {
+        if (form.sos != null && oppF.sos != null) return (form.sos - oppF.sos) * 15;
+        return 0;
+      };
+      const toMarginBonus = (form: TeamForm, oppF: TeamForm) => {
+        if (form.turnoverMargin != null && oppF.turnoverMargin != null) return (form.turnoverMargin - oppF.turnoverMargin) * 8;
+        return 0;
+      };
+
+      const edgeAB = aForm.momentum * 22 + ((aForm.atsForm ?? 0.5) - 0.5) * 26 + (aForm.upsetProxy - bForm.upsetProxy) * 0.3
+        + netRatingBonus(aForm, bForm) + sosBonus(aForm, bForm) + toMarginBonus(aForm, bForm);
+      const edgeBA = bForm.momentum * 22 + ((bForm.atsForm ?? 0.5) - 0.5) * 26 + (bForm.upsetProxy - aForm.upsetProxy) * 0.3
+        + netRatingBonus(bForm, aForm) + sosBonus(bForm, aForm) + toMarginBonus(bForm, aForm);
 
       if (other && edgeBA > edgeAB) {
         pick = other;
@@ -292,7 +427,10 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
         56 +
         momentumEdge * 24 +
         ((pickForm.atsForm ?? 0.5) - (oppForm.atsForm ?? 0.5)) * 28 +
-        (pickForm.upsetProxy - oppForm.upsetProxy) * 0.35;
+        (pickForm.upsetProxy - oppForm.upsetProxy) * 0.35 +
+        netRatingBonus(pickForm, oppForm) +
+        sosBonus(pickForm, oppForm) +
+        toMarginBonus(pickForm, oppForm);
       const score = Math.round(clamp(rawScore, 1, 99));
       const confidence = Number((clamp(0.45 + Math.abs(score - 50) / 70, 0.35, 0.95) * 100).toFixed(0));
 
@@ -301,6 +439,19 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
         atsEdge == null ? "ATS edge unavailable (insufficient ATS history)" : `ATS edge ${atsEdge >= 0 ? "+" : ""}${atsEdge.toFixed(2)}`,
         `Model edge ${(pickForm.upsetProxy - oppForm.upsetProxy) >= 0 ? "+" : ""}${(pickForm.upsetProxy - oppForm.upsetProxy).toFixed(1)} (context signal)`,
       ];
+
+      // Add advanced metric signals
+      if (pickForm.netRating != null && oppForm.netRating != null) {
+        const diff = pickForm.netRating - oppForm.netRating;
+        rationaleSignals.push(`Net Rating edge: ${diff >= 0 ? "+" : ""}${diff.toFixed(1)}`);
+      }
+      if (pickForm.sos != null && oppForm.sos != null) {
+        rationaleSignals.push(`SOS: ${pickForm.sos.toFixed(3)} vs ${oppForm.sos.toFixed(3)}`);
+      }
+      if (pickForm.turnoverMargin != null && oppForm.turnoverMargin != null) {
+        const diff = pickForm.turnoverMargin - oppForm.turnoverMargin;
+        rationaleSignals.push(`TO Margin edge: ${diff >= 0 ? "+" : ""}${diff.toFixed(2)}`);
+      }
 
       const spread = pick.spread ?? null;
       const line = spread == null ? null : `${pick.team} ${spread > 0 ? "+" : ""}${spread}`;
@@ -375,11 +526,12 @@ function resolveHistoryForOddsTeam(oddsTeam: string, historyByTeam: Record<strin
   return [byTokenOverlap.team, byTokenOverlap.rows] as const;
 }
 
-function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsEventLike[]) {
+function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>) {
   const ncaabCompleted = completedRows.filter((r) => r.league === "NCAAB");
   if (!ncaabCompleted.length || !oddsEvents.length) return [] as BestBetGame[];
 
   const todayEt = dayKeyInEt(new Date());
+  const leagueStandings = standings?.ncaab ?? [];
   const historyByTeam = ncaabCompleted.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
     if (!acc[row.team]) acc[row.team] = [];
     acc[row.team].push(row);
@@ -401,13 +553,24 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
       const [resolvedHome, homeHistory] = resolveHistoryForOddsTeam(home, historyByTeam);
       const [resolvedAway, awayHistory] = resolveHistoryForOddsTeam(away, historyByTeam);
 
-      const homeForm = computeTeamForm("NCAAB", homeHistory.slice(0, 10));
-      const awayForm = computeTeamForm("NCAAB", awayHistory.slice(0, 10));
+      const homeForm = computeTeamForm("NCAAB", homeHistory.slice(0, 10), leagueStandings);
+      const awayForm = computeTeamForm("NCAAB", awayHistory.slice(0, 10), leagueStandings);
+
+      const netRatingBonus = (form: TeamForm, oppF: TeamForm) => {
+        if (form.netRating != null && oppF.netRating != null) return (form.netRating - oppF.netRating) * 0.5;
+        return 0;
+      };
+      const sosBonus = (form: TeamForm, oppF: TeamForm) => {
+        if (form.sos != null && oppF.sos != null) return (form.sos - oppF.sos) * 15;
+        return 0;
+      };
 
       const homeEdge =
-        homeForm.momentum * 22 + ((homeForm.atsForm ?? 0.5) - 0.5) * 26 + (homeForm.upsetProxy - awayForm.upsetProxy) * 0.3;
+        homeForm.momentum * 22 + ((homeForm.atsForm ?? 0.5) - 0.5) * 26 + (homeForm.upsetProxy - awayForm.upsetProxy) * 0.3
+        + netRatingBonus(homeForm, awayForm) + sosBonus(homeForm, awayForm);
       const awayEdge =
-        awayForm.momentum * 22 + ((awayForm.atsForm ?? 0.5) - 0.5) * 26 + (awayForm.upsetProxy - homeForm.upsetProxy) * 0.3;
+        awayForm.momentum * 22 + ((awayForm.atsForm ?? 0.5) - 0.5) * 26 + (awayForm.upsetProxy - homeForm.upsetProxy) * 0.3
+        + netRatingBonus(awayForm, homeForm) + sosBonus(awayForm, homeForm);
 
       const pickHome = homeEdge >= awayEdge;
       const pickTeam = pickHome ? home : away;
@@ -431,6 +594,20 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
       const pickHistoryCount = pickTeam === home ? homeHistory.length : awayHistory.length;
       const oppHistoryCount = opponent === home ? homeHistory.length : awayHistory.length;
 
+      const rationaleSignals = [
+        `Momentum edge ${momentumEdge >= 0 ? "+" : ""}${momentumEdge.toFixed(2)} (last-10 trend proxy)`,
+        atsEdge == null ? "ATS edge unavailable (limited ATS sample)" : `ATS edge ${atsEdge >= 0 ? "+" : ""}${atsEdge.toFixed(2)}`,
+        `History sample ${pickTeam}: ${pickHistoryCount} games (mapped ${pickTeam === home ? resolvedHome : resolvedAway}) vs ${opponent}: ${oppHistoryCount} games`,
+      ];
+
+      if (pickForm.netRating != null && oppForm.netRating != null) {
+        const diff = pickForm.netRating - oppForm.netRating;
+        rationaleSignals.push(`Net Rating edge: ${diff >= 0 ? "+" : ""}${diff.toFixed(1)}`);
+      }
+      if (pickForm.sos != null && oppForm.sos != null) {
+        rationaleSignals.push(`SOS: ${pickForm.sos.toFixed(3)} vs ${oppForm.sos.toFixed(3)}`);
+      }
+
       return {
         league: "NCAAB",
         conference: null,
@@ -442,11 +619,7 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
         line,
         score,
         confidence,
-        rationaleSignals: [
-          `Momentum edge ${momentumEdge >= 0 ? "+" : ""}${momentumEdge.toFixed(2)} (last-10 trend proxy)`,
-          atsEdge == null ? "ATS edge unavailable (limited ATS sample)" : `ATS edge ${atsEdge >= 0 ? "+" : ""}${atsEdge.toFixed(2)}`,
-          `History sample ${pickTeam}: ${pickHistoryCount} games (mapped ${pickTeam === home ? resolvedHome : resolvedAway}) vs ${opponent}: ${oppHistoryCount} games`,
-        ],
+        rationaleSignals,
         momentumEdge,
         atsEdge,
       } as BestBetGame;
@@ -512,11 +685,18 @@ function calibrateBestBetModel(rows: FreeStatLike[]) {
   };
 }
 
-export function buildFreeStatsSummary(rows: FreeStatLike[], options?: { oddsEvents?: OddsEventLike[] }) {
+export type BuildOptions = {
+  oddsEvents?: OddsEventLike[];
+  standings?: Record<string, StandingsEntry[]>;
+  injuries?: Record<string, InjuryEntry[]>;
+};
+
+export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptions) {
   const sorted = [...rows].sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
   const nowMs = Date.now();
   const completed = sorted.filter((row) => isCompletedGame(row, nowMs));
   const byLeague = groupByLeague(completed);
+  const standingsMap = options?.standings ?? {};
 
   const leagues = Object.entries(byLeague)
     .map(([league, leagueRows]) => {
@@ -524,6 +704,31 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: { oddsEven
       const trend = trendScore(league, leagueRows.length, recent);
       const conferences = [...new Set(leagueRows.map((r) => r.conference).filter(Boolean))] as string[];
       const ncaab = league === "NCAAB" ? computeNcaabMetrics(recent) : null;
+
+      // Compute advanced metrics per team
+      const byTeamMap = groupByTeam(leagueRows);
+      const leagueStandings = standingsMap[league.toLowerCase()] ?? [];
+      let advanced: BasketballAdvanced | FootballAdvanced | BaseballAdvanced | null = null;
+      const teamAdvanced: Record<string, BasketballAdvanced | FootballAdvanced | BaseballAdvanced> = {};
+
+      const allBoxRows = leagueRows.map(toBoxScoreRow);
+
+      if (league === "NBA" || league === "NCAAB") {
+        advanced = computeBasketballAdvanced(allBoxRows, leagueStandings);
+        for (const [team, teamRows] of Object.entries(byTeamMap)) {
+          teamAdvanced[team] = computeBasketballAdvanced(teamRows.map(toBoxScoreRow), leagueStandings);
+        }
+      } else if (league === "NFL") {
+        advanced = computeFootballAdvanced(allBoxRows, leagueStandings);
+        for (const [team, teamRows] of Object.entries(byTeamMap)) {
+          teamAdvanced[team] = computeFootballAdvanced(teamRows.map(toBoxScoreRow), leagueStandings);
+        }
+      } else if (league === "MLB") {
+        advanced = computeBaseballAdvanced(allBoxRows, leagueStandings);
+        for (const [team, teamRows] of Object.entries(byTeamMap)) {
+          teamAdvanced[team] = computeBaseballAdvanced(teamRows.map(toBoxScoreRow), leagueStandings);
+        }
+      }
 
       return {
         league,
@@ -539,6 +744,8 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: { oddsEven
         trendSignal: trend.signal,
         confidence: trend.confidence,
         ncaab,
+        advanced,
+        teamAdvanced,
       };
     })
     .sort((a, b) => a.league.localeCompare(b.league));
@@ -557,8 +764,8 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: { oddsEven
 
   const ncaabRows = completed.filter((r) => r.league === "NCAAB");
   const params = calibrateBestBetModel(ncaabRows);
-  const oddsBasedBets = buildNcaabOddsBestBets(completed, options?.oddsEvents ?? []);
-  const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed);
+  const oddsBasedBets = buildNcaabOddsBestBets(completed, options?.oddsEvents ?? [], standingsMap);
+  const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed, standingsMap);
   const topTarget = 5;
   const todayEt = dayKeyInEt(new Date());
   const bestBetsNote =
@@ -581,5 +788,6 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: { oddsEven
     topBestBetsFallbackUsed: false,
     bestBetsNote,
     bestBetModel: params,
+    injuries: options?.injuries ?? {},
   };
 }

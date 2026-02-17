@@ -10,6 +10,43 @@ type NcaabMetrics = {
   autoBidWatchTeams: string[];
 };
 
+type BasketballAdvanced = {
+  games: number;
+  pace: number | null;
+  oRtg: number | null;
+  dRtg: number | null;
+  netRating: number | null;
+  tsPct: number | null;
+  efgPct: number | null;
+  toRate: number | null;
+  ftRate: number | null;
+  sos: number | null;
+};
+
+type FootballAdvanced = {
+  games: number;
+  ppg: number | null;
+  oppPpg: number | null;
+  ypg: number | null;
+  oppYpg: number | null;
+  turnoverMargin: number | null;
+  thirdDownPct: number | null;
+  redZonePct: number | null;
+  avgTop: number | null;
+  sos: number | null;
+};
+
+type BaseballAdvanced = {
+  games: number;
+  rpg: number | null;
+  oppRpg: number | null;
+  hitsPerGame: number | null;
+  errorsPerGame: number | null;
+  sos: number | null;
+};
+
+type AdvancedMetrics = BasketballAdvanced | FootballAdvanced | BaseballAdvanced;
+
 type LeagueSummary = {
   league: string;
   games: number;
@@ -24,6 +61,8 @@ type LeagueSummary = {
   trendSignal: "up" | "down" | "flat";
   confidence: number;
   ncaab: NcaabMetrics | null;
+  advanced: AdvancedMetrics | null;
+  teamAdvanced: Record<string, AdvancedMetrics> | null;
 };
 
 type Latest = {
@@ -55,6 +94,15 @@ type BestBetGame = {
   atsEdge: number | null;
 };
 
+type InjuryEntry = {
+  player: string;
+  team: string;
+  position: string;
+  status: string;
+  injuryType: string;
+  returnDate: string;
+};
+
 type ApiResponse = {
   generatedAt: string;
   ready: boolean;
@@ -67,11 +115,25 @@ type ApiResponse = {
   topBestBetsDateEt?: string;
   topBestBetsFallbackUsed?: boolean;
   bestBetsNote?: string | null;
+  injuries?: Record<string, InjuryEntry[]>;
 };
 
 function fmt(n: number | null | undefined, digits = 1) {
-  if (n == null) return "—";
+  if (n == null) return "\u2014";
   return n.toFixed(digits);
+}
+
+function pct(n: number | null | undefined) {
+  if (n == null) return "\u2014";
+  return (n * 100).toFixed(1) + "%";
+}
+
+function isBasketball(league: string) {
+  return league === "NBA" || league === "NCAAB";
+}
+
+function isFootball(league: string) {
+  return league === "NFL";
 }
 
 export default function Home() {
@@ -106,6 +168,18 @@ export default function Home() {
     const target = data?.topBestBetsTarget ?? 5;
     return (data?.bestBets ?? []).slice(0, target);
   }, [data?.bestBets, data?.topBestBetsTarget]);
+
+  const keyInjuries = useMemo(() => {
+    if (!data?.injuries) return {};
+    const filtered: Record<string, InjuryEntry[]> = {};
+    for (const [league, entries] of Object.entries(data.injuries)) {
+      const severe = entries.filter(
+        (e) => e.status.toLowerCase().includes("out") || e.status.toLowerCase().includes("doubtful"),
+      );
+      if (severe.length) filtered[league] = severe.slice(0, 15);
+    }
+    return filtered;
+  }, [data?.injuries]);
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -156,7 +230,7 @@ export default function Home() {
         {error && <div className="rounded-lg border border-red-500/40 bg-red-950/40 p-4 text-sm text-red-200">{error}</div>}
 
         {!data && !error && (
-          <div className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm text-slate-300">Loading summary…</div>
+          <div className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm text-slate-300">Loading summary...</div>
         )}
 
         {data && (
@@ -165,7 +239,7 @@ export default function Home() {
               <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <h2 className="text-lg font-semibold text-emerald-200">Top 5 Game Picks of the Day</h2>
                 <p className="text-xs text-emerald-100/80">
-                  Date: {data.topBestBetsDateEt ?? "Today"} (America/New_York) · Last updated: {generatedAt || "—"}
+                  Date: {data.topBestBetsDateEt ?? "Today"} (America/New_York) | Last updated: {generatedAt || "\u2014"}
                 </p>
               </div>
               <div className="space-y-2">
@@ -230,13 +304,124 @@ export default function Home() {
                     <div className="rounded-md bg-slate-800/70 p-2">Recent yards: {fmt(league.recentAvgYards)}</div>
                   </div>
 
+                  {/* Basketball Advanced Metrics */}
+                  {isBasketball(league.league) && league.advanced && "pace" in league.advanced && (
+                    <div className="mt-3">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">Advanced Metrics</p>
+                      <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+                        <div className="rounded-md bg-indigo-950/40 p-2">
+                          <span className="text-xs text-slate-400">Pace</span>
+                          <p className="font-semibold">{fmt((league.advanced as BasketballAdvanced).pace)}</p>
+                        </div>
+                        <div className="rounded-md bg-indigo-950/40 p-2">
+                          <span className="text-xs text-slate-400">Net Rtg</span>
+                          <p className="font-semibold">{fmt((league.advanced as BasketballAdvanced).netRating)}</p>
+                        </div>
+                        <div className="rounded-md bg-indigo-950/40 p-2">
+                          <span className="text-xs text-slate-400">ORtg</span>
+                          <p className="font-semibold">{fmt((league.advanced as BasketballAdvanced).oRtg)}</p>
+                        </div>
+                        <div className="rounded-md bg-indigo-950/40 p-2">
+                          <span className="text-xs text-slate-400">DRtg</span>
+                          <p className="font-semibold">{fmt((league.advanced as BasketballAdvanced).dRtg)}</p>
+                        </div>
+                        <div className="rounded-md bg-indigo-950/40 p-2">
+                          <span className="text-xs text-slate-400">TS%</span>
+                          <p className="font-semibold">{pct((league.advanced as BasketballAdvanced).tsPct)}</p>
+                        </div>
+                        <div className="rounded-md bg-indigo-950/40 p-2">
+                          <span className="text-xs text-slate-400">eFG%</span>
+                          <p className="font-semibold">{pct((league.advanced as BasketballAdvanced).efgPct)}</p>
+                        </div>
+                        <div className="rounded-md bg-indigo-950/40 p-2">
+                          <span className="text-xs text-slate-400">TO Rate</span>
+                          <p className="font-semibold">{pct((league.advanced as BasketballAdvanced).toRate)}</p>
+                        </div>
+                        <div className="rounded-md bg-indigo-950/40 p-2">
+                          <span className="text-xs text-slate-400">SOS</span>
+                          <p className="font-semibold">{fmt((league.advanced as BasketballAdvanced).sos, 3)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NFL Advanced Metrics */}
+                  {isFootball(league.league) && league.advanced && "ppg" in league.advanced && (
+                    <div className="mt-3">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">Advanced Metrics</p>
+                      <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+                        <div className="rounded-md bg-orange-950/40 p-2">
+                          <span className="text-xs text-slate-400">PPG</span>
+                          <p className="font-semibold">{fmt((league.advanced as FootballAdvanced).ppg)}</p>
+                        </div>
+                        <div className="rounded-md bg-orange-950/40 p-2">
+                          <span className="text-xs text-slate-400">Opp PPG</span>
+                          <p className="font-semibold">{fmt((league.advanced as FootballAdvanced).oppPpg)}</p>
+                        </div>
+                        <div className="rounded-md bg-orange-950/40 p-2">
+                          <span className="text-xs text-slate-400">YPG</span>
+                          <p className="font-semibold">{fmt((league.advanced as FootballAdvanced).ypg)}</p>
+                        </div>
+                        <div className="rounded-md bg-orange-950/40 p-2">
+                          <span className="text-xs text-slate-400">TO Margin</span>
+                          <p className="font-semibold">{fmt((league.advanced as FootballAdvanced).turnoverMargin, 2)}</p>
+                        </div>
+                        <div className="rounded-md bg-orange-950/40 p-2">
+                          <span className="text-xs text-slate-400">3rd Down %</span>
+                          <p className="font-semibold">{pct((league.advanced as FootballAdvanced).thirdDownPct)}</p>
+                        </div>
+                        <div className="rounded-md bg-orange-950/40 p-2">
+                          <span className="text-xs text-slate-400">Red Zone %</span>
+                          <p className="font-semibold">{pct((league.advanced as FootballAdvanced).redZonePct)}</p>
+                        </div>
+                        <div className="rounded-md bg-orange-950/40 p-2">
+                          <span className="text-xs text-slate-400">SOS</span>
+                          <p className="font-semibold">{fmt((league.advanced as FootballAdvanced).sos, 3)}</p>
+                        </div>
+                        <div className="rounded-md bg-orange-950/40 p-2">
+                          <span className="text-xs text-slate-400">Avg TOP</span>
+                          <p className="font-semibold">{fmt((league.advanced as FootballAdvanced).avgTop)} min</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* MLB Advanced Metrics */}
+                  {league.league === "MLB" && league.advanced && "rpg" in league.advanced && (
+                    <div className="mt-3">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">Advanced Metrics</p>
+                      <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+                        <div className="rounded-md bg-green-950/40 p-2">
+                          <span className="text-xs text-slate-400">RPG</span>
+                          <p className="font-semibold">{fmt((league.advanced as BaseballAdvanced).rpg)}</p>
+                        </div>
+                        <div className="rounded-md bg-green-950/40 p-2">
+                          <span className="text-xs text-slate-400">Opp RPG</span>
+                          <p className="font-semibold">{fmt((league.advanced as BaseballAdvanced).oppRpg)}</p>
+                        </div>
+                        <div className="rounded-md bg-green-950/40 p-2">
+                          <span className="text-xs text-slate-400">Hits/G</span>
+                          <p className="font-semibold">{fmt((league.advanced as BaseballAdvanced).hitsPerGame)}</p>
+                        </div>
+                        <div className="rounded-md bg-green-950/40 p-2">
+                          <span className="text-xs text-slate-400">Errors/G</span>
+                          <p className="font-semibold">{fmt((league.advanced as BaseballAdvanced).errorsPerGame)}</p>
+                        </div>
+                        <div className="rounded-md bg-green-950/40 p-2">
+                          <span className="text-xs text-slate-400">SOS</span>
+                          <p className="font-semibold">{fmt((league.advanced as BaseballAdvanced).sos, 3)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {league.league === "NCAAB" && league.ncaab && (
                     <div className="mt-3 space-y-1 text-sm text-slate-200">
                       <p>NCAAB last-10 momentum: {fmt(league.ncaab.last10Momentum, 2)}</p>
                       <p>NCAAB ATS form: {fmt(league.ncaab.atsForm, 2)}</p>
                       <p>NCAAB upset-alert score: {league.ncaab.upsetAlertScore}</p>
                       <p className="text-xs text-slate-400">
-                        Bubble hooks: {league.ncaab.bubbleWatchTeams.join(", ") || "—"} | Auto-bid hooks: {league.ncaab.autoBidWatchTeams.join(", ") || "—"}
+                        Bubble hooks: {league.ncaab.bubbleWatchTeams.join(", ") || "\u2014"} | Auto-bid hooks: {league.ncaab.autoBidWatchTeams.join(", ") || "\u2014"}
                       </p>
                     </div>
                   )}
@@ -246,14 +431,38 @@ export default function Home() {
               ))}
             </section>
 
+            {/* Injuries Section */}
+            {Object.keys(keyInjuries).length > 0 && (
+              <section className="mb-6 rounded-xl border border-red-500/30 bg-red-950/10 p-5">
+                <h3 className="mb-3 text-lg font-semibold text-red-200">Key Injuries (Out / Doubtful)</h3>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {Object.entries(keyInjuries).map(([league, entries]) => (
+                    <div key={league}>
+                      <p className="mb-2 text-sm font-semibold uppercase text-red-300">{league.toUpperCase()}</p>
+                      <div className="space-y-1">
+                        {entries.map((inj, idx) => (
+                          <div key={`${inj.player}-${idx}`} className="rounded-md bg-slate-900/80 px-3 py-1.5 text-sm">
+                            <span className="font-medium text-white">{inj.player}</span>
+                            <span className="text-slate-400"> ({inj.team}, {inj.position})</span>
+                            <span className="ml-2 text-xs text-red-300">{inj.status}</span>
+                            {inj.injuryType && <span className="ml-1 text-xs text-slate-500">- {inj.injuryType}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <section className="mb-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
               <h3 className="mb-3 text-lg font-semibold">Full Game-Pick Ranking (NBA / NFL / NCAAB / MLB)</h3>
               <div className="space-y-2 text-sm text-slate-200">
                 {data.bestBets.map((item, idx) => (
                   <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md bg-slate-800/70 p-3">
                     <p className="font-medium">
-                      {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""}) — Pick {item.pickTeam}
-                      {item.line ? ` (${item.line})` : ""} — Score {item.score}
+                      {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""}) \u2014 Pick {item.pickTeam}
+                      {item.line ? ` (${item.line})` : ""} \u2014 Score {item.score}
                     </p>
                     <p className="text-slate-300">
                       Confidence {item.confidence}% | Momentum edge {fmt(item.momentumEdge, 2)} | ATS edge {fmt(item.atsEdge, 2)}

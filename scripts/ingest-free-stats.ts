@@ -7,6 +7,8 @@ import { normalizeAtsResult, normalizeSpread } from "../src/lib/ats";
 const prisma = new PrismaClient();
 const root = process.cwd();
 
+const DEFAULT_DAYS_BACK = 30;
+
 const MLB_DIVISIONS: Record<string, string> = {
   BAL: "AL East",
   BOS: "AL East",
@@ -106,16 +108,21 @@ type EspnEvent = {
   date: string;
   competitions?: Array<{
     status?: { type?: { completed?: boolean; name?: string; state?: string; description?: string; detail?: string } };
-    competitors?: Array<{ 
+    competitors?: Array<{
       homeAway?: "home" | "away";
       score?: string;
       records?: Array<{ type?: string; summary?: string }>;
       curatedRank?: { current?: number };
       team?: { shortDisplayName?: string; displayName?: string; id?: string; abbreviation?: string };
       statistics?: Array<{ name?: string; displayValue?: string }>;
+      linescores?: Array<{ value?: number }>;
     }>;
+    odds?: Array<Record<string, unknown>>;
   }>;
 };
+
+// Shape returned from ESPN summary API
+type EspnSummary = Record<string, unknown>;
 
 function parseCsvLine(line: string): string[] {
   const out: string[] = [];
@@ -203,50 +210,430 @@ function classifyAutoBidStatus(confPct: number, conference: string) {
   return "AT_LARGE_TRACK";
 }
 
-async function fetchEspnSummary(eventId: string) {
-  const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/summary?event=${eventId}`;
-  const res = await fetch(url, { headers: { "User-Agent": "sports-betting-trends/1.0" }, signal: AbortSignal.timeout(10000) });
-  if (!res.ok) throw new Error(`Failed ESPN summary ${eventId}: ${res.status}`);
-  return (await res.json()) as Record<string, unknown>;
+function dateStr(d: Date) {
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function conferenceFromSummary(summary: Record<string, unknown>) {
+// ---------- ESPN Summary fetchers by sport ----------
+
+async function fetchEspnSummary(sport: string, eventId: string): Promise<EspnSummary | null> {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/summary?event=${eventId}`;
+  try {
+    const res = await fetch(url, { headers: { "User-Agent": "sports-betting-trends/1.0" }, signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    return (await res.json()) as EspnSummary;
+  } catch {
+    return null;
+  }
+}
+
+function conferenceFromSummary(summary: EspnSummary) {
   const standings = summary.standings as { groups?: Array<{ header?: string }> } | undefined;
   const header = standings?.groups?.[0]?.header;
   if (!header) return "Unknown";
   return header.replace(/^\d{4}-\d{2}\s+/, "").replace(/\s+Standings$/i, "").trim() || "Unknown";
 }
 
-async function fetchNcaabRecentRows(daysBack: number): Promise<NCAABRecord[]> {
-  const rows: NCAABRecord[] = [];
+function statFromBoxscore(summary: EspnSummary, teamIdx: number, statName: string): number | null {
+  const boxscore = summary.boxscore as { teams?: Array<{ statistics?: Array<{ name?: string; displayValue?: string }> }> } | undefined;
+  const stats = boxscore?.teams?.[teamIdx]?.statistics ?? [];
+  const found = stats.find((s) => s.name === statName);
+  return found ? nullableNumber(found.displayValue) : null;
+}
+
+function statFromPlayerBoxscore(summary: EspnSummary, teamIdx: number, statName: string): number | null {
+  const boxscore = summary.boxscore as {
+    players?: Array<{
+      statistics?: Array<{
+        names?: string[];
+        totals?: string[];
+      }>;
+    }>;
+  } | undefined;
+  const playerTeam = boxscore?.players?.[teamIdx];
+  const statGroups = playerTeam?.statistics ?? [];
+  for (const group of statGroups) {
+    const names = group.names ?? [];
+    const totals = group.totals ?? [];
+    const idx = names.findIndex((n) => n?.toUpperCase() === statName.toUpperCase());
+    if (idx >= 0 && totals[idx] != null) {
+      return nullableNumber(totals[idx]);
+    }
+  }
+  return null;
+}
+
+// Helper: parse "M-A" (e.g., "35-78") into {made, attempted}
+function parseMadeAttempted(value: string | null | undefined): { made: number | null; attempted: number | null } {
+  if (!value) return { made: null, attempted: null };
+  const m = value.match(/(\d+)\s*-\s*(\d+)/);
+  if (!m) return { made: null, attempted: null };
+  return { made: Number(m[1]), attempted: Number(m[2]) };
+}
+
+// Parse time of possession "MM:SS" or "M:SS" to minutes as float
+function parseTimeOfPossession(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const m = value.match(/(\d+):(\d+)/);
+  if (!m) return nullableNumber(value);
+  return Number(m[1]) + Number(m[2]) / 60;
+}
+
+// ---------- Shared helper: collect completed events from scoreboard ----------
+
+async function collectCompletedEvents(sport: string, daysBack: number, limit = 500, groups?: string): Promise<EspnEvent[]> {
   const seen = new Set<string>();
   const events: EspnEvent[] = [];
 
   for (let d = 0; d < daysBack; d += 1) {
     const day = new Date();
     day.setDate(day.getDate() - d);
-    const date = `${day.getFullYear()}${String(day.getMonth() + 1).padStart(2, "0")}${String(day.getDate()).padStart(2, "0")}`;
+    const date = dateStr(day);
 
-    const boardUrl = `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?groups=50&limit=500&dates=${date}`;
-    const boardRes = await fetch(boardUrl, { headers: { "User-Agent": "sports-betting-trends/1.0" }, signal: AbortSignal.timeout(10000) });
-    if (!boardRes.ok) continue;
-    const board = (await boardRes.json()) as { events?: EspnEvent[] };
+    let boardUrl = `https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard?limit=${limit}&dates=${date}`;
+    if (groups) boardUrl += `&groups=${groups}`;
 
-    for (const event of board.events ?? []) {
-      if (seen.has(event.id)) continue;
-      seen.add(event.id);
-      const competition = event.competitions?.[0];
-      if (!competition?.status?.type?.completed) continue;
-      if ((competition.competitors ?? []).length !== 2) continue;
-      events.push(event);
+    try {
+      const boardRes = await fetch(boardUrl, { headers: { "User-Agent": "sports-betting-trends/1.0" }, signal: AbortSignal.timeout(10000) });
+      if (!boardRes.ok) continue;
+      const board = (await boardRes.json()) as { events?: EspnEvent[] };
+
+      for (const event of board.events ?? []) {
+        if (seen.has(event.id)) continue;
+        seen.add(event.id);
+        const competition = event.competitions?.[0];
+        if (!competition?.status?.type?.completed) continue;
+        if ((competition.competitors ?? []).length !== 2) continue;
+        events.push(event);
+      }
+    } catch {
+      continue;
     }
   }
+
+  return events;
+}
+
+// ---------- NBA Live Ingestion ----------
+
+type IngestRow = {
+  league: string;
+  conference: string | null;
+  gameDate: Date;
+  team: string;
+  opponent: string;
+  points: number;
+  opponentPoints: number | null;
+  rebounds: number | null;
+  assists: number | null;
+  yards: number | null;
+  spread: number | null;
+  atsResult: string | null;
+  won: boolean | null;
+  teamRank: number | null;
+  opponentRank: number | null;
+  bubbleStatus: string | null;
+  autoBidStatus: string | null;
+  // Box score
+  fgm: number | null;
+  fga: number | null;
+  threepm: number | null;
+  threepa: number | null;
+  ftm: number | null;
+  fta: number | null;
+  offRebounds: number | null;
+  defRebounds: number | null;
+  steals: number | null;
+  blocks: number | null;
+  turnovers: number | null;
+  // NFL
+  passingYards: number | null;
+  rushingYards: number | null;
+  opponentYards: number | null;
+  turnoversFor: number | null;
+  turnoversAgainst: number | null;
+  thirdDownConv: number | null;
+  thirdDownAtt: number | null;
+  redZoneConv: number | null;
+  redZoneAtt: number | null;
+  timeOfPossession: number | null;
+  // Universal
+  homeAway: string | null;
+  hits: number | null;
+  errors: number | null;
+  // Meta
+  source: string;
+  sourceEventId: string | null;
+  gameStatus: string;
+  completionEvidence: string;
+};
+
+const NULL_BOX: Pick<IngestRow, "fgm" | "fga" | "threepm" | "threepa" | "ftm" | "fta" | "offRebounds" | "defRebounds" | "steals" | "blocks" | "turnovers" | "passingYards" | "rushingYards" | "opponentYards" | "turnoversFor" | "turnoversAgainst" | "thirdDownConv" | "thirdDownAtt" | "redZoneConv" | "redZoneAtt" | "timeOfPossession" | "homeAway" | "hits" | "errors"> = {
+  fgm: null, fga: null, threepm: null, threepa: null, ftm: null, fta: null,
+  offRebounds: null, defRebounds: null, steals: null, blocks: null, turnovers: null,
+  passingYards: null, rushingYards: null, opponentYards: null,
+  turnoversFor: null, turnoversAgainst: null,
+  thirdDownConv: null, thirdDownAtt: null, redZoneConv: null, redZoneAtt: null,
+  timeOfPossession: null, homeAway: null, hits: null, errors: null,
+};
+
+async function fetchNbaRecentRows(daysBack: number): Promise<IngestRow[]> {
+  const rows: IngestRow[] = [];
+  const events = await collectCompletedEvents("basketball/nba", daysBack);
+  console.log(`NBA: found ${events.length} completed events over ${daysBack} days`);
 
   const chunkSize = 8;
   for (let i = 0; i < events.length; i += chunkSize) {
     const chunk = events.slice(i, i + chunkSize);
     const summaries = await Promise.all(
-      chunk.map(async (event) => ({ event, summary: await fetchEspnSummary(event.id).catch(() => null) })),
+      chunk.map(async (event) => ({ event, summary: await fetchEspnSummary("basketball/nba", event.id) })),
+    );
+
+    for (const { event, summary } of summaries) {
+      const competition = event.competitions?.[0];
+      const competitors = competition?.competitors ?? [];
+      if (competitors.length !== 2) continue;
+
+      const pick = summary
+        ? ((summary.pickcenter as Array<Record<string, unknown>> | undefined) ?? [])[0]
+        : ((competition?.odds ?? [])[0] ?? undefined);
+      const spreadValue = normalizeSpread((pick?.spread as number | string | undefined) ?? (pick?.details as string | undefined) ?? "");
+
+      for (let ci = 0; ci < competitors.length; ci++) {
+        const comp = competitors[ci];
+        const opponentIdx = ci === 0 ? 1 : 0;
+        const opponent = competitors[opponentIdx];
+
+        const points = nullableNumber(comp.score) ?? 0;
+        const opponentPoints = nullableNumber(opponent.score) ?? 0;
+        const compStats = comp.statistics ?? [];
+        const rebounds = nullableNumber(compStats.find((s) => s.name === "rebounds")?.displayValue ?? "");
+        const assists = nullableNumber(compStats.find((s) => s.name === "assists")?.displayValue ?? "");
+
+        // Box score from summary
+        let fgm: number | null = null, fga: number | null = null;
+        let threepm: number | null = null, threepa: number | null = null;
+        let ftm: number | null = null, fta: number | null = null;
+        let offRebounds: number | null = null, defRebounds: number | null = null;
+        let steals: number | null = null, blocks: number | null = null, turnovers: number | null = null;
+
+        if (summary) {
+          // Try team-level boxscore stats
+          fgm = statFromBoxscore(summary, ci, "fieldGoalsMade");
+          fga = statFromBoxscore(summary, ci, "fieldGoalsAttempted");
+          threepm = statFromBoxscore(summary, ci, "threePointFieldGoalsMade");
+          threepa = statFromBoxscore(summary, ci, "threePointFieldGoalsAttempted");
+          ftm = statFromBoxscore(summary, ci, "freeThrowsMade");
+          fta = statFromBoxscore(summary, ci, "freeThrowsAttempted");
+          offRebounds = statFromBoxscore(summary, ci, "offensiveRebounds");
+          defRebounds = statFromBoxscore(summary, ci, "defensiveRebounds");
+          steals = statFromBoxscore(summary, ci, "steals");
+          blocks = statFromBoxscore(summary, ci, "blocks");
+          turnovers = statFromBoxscore(summary, ci, "turnovers") ?? statFromBoxscore(summary, ci, "totalTurnovers");
+
+          // Fallback: try player box score totals if team stats not found
+          if (fgm == null) {
+            const fgStr = statFromPlayerBoxscore(summary, ci, "FG")?.toString();
+            if (!fgStr) {
+              fgm = statFromPlayerBoxscore(summary, ci, "FGM");
+              fga = statFromPlayerBoxscore(summary, ci, "FGA");
+            }
+          }
+          if (threepm == null) {
+            threepm = statFromPlayerBoxscore(summary, ci, "3PM");
+            threepa = statFromPlayerBoxscore(summary, ci, "3PA");
+          }
+          if (ftm == null) {
+            ftm = statFromPlayerBoxscore(summary, ci, "FTM");
+            fta = statFromPlayerBoxscore(summary, ci, "FTA");
+          }
+          if (offRebounds == null) offRebounds = statFromPlayerBoxscore(summary, ci, "OREB");
+          if (defRebounds == null) defRebounds = statFromPlayerBoxscore(summary, ci, "DREB");
+          if (steals == null) steals = statFromPlayerBoxscore(summary, ci, "STL");
+          if (blocks == null) blocks = statFromPlayerBoxscore(summary, ci, "BLK");
+          if (turnovers == null) turnovers = statFromPlayerBoxscore(summary, ci, "TO");
+        }
+
+        const teamSpread = comp.homeAway === "home" ? spreadValue : spreadValue == null ? null : -spreadValue;
+        const ats = normalizeAtsResult(null, points, opponentPoints, teamSpread);
+
+        rows.push({
+          league: "NBA",
+          conference: null,
+          gameDate: new Date(event.date.slice(0, 10)),
+          team: comp.team?.shortDisplayName ?? comp.team?.displayName ?? "Unknown",
+          opponent: opponent.team?.shortDisplayName ?? opponent.team?.displayName ?? "Unknown",
+          points,
+          opponentPoints,
+          rebounds,
+          assists,
+          yards: null,
+          spread: teamSpread,
+          atsResult: ats,
+          won: points > opponentPoints,
+          teamRank: null,
+          opponentRank: null,
+          bubbleStatus: null,
+          autoBidStatus: null,
+          fgm, fga, threepm, threepa, ftm, fta,
+          offRebounds, defRebounds, steals, blocks, turnovers,
+          passingYards: null, rushingYards: null, opponentYards: null,
+          turnoversFor: null, turnoversAgainst: null,
+          thirdDownConv: null, thirdDownAtt: null,
+          redZoneConv: null, redZoneAtt: null,
+          timeOfPossession: null,
+          homeAway: comp.homeAway ?? null,
+          hits: null, errors: null,
+          source: "espn-public-api",
+          sourceEventId: event.id,
+          gameStatus: getEspnGameStatus(event),
+          completionEvidence: "espn-status-completed",
+        });
+      }
+    }
+  }
+
+  return rows;
+}
+
+// ---------- NFL Live Ingestion ----------
+
+async function fetchNflRecentRows(daysBack: number): Promise<IngestRow[]> {
+  const rows: IngestRow[] = [];
+  const events = await collectCompletedEvents("football/nfl", daysBack);
+  console.log(`NFL: found ${events.length} completed events over ${daysBack} days`);
+
+  const chunkSize = 8;
+  for (let i = 0; i < events.length; i += chunkSize) {
+    const chunk = events.slice(i, i + chunkSize);
+    const summaries = await Promise.all(
+      chunk.map(async (event) => ({ event, summary: await fetchEspnSummary("football/nfl", event.id) })),
+    );
+
+    for (const { event, summary } of summaries) {
+      const competition = event.competitions?.[0];
+      const competitors = competition?.competitors ?? [];
+      if (competitors.length !== 2) continue;
+
+      const pick = summary
+        ? ((summary.pickcenter as Array<Record<string, unknown>> | undefined) ?? [])[0]
+        : ((competition?.odds ?? [])[0] ?? undefined);
+      const spreadValue = normalizeSpread((pick?.spread as number | string | undefined) ?? (pick?.details as string | undefined) ?? "");
+
+      for (let ci = 0; ci < competitors.length; ci++) {
+        const comp = competitors[ci];
+        const opponentIdx = ci === 0 ? 1 : 0;
+        const opponent = competitors[opponentIdx];
+
+        const points = nullableNumber(comp.score) ?? 0;
+        const opponentPoints = nullableNumber(opponent.score) ?? 0;
+        const compStats = comp.statistics ?? [];
+        const yardsVal = nullableNumber(compStats.find((s) => s.name === "totalYards" || s.name === "netYards")?.displayValue ?? "");
+
+        // NFL box score from summary
+        let passingYards: number | null = null, rushingYards: number | null = null;
+        let opponentYards: number | null = null;
+        let turnoversFor: number | null = null, turnoversAgainst: number | null = null;
+        let thirdDownConv: number | null = null, thirdDownAtt: number | null = null;
+        let redZoneConv: number | null = null, redZoneAtt: number | null = null;
+        let timeOfPossession: number | null = null;
+
+        if (summary) {
+          passingYards = statFromBoxscore(summary, ci, "netPassingYards") ?? statFromBoxscore(summary, ci, "passingYards");
+          rushingYards = statFromBoxscore(summary, ci, "rushingYards");
+          opponentYards = statFromBoxscore(summary, opponentIdx, "totalYards") ?? statFromBoxscore(summary, opponentIdx, "netYards");
+
+          // Turnovers: team forced = opponent's turnovers, turnovers against = team's own
+          turnoversAgainst = statFromBoxscore(summary, ci, "turnovers") ?? statFromBoxscore(summary, ci, "totalTurnovers");
+          turnoversFor = statFromBoxscore(summary, opponentIdx, "turnovers") ?? statFromBoxscore(summary, opponentIdx, "totalTurnovers");
+
+          // Third down: try "thirdDownEff" which is often "M/A" format
+          const thirdDownEffVal = (() => {
+            const bs = summary.boxscore as { teams?: Array<{ statistics?: Array<{ name?: string; displayValue?: string }> }> } | undefined;
+            return bs?.teams?.[ci]?.statistics?.find((s) => s.name === "thirdDownEff")?.displayValue ?? null;
+          })();
+          if (thirdDownEffVal) {
+            const parsed = parseMadeAttempted(thirdDownEffVal);
+            thirdDownConv = parsed.made;
+            thirdDownAtt = parsed.attempted;
+          } else {
+            thirdDownConv = statFromBoxscore(summary, ci, "thirdDownConversions");
+            thirdDownAtt = statFromBoxscore(summary, ci, "thirdDownAttempts");
+          }
+
+          // Red zone
+          const rzEffVal = (() => {
+            const bs = summary.boxscore as { teams?: Array<{ statistics?: Array<{ name?: string; displayValue?: string }> }> } | undefined;
+            return bs?.teams?.[ci]?.statistics?.find((s) => s.name === "redZoneEff" || s.name === "redZoneAttempts")?.displayValue ?? null;
+          })();
+          if (rzEffVal) {
+            const parsed = parseMadeAttempted(rzEffVal);
+            redZoneConv = parsed.made;
+            redZoneAtt = parsed.attempted;
+          }
+
+          // Time of possession
+          const topVal = (() => {
+            const bs = summary.boxscore as { teams?: Array<{ statistics?: Array<{ name?: string; displayValue?: string }> }> } | undefined;
+            return bs?.teams?.[ci]?.statistics?.find((s) => s.name === "possessionTime" || s.name === "timeOfPossession")?.displayValue ?? null;
+          })();
+          timeOfPossession = parseTimeOfPossession(topVal);
+        }
+
+        const teamSpread = comp.homeAway === "home" ? spreadValue : spreadValue == null ? null : -spreadValue;
+        const ats = normalizeAtsResult(null, points, opponentPoints, teamSpread);
+
+        rows.push({
+          league: "NFL",
+          conference: null,
+          gameDate: new Date(event.date.slice(0, 10)),
+          team: comp.team?.abbreviation ?? comp.team?.shortDisplayName ?? comp.team?.displayName ?? "Unknown",
+          opponent: opponent.team?.abbreviation ?? opponent.team?.shortDisplayName ?? opponent.team?.displayName ?? "Unknown",
+          points,
+          opponentPoints,
+          rebounds: null,
+          assists: null,
+          yards: yardsVal,
+          spread: teamSpread,
+          atsResult: ats,
+          won: points > opponentPoints,
+          teamRank: null,
+          opponentRank: null,
+          bubbleStatus: null,
+          autoBidStatus: null,
+          fgm: null, fga: null, threepm: null, threepa: null, ftm: null, fta: null,
+          offRebounds: null, defRebounds: null, steals: null, blocks: null, turnovers: null,
+          passingYards, rushingYards, opponentYards,
+          turnoversFor, turnoversAgainst,
+          thirdDownConv, thirdDownAtt,
+          redZoneConv, redZoneAtt,
+          timeOfPossession,
+          homeAway: comp.homeAway ?? null,
+          hits: null, errors: null,
+          source: "espn-public-api",
+          sourceEventId: event.id,
+          gameStatus: getEspnGameStatus(event),
+          completionEvidence: "espn-status-completed",
+        });
+      }
+    }
+  }
+
+  return rows;
+}
+
+// ---------- NCAAB Live Ingestion (enhanced with box score + homeAway) ----------
+
+async function fetchNcaabRecentRows(daysBack: number): Promise<IngestRow[]> {
+  const rows: IngestRow[] = [];
+  const events = await collectCompletedEvents("basketball/mens-college-basketball", daysBack, 500, "50");
+  console.log(`NCAAB: found ${events.length} completed events over ${daysBack} days`);
+
+  const chunkSize = 8;
+  for (let i = 0; i < events.length; i += chunkSize) {
+    const chunk = events.slice(i, i + chunkSize);
+    const summaries = await Promise.all(
+      chunk.map(async (event) => ({ event, summary: await fetchEspnSummary("basketball/mens-college-basketball", event.id) })),
     );
 
     for (const { event, summary } of summaries) {
@@ -259,15 +646,16 @@ async function fetchNcaabRecentRows(daysBack: number): Promise<NCAABRecord[]> {
       const pick = ((summary.pickcenter as Array<Record<string, unknown>> | undefined) ?? [])[0];
       const spreadValue = normalizeSpread((pick?.spread as number | string | undefined) ?? (pick?.details as string | undefined) ?? "");
 
-      for (const comp of competitors) {
-        const opponent = competitors.find((c) => c.team?.id !== comp.team?.id);
-        if (!opponent) continue;
+      for (let ci = 0; ci < competitors.length; ci++) {
+        const comp = competitors[ci];
+        const opponentIdx = ci === 0 ? 1 : 0;
+        const opponent = competitors[opponentIdx];
 
         const points = nullableNumber(comp.score) ?? 0;
         const opponentPoints = nullableNumber(opponent.score) ?? 0;
-        const stats = comp.statistics ?? [];
-        const rebounds = nullableNumber(stats.find((s) => s.name === "rebounds")?.displayValue ?? "");
-        const assists = nullableNumber(stats.find((s) => s.name === "assists")?.displayValue ?? "");
+        const compStats = comp.statistics ?? [];
+        const rebounds = nullableNumber(compStats.find((s) => s.name === "rebounds")?.displayValue ?? "");
+        const assists = nullableNumber(compStats.find((s) => s.name === "assists")?.displayValue ?? "");
         const teamRank = nullableNumber(comp.curatedRank?.current ?? null);
         const oppRank = nullableNumber(opponent.curatedRank?.current ?? null);
 
@@ -276,28 +664,78 @@ async function fetchNcaabRecentRows(daysBack: number): Promise<NCAABRecord[]> {
         const bubbleStatus = classifyBubbleStatus(teamRank, overall.pct, confRecord.pct, conference);
         const autoBidStatus = classifyAutoBidStatus(confRecord.pct, conference);
 
+        // Box score from summary
+        let fgm: number | null = null, fga: number | null = null;
+        let threepm: number | null = null, threepa: number | null = null;
+        let ftm: number | null = null, fta: number | null = null;
+        let offRebounds: number | null = null, defRebounds: number | null = null;
+        let steals: number | null = null, blocks: number | null = null, turnovers: number | null = null;
+
+        fgm = statFromBoxscore(summary, ci, "fieldGoalsMade");
+        fga = statFromBoxscore(summary, ci, "fieldGoalsAttempted");
+        threepm = statFromBoxscore(summary, ci, "threePointFieldGoalsMade");
+        threepa = statFromBoxscore(summary, ci, "threePointFieldGoalsAttempted");
+        ftm = statFromBoxscore(summary, ci, "freeThrowsMade");
+        fta = statFromBoxscore(summary, ci, "freeThrowsAttempted");
+        offRebounds = statFromBoxscore(summary, ci, "offensiveRebounds");
+        defRebounds = statFromBoxscore(summary, ci, "defensiveRebounds");
+        steals = statFromBoxscore(summary, ci, "steals");
+        blocks = statFromBoxscore(summary, ci, "blocks");
+        turnovers = statFromBoxscore(summary, ci, "turnovers") ?? statFromBoxscore(summary, ci, "totalTurnovers");
+
+        // Fallback to player totals
+        if (fgm == null) {
+          fgm = statFromPlayerBoxscore(summary, ci, "FGM");
+          fga = statFromPlayerBoxscore(summary, ci, "FGA");
+        }
+        if (threepm == null) {
+          threepm = statFromPlayerBoxscore(summary, ci, "3PM");
+          threepa = statFromPlayerBoxscore(summary, ci, "3PA");
+        }
+        if (ftm == null) {
+          ftm = statFromPlayerBoxscore(summary, ci, "FTM");
+          fta = statFromPlayerBoxscore(summary, ci, "FTA");
+        }
+        if (offRebounds == null) offRebounds = statFromPlayerBoxscore(summary, ci, "OREB");
+        if (defRebounds == null) defRebounds = statFromPlayerBoxscore(summary, ci, "DREB");
+        if (steals == null) steals = statFromPlayerBoxscore(summary, ci, "STL");
+        if (blocks == null) blocks = statFromPlayerBoxscore(summary, ci, "BLK");
+        if (turnovers == null) turnovers = statFromPlayerBoxscore(summary, ci, "TO");
+
         const teamSpread = comp.homeAway === "home" ? spreadValue : spreadValue == null ? null : -spreadValue;
         const ats = normalizeAtsResult(null, points, opponentPoints, teamSpread);
 
         rows.push({
-          date: event.date.slice(0, 10),
+          league: "NCAAB",
           conference,
+          gameDate: new Date(event.date.slice(0, 10)),
           team: comp.team?.shortDisplayName ?? comp.team?.displayName ?? "Unknown",
           opponent: opponent.team?.shortDisplayName ?? opponent.team?.displayName ?? "Unknown",
-          points: String(points),
-          opponent_points: String(opponentPoints),
-          rebounds: rebounds == null ? "" : String(rebounds),
-          assists: assists == null ? "" : String(assists),
-          spread: teamSpread == null ? "" : String(teamSpread),
-          ats_result: ats ?? "",
-          team_rank: teamRank == null ? "" : String(teamRank),
-          opponent_rank: oppRank == null ? "" : String(oppRank),
-          bubble_status: bubbleStatus,
-          auto_bid_status: autoBidStatus,
+          points,
+          opponentPoints,
+          rebounds,
+          assists,
+          yards: null,
+          spread: teamSpread,
+          atsResult: ats,
+          won: points > opponentPoints,
+          teamRank,
+          opponentRank: oppRank,
+          bubbleStatus,
+          autoBidStatus,
+          fgm, fga, threepm, threepa, ftm, fta,
+          offRebounds, defRebounds, steals, blocks, turnovers,
+          passingYards: null, rushingYards: null, opponentYards: null,
+          turnoversFor: null, turnoversAgainst: null,
+          thirdDownConv: null, thirdDownAtt: null,
+          redZoneConv: null, redZoneAtt: null,
+          timeOfPossession: null,
+          homeAway: comp.homeAway ?? null,
+          hits: null, errors: null,
           source: "espn-public-api",
-          source_event_id: event.id,
-          game_status: getEspnGameStatus(event),
-          completion_evidence: "espn-status-completed",
+          sourceEventId: event.id,
+          gameStatus: getEspnGameStatus(event),
+          completionEvidence: "espn-status-completed",
         });
       }
     }
@@ -306,40 +744,51 @@ async function fetchNcaabRecentRows(daysBack: number): Promise<NCAABRecord[]> {
   return rows;
 }
 
-async function fetchMlbRecentRows(daysBack: number): Promise<MLBRecord[]> {
-  const rows: MLBRecord[] = [];
-  const seen = new Set<string>();
+// ---------- MLB Live Ingestion (enhanced with summary API + hits/errors) ----------
 
-  for (let d = 0; d < daysBack; d += 1) {
-    const day = new Date();
-    day.setDate(day.getDate() - d);
-    const date = `${day.getFullYear()}${String(day.getMonth() + 1).padStart(2, "0")}${String(day.getDate()).padStart(2, "0")}`;
+async function fetchMlbRecentRows(daysBack: number): Promise<IngestRow[]> {
+  const rows: IngestRow[] = [];
+  const events = await collectCompletedEvents("baseball/mlb", daysBack, 200);
+  console.log(`MLB: found ${events.length} completed events over ${daysBack} days`);
 
-    const boardUrl = `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?limit=200&dates=${date}`;
-    const boardRes = await fetch(boardUrl, { headers: { "User-Agent": "sports-betting-trends/1.0" }, signal: AbortSignal.timeout(10000) });
-    if (!boardRes.ok) continue;
+  const chunkSize = 8;
+  for (let i = 0; i < events.length; i += chunkSize) {
+    const chunk = events.slice(i, i + chunkSize);
+    const summaries = await Promise.all(
+      chunk.map(async (event) => ({ event, summary: await fetchEspnSummary("baseball/mlb", event.id) })),
+    );
 
-    const board = (await boardRes.json()) as { events?: EspnEvent[] };
-    for (const event of board.events ?? []) {
-      if (seen.has(event.id)) continue;
-      seen.add(event.id);
-
+    for (const { event, summary } of summaries) {
       const competition = event.competitions?.[0];
       const competitors = competition?.competitors ?? [];
-      if (!competition?.status?.type?.completed || competitors.length !== 2) continue;
+      if (competitors.length !== 2) continue;
 
-      const pick = ((competition as unknown as { odds?: Array<Record<string, unknown>> }).odds ?? [])[0] ?? undefined;
+      const pick = summary
+        ? ((summary.pickcenter as Array<Record<string, unknown>> | undefined) ?? [])[0]
+        : ((competition?.odds ?? [])[0] ?? undefined);
       const spreadValue = normalizeSpread((pick?.spread as number | string | undefined) ?? (pick?.details as string | undefined) ?? "");
 
-      for (const comp of competitors) {
-        const opponent = competitors.find((c) => c.team?.id !== comp.team?.id);
-        if (!opponent) continue;
+      for (let ci = 0; ci < competitors.length; ci++) {
+        const comp = competitors[ci];
+        const opponentIdx = ci === 0 ? 1 : 0;
+        const opponent = competitors[opponentIdx];
 
         const runs = nullableNumber(comp.score) ?? 0;
         const oppRuns = nullableNumber(opponent.score) ?? 0;
-        const stats = comp.statistics ?? [];
-        const hits = nullableNumber(stats.find((s) => s.name === "hits")?.displayValue ?? "");
-        const errors = nullableNumber(stats.find((s) => s.name === "errors")?.displayValue ?? "");
+        const compStats = comp.statistics ?? [];
+        const hits = nullableNumber(compStats.find((s) => s.name === "hits")?.displayValue ?? "");
+        const errorsVal = nullableNumber(compStats.find((s) => s.name === "errors")?.displayValue ?? "");
+
+        // Also try summary boxscore for hits/errors
+        let hitsFromSummary = hits;
+        let errorsFromSummary = errorsVal;
+        if (summary && hitsFromSummary == null) {
+          hitsFromSummary = statFromBoxscore(summary, ci, "hits");
+        }
+        if (summary && errorsFromSummary == null) {
+          errorsFromSummary = statFromBoxscore(summary, ci, "errors");
+        }
+
         const abbr = comp.team?.abbreviation ?? comp.team?.shortDisplayName ?? "";
         const division = MLB_DIVISIONS[abbr] ?? "Unknown";
 
@@ -347,20 +796,31 @@ async function fetchMlbRecentRows(daysBack: number): Promise<MLBRecord[]> {
         const ats = normalizeAtsResult(null, runs, oppRuns, teamSpread);
 
         rows.push({
-          date: event.date.slice(0, 10),
-          division,
+          league: "MLB",
+          conference: division,
+          gameDate: new Date(event.date.slice(0, 10)),
           team: comp.team?.shortDisplayName ?? comp.team?.displayName ?? abbr ?? "Unknown",
           opponent: opponent.team?.shortDisplayName ?? opponent.team?.displayName ?? "Unknown",
-          points: String(runs),
-          opponent_points: String(oppRuns),
-          rebounds: hits == null ? "" : String(hits),
-          assists: errors == null ? "" : String(errors),
-          spread: teamSpread == null ? "" : String(teamSpread),
-          ats_result: ats ?? "",
+          points: runs,
+          opponentPoints: oppRuns,
+          rebounds: null,
+          assists: null,
+          yards: null,
+          spread: teamSpread,
+          atsResult: ats,
+          won: runs > oppRuns,
+          teamRank: null,
+          opponentRank: null,
+          bubbleStatus: null,
+          autoBidStatus: null,
+          ...NULL_BOX,
+          homeAway: comp.homeAway ?? null,
+          hits: hitsFromSummary,
+          errors: errorsFromSummary,
           source: "espn-public-api",
-          source_event_id: event.id,
-          game_status: getEspnGameStatus(event),
-          completion_evidence: "espn-status-completed",
+          sourceEventId: event.id,
+          gameStatus: getEspnGameStatus(event),
+          completionEvidence: "espn-status-completed",
         });
       }
     }
@@ -368,6 +828,8 @@ async function fetchMlbRecentRows(daysBack: number): Promise<MLBRecord[]> {
 
   return rows;
 }
+
+// ---------- Completion evidence ----------
 
 function statusLooksCompleted(status?: string | null) {
   const s = (status ?? "").toUpperCase();
@@ -402,137 +864,164 @@ function hasCompletionEvidence(row: {
   return Number.isFinite(row.points) && row.points > 0;
 }
 
+// ---------- Main ----------
+
 async function main() {
   const nbaCsvPath = path.join(root, "data", "raw", "nba", "sample_team_stats.csv");
   const nflJsonPath = path.join(root, "data", "raw", "nfl", "sample_team_stats.json");
   const ncaabCsvPath = path.join(root, "data", "raw", "ncaab", "sample_team_stats.csv");
   const mlbCsvPath = path.join(root, "data", "raw", "mlb", "sample_team_stats.csv");
 
-  const nbaRows = parseCsv<NBARecord>(fs.readFileSync(nbaCsvPath, "utf8"));
-  const nflRows: NFLRecord[] = JSON.parse(fs.readFileSync(nflJsonPath, "utf8"));
+  // Per-league days back with env overrides
+  const defaultDays = Number(process.env.DAYS_BACK ?? String(DEFAULT_DAYS_BACK));
+  const nbaDaysBack = Number(process.env.NBA_DAYS_BACK ?? String(defaultDays));
+  const nflDaysBack = Number(process.env.NFL_DAYS_BACK ?? String(defaultDays));
+  const ncaabDaysBack = Number(process.env.NCAAB_DAYS_BACK ?? String(defaultDays));
+  const mlbDaysBack = Number(process.env.MLB_DAYS_BACK ?? String(defaultDays));
 
-  const ncaabLookbackDays = Number(process.env.NCAAB_DAYS_BACK ?? "7");
-  const fetchedNcaabRows = await fetchNcaabRecentRows(ncaabLookbackDays);
-  const fallbackNcaabRows = fs.existsSync(ncaabCsvPath) ? parseCsv<NCAABRecord>(fs.readFileSync(ncaabCsvPath, "utf8")) : [];
-  const ncaabRows = fetchedNcaabRows.length ? fetchedNcaabRows : fallbackNcaabRows;
+  // Fetch all leagues from ESPN in parallel
+  const [fetchedNbaRows, fetchedNflRows, fetchedNcaabRows, fetchedMlbRows] = await Promise.all([
+    fetchNbaRecentRows(nbaDaysBack),
+    fetchNflRecentRows(nflDaysBack),
+    fetchNcaabRecentRows(ncaabDaysBack),
+    fetchMlbRecentRows(mlbDaysBack),
+  ]);
 
-  const mlbLookbackDays = Number(process.env.MLB_DAYS_BACK ?? "7");
-  const fetchedMlbRows = await fetchMlbRecentRows(mlbLookbackDays);
-  const fallbackMlbRows = fs.existsSync(mlbCsvPath) ? parseCsv<MLBRecord>(fs.readFileSync(mlbCsvPath, "utf8")) : [];
-  const mlbRows = fetchedMlbRows.length ? fetchedMlbRows : fallbackMlbRows;
+  // Fallbacks from static files
+  const fallbackNbaRows: NBARecord[] = fs.existsSync(nbaCsvPath) ? parseCsv<NBARecord>(fs.readFileSync(nbaCsvPath, "utf8")) : [];
+  const fallbackNflRows: NFLRecord[] = fs.existsSync(nflJsonPath) ? JSON.parse(fs.readFileSync(nflJsonPath, "utf8")) : [];
+  const fallbackNcaabRows: NCAABRecord[] = fs.existsSync(ncaabCsvPath) ? parseCsv<NCAABRecord>(fs.readFileSync(ncaabCsvPath, "utf8")) : [];
+  const fallbackMlbRows: MLBRecord[] = fs.existsSync(mlbCsvPath) ? parseCsv<MLBRecord>(fs.readFileSync(mlbCsvPath, "utf8")) : [];
+
+  // Use ESPN rows if available, otherwise fall back to static
+  const nbaRows = fetchedNbaRows.length ? fetchedNbaRows : fallbackNbaRows.map((row): IngestRow => ({
+    league: "NBA",
+    conference: null,
+    gameDate: new Date(row.date),
+    team: row.team,
+    opponent: row.opponent,
+    points: Number(row.points),
+    opponentPoints: null,
+    rebounds: Number(row.rebounds),
+    assists: Number(row.assists),
+    yards: null,
+    spread: null,
+    atsResult: null,
+    won: null,
+    teamRank: null,
+    opponentRank: null,
+    bubbleStatus: null,
+    autoBidStatus: null,
+    ...NULL_BOX,
+    source: row.source,
+    sourceEventId: null,
+    gameStatus: row.game_status ?? "MANUAL_FINAL_UNVERIFIED",
+    completionEvidence: row.completion_evidence ?? "manual-boxscore-export",
+  }));
+
+  const nflRows = fetchedNflRows.length ? fetchedNflRows : fallbackNflRows.map((row): IngestRow => ({
+    league: "NFL",
+    conference: null,
+    gameDate: new Date(row.date),
+    team: row.team,
+    opponent: row.opponent,
+    points: row.points,
+    opponentPoints: null,
+    rebounds: null,
+    assists: null,
+    yards: row.yards,
+    spread: null,
+    atsResult: null,
+    won: null,
+    teamRank: null,
+    opponentRank: null,
+    bubbleStatus: null,
+    autoBidStatus: null,
+    ...NULL_BOX,
+    source: row.source,
+    sourceEventId: null,
+    gameStatus: row.game_status ?? "MANUAL_FINAL_UNVERIFIED",
+    completionEvidence: row.completion_evidence ?? "manual-game-finder-export",
+  }));
+
+  const ncaabRows = fetchedNcaabRows.length ? fetchedNcaabRows : fallbackNcaabRows.map((row): IngestRow => {
+    const points = Number(row.points);
+    const opponentPoints = nullableNumber(row.opponent_points);
+    const spread = normalizeSpread(row.spread);
+    const ats = normalizeAtsResult(row.ats_result, points, opponentPoints, spread);
+    return {
+      league: "NCAAB",
+      conference: row.conference || null,
+      gameDate: new Date(row.date),
+      team: row.team,
+      opponent: row.opponent,
+      points,
+      opponentPoints,
+      rebounds: nullableNumber(row.rebounds),
+      assists: nullableNumber(row.assists),
+      yards: null,
+      spread,
+      atsResult: ats,
+      won: opponentPoints == null ? null : points > opponentPoints,
+      teamRank: nullableNumber(row.team_rank),
+      opponentRank: nullableNumber(row.opponent_rank),
+      bubbleStatus: row.bubble_status || null,
+      autoBidStatus: row.auto_bid_status || null,
+      ...NULL_BOX,
+      source: row.source,
+      sourceEventId: row.source_event_id ?? null,
+      gameStatus: defaultGameStatus(row.source, row.game_status),
+      completionEvidence: row.completion_evidence ?? "scored-game",
+    };
+  });
+
+  const mlbRows = fetchedMlbRows.length ? fetchedMlbRows : fallbackMlbRows.map((row): IngestRow => {
+    const runs = Number(row.points);
+    const opponentRuns = nullableNumber(row.opponent_points);
+    const spread = normalizeSpread(row.spread);
+    const ats = normalizeAtsResult(row.ats_result, runs, opponentRuns, spread);
+    return {
+      league: "MLB",
+      conference: row.division || null,
+      gameDate: new Date(row.date),
+      team: row.team,
+      opponent: row.opponent,
+      points: runs,
+      opponentPoints: opponentRuns,
+      rebounds: nullableNumber(row.rebounds),
+      assists: nullableNumber(row.assists),
+      yards: null,
+      spread,
+      atsResult: ats,
+      won: opponentRuns == null ? null : runs > opponentRuns,
+      teamRank: null,
+      opponentRank: null,
+      bubbleStatus: null,
+      autoBidStatus: null,
+      ...NULL_BOX,
+      hits: null,
+      errors: null,
+      source: row.source,
+      sourceEventId: row.source_event_id ?? null,
+      gameStatus: defaultGameStatus(row.source, row.game_status),
+      completionEvidence: row.completion_evidence ?? "scored-game",
+    };
+  });
+
+  // Save raw ESPN dumps
+  fs.mkdirSync(path.join(root, "data", "raw", "nba"), { recursive: true });
+  fs.writeFileSync(path.join(root, "data", "raw", "nba", "latest_espn_nba.json"), JSON.stringify(fetchedNbaRows, null, 2));
+
+  fs.mkdirSync(path.join(root, "data", "raw", "nfl"), { recursive: true });
+  fs.writeFileSync(path.join(root, "data", "raw", "nfl", "latest_espn_nfl.json"), JSON.stringify(fetchedNflRows, null, 2));
 
   fs.mkdirSync(path.join(root, "data", "raw", "ncaab"), { recursive: true });
-  fs.writeFileSync(path.join(root, "data", "raw", "ncaab", "latest_espn_ncaab.json"), JSON.stringify(ncaabRows, null, 2));
+  fs.writeFileSync(path.join(root, "data", "raw", "ncaab", "latest_espn_ncaab.json"), JSON.stringify(fetchedNcaabRows, null, 2));
 
   fs.mkdirSync(path.join(root, "data", "raw", "mlb"), { recursive: true });
-  fs.writeFileSync(path.join(root, "data", "raw", "mlb", "latest_espn_mlb.json"), JSON.stringify(mlbRows, null, 2));
+  fs.writeFileSync(path.join(root, "data", "raw", "mlb", "latest_espn_mlb.json"), JSON.stringify(fetchedMlbRows, null, 2));
 
-  const records = [
-    ...nbaRows.map((row) => ({
-      league: "NBA",
-      conference: null,
-      gameDate: new Date(row.date),
-      team: row.team,
-      opponent: row.opponent,
-      points: Number(row.points),
-      opponentPoints: null,
-      rebounds: Number(row.rebounds),
-      assists: Number(row.assists),
-      yards: null,
-      spread: null,
-      atsResult: null,
-      won: null,
-      teamRank: null,
-      opponentRank: null,
-      bubbleStatus: null,
-      autoBidStatus: null,
-      source: row.source,
-      sourceEventId: null,
-      gameStatus: row.game_status ?? "MANUAL_FINAL_UNVERIFIED",
-      completionEvidence: row.completion_evidence ?? "manual-boxscore-export",
-    })),
-    ...nflRows.map((row) => ({
-      league: "NFL",
-      conference: null,
-      gameDate: new Date(row.date),
-      team: row.team,
-      opponent: row.opponent,
-      points: row.points,
-      opponentPoints: null,
-      rebounds: null,
-      assists: null,
-      yards: row.yards,
-      spread: null,
-      atsResult: null,
-      won: null,
-      teamRank: null,
-      opponentRank: null,
-      bubbleStatus: null,
-      autoBidStatus: null,
-      source: row.source,
-      sourceEventId: null,
-      gameStatus: row.game_status ?? "MANUAL_FINAL_UNVERIFIED",
-      completionEvidence: row.completion_evidence ?? "manual-game-finder-export",
-    })),
-    ...ncaabRows.map((row) => {
-      const points = Number(row.points);
-      const opponentPoints = nullableNumber(row.opponent_points);
-      const spread = normalizeSpread(row.spread);
-      const ats = normalizeAtsResult(row.ats_result, points, opponentPoints, spread);
-      return {
-        league: "NCAAB",
-        conference: row.conference || null,
-        gameDate: new Date(row.date),
-        team: row.team,
-        opponent: row.opponent,
-        points,
-        opponentPoints,
-        rebounds: nullableNumber(row.rebounds),
-        assists: nullableNumber(row.assists),
-        yards: null,
-        spread,
-        atsResult: ats,
-        won: opponentPoints == null ? null : points > opponentPoints,
-        teamRank: nullableNumber(row.team_rank),
-        opponentRank: nullableNumber(row.opponent_rank),
-        bubbleStatus: row.bubble_status || null,
-        autoBidStatus: row.auto_bid_status || null,
-        source: row.source,
-        sourceEventId: row.source_event_id ?? null,
-        gameStatus: defaultGameStatus(row.source, row.game_status),
-        completionEvidence: row.completion_evidence ?? "scored-game",
-      };
-    }),
-    ...mlbRows.map((row) => {
-      const runs = Number(row.points);
-      const opponentRuns = nullableNumber(row.opponent_points);
-      const spread = normalizeSpread(row.spread);
-      const ats = normalizeAtsResult(row.ats_result, runs, opponentRuns, spread);
-      return {
-        league: "MLB",
-        conference: row.division || null,
-        gameDate: new Date(row.date),
-        team: row.team,
-        opponent: row.opponent,
-        points: runs,
-        opponentPoints: opponentRuns,
-        rebounds: nullableNumber(row.rebounds),
-        assists: nullableNumber(row.assists),
-        yards: null,
-        spread,
-        atsResult: ats,
-        won: opponentRuns == null ? null : runs > opponentRuns,
-        teamRank: null,
-        opponentRank: null,
-        bubbleStatus: null,
-        autoBidStatus: null,
-        source: row.source,
-        sourceEventId: row.source_event_id ?? null,
-        gameStatus: defaultGameStatus(row.source, row.game_status),
-        completionEvidence: row.completion_evidence ?? "scored-game",
-      };
-    }),
-  ];
+  const records: IngestRow[] = [...nbaRows, ...nflRows, ...ncaabRows, ...mlbRows];
 
   const acceptedRecords = records.filter((r) => hasCompletionEvidence(r));
   const rejectedRecords = records.filter((r) => !hasCompletionEvidence(r));
@@ -546,19 +1035,43 @@ async function main() {
     gameDate: new Date(r.gameDate),
   }));
 
-  const oddsPath = path.join(root, "data", "processed", "latest-odds-api.json");
+  const processedDir = path.join(root, "data", "processed");
+
+  const oddsPath = path.join(processedDir, "latest-odds-api.json");
   const oddsPayload = fs.existsSync(oddsPath)
     ? (JSON.parse(fs.readFileSync(oddsPath, "utf8")) as { events?: unknown[] })
     : null;
 
-  const summary = buildFreeStatsSummary(mapped, { oddsEvents: (oddsPayload?.events as never[] | undefined) ?? [] });
+  function loadJson<T>(filePath: string): T | null {
+    try { return fs.existsSync(filePath) ? (JSON.parse(fs.readFileSync(filePath, "utf8")) as T) : null; }
+    catch { return null; }
+  }
+
+  const standingsMap: Record<string, unknown[]> = {};
+  for (const key of ["nba", "nfl", "mlb", "ncaab"]) {
+    const data = loadJson<unknown[]>(path.join(processedDir, `standings-${key}.json`));
+    if (data) standingsMap[key] = data;
+  }
+  const injuriesMap: Record<string, unknown[]> = {};
+  for (const key of ["nba", "nfl"]) {
+    const data = loadJson<unknown[]>(path.join(processedDir, `injuries-${key}.json`));
+    if (data) injuriesMap[key] = data;
+  }
+
+  const summary = buildFreeStatsSummary(mapped, {
+    oddsEvents: (oddsPayload?.events as never[] | undefined) ?? [],
+    standings: standingsMap as never,
+    injuries: injuriesMap as never,
+  });
   const processedPath = path.join(root, "data", "processed", "latest-summary.json");
   fs.writeFileSync(processedPath, JSON.stringify(summary, null, 2));
 
-  console.log(`Ingested ${acceptedRecords.length}/${records.length} free stat rows (${ncaabRows.length} NCAAB, ${mlbRows.length} MLB).`);
+  console.log(`\nIngested ${acceptedRecords.length}/${records.length} free stat rows.`);
+  console.log(`  NBA: ${nbaRows.length} (source: ${fetchedNbaRows.length ? "espn-public-api" : "fallback-csv"})`);
+  console.log(`  NFL: ${nflRows.length} (source: ${fetchedNflRows.length ? "espn-public-api" : "fallback-json"})`);
+  console.log(`  NCAAB: ${ncaabRows.length} (source: ${fetchedNcaabRows.length ? "espn-public-api" : "fallback-csv"})`);
+  console.log(`  MLB: ${mlbRows.length} (source: ${fetchedMlbRows.length ? "espn-public-api" : "fallback-csv"})`);
   if (rejectedRecords.length) console.log(`Rejected ${rejectedRecords.length} rows lacking completion evidence.`);
-  console.log(`NCAAB source used: ${fetchedNcaabRows.length ? "espn-public-api" : "fallback-csv"}`);
-  console.log(`MLB source used: ${fetchedMlbRows.length ? "espn-public-api" : "fallback-csv"}`);
   console.log(`Wrote summary to ${processedPath}`);
 }
 

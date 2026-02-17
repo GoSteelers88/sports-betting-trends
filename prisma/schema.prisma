@@ -56,6 +56,36 @@ model FreeStat {
   opponentRank   Int?
   bubbleStatus   String?
   autoBidStatus  String?
+  // Basketball box score
+  fgm          Int?
+  fga          Int?
+  threepm      Int?
+  threepa      Int?
+  ftm          Int?
+  fta          Int?
+  offRebounds  Int?
+  defRebounds  Int?
+  steals       Int?
+  blocks       Int?
+  turnovers    Int?
+
+  // NFL box score
+  passingYards      Int?
+  rushingYards      Int?
+  opponentYards     Int?
+  turnoversFor      Int?
+  turnoversAgainst  Int?
+  thirdDownConv     Int?
+  thirdDownAtt      Int?
+  redZoneConv       Int?
+  redZoneAtt        Int?
+  timeOfPossession  Float?
+
+  // Universal
+  homeAway  String?
+  hits      Int?
+  errors    Int?
+
   source             String
   sourceEventId      String?
   gameStatus         String?
