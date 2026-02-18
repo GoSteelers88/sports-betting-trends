@@ -42,6 +42,34 @@ const MLB_DIVISIONS: Record<string, string> = {
   SF: "NL West",
 };
 
+const NBA_CONFERENCES: Record<string, string> = {
+  // Eastern - Atlantic
+  BOS: "Eastern", BKN: "Eastern", NYK: "Eastern", PHI: "Eastern", TOR: "Eastern",
+  // Eastern - Central
+  CHI: "Eastern", CLE: "Eastern", DET: "Eastern", IND: "Eastern", MIL: "Eastern",
+  // Eastern - Southeast
+  ATL: "Eastern", CHA: "Eastern", MIA: "Eastern", ORL: "Eastern", WSH: "Eastern",
+  // Western - Northwest
+  DEN: "Western", MIN: "Western", OKC: "Western", POR: "Western", UTA: "Western",
+  // Western - Pacific
+  GSW: "Western", LAC: "Western", LAL: "Western", PHX: "Western", SAC: "Western",
+  // Western - Southwest
+  DAL: "Western", HOU: "Western", MEM: "Western", NOP: "Western", SAS: "Western",
+};
+
+const NFL_DIVISIONS: Record<string, string> = {
+  // AFC
+  BUF: "AFC East", MIA: "AFC East", NE: "AFC East", NYJ: "AFC East",
+  BAL: "AFC North", CIN: "AFC North", CLE: "AFC North", PIT: "AFC North",
+  HOU: "AFC South", IND: "AFC South", JAX: "AFC South", TEN: "AFC South",
+  DEN: "AFC West", KC: "AFC West", LV: "AFC West", LAC: "AFC West",
+  // NFC
+  DAL: "NFC East", NYG: "NFC East", PHI: "NFC East", WSH: "NFC East",
+  CHI: "NFC North", DET: "NFC North", GB: "NFC North", MIN: "NFC North",
+  ATL: "NFC South", CAR: "NFC South", NO: "NFC South", TB: "NFC South",
+  ARI: "NFC West", LAR: "NFC West", SEA: "NFC West", SF: "NFC West",
+};
+
 type NBARecord = {
   date: string;
   team: string;
@@ -457,9 +485,13 @@ async function fetchNbaRecentRows(daysBack: number): Promise<IngestRow[]> {
         const teamSpread = comp.homeAway === "home" ? spreadValue : spreadValue == null ? null : -spreadValue;
         const ats = normalizeAtsResult(null, points, opponentPoints, teamSpread);
 
+        // Skip All-Star / exhibition teams that are not real NBA franchises
+        const nbaAbbr = comp.team?.abbreviation ?? "";
+        if (!NBA_CONFERENCES[nbaAbbr]) continue;
+
         rows.push({
           league: "NBA",
-          conference: null,
+          conference: NBA_CONFERENCES[nbaAbbr] ?? null,
           gameDate: new Date(event.date.slice(0, 10)),
           team: comp.team?.shortDisplayName ?? comp.team?.displayName ?? "Unknown",
           opponent: opponent.team?.shortDisplayName ?? opponent.team?.displayName ?? "Unknown",
@@ -585,7 +617,7 @@ async function fetchNflRecentRows(daysBack: number): Promise<IngestRow[]> {
 
         rows.push({
           league: "NFL",
-          conference: null,
+          conference: NFL_DIVISIONS[comp.team?.abbreviation ?? ""] ?? null,
           gameDate: new Date(event.date.slice(0, 10)),
           team: comp.team?.abbreviation ?? comp.team?.shortDisplayName ?? comp.team?.displayName ?? "Unknown",
           opponent: opponent.team?.abbreviation ?? opponent.team?.shortDisplayName ?? opponent.team?.displayName ?? "Unknown",
@@ -896,7 +928,7 @@ async function main() {
   // Use ESPN rows if available, otherwise fall back to static
   const nbaRows = fetchedNbaRows.length ? fetchedNbaRows : fallbackNbaRows.map((row): IngestRow => ({
     league: "NBA",
-    conference: null,
+    conference: NBA_CONFERENCES[row.team] ?? null,
     gameDate: new Date(row.date),
     team: row.team,
     opponent: row.opponent,
@@ -921,7 +953,7 @@ async function main() {
 
   const nflRows = fetchedNflRows.length ? fetchedNflRows : fallbackNflRows.map((row): IngestRow => ({
     league: "NFL",
-    conference: null,
+    conference: NFL_DIVISIONS[row.team] ?? null,
     gameDate: new Date(row.date),
     team: row.team,
     opponent: row.opponent,
