@@ -73,6 +73,17 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+// Regress large market spreads toward a realistic predicted margin.
+// Small spreads (≤7) get a minor 8% haircut. Larger spreads are progressively
+// compressed: -10 → -7.8, -15 → -10.0, -22 → -13.2.
+function regressionSpread(marketSpread: number | null): number | null {
+  if (marketSpread == null) return null;
+  const abs = Math.abs(marketSpread);
+  const sign = marketSpread < 0 ? -1 : 1;
+  const regressed = abs <= 7 ? abs * 0.92 : 6.44 + (abs - 7) * 0.45;
+  return Math.round(sign * regressed * 10) / 10;
+}
+
 function avg(values: Array<number | null | undefined>) {
   const valid = values.filter((v): v is number => typeof v === "number" && Number.isFinite(v));
   if (!valid.length) return null;
@@ -223,6 +234,7 @@ type BestBetGame = {
   pickTeam: string;
   opponent: string;
   spread: number | null;
+  modelSpread: number | null;
   line: string | null;
   score: number;
   confidence: number;
@@ -431,7 +443,13 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
         netRatingBonus(pickForm, oppForm) +
         sosBonus(pickForm, oppForm) +
         toMarginBonus(pickForm, oppForm);
-      const score = Math.round(clamp(rawScore, 1, 99));
+
+      const spread = pick.spread ?? null;
+      const modelSpread = regressionSpread(spread);
+
+      // Penalize confidence when picking a big favorite — large spreads historically underperform ATS
+      const largeFavPenalty = spread != null && spread < -10 ? (Math.abs(spread) - 10) * 1.0 : 0;
+      const score = Math.round(clamp(rawScore - largeFavPenalty, 1, 99));
       const confidence = Number((clamp(0.45 + Math.abs(score - 50) / 70, 0.35, 0.95) * 100).toFixed(0));
 
       const rationaleSignals = [
@@ -439,6 +457,11 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
         atsEdge == null ? "ATS edge unavailable (insufficient ATS history)" : `ATS edge ${atsEdge >= 0 ? "+" : ""}${atsEdge.toFixed(2)}`,
         `Model edge ${(pickForm.upsetProxy - oppForm.upsetProxy) >= 0 ? "+" : ""}${(pickForm.upsetProxy - oppForm.upsetProxy).toFixed(1)} (context signal)`,
       ];
+
+      // Surface model spread vs market spread when there's meaningful divergence
+      if (spread != null && modelSpread != null && Math.abs(spread - modelSpread) >= 3) {
+        rationaleSignals.push(`Market line ${spread > 0 ? "+" : ""}${spread}, model estimate ${modelSpread > 0 ? "+" : ""}${modelSpread} (regression to mean)`);
+      }
 
       // Add advanced metric signals
       if (pickForm.netRating != null && oppForm.netRating != null) {
@@ -453,7 +476,6 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
         rationaleSignals.push(`TO Margin edge: ${diff >= 0 ? "+" : ""}${diff.toFixed(2)}`);
       }
 
-      const spread = pick.spread ?? null;
       const line = spread == null ? null : `${pick.team} ${spread > 0 ? "+" : ""}${spread}`;
 
       return {
@@ -464,6 +486,7 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
         pickTeam: pick.team,
         opponent: pick.opponent,
         spread,
+        modelSpread,
         line,
         score,
         confidence,
@@ -585,10 +608,15 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
           : Number((pickForm.atsForm - oppForm.atsForm).toFixed(2));
 
       const modelEdge = pickHome ? homeEdge : awayEdge;
-      const score = Math.round(clamp(52 + modelEdge * 0.32, 1, 99));
+      const spread = spreadForTeamFromOdds(event, pickTeam);
+      const modelSpread = regressionSpread(spread);
+
+      // Penalize confidence when picking a big favorite — large spreads historically underperform ATS
+      const largeFavPenalty = spread != null && spread < -10 ? (Math.abs(spread) - 10) * 1.0 : 0;
+      const rawScore = Math.round(clamp(52 + modelEdge * 0.32, 1, 99));
+      const score = Math.round(clamp(rawScore - largeFavPenalty, 1, 99));
       const confidence = Number((clamp(0.45 + Math.abs(score - 50) / 95, 0.35, 0.9) * 100).toFixed(0));
 
-      const spread = spreadForTeamFromOdds(event, pickTeam);
       const line = spread == null ? null : `${pickTeam} ${spread > 0 ? "+" : ""}${spread}`;
 
       const pickHistoryCount = pickTeam === home ? homeHistory.length : awayHistory.length;
@@ -599,6 +627,11 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
         atsEdge == null ? "ATS edge unavailable (limited ATS sample)" : `ATS edge ${atsEdge >= 0 ? "+" : ""}${atsEdge.toFixed(2)}`,
         `History sample ${pickTeam}: ${pickHistoryCount} games (mapped ${pickTeam === home ? resolvedHome : resolvedAway}) vs ${opponent}: ${oppHistoryCount} games`,
       ];
+
+      // Surface model spread vs market spread when there's meaningful divergence
+      if (spread != null && modelSpread != null && Math.abs(spread - modelSpread) >= 3) {
+        rationaleSignals.push(`Market line ${spread > 0 ? "+" : ""}${spread}, model estimate ${modelSpread > 0 ? "+" : ""}${modelSpread} (regression to mean)`);
+      }
 
       if (pickForm.netRating != null && oppForm.netRating != null) {
         const diff = pickForm.netRating - oppForm.netRating;
@@ -616,6 +649,7 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
         pickTeam,
         opponent,
         spread,
+        modelSpread,
         line,
         score,
         confidence,

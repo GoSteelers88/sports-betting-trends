@@ -86,6 +86,7 @@ type BestBetGame = {
   pickTeam: string;
   opponent: string;
   spread: number | null;
+  modelSpread: number | null;
   line: string | null;
   score: number;
   confidence: number;
@@ -260,7 +261,11 @@ export default function Home() {
                     </p>
                     <p className="text-xs text-slate-300 sm:text-sm">
                       Pick {item.pickTeam}
-                      {item.line ? ` (${item.line})` : ""} | Score {item.score} | Confidence {item.confidence}%
+                      {item.line ? ` (${item.line})` : ""}
+                      {item.modelSpread != null && item.spread != null && Math.abs(item.spread - item.modelSpread) >= 3
+                        ? ` → model: ${item.modelSpread > 0 ? "+" : ""}${item.modelSpread}`
+                        : ""}{" "}
+                      | Score {item.score} | Confidence {item.confidence}%
                     </p>
                     <p className="text-xs text-slate-400">{item.rationaleSignals?.[0] ?? "Signal details unavailable"}</p>
                   </div>
@@ -462,7 +467,11 @@ export default function Home() {
                   <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md bg-slate-800/70 p-3">
                     <p className="font-medium">
                       {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""}) \u2014 Pick {item.pickTeam}
-                      {item.line ? ` (${item.line})` : ""} \u2014 Score {item.score}
+                      {item.line ? ` (${item.line})` : ""}
+                      {item.modelSpread != null && item.spread != null && Math.abs(item.spread - item.modelSpread) >= 3
+                        ? ` → model: ${item.modelSpread > 0 ? "+" : ""}${item.modelSpread}`
+                        : ""}{" "}
+                      \u2014 Score {item.score}
                     </p>
                     <p className="text-slate-300">
                       Confidence {item.confidence}% | Momentum edge {fmt(item.momentumEdge, 2)} | ATS edge {fmt(item.atsEdge, 2)}
