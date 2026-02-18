@@ -1192,6 +1192,24 @@ async function main() {
         console.log(`Embedded picks into ${agentsPath}`);
       }
     }
+
+    // Clear the betting agent's session JSONL so the next Discord message
+    // starts a fresh session with today's picks in the system prompt.
+    // Without this, a session started before the ingest would carry yesterday's
+    // picks in its baked-in system prompt even after AGENTS.md is updated.
+    const sessionsJsonPath = "C:\\Users\\Nate\\.openclaw\\agents\\betting\\sessions\\sessions.json";
+    if (fs.existsSync(sessionsJsonPath)) {
+      type SessionEntry = { sessionFile?: string; groupChannel?: string; sessionId?: string };
+      const sessions = JSON.parse(fs.readFileSync(sessionsJsonPath, "utf8")) as Record<string, SessionEntry>;
+      for (const [key, session] of Object.entries(sessions)) {
+        if (!key.includes("betting")) continue;
+        const sessionFile = session.sessionFile;
+        if (sessionFile && fs.existsSync(sessionFile)) {
+          fs.writeFileSync(sessionFile, "");
+          console.log(`Cleared betting session: ${sessionFile}`);
+        }
+      }
+    }
   } catch (e) {
     console.warn("Could not write picks to betting workspace:", (e as Error).message);
   }
