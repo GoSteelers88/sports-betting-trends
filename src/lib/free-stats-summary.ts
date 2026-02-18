@@ -84,6 +84,74 @@ function regressionSpread(marketSpread: number | null): number | null {
   return Math.round(sign * regressed * 10) / 10;
 }
 
+// ── Contextual adjustment helpers ──────────────────────────────────────────
+
+// Home advantage in composite score points by league (research-backed estimates)
+const HOME_ADVANTAGE_PTS: Record<string, number> = {
+  NBA: 2.5,
+  NFL: 2.5,
+  NCAAB: 3.5,
+  MLB: 1.0,
+};
+
+// Days between the team's most recent completed game and the upcoming game
+function daysOfRest(sortedHistory: FreeStatLike[], upcomingMs: number): number | null {
+  const lastGame = sortedHistory[0];
+  if (!lastGame) return null;
+  return Math.round((upcomingMs - lastGame.gameDate.getTime()) / 86400000);
+}
+
+// Score bonus for rest situation. Negative = fatigue, positive = well rested.
+function restEdgeBonus(days: number | null): number {
+  if (days == null) return 0;
+  if (days <= 1) return -4;    // back-to-back: significant fatigue
+  if (days === 2) return -1.5; // short rest
+  if (days >= 7) return 1.5;   // well rested
+  if (days >= 5) return 0.5;   // slightly fresh
+  return 0;                     // 3-4 days: normal
+}
+
+// Injury penalty in score points for a team. High-impact positions weighted more.
+function injuryEdgePenalty(team: string, injuries: InjuryEntry[], league: string): number {
+  const HIGH_IMPACT_POSITIONS: Record<string, string[]> = {
+    NFL: ["QB"],
+    NBA: ["C", "PF", "PG"],
+  };
+  const highPos = HIGH_IMPACT_POSITIONS[league] ?? [];
+  const teamLc = team.toLowerCase();
+  const relevant = injuries.filter((inj) => {
+    const injTeam = inj.team.toLowerCase();
+    return injTeam.includes(teamLc) || teamLc.includes(injTeam);
+  });
+  let penalty = 0;
+  for (const inj of relevant) {
+    const s = inj.status.toUpperCase();
+    const isHigh = highPos.some((p) => inj.position.toUpperCase().includes(p));
+    const base = s.includes("OUT") ? 1.5 : s.includes("DOUBTFUL") ? 0.8 : s.includes("QUESTIONABLE") ? 0.4 : 0;
+    penalty += isHigh ? base * 3 : base;
+  }
+  return Math.min(penalty, 8); // cap at 8 pts
+}
+
+// Bookmaker consensus: avg spread + variance across books (proxy for line movement / market certainty)
+function bookmakerConsensus(event: OddsEventLike, team: string): { avg: number | null; variance: number; bookCount: number } {
+  const points = (event.bookmakers ?? [])
+    .flatMap((b) => b.markets ?? [])
+    .filter((m) => m.key === "spreads")
+    .flatMap((m) => m.outcomes ?? [])
+    .filter((o) => o.name === team)
+    .map((o) => o.point)
+    .filter((p): p is number => typeof p === "number" && Number.isFinite(p));
+  if (!points.length) return { avg: null, variance: 0, bookCount: 0 };
+  const mean = points.reduce((a, b) => a + b, 0) / points.length;
+  const variance = points.length > 1
+    ? points.reduce((s, p) => s + (p - mean) ** 2, 0) / points.length
+    : 0;
+  return { avg: Math.round(mean * 10) / 10, variance: Math.round(variance * 100) / 100, bookCount: points.length };
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+
 function avg(values: Array<number | null | undefined>) {
   const valid = values.filter((v): v is number => typeof v === "number" && Number.isFinite(v));
   if (!valid.length) return null;
@@ -355,7 +423,7 @@ function computeTeamForm(league: string, rows: FreeStatLike[], standings?: Stand
   return { momentum, atsForm, upsetProxy, netRating, sos, turnoverMargin };
 }
 
-function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStatLike[], standings?: Record<string, StandingsEntry[]>) {
+function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStatLike[], standings?: Record<string, StandingsEntry[]>, injuries?: Record<string, InjuryEntry[]>) {
   if (!allRows.length) return [] as BestBetGame[];
 
   const todayEt = dayKeyInEt(new Date());
@@ -447,10 +515,32 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
       const spread = pick.spread ?? null;
       const modelSpread = regressionSpread(spread);
 
-      // Penalize confidence when picking a big favorite — large spreads historically underperform ATS
+      // ── Contextual adjustments ──────────────────────────────────────────
+      const gameMs = primary.gameDate.getTime();
+
+      // 1. Home/away advantage
+      const league = pick.league;
+      const homeAdv = HOME_ADVANTAGE_PTS[league] ?? 2.5;
+      const isPickHome = pick.homeAway === "home";
+      const homeAdjustment = isPickHome ? homeAdv : pick.homeAway === "away" ? -homeAdv : 0;
+
+      // 2. Rest/fatigue
+      const pickRestDays = daysOfRest(pickHistory, gameMs);
+      const oppRestDays = daysOfRest(oppHistory, gameMs);
+      const restAdjustment = restEdgeBonus(pickRestDays) - restEdgeBonus(oppRestDays);
+
+      // 3. Injury impact (NBA/NFL only — those are the leagues we have injury data for)
+      const leagueInjuries = injuries?.[league.toLowerCase()] ?? [];
+      const pickInjPenalty = injuryEdgePenalty(pick.team, leagueInjuries, league);
+      const oppInjPenalty = injuryEdgePenalty(pick.opponent, leagueInjuries, league);
+      const injuryAdjustment = oppInjPenalty - pickInjPenalty;
+
+      // 4. Large-favorite penalty (spread regression)
       const largeFavPenalty = spread != null && spread < -10 ? (Math.abs(spread) - 10) * 1.0 : 0;
-      const score = Math.round(clamp(rawScore - largeFavPenalty, 1, 99));
+
+      const score = Math.round(clamp(rawScore + homeAdjustment + restAdjustment + injuryAdjustment - largeFavPenalty, 1, 99));
       const confidence = Number((clamp(0.45 + Math.abs(score - 50) / 70, 0.35, 0.95) * 100).toFixed(0));
+      // ────────────────────────────────────────────────────────────────────
 
       const rationaleSignals = [
         `Momentum edge ${momentumEdge >= 0 ? "+" : ""}${momentumEdge.toFixed(2)} (last-10 trend)`,
@@ -458,12 +548,26 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
         `Model edge ${(pickForm.upsetProxy - oppForm.upsetProxy) >= 0 ? "+" : ""}${(pickForm.upsetProxy - oppForm.upsetProxy).toFixed(1)} (context signal)`,
       ];
 
-      // Surface model spread vs market spread when there's meaningful divergence
+      // Home/away signal
+      if (pick.homeAway) {
+        rationaleSignals.push(`${isPickHome ? "Home" : "Away"} (${isPickHome ? "+" : "-"}${homeAdv.toFixed(1)} pt adjustment)`);
+      }
+      // Rest signal
+      if (pickRestDays != null || oppRestDays != null) {
+        const pickLabel = pickRestDays == null ? "?" : pickRestDays <= 1 ? "B2B" : `${pickRestDays}d rest`;
+        const oppLabel = oppRestDays == null ? "?" : oppRestDays <= 1 ? "B2B" : `${oppRestDays}d rest`;
+        rationaleSignals.push(`Rest: ${pick.team} ${pickLabel} vs ${pick.opponent} ${oppLabel}`);
+      }
+      // Injury signals
+      if (pickInjPenalty > 0) rationaleSignals.push(`Injury penalty: ${pick.team} -${pickInjPenalty.toFixed(1)} pts`);
+      if (oppInjPenalty > 0) rationaleSignals.push(`Injury boost: ${pick.opponent} -${oppInjPenalty.toFixed(1)} pts (opponent)`);
+
+      // Spread regression signal
       if (spread != null && modelSpread != null && Math.abs(spread - modelSpread) >= 3) {
         rationaleSignals.push(`Market line ${spread > 0 ? "+" : ""}${spread}, model estimate ${modelSpread > 0 ? "+" : ""}${modelSpread} (regression to mean)`);
       }
 
-      // Add advanced metric signals
+      // Advanced metric signals
       if (pickForm.netRating != null && oppForm.netRating != null) {
         const diff = pickForm.netRating - oppForm.netRating;
         rationaleSignals.push(`Net Rating edge: ${diff >= 0 ? "+" : ""}${diff.toFixed(1)}`);
@@ -549,7 +653,7 @@ function resolveHistoryForOddsTeam(oddsTeam: string, historyByTeam: Record<strin
   return [byTokenOverlap.team, byTokenOverlap.rows] as const;
 }
 
-function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>) {
+function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[]) {
   const ncaabCompleted = completedRows.filter((r) => r.league === "NCAAB");
   if (!ncaabCompleted.length || !oddsEvents.length) return [] as BestBetGame[];
 
@@ -611,16 +715,42 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
       const spread = spreadForTeamFromOdds(event, pickTeam);
       const modelSpread = regressionSpread(spread);
 
-      // Penalize confidence when picking a big favorite — large spreads historically underperform ATS
+      // ── Contextual adjustments ──────────────────────────────────────────
+      const gameMs = new Date(event.commence_time!).getTime();
+
+      // 1. Home court advantage
+      const homeAdv = HOME_ADVANTAGE_PTS["NCAAB"];
+      const homeAdjustment = pickHome ? homeAdv : -homeAdv;
+
+      // 2. Rest/fatigue
+      const pickHistory = [...(pickHome ? homeHistory : awayHistory)];
+      const oppHistory = [...(pickHome ? awayHistory : homeHistory)];
+      const pickRestDays = daysOfRest(pickHistory, gameMs);
+      const oppRestDays = daysOfRest(oppHistory, gameMs);
+      const restAdjustment = restEdgeBonus(pickRestDays) - restEdgeBonus(oppRestDays);
+
+      // 3. Injury impact (no NCAAB injury data, but structure ready if added)
+      const ncaabInjuries = injuries ?? [];
+      const pickInjPenalty = injuryEdgePenalty(pickTeam, ncaabInjuries, "NCAAB");
+      const oppInjPenalty = injuryEdgePenalty(opponent, ncaabInjuries, "NCAAB");
+      const injuryAdjustment = oppInjPenalty - pickInjPenalty;
+
+      // 4. Bookmaker consensus (line movement proxy)
+      const consensus = bookmakerConsensus(event, pickTeam);
+      const consensusPenalty = consensus.variance > 1.0 ? 2 : 0; // high variance = less certainty
+
+      // 5. Large-favorite penalty
       const largeFavPenalty = spread != null && spread < -10 ? (Math.abs(spread) - 10) * 1.0 : 0;
-      const rawScore = Math.round(clamp(52 + modelEdge * 0.32, 1, 99));
-      const score = Math.round(clamp(rawScore - largeFavPenalty, 1, 99));
+
+      const rawScore = 52 + modelEdge * 0.32;
+      const score = Math.round(clamp(rawScore + homeAdjustment + restAdjustment + injuryAdjustment - largeFavPenalty - consensusPenalty, 1, 99));
       const confidence = Number((clamp(0.45 + Math.abs(score - 50) / 95, 0.35, 0.9) * 100).toFixed(0));
+      // ────────────────────────────────────────────────────────────────────
 
       const line = spread == null ? null : `${pickTeam} ${spread > 0 ? "+" : ""}${spread}`;
 
-      const pickHistoryCount = pickTeam === home ? homeHistory.length : awayHistory.length;
-      const oppHistoryCount = opponent === home ? homeHistory.length : awayHistory.length;
+      const pickHistoryCount = pickHistory.length;
+      const oppHistoryCount = oppHistory.length;
 
       const rationaleSignals = [
         `Momentum edge ${momentumEdge >= 0 ? "+" : ""}${momentumEdge.toFixed(2)} (last-10 trend proxy)`,
@@ -628,7 +758,23 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
         `History sample ${pickTeam}: ${pickHistoryCount} games (mapped ${pickTeam === home ? resolvedHome : resolvedAway}) vs ${opponent}: ${oppHistoryCount} games`,
       ];
 
-      // Surface model spread vs market spread when there's meaningful divergence
+      // Home court signal
+      rationaleSignals.push(`${pickHome ? "Home court" : "Away"} (+${pickHome ? homeAdv : -homeAdv} pt adjustment)`);
+
+      // Rest signal
+      if (pickRestDays != null || oppRestDays != null) {
+        const pickLabel = pickRestDays == null ? "?" : pickRestDays <= 1 ? "B2B" : `${pickRestDays}d rest`;
+        const oppLabel = oppRestDays == null ? "?" : oppRestDays <= 1 ? "B2B" : `${oppRestDays}d rest`;
+        rationaleSignals.push(`Rest: ${pickTeam} ${pickLabel} vs ${opponent} ${oppLabel}`);
+      }
+
+      // Bookmaker consensus signal
+      if (consensus.bookCount > 1) {
+        const certainty = consensus.variance <= 0.25 ? "tight consensus" : consensus.variance > 1.0 ? "high disagreement" : "moderate consensus";
+        rationaleSignals.push(`${consensus.bookCount} books: avg ${consensus.avg ?? spread}, variance ${consensus.variance} (${certainty})`);
+      }
+
+      // Spread regression signal
       if (spread != null && modelSpread != null && Math.abs(spread - modelSpread) >= 3) {
         rationaleSignals.push(`Market line ${spread > 0 ? "+" : ""}${spread}, model estimate ${modelSpread > 0 ? "+" : ""}${modelSpread} (regression to mean)`);
       }
@@ -798,8 +944,9 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptio
 
   const ncaabRows = completed.filter((r) => r.league === "NCAAB");
   const params = calibrateBestBetModel(ncaabRows);
-  const oddsBasedBets = buildNcaabOddsBestBets(completed, options?.oddsEvents ?? [], standingsMap);
-  const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed, standingsMap);
+  const injuriesMap = options?.injuries as Record<string, InjuryEntry[]> | undefined;
+  const oddsBasedBets = buildNcaabOddsBestBets(completed, options?.oddsEvents ?? [], standingsMap, injuriesMap?.ncaab);
+  const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed, standingsMap, injuriesMap);
   const topTarget = 5;
   const todayEt = dayKeyInEt(new Date());
   const bestBetsNote =
