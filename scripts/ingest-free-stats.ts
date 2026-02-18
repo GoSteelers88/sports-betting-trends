@@ -658,6 +658,28 @@ async function fetchNflRecentRows(daysBack: number): Promise<IngestRow[]> {
 
 async function fetchNcaabRecentRows(daysBack: number): Promise<IngestRow[]> {
   const rows: IngestRow[] = [];
+
+  // Build conference lookup from standings-ncaab.json (covers all 365 D1 teams)
+  type NcaabStandingEntry = { team: string; abbreviation: string; conference: string };
+  const ncaabStandingsPath = path.join(root, "data/processed/standings-ncaab.json");
+  const ncaabStandingsRaw: NcaabStandingEntry[] = fs.existsSync(ncaabStandingsPath)
+    ? (JSON.parse(fs.readFileSync(ncaabStandingsPath, "utf8")) as NcaabStandingEntry[])
+    : [];
+  const ncaabConfByName = new Map<string, string>();
+  const ncaabConfByAbbr = new Map<string, string>();
+  for (const entry of ncaabStandingsRaw) {
+    if (entry.team) ncaabConfByName.set(entry.team.toLowerCase(), entry.conference);
+    if (entry.abbreviation) ncaabConfByAbbr.set(entry.abbreviation.toUpperCase(), entry.conference);
+  }
+  const getTeamConf = (team: Record<string, unknown> | undefined): string => {
+    if (!team) return "Unknown";
+    const byAbbr = ncaabConfByAbbr.get(String(team.abbreviation ?? "").toUpperCase());
+    if (byAbbr) return byAbbr;
+    const byName = ncaabConfByName.get(String(team.displayName ?? "").toLowerCase());
+    if (byName) return byName;
+    return conferenceFromSummary({} as EspnSummary); // last-resort fallback
+  };
+
   const events = await collectCompletedEvents("basketball/mens-college-basketball", daysBack, 500, "50");
   console.log(`NCAAB: found ${events.length} completed events over ${daysBack} days`);
 
@@ -674,7 +696,6 @@ async function fetchNcaabRecentRows(daysBack: number): Promise<IngestRow[]> {
       const competitors = competition?.competitors ?? [];
       if (competitors.length !== 2) continue;
 
-      const conference = conferenceFromSummary(summary);
       const pick = ((summary.pickcenter as Array<Record<string, unknown>> | undefined) ?? [])[0];
       const spreadValue = normalizeSpread((pick?.spread as number | string | undefined) ?? (pick?.details as string | undefined) ?? "");
 
@@ -682,6 +703,7 @@ async function fetchNcaabRecentRows(daysBack: number): Promise<IngestRow[]> {
         const comp = competitors[ci];
         const opponentIdx = ci === 0 ? 1 : 0;
         const opponent = competitors[opponentIdx];
+        const conference = getTeamConf(comp.team as Record<string, unknown>);
 
         const points = nullableNumber(comp.score) ?? 0;
         const opponentPoints = nullableNumber(opponent.score) ?? 0;
