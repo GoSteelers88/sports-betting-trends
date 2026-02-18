@@ -1173,8 +1173,27 @@ async function main() {
 
     fs.writeFileSync(picksWorkspacePath, lines.join("\n"));
     console.log(`Wrote picks to ${picksWorkspacePath}`);
+
+    // Also embed picks into AGENTS.md between <!-- PICKS-START --> and <!-- PICKS-END -->
+    // markers so the bot gets them in its system prompt with zero tool calls.
+    const agentsPath = path.join(
+      process.env.OPENCLAW_WORKSPACE_BETTING ?? "C:\\Users\\Nate\\.openclaw\\workspace-betting",
+      "AGENTS.md",
+    );
+    if (fs.existsSync(agentsPath)) {
+      const agentsContent = fs.readFileSync(agentsPath, "utf8");
+      const picksBlock = lines.join("\n");
+      const updated = agentsContent.replace(
+        /<!-- PICKS-START -->[\s\S]*?<!-- PICKS-END -->/,
+        `<!-- PICKS-START -->\n${picksBlock}\n<!-- PICKS-END -->`,
+      );
+      if (updated !== agentsContent) {
+        fs.writeFileSync(agentsPath, updated);
+        console.log(`Embedded picks into ${agentsPath}`);
+      }
+    }
   } catch (e) {
-    console.warn("Could not write PICKS.md to betting workspace:", (e as Error).message);
+    console.warn("Could not write picks to betting workspace:", (e as Error).message);
   }
 
   console.log(`\nIngested ${acceptedRecords.length}/${records.length} free stat rows.`);
