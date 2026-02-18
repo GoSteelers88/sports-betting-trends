@@ -1120,6 +1120,63 @@ async function main() {
   const processedPath = path.join(root, "data", "processed", "latest-summary.json");
   fs.writeFileSync(processedPath, JSON.stringify(summary, null, 2));
 
+  // Write a pre-formatted compact picks file to the betting workspace so the
+  // Discord bot can respond instantly (one tiny file read vs full JSON parse).
+  try {
+    const picksWorkspacePath = path.join(
+      process.env.OPENCLAW_WORKSPACE_BETTING ?? "C:\\Users\\Nate\\.openclaw\\workspace-betting",
+      "PICKS.md",
+    );
+    const generatedEt = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      month: "numeric", day: "numeric", year: "numeric",
+      hour: "numeric", minute: "2-digit", hour12: true,
+    }).format(new Date(summary.generatedAt as string));
+
+    type BetEntry = {
+      pickTeam: string; opponent: string; league: string; conference?: string | null;
+      spread: number | null; modelSpread: number | null; score: number; confidence: number;
+      rationaleSignals?: string[];
+    };
+    const bets = (summary.bestBets as BetEntry[]) ?? [];
+    const leagueCounts: Record<string, number> = {};
+    for (const b of bets) leagueCounts[b.league] = (leagueCounts[b.league] ?? 0) + 1;
+    const leagueSummary = Object.entries(leagueCounts).map(([l, n]) => `${l}: ${n}`).join(", ");
+
+    const lines: string[] = [
+      `# Today's Picks — ${generatedEt} ET`,
+      `_${leagueSummary || "No picks today"}_`,
+      "",
+    ];
+
+    if (bets.length === 0) {
+      lines.push("No eligible picks found for today.");
+    } else {
+      bets.slice(0, 10).forEach((b, i) => {
+        const spreadStr = b.spread != null ? ` ${b.spread > 0 ? "+" : ""}${b.spread}` : "";
+        const modelStr = b.modelSpread != null && b.spread != null && Math.abs(b.spread - b.modelSpread) >= 3
+          ? ` (model: ${b.modelSpread > 0 ? "+" : ""}${b.modelSpread})`
+          : "";
+        const conf = `${b.league}${b.conference ? `/${b.conference}` : ""}`;
+        lines.push(`**${i + 1}. ${b.pickTeam}${spreadStr}${modelStr}** vs ${b.opponent} — ${conf}`);
+        lines.push(`Score: ${b.score} | Confidence: ${b.confidence}%`);
+        // Surface the 2 most useful signals
+        const signals = (b.rationaleSignals ?? []).slice(0, 2);
+        if (signals.length) lines.push(`_${signals.join(" · ")}_`);
+        lines.push("");
+      });
+      if (bets.length > 10) lines.push(`_...and ${bets.length - 10} more picks in latest-summary.json_`);
+    }
+
+    lines.push(`---`);
+    lines.push(`_Run \`npm run ingest:all\` to refresh. Full data: data/processed/latest-summary.json_`);
+
+    fs.writeFileSync(picksWorkspacePath, lines.join("\n"));
+    console.log(`Wrote picks to ${picksWorkspacePath}`);
+  } catch (e) {
+    console.warn("Could not write PICKS.md to betting workspace:", (e as Error).message);
+  }
+
   console.log(`\nIngested ${acceptedRecords.length}/${records.length} free stat rows.`);
   console.log(`  NBA: ${nbaRows.length} (source: ${fetchedNbaRows.length ? "espn-public-api" : "fallback-csv"})`);
   console.log(`  NFL: ${nflRows.length} (source: ${fetchedNflRows.length ? "espn-public-api" : "fallback-json"})`);
