@@ -669,6 +669,7 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
 
   const gamesToday = oddsEvents.filter((event) => {
     if (!event.home_team || !event.away_team || !event.commence_time) return false;
+    if (event.sport_key && event.sport_key !== "basketball_ncaab") return false;
     return dayKeyInEt(new Date(event.commence_time)) === todayEt;
   });
 

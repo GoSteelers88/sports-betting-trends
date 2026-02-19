@@ -1136,9 +1136,18 @@ async function main() {
     type BetEntry = {
       pickTeam: string; opponent: string; league: string; conference?: string | null;
       spread: number | null; modelSpread: number | null; score: number; confidence: number;
-      rationaleSignals?: string[];
+      rationaleSignals?: string[]; gameDate?: string | null;
     };
     const bets = (summary.bestBets as BetEntry[]) ?? [];
+    const fmtGameTime = (d: string | null | undefined): string => {
+      if (!d) return "";
+      const t = new Date(d);
+      if (isNaN(t.getTime())) return "";
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        hour: "numeric", minute: "2-digit", hour12: true,
+      }).format(t) + " ET";
+    };
     const leagueCounts: Record<string, number> = {};
     for (const b of bets) leagueCounts[b.league] = (leagueCounts[b.league] ?? 0) + 1;
     const leagueSummary = Object.entries(leagueCounts).map(([l, n]) => `${l}: ${n}`).join(", ");
@@ -1158,7 +1167,8 @@ async function main() {
           ? ` (model: ${b.modelSpread > 0 ? "+" : ""}${b.modelSpread})`
           : "";
         const conf = `${b.league}${b.conference ? `/${b.conference}` : ""}`;
-        lines.push(`**${i + 1}. ${b.pickTeam}${spreadStr}${modelStr}** vs ${b.opponent} — ${conf}`);
+        const gameTime = fmtGameTime(b.gameDate);
+        lines.push(`**${i + 1}. ${b.pickTeam}${spreadStr}${modelStr}** vs ${b.opponent} — ${conf}${gameTime ? ` · ${gameTime}` : ""}`);
         lines.push(`Score: ${b.score} | Confidence: ${b.confidence}%`);
         // Surface the 2 most useful signals
         const signals = (b.rationaleSignals ?? []).slice(0, 2);
