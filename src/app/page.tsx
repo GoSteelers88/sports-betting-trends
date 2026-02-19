@@ -119,6 +119,16 @@ type ApiResponse = {
   injuries?: Record<string, InjuryEntry[]>;
 };
 
+function fmtGameTime(d: string | null | undefined): string {
+  if (!d) return "";
+  const t = new Date(d);
+  if (isNaN(t.getTime())) return "";
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric", minute: "2-digit", hour12: true,
+  }).format(t) + " ET";
+}
+
 function fmt(n: number | null | undefined, digits = 1) {
   if (n == null) return "\u2014";
   return n.toFixed(digits);
@@ -257,7 +267,7 @@ export default function Home() {
                 {top5BestBets.map((item, idx) => (
                   <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md border border-emerald-500/20 bg-slate-900/80 p-3">
                     <p className="text-sm font-semibold text-white">
-                      #{idx + 1} {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""})
+                      #{idx + 1} {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""}){fmtGameTime(item.gameDate) ? ` · ${fmtGameTime(item.gameDate)}` : ""}
                     </p>
                     <p className="text-xs text-slate-300 sm:text-sm">
                       Pick {item.pickTeam}
@@ -466,7 +476,7 @@ export default function Home() {
                 {data.bestBets.map((item, idx) => (
                   <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md bg-slate-800/70 p-3">
                     <p className="font-medium">
-                      {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""}) \u2014 Pick {item.pickTeam}
+                      {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""}){fmtGameTime(item.gameDate) ? ` · ${fmtGameTime(item.gameDate)}` : ""} \u2014 Pick {item.pickTeam}
                       {item.line ? ` (${item.line})` : ""}
                       {item.modelSpread != null && item.spread != null && Math.abs(item.spread - item.modelSpread) >= 3
                         ? ` → model: ${item.modelSpread > 0 ? "+" : ""}${item.modelSpread}`

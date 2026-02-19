@@ -653,13 +653,13 @@ function resolveHistoryForOddsTeam(oddsTeam: string, historyByTeam: Record<strin
   return [byTokenOverlap.team, byTokenOverlap.rows] as const;
 }
 
-function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[]) {
-  const ncaabCompleted = completedRows.filter((r) => r.league === "NCAAB");
-  if (!ncaabCompleted.length || !oddsEvents.length) return [] as BestBetGame[];
+function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey: string, completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[]) {
+  const leagueCompleted = completedRows.filter((r) => r.league === league);
+  if (!leagueCompleted.length || !oddsEvents.length) return [] as BestBetGame[];
 
   const todayEt = dayKeyInEt(new Date());
-  const leagueStandings = standings?.ncaab ?? [];
-  const historyByTeam = ncaabCompleted.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
+  const leagueStandings = standings?.[standingsKey] ?? [];
+  const historyByTeam = leagueCompleted.reduce<Record<string, FreeStatLike[]>>((acc, row) => {
     if (!acc[row.team]) acc[row.team] = [];
     acc[row.team].push(row);
     return acc;
@@ -669,7 +669,7 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
 
   const gamesToday = oddsEvents.filter((event) => {
     if (!event.home_team || !event.away_team || !event.commence_time) return false;
-    if (event.sport_key && event.sport_key !== "basketball_ncaab") return false;
+    if (event.sport_key && event.sport_key !== sportKey) return false;
     return dayKeyInEt(new Date(event.commence_time)) === todayEt;
   });
 
@@ -681,8 +681,8 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
       const [resolvedHome, homeHistory] = resolveHistoryForOddsTeam(home, historyByTeam);
       const [resolvedAway, awayHistory] = resolveHistoryForOddsTeam(away, historyByTeam);
 
-      const homeForm = computeTeamForm("NCAAB", homeHistory.slice(0, 10), leagueStandings);
-      const awayForm = computeTeamForm("NCAAB", awayHistory.slice(0, 10), leagueStandings);
+      const homeForm = computeTeamForm(league, homeHistory.slice(0, 10), leagueStandings);
+      const awayForm = computeTeamForm(league, awayHistory.slice(0, 10), leagueStandings);
 
       const netRatingBonus = (form: TeamForm, oppF: TeamForm) => {
         if (form.netRating != null && oppF.netRating != null) return (form.netRating - oppF.netRating) * 0.5;
@@ -720,7 +720,7 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
       const gameMs = new Date(event.commence_time!).getTime();
 
       // 1. Home court advantage
-      const homeAdv = HOME_ADVANTAGE_PTS["NCAAB"];
+      const homeAdv = HOME_ADVANTAGE_PTS[league] ?? 2.5;
       const homeAdjustment = pickHome ? homeAdv : -homeAdv;
 
       // 2. Rest/fatigue
@@ -730,10 +730,10 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
       const oppRestDays = daysOfRest(oppHistory, gameMs);
       const restAdjustment = restEdgeBonus(pickRestDays) - restEdgeBonus(oppRestDays);
 
-      // 3. Injury impact (no NCAAB injury data, but structure ready if added)
-      const ncaabInjuries = injuries ?? [];
-      const pickInjPenalty = injuryEdgePenalty(pickTeam, ncaabInjuries, "NCAAB");
-      const oppInjPenalty = injuryEdgePenalty(opponent, ncaabInjuries, "NCAAB");
+      // 3. Injury impact
+      const leagueInjuries = injuries ?? [];
+      const pickInjPenalty = injuryEdgePenalty(pickTeam, leagueInjuries, league);
+      const oppInjPenalty = injuryEdgePenalty(opponent, leagueInjuries, league);
       const injuryAdjustment = oppInjPenalty - pickInjPenalty;
 
       // 4. Bookmaker consensus (line movement proxy)
@@ -789,7 +789,7 @@ function buildNcaabOddsBestBets(completedRows: FreeStatLike[], oddsEvents: OddsE
       }
 
       return {
-        league: "NCAAB",
+        league,
         conference: null,
         gameDate: new Date(event.commence_time!),
         matchup: `${away} at ${home}`,
@@ -946,7 +946,10 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptio
   const ncaabRows = completed.filter((r) => r.league === "NCAAB");
   const params = calibrateBestBetModel(ncaabRows);
   const injuriesMap = options?.injuries as Record<string, InjuryEntry[]> | undefined;
-  const oddsBasedBets = buildNcaabOddsBestBets(completed, options?.oddsEvents ?? [], standingsMap, injuriesMap?.ncaab);
+  const oddsEvents = options?.oddsEvents ?? [];
+  const ncaabBets = buildLeagueOddsBestBets("NCAAB", "basketball_ncaab", "ncaab", completed, oddsEvents, standingsMap, injuriesMap?.ncaab);
+  const nbaBets = buildLeagueOddsBestBets("NBA", "basketball_nba", "nba", completed, oddsEvents, standingsMap, injuriesMap?.nba);
+  const oddsBasedBets = [...ncaabBets, ...nbaBets].sort((a, b) => b.score - a.score);
   const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed, standingsMap, injuriesMap);
   const topTarget = 5;
   const todayEt = dayKeyInEt(new Date());
