@@ -1136,12 +1136,12 @@ async function main() {
     type BetEntry = {
       pickTeam: string; opponent: string; league: string; conference?: string | null;
       spread: number | null; modelSpread: number | null; score: number; confidence: number;
-      rationaleSignals?: string[]; gameDate?: string | null;
+      rationaleSignals?: string[]; gameDate?: string | Date | null;
     };
-    const bets = (summary.bestBets as BetEntry[]) ?? [];
-    const fmtGameTime = (d: string | null | undefined): string => {
+    const bets = (summary.bestBets as unknown as BetEntry[]) ?? [];
+    const fmtGameTime = (d: string | Date | null | undefined): string => {
       if (!d) return "";
-      const t = new Date(d);
+      const t = d instanceof Date ? d : new Date(d);
       if (isNaN(t.getTime())) return "";
       return new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York",
