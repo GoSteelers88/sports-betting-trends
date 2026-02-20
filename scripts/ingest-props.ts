@@ -1,11 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { loadEnvConfig } from "@next/env";
 import { getRequiredEnv } from "../src/lib/server-env";
 
 const root = process.cwd();
 const outDir = path.join(root, "data", "processed");
 const outPath = path.join(outDir, "latest-player-props.json");
+const pythonDir = path.join(root, "scripts", "python");
 
 const MARKET_KEYS = [
   "player_points",
@@ -44,6 +46,17 @@ type PropRow = {
   modelProjection: number;
   edgeVsLine: number;
   dataQuality: "high" | "medium" | "low";
+  // Probabilistic model fields
+  modelMean: number;
+  modelStd: number;
+  modelPOver: number;
+  modelPUnder: number;
+  expectedValueOver: number;
+  expectedValueUnder: number;
+  distributionFamily: string;
+  minutesMean: number | null;
+  minutesStd: number | null;
+  minutesPDNP: number | null;
 };
 
 type Output = {
@@ -94,6 +107,35 @@ type PlayerGame = {
   turnovers: number | null;
   fga: number | null;
   fta: number | null;
+};
+
+// Python sidecar types
+type PythonPlayerInput = {
+  player: string;
+  market: string;
+  consensusLine: number;
+  overPrices: number[];
+  underPrices: number[];
+  isHome: boolean | null;
+  opponent: string | null;
+  restDays: number | null;
+  heuristicProjection: number;
+  games: PlayerGame[];
+};
+
+type PythonModelResult = {
+  player: string;
+  market: string;
+  modelMean: number;
+  modelStd: number;
+  modelPOver: number;
+  modelPUnder: number;
+  expectedValueOver: number;
+  expectedValueUnder: number;
+  distributionFamily: string;
+  minutesMean: number | null;
+  minutesStd: number | null;
+  minutesPDNP: number | null;
 };
 
 function normalizeName(value: string) {
@@ -369,6 +411,45 @@ function buildProjection(rows: PlayerGame[], market: MarketKey, opponent: string
   };
 }
 
+function runPythonModel(players: PythonPlayerInput[]): PythonModelResult[] | null {
+  const payload = { players };
+  const result = spawnSync("python", [path.join(pythonDir, "props_model.py")], {
+    input: JSON.stringify(payload),
+    encoding: "utf-8",
+    timeout: 180_000,
+    cwd: pythonDir,
+  });
+
+  if (result.error) {
+    console.warn("[props] Python spawn error:", result.error.message);
+    return null;
+  }
+  if (result.status !== 0) {
+    const stderr = result.stderr?.slice(0, 800) ?? "";
+    console.warn(`[props] Python exited with status ${result.status}:\n${stderr}`);
+    return null;
+  }
+  if (!result.stdout?.trim()) {
+    console.warn("[props] Python returned empty stdout");
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(result.stdout) as { results: PythonModelResult[]; errors: string[] };
+    if (parsed.errors?.length) {
+      for (const e of parsed.errors.slice(0, 3)) console.warn("[props] Python error:", e.slice(0, 200));
+    }
+    return parsed.results;
+  } catch {
+    console.warn("[props] Failed to parse Python output");
+    return null;
+  }
+}
+
+function qualityScore(q: "high" | "medium" | "low") {
+  return q === "high" ? 2 : q === "medium" ? 1 : 0;
+}
+
 async function main() {
   loadEnvConfig(root);
   const apiKey = getRequiredEnv("THE_ODDS_API_KEY");
@@ -398,7 +479,34 @@ async function main() {
   }
 
   const history = await buildPlayerHistory(75);
-  const rows: PropRow[] = [];
+
+  // Save player history snapshot for backtesting
+  const historySnapshot: Record<string, PlayerGame[]> = {};
+  for (const [k, v] of history.entries()) historySnapshot[k] = v;
+  fs.writeFileSync(
+    path.join(outDir, "player-history-snapshot.json"),
+    JSON.stringify(historySnapshot)
+  );
+
+  // Accumulate all player-market pairs across events for batch Python call
+  const pythonInputs: PythonPlayerInput[] = [];
+
+  type PropAccumulator = {
+    player: string;
+    market: MarketKey;
+    team: string | null;
+    opponent: string | null;
+    gameDate: string;
+    lines: number[];
+    overPrices: number[];
+    underPrices: number[];
+    isHome: boolean | null;
+    playerGames: PlayerGame[];
+    heuristicProjection: number;
+    restDays: number | null;
+  };
+
+  const allAccumulators: PropAccumulator[] = [];
   const availableMarkets = new Set<string>();
   let eventsWithProps = 0;
   let accessDenied = 0;
@@ -457,76 +565,173 @@ async function main() {
       const playerKey = normalizeName(item.player);
       const playerGames = history.get(playerKey) ?? [];
 
-      const overProbRaw = americanToProb(avg(item.overPrices) ?? null);
-      const underProbRaw = americanToProb(avg(item.underPrices) ?? null);
-      const vigDenom = (overProbRaw ?? 0) + (underProbRaw ?? 0);
-      const overNoVig = vigDenom > 0 ? (overProbRaw ?? 0) / vigDenom : null;
-      const underNoVig = vigDenom > 0 ? (underProbRaw ?? 0) / vigDenom : null;
-
       const isHome = normalizeName(event.home_team) === normalizeName(playerGames[0]?.team ?? "") ? true : normalizeName(event.away_team) === normalizeName(playerGames[0]?.team ?? "") ? false : null;
       const opponent = isHome == null ? null : isHome ? event.away_team : event.home_team;
-      const projection = buildProjection(playerGames, item.market, opponent, isHome, item.gameDate, history);
+      const proj = buildProjection(playerGames, item.market, opponent, isHome, item.gameDate, history);
 
-      const consensusLine = avg(item.lines) ?? item.lines[0] ?? 0;
-      const edge = projection.projection - consensusLine;
-      const pickSide: PickSide = edge >= 0 ? "over" : "under";
+      const lastGame = playerGames[0] ? new Date(playerGames[0].date).getTime() : null;
+      const upcoming = new Date(item.gameDate).getTime();
+      const restDays = lastGame == null ? null : Math.round((upcoming - lastGame) / 86400000);
 
-      const stdev = projection.stdDev ?? 4;
-      const zEdge = Math.abs(edge) / Math.max(1.5, stdev);
-      const sampleBoost = Math.log10(Math.max(1, projection.sample + 1)) * 10;
-      const sparsePenalty = projection.sample < 8 ? 18 : projection.sample < 12 ? 10 : 0;
-      const missingMinutesPenalty = projection.minuteTrend === 0 ? 3 : 0;
-      const confidence = Math.round(clamp(38 + zEdge * 14 + sampleBoost - sparsePenalty - missingMinutesPenalty, 28, 84));
-
-      const dataQuality: "high" | "medium" | "low" = projection.sample >= 18 ? "high" : projection.sample >= 10 ? "medium" : "low";
-      const cappedConfidence = dataQuality === "low" ? Math.min(confidence, 58) : dataQuality === "medium" ? Math.min(confidence, 72) : confidence;
-
-      const rationale = [
-        `Form windows: L5 ${projection.l5Avg?.toFixed(1) ?? "n/a"}, L10 ${projection.l10Avg?.toFixed(1) ?? "n/a"}, season ${projection.seasonAvg?.toFixed(1) ?? "n/a"}`,
-        `Minutes trend ${projection.minuteTrend >= 0 ? "+" : ""}${projection.minuteTrend.toFixed(1)} vs season; usage trend ${projection.usageTrend >= 0 ? "+" : ""}${projection.usageTrend.toFixed(2)}`,
-        `Consensus line ${consensusLine.toFixed(1)} across ${item.lines.length} books; model ${projection.projection.toFixed(1)} (${edge >= 0 ? "+" : ""}${edge.toFixed(1)} edge)`,
-        overNoVig != null && underNoVig != null
-          ? `No-vig implied probs: Over ${(overNoVig * 100).toFixed(1)}% / Under ${(underNoVig * 100).toFixed(1)}%`
-          : "No-vig probabilities unavailable (missing two-way prices)",
-        projection.restDays != null
-          ? `Rest context: ${projection.restDays <= 1 ? "back-to-back" : `${projection.restDays} days rest`}`
-          : "Rest context unavailable",
-      ];
-      if (projection.oppAllowance != null) rationale.push(`Opponent allowance proxy (${marketLabel(item.market)}): ${projection.oppAllowance.toFixed(1)}`);
-      if (dataQuality !== "high") rationale.push(`Guardrail: ${dataQuality} sample quality (${projection.sample} games) → confidence capped.`);
-
-      rows.push({
+      allAccumulators.push({
         player: item.player,
+        market: item.market,
         team: playerGames[0]?.team ?? null,
         opponent,
+        gameDate: item.gameDate,
+        lines: item.lines,
+        overPrices: item.overPrices,
+        underPrices: item.underPrices,
+        isHome,
+        playerGames,
+        heuristicProjection: proj.projection,
+        restDays,
+      });
+
+      pythonInputs.push({
+        player: item.player,
         market: item.market,
-        marketLabel: marketLabel(item.market),
-        category: marketCategory(item.market),
-        line: Number(consensusLine.toFixed(1)),
-        overPrice: item.overPrices.length ? Math.round(Math.max(...item.overPrices)) : null,
-        underPrice: item.underPrices.length ? Math.round(Math.max(...item.underPrices)) : null,
-        consensusLine: Number(consensusLine.toFixed(2)),
-        impliedOverProbNoVig: overNoVig != null ? Number(overNoVig.toFixed(4)) : null,
-        impliedUnderProbNoVig: underNoVig != null ? Number(underNoVig.toFixed(4)) : null,
-        pickSide,
-        confidence: cappedConfidence,
-        rationaleSignals: rationale,
-        modelProjection: Number(projection.projection.toFixed(2)),
-        edgeVsLine: Number(edge.toFixed(2)),
-        dataQuality,
+        consensusLine: avg(item.lines) ?? item.lines[0] ?? 0,
+        overPrices: item.overPrices,
+        underPrices: item.underPrices,
+        isHome,
+        opponent,
+        restDays,
+        heuristicProjection: proj.projection,
+        games: playerGames,
       });
     }
   }
 
-  const ranked = rows
-    .sort((a, b) => {
-      const qa = a.dataQuality === "high" ? 2 : a.dataQuality === "medium" ? 1 : 0;
-      const qb = b.dataQuality === "high" ? 2 : b.dataQuality === "medium" ? 1 : 0;
-      if (qb !== qa) return qb - qa;
-      if (b.confidence !== a.confidence) return b.confidence - a.confidence;
-      if (Math.abs(b.edgeVsLine) !== Math.abs(a.edgeVsLine)) return Math.abs(b.edgeVsLine) - Math.abs(a.edgeVsLine);
-      return `${a.player}-${a.market}`.localeCompare(`${b.player}-${b.market}`);
+  // Run Python model (batch — one call for all players)
+  console.log(`[props] Running Python model for ${pythonInputs.length} player-market pairs...`);
+  const pythonResults = runPythonModel(pythonInputs);
+  const pythonMap = new Map<string, PythonModelResult>();
+  if (pythonResults) {
+    for (const r of pythonResults) {
+      pythonMap.set(`${normalizeName(r.player)}|${r.market}`, r);
+    }
+    console.log(`[props] Python model returned ${pythonResults.length} results`);
+  } else {
+    console.warn("[props] Python model unavailable — using heuristic fallback for all props");
+  }
+
+  const rows: PropRow[] = [];
+
+  for (const item of allAccumulators) {
+    const playerKey = normalizeName(item.player);
+    const playerGames = item.playerGames;
+    const proj = buildProjection(playerGames, item.market, item.opponent, item.isHome, item.gameDate, history);
+
+    const overProbRaw = americanToProb(avg(item.overPrices) ?? null);
+    const underProbRaw = americanToProb(avg(item.underPrices) ?? null);
+    const vigDenom = (overProbRaw ?? 0) + (underProbRaw ?? 0);
+    const overNoVig = vigDenom > 0 ? (overProbRaw ?? 0) / vigDenom : null;
+    const underNoVig = vigDenom > 0 ? (underProbRaw ?? 0) / vigDenom : null;
+
+    const consensusLine = avg(item.lines) ?? item.lines[0] ?? 0;
+    const edge = proj.projection - consensusLine;
+
+    const stdev = proj.stdDev ?? 4;
+    const zEdge = Math.abs(edge) / Math.max(1.5, stdev);
+    const sampleBoost = Math.log10(Math.max(1, proj.sample + 1)) * 10;
+    const sparsePenalty = proj.sample < 8 ? 18 : proj.sample < 12 ? 10 : 0;
+    const missingMinutesPenalty = proj.minuteTrend === 0 ? 3 : 0;
+    const confidence = Math.round(clamp(38 + zEdge * 14 + sampleBoost - sparsePenalty - missingMinutesPenalty, 28, 84));
+
+    const dataQuality: "high" | "medium" | "low" = proj.sample >= 18 ? "high" : proj.sample >= 10 ? "medium" : "low";
+    const cappedConfidence = dataQuality === "low" ? Math.min(confidence, 58) : dataQuality === "medium" ? Math.min(confidence, 72) : confidence;
+
+    // Merge Python model results (or fallback to heuristic-derived values)
+    const pyKey = `${playerKey}|${item.market}`;
+    const py = pythonMap.get(pyKey);
+
+    const modelMean = py?.modelMean ?? proj.projection;
+    const modelStd = py?.modelStd ?? (proj.stdDev ?? 4);
+    const modelPOver = py?.modelPOver ?? (edge >= 0 ? 0.52 : 0.48);
+    const modelPUnder = py?.modelPUnder ?? (1 - modelPOver);
+    const expectedValueOver = py?.expectedValueOver ?? 0;
+    const expectedValueUnder = py?.expectedValueUnder ?? 0;
+    const distributionFamily = py?.distributionFamily ?? "fallback";
+    const minutesMean = py?.minutesMean ?? null;
+    const minutesStd = py?.minutesStd ?? null;
+    const minutesPDNP = py?.minutesPDNP ?? null;
+
+    // Pick side: use Python P(over) if available, else heuristic edge
+    const pickSide: PickSide = py
+      ? (modelPOver >= modelPUnder ? "over" : "under")
+      : (edge >= 0 ? "over" : "under");
+
+    const rationale: string[] = [
+      `Form windows: L5 ${proj.l5Avg?.toFixed(1) ?? "n/a"}, L10 ${proj.l10Avg?.toFixed(1) ?? "n/a"}, season ${proj.seasonAvg?.toFixed(1) ?? "n/a"}`,
+      `Minutes trend ${proj.minuteTrend >= 0 ? "+" : ""}${proj.minuteTrend.toFixed(1)} vs season; usage trend ${proj.usageTrend >= 0 ? "+" : ""}${proj.usageTrend.toFixed(2)}`,
+      `Consensus line ${consensusLine.toFixed(1)} across ${item.lines.length} books; model ${proj.projection.toFixed(1)} (${edge >= 0 ? "+" : ""}${edge.toFixed(1)} edge)`,
+      overNoVig != null && underNoVig != null
+        ? `No-vig implied probs: Over ${(overNoVig * 100).toFixed(1)}% / Under ${(underNoVig * 100).toFixed(1)}%`
+        : "No-vig probabilities unavailable (missing two-way prices)",
+      proj.restDays != null
+        ? `Rest context: ${proj.restDays <= 1 ? "back-to-back" : `${proj.restDays} days rest`}`
+        : "Rest context unavailable",
+    ];
+    if (proj.oppAllowance != null) rationale.push(`Opponent allowance proxy (${marketLabel(item.market)}): ${proj.oppAllowance.toFixed(1)}`);
+    if (dataQuality !== "high") rationale.push(`Guardrail: ${dataQuality} sample quality (${proj.sample} games) → confidence capped.`);
+
+    if (py && distributionFamily !== "fallback") {
+      rationale.push(`Distribution: ${distributionFamily} | modelMean ${modelMean.toFixed(1)} ± ${modelStd.toFixed(1)} | P(over) ${(modelPOver * 100).toFixed(1)}%`);
+      rationale.push(`EV: Over ${expectedValueOver >= 0 ? "+" : ""}${(expectedValueOver * 100).toFixed(1)}¢ / Under ${expectedValueUnder >= 0 ? "+" : ""}${(expectedValueUnder * 100).toFixed(1)}¢ per $1 → pick ${pickSide.toUpperCase()}`);
+      if (minutesMean != null) rationale.push(`Minutes: ~${minutesMean.toFixed(1)} ± ${minutesStd?.toFixed(1) ?? "?"} min | P(DNP/limited): ${((minutesPDNP ?? 0) * 100).toFixed(1)}%`);
+    } else {
+      rationale.push("Model: heuristic (Python unavailable or insufficient data)");
+    }
+
+    rows.push({
+      player: item.player,
+      team: playerGames[0]?.team ?? null,
+      opponent: item.opponent,
+      market: item.market,
+      marketLabel: marketLabel(item.market),
+      category: marketCategory(item.market),
+      line: Number(consensusLine.toFixed(1)),
+      overPrice: item.overPrices.length ? Math.round(Math.max(...item.overPrices)) : null,
+      underPrice: item.underPrices.length ? Math.round(Math.max(...item.underPrices)) : null,
+      consensusLine: Number(consensusLine.toFixed(2)),
+      impliedOverProbNoVig: overNoVig != null ? Number(overNoVig.toFixed(4)) : null,
+      impliedUnderProbNoVig: underNoVig != null ? Number(underNoVig.toFixed(4)) : null,
+      pickSide,
+      confidence: cappedConfidence,
+      rationaleSignals: rationale,
+      modelProjection: Number(proj.projection.toFixed(2)),
+      edgeVsLine: Number(edge.toFixed(2)),
+      dataQuality,
+      modelMean: Number(modelMean.toFixed(3)),
+      modelStd: Number(modelStd.toFixed(3)),
+      modelPOver: Number(modelPOver.toFixed(4)),
+      modelPUnder: Number(modelPUnder.toFixed(4)),
+      expectedValueOver: Number(expectedValueOver.toFixed(4)),
+      expectedValueUnder: Number(expectedValueUnder.toFixed(4)),
+      distributionFamily,
+      minutesMean: minutesMean != null ? Number(minutesMean.toFixed(2)) : null,
+      minutesStd: minutesStd != null ? Number(minutesStd.toFixed(2)) : null,
+      minutesPDNP: minutesPDNP != null ? Number(minutesPDNP.toFixed(4)) : null,
     });
+  }
+
+  // Rank by EV (primary) → data quality (secondary) → confidence (tertiary)
+  const ranked = rows.sort((a, b) => {
+    const evA = Math.max(a.expectedValueOver, a.expectedValueUnder);
+    const evB = Math.max(b.expectedValueOver, b.expectedValueUnder);
+    if (Math.abs(evB - evA) > 0.005) return evB - evA;
+    const qa = qualityScore(a.dataQuality);
+    const qb = qualityScore(b.dataQuality);
+    if (qb !== qa) return qb - qa;
+    if (b.confidence !== a.confidence) return b.confidence - a.confidence;
+    if (Math.abs(b.edgeVsLine) !== Math.abs(a.edgeVsLine)) return Math.abs(b.edgeVsLine) - Math.abs(a.edgeVsLine);
+    return `${a.player}-${a.market}`.localeCompare(`${b.player}-${b.market}`);
+  });
+
+  // topProps: top 5 where model has an edge (P > 52%) or fallback to overall top 5
+  const withEdge = ranked.filter((r) => r.modelPOver > 0.52 || r.modelPUnder > 0.52);
+  const topProps = withEdge.length >= 5 ? withEdge.slice(0, 5) : ranked.slice(0, 5);
 
   const available = ranked.length > 0;
   const note = !available
@@ -544,7 +749,7 @@ async function main() {
     marketsAvailable: [...availableMarkets].sort(),
     eventsConsidered: events.length,
     eventsWithProps,
-    topProps: ranked.slice(0, 5),
+    topProps,
     props: ranked,
   };
 
@@ -558,4 +763,3 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-

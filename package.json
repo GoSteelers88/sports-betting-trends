@@ -15,6 +15,8 @@
     "ingest:polymarket": "tsx scripts/ingest-polymarket.ts",
     "ingest:odds": "tsx scripts/ingest-odds-api.ts",
     "ingest:props": "tsx scripts/ingest-props.ts",
+    "setup:python": "python -m pip install -r scripts/python/requirements.txt",
+    "backtest:props": "python scripts/python/backtest.py",
     "ingest:kalshi": "tsx scripts/ingest-kalshi.ts",
     "test:kalshi": "tsx scripts/test-kalshi.ts",
     "ingest:all": "npm run ingest:context && npm run ingest:odds && npm run ingest:free && npm run ingest:kalshi",
