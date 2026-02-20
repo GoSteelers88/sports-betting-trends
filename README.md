@@ -66,7 +66,7 @@ npm run dev
 - `GET /api/props?league=ALL&minEdge=4`
 - `GET /api/bankroll`
 - `GET /api/strategy-notes`
-- `GET /api/free-stats/summary?league=ALL&conference=ALL` (NBA/NFL/NCAAB/MLB ingested free-data summary + trend scoring + best bets)
+- `GET /api/free-stats/summary?league=ALL&conference=ALL` (NBA/NFL/NCAAB/MLB ingested free-data summary + trend scoring + best bets + Top 5 NBA player props)
 
 ## Database Schema
 
@@ -88,6 +88,7 @@ SQLite file: `prisma/dev.db`
 - `npm run prisma:migrate`
 - `npm run db:seed`
 - `npm run ingest:free`
+- `npm run ingest:props` (NBA player props ingest + ranking output to `data/processed/latest-player-props.json`)
 
 ## Free stats ingestion starter (NBA + NFL + NCAAB + MLB)
 
@@ -121,11 +122,15 @@ Documented data layout:
    - NCAAB auto-fetches from ESPN public endpoints.
    - MLB auto-fetches from ESPN public endpoints.
    - Configure depth with `NCAAB_DAYS_BACK` and `MLB_DAYS_BACK` (default `7`).
-3. Verify API response:
+3. Ingest NBA player props (The Odds API; gracefully handles unavailable markets/plans):
+   ```bash
+   npm run ingest:props
+   ```
+4. Verify API response:
    ```bash
    curl http://localhost:3000/api/free-stats/summary
    ```
-4. Check homepage readability/quality view at `http://localhost:3000` (cards show ingest readiness, trend score, and confidence).
+5. Check homepage readability/quality view at `http://localhost:3000` (cards show ingest readiness, trend score, confidence, and Top 5 NBA player props).
 
 ### Trend scoring notes (free-data mode)
 

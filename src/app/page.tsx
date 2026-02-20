@@ -104,6 +104,22 @@ type InjuryEntry = {
   returnDate: string;
 };
 
+type PlayerPropSummary = {
+  player: string;
+  team: string | null;
+  opponent: string | null;
+  market: string;
+  marketLabel: string;
+  category: "core" | "defense" | "combo";
+  line: number;
+  overPrice: number | null;
+  underPrice: number | null;
+  pickSide: "over" | "under";
+  confidence: number;
+  rationaleSignals: string[];
+  dataQuality: "high" | "medium" | "low";
+};
+
 type ApiResponse = {
   generatedAt: string;
   ready: boolean;
@@ -116,8 +132,16 @@ type ApiResponse = {
   topBestBetsDateEt?: string;
   topBestBetsFallbackUsed?: boolean;
   bestBetsNote?: string | null;
+  playerProps?: PlayerPropSummary[];
+  playerPropsNote?: string | null;
+  playerPropsGeneratedAt?: string | null;
   injuries?: Record<string, InjuryEntry[]>;
 };
+
+function fmtOdds(n: number | null | undefined): string {
+  if (n == null) return "\u2014";
+  return n > 0 ? `+${n}` : `${n}`;
+}
 
 function fmtGameTime(d: string | null | undefined): string {
   if (!d) return "";
@@ -152,6 +176,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [leagueFilter, setLeagueFilter] = useState("ALL");
   const [conferenceFilter, setConferenceFilter] = useState("ALL");
+  const [propCategoryFilter, setPropCategoryFilter] = useState<"all" | "core" | "defense" | "combo">("all");
 
   useEffect(() => {
     async function load() {
@@ -167,6 +192,8 @@ export default function Home() {
     }
     load();
   }, [leagueFilter, conferenceFilter]);
+
+
 
   const generatedAt = useMemo(() => {
     if (!data?.generatedAt) return "";
@@ -192,7 +219,12 @@ export default function Home() {
     return filtered;
   }, [data?.injuries]);
 
-  return (
+
+  const topPlayerProps = useMemo(() => {
+    const props = data?.playerProps ?? [];
+    const filtered = propCategoryFilter === "all" ? props : props.filter((p) => p.category === propCategoryFilter);
+    return filtered.slice(0, 5);
+  }, [data?.playerProps, propCategoryFilter]);  return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-6 rounded-xl border border-slate-800 bg-slate-900/80 p-5">
@@ -282,6 +314,44 @@ export default function Home() {
                 ))}
               </div>
             </section>
+
+            {(leagueFilter === "NBA" || leagueFilter === "ALL") && (
+              <section className="mb-6 rounded-xl border border-violet-500/30 bg-violet-950/10 p-4 sm:p-5">
+                <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <h2 className="text-lg font-semibold text-violet-200">Top 5 Player Props (NBA)</h2>
+                  <p className="text-xs text-violet-300/80">Updated: {data.playerPropsGeneratedAt ? new Date(data.playerPropsGeneratedAt).toLocaleString() : "—"}</p>
+                </div>
+                <div className="mb-3 flex flex-wrap gap-2 text-xs">
+                  {([
+                    ["all", "All"],
+                    ["core", "Core"],
+                    ["defense", "Defense"],
+                    ["combo", "Combo"],
+                  ] as const).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => setPropCategoryFilter(key)}
+                      className={`rounded-md border px-2.5 py-1 ${propCategoryFilter === key ? "border-violet-400 bg-violet-500/20 text-violet-100" : "border-slate-700 bg-slate-900/60 text-slate-300"}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {data.playerPropsNote && <div className="mb-3 rounded-md border border-amber-500/30 bg-amber-950/20 p-3 text-sm text-amber-100">{data.playerPropsNote}</div>}
+                {topPlayerProps.length === 0 ? (
+                  <div className="rounded-md border border-violet-500/20 bg-slate-900/80 p-3 text-sm text-slate-300">No eligible NBA player props for this filter.</div>
+                ) : (
+                  <div className="space-y-2">{topPlayerProps.map((prop, idx) => (
+                    <div key={`${prop.player}-${prop.market}-${idx}`} className="rounded-md border border-violet-500/20 bg-slate-900/80 p-3">
+                      <p className="text-sm font-semibold text-white">#${idx + 1} ${prop.player} (${prop.marketLabel})</p>
+                      <p className="text-xs text-slate-300">${prop.team ?? "—"} vs ${prop.opponent ?? "—"} · Line ${prop.line} · Over ${fmtOdds(prop.overPrice)} / Under ${fmtOdds(prop.underPrice)}</p>
+                      <p className="text-xs text-slate-300">Pick ${prop.pickSide.toUpperCase()} · Confidence ${prop.confidence}% · Data quality ${prop.dataQuality}</p>
+                      <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-slate-400">{(prop.rationaleSignals ?? []).slice(0, 3).map((signal) => (<li key={signal}>{signal}</li>))}</ul>
+                    </div>
+                  ))}</div>
+                )}
+              </section>
+            )}
 
             <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
@@ -523,3 +593,13 @@ export default function Home() {
     </main>
   );
 }
+
+
+
+
+
+
+
+
+
+

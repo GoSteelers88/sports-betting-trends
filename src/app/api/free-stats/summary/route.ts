@@ -5,11 +5,27 @@ import path from "node:path";
 import { buildFreeStatsSummary, type FreeStatLike, type InjuryEntry } from "@/lib/free-stats-summary";
 import type { StandingsEntry } from "@/lib/advanced-metrics";
 
+type PlayerPropSummary = {
+  player: string;
+  team: string | null;
+  opponent: string | null;
+  market: string;
+  line: number;
+  overPrice: number | null;
+  underPrice: number | null;
+  pickSide: "over" | "under";
+  confidence: number;
+  rationaleSignals: string[];
+};
+
 type SummaryShape = {
   leagues?: Array<{ league?: string }>;
   latestByLeague?: Array<{ league?: string; conference?: string | null }>;
   bestBets?: Array<{ league?: string; conference?: string | null }>;
   conferences?: string[];
+  playerProps?: PlayerPropSummary[];
+  playerPropsNote?: string | null;
+  playerPropsGeneratedAt?: string | null;
   [key: string]: unknown;
 };
 
@@ -17,8 +33,10 @@ async function readProcessedFallback() {
   const fallbackPath = path.join(process.cwd(), "data", "processed", "latest-summary.json");
   const raw = await readFile(fallbackPath, "utf-8");
   const parsed = JSON.parse(raw) as SummaryShape;
+  const props = await loadPlayerPropsSummary();
   return {
     ...parsed,
+    ...props,
     source: "processed-fallback",
   };
 }
@@ -30,6 +48,32 @@ async function loadJsonFile<T>(filePath: string): Promise<T | null> {
   } catch {
     return null;
   }
+}
+
+async function loadPlayerPropsSummary() {
+  const propsPath = path.join(process.cwd(), "data", "processed", "latest-player-props.json");
+  const parsed = await loadJsonFile<{
+    generatedAt?: string;
+    note?: string | null;
+    topProps?: PlayerPropSummary[];
+    available?: boolean;
+  }>(propsPath);
+
+  if (!parsed) {
+    return {
+      playerProps: [] as PlayerPropSummary[],
+      playerPropsNote: "Player props file not found. Run npm run ingest:props.",
+      playerPropsGeneratedAt: null,
+    };
+  }
+
+  const note = parsed.note ?? (parsed.available === false ? "Player props unavailable for current API access." : null);
+
+  return {
+    playerProps: parsed.topProps ?? [],
+    playerPropsNote: note,
+    playerPropsGeneratedAt: parsed.generatedAt ?? null,
+  };
 }
 
 function applyFiltersToSummary(summary: SummaryShape, league?: string, conference?: string) {
@@ -177,6 +221,8 @@ export async function GET(req: NextRequest) {
       injuries: injuriesMap,
     });
 
+    const playerPropsPayload = await loadPlayerPropsSummary();
+
     const conferenceUniverse = await prisma.freeStat.findMany({
       where: {
         conference: { not: null },
@@ -189,6 +235,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ...summary,
+      ...playerPropsPayload,
       conferences: conferenceUniverse.map((c) => c.conference).filter(Boolean),
       filtersApplied: {
         league: league ?? "ALL",
