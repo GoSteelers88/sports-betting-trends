@@ -215,6 +215,13 @@ export async function GET(req: NextRequest) {
       if (data) injuriesMap[key] = data;
     }
 
+    const todayEt = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const nbaOddsToday = (oddsEvents as Array<Record<string, unknown>>).filter(e => {
+      if (!e.home_team || !e.away_team || !e.commence_time) return false;
+      if (e.sport_key !== "basketball_nba") return false;
+      return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(e.commence_time as string)) === todayEt;
+    });
+
     const summary = buildFreeStatsSummary(rows, {
       oddsEvents: oddsEvents as never[],
       standings: standingsMap,
@@ -242,6 +249,7 @@ export async function GET(req: NextRequest) {
         conference: conference ?? "ALL",
       },
       source: "prisma",
+      _debug: { oddsEventCount: oddsEvents.length, nbaOddsTodayCount: nbaOddsToday.length, todayEt, bestBetsCount: summary.bestBets.length },
     });
   } catch {
     const fallback = await readProcessedFallback();
