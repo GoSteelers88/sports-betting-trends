@@ -181,7 +181,7 @@ export default function Home() {
   useEffect(() => {
     async function load() {
       try {
-        const params = new URLSearchParams({ league: leagueFilter, conference: conferenceFilter });
+        const params = new URLSearchParams({ league: leagueFilter, conference: conferenceFilter, _t: String(Date.now()) });
         const res = await fetch(`/api/free-stats/summary?${params.toString()}`, { cache: "no-store" });
         if (!res.ok) throw new Error(`Failed to load summary (${res.status})`);
         const json = (await res.json()) as ApiResponse;
