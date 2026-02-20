@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { readFile } from "node:fs/promises";
@@ -180,7 +182,7 @@ export async function GET(req: NextRequest) {
 
     if (all.length === 0) {
       const fallback = await readProcessedFallback();
-      return NextResponse.json(applyFiltersToSummary(fallback, league, conference));
+      return NextResponse.json(applyFiltersToSummary(fallback, league, conference), { headers: { "Cache-Control": "no-store" } });
     }
 
     const rows: FreeStatLike[] = all.map((r) => ({ ...r }));
@@ -229,9 +231,9 @@ export async function GET(req: NextRequest) {
         conference: conference ?? "ALL",
       },
       source: "prisma",
-    });
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     const fallback = await readProcessedFallback();
-    return NextResponse.json(applyFiltersToSummary(fallback, league, conference));
+    return NextResponse.json(applyFiltersToSummary(fallback, league, conference), { headers: { "Cache-Control": "no-store" } });
   }
 }
