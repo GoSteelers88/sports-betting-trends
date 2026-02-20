@@ -4,6 +4,15 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { buildFreeStatsSummary, type FreeStatLike, type InjuryEntry } from "@/lib/free-stats-summary";
 import type { StandingsEntry } from "@/lib/advanced-metrics";
+import latestSummary from "../../../../../data/processed/latest-summary.json";
+import latestOdds from "../../../../../data/processed/latest-odds-api.json";
+import latestProps from "../../../../../data/processed/latest-player-props.json";
+import standingsNba from "../../../../../data/processed/standings-nba.json";
+import standingsNfl from "../../../../../data/processed/standings-nfl.json";
+import standingsMlb from "../../../../../data/processed/standings-mlb.json";
+import standingsNcaab from "../../../../../data/processed/standings-ncaab.json";
+import injuriesNba from "../../../../../data/processed/injuries-nba.json";
+import injuriesNfl from "../../../../../data/processed/injuries-nfl.json";
 
 type PlayerPropSummary = {
   player: string;
@@ -30,9 +39,7 @@ type SummaryShape = {
 };
 
 async function readProcessedFallback() {
-  const fallbackPath = path.join(process.cwd(), "data", "processed", "latest-summary.json");
-  const raw = await readFile(fallbackPath, "utf-8");
-  const parsed = JSON.parse(raw) as SummaryShape;
+  const parsed = latestSummary as unknown as SummaryShape;
   const props = await loadPlayerPropsSummary();
   return {
     ...parsed,
@@ -51,26 +58,15 @@ async function loadJsonFile<T>(filePath: string): Promise<T | null> {
 }
 
 async function loadPlayerPropsSummary() {
-  const propsPath = path.join(process.cwd(), "data", "processed", "latest-player-props.json");
-  const parsed = await loadJsonFile<{
+  const parsed = latestProps as unknown as {
     generatedAt?: string;
     note?: string | null;
     topProps?: PlayerPropSummary[];
     available?: boolean;
-  }>(propsPath);
-
-  if (!parsed) {
-    return {
-      playerProps: [] as PlayerPropSummary[],
-      playerPropsNote: "Player props file not found. Run npm run ingest:props.",
-      playerPropsGeneratedAt: null,
-    };
-  }
-
+  };
   const note = parsed.note ?? (parsed.available === false ? "Player props unavailable for current API access." : null);
-
   return {
-    playerProps: parsed.topProps ?? [],
+    playerProps: (parsed.topProps ?? []) as PlayerPropSummary[],
     playerPropsNote: note,
     playerPropsGeneratedAt: parsed.generatedAt ?? null,
   };
@@ -189,38 +185,22 @@ export async function GET(req: NextRequest) {
 
     const rows: FreeStatLike[] = all.map((r) => ({ ...r }));
 
-    // Load odds
-    const oddsPath = path.join(process.cwd(), "data", "processed", "latest-odds-api.json");
-    let oddsEvents: unknown[] = [];
-    try {
-      const oddsRaw = await readFile(oddsPath, "utf-8");
-      const parsed = JSON.parse(oddsRaw) as { events?: unknown[] };
-      oddsEvents = parsed.events ?? [];
-    } catch {
-      oddsEvents = [];
-    }
+    // Load odds (imported at build time — always matches committed file)
+    const oddsEvents: unknown[] = (latestOdds as unknown as { events?: unknown[] }).events ?? [];
 
-    // Load standings
-    const processedDir = path.join(process.cwd(), "data", "processed");
-    const standingsMap: Record<string, StandingsEntry[]> = {};
-    for (const key of ["nba", "nfl", "mlb", "ncaab"]) {
-      const data = await loadJsonFile<StandingsEntry[]>(path.join(processedDir, `standings-${key}.json`));
-      if (data) standingsMap[key] = data;
-    }
+    // Load standings (imported at build time)
+    const standingsMap: Record<string, StandingsEntry[]> = {
+      nba: standingsNba as unknown as StandingsEntry[],
+      nfl: standingsNfl as unknown as StandingsEntry[],
+      mlb: standingsMlb as unknown as StandingsEntry[],
+      ncaab: standingsNcaab as unknown as StandingsEntry[],
+    };
 
-    // Load injuries
-    const injuriesMap: Record<string, InjuryEntry[]> = {};
-    for (const key of ["nba", "nfl"]) {
-      const data = await loadJsonFile<InjuryEntry[]>(path.join(processedDir, `injuries-${key}.json`));
-      if (data) injuriesMap[key] = data;
-    }
-
-    const todayEt = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-    const nbaOddsToday = (oddsEvents as Array<Record<string, unknown>>).filter(e => {
-      if (!e.home_team || !e.away_team || !e.commence_time) return false;
-      if (e.sport_key !== "basketball_nba") return false;
-      return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(e.commence_time as string)) === todayEt;
-    });
+    // Load injuries (imported at build time)
+    const injuriesMap: Record<string, InjuryEntry[]> = {
+      nba: injuriesNba as unknown as InjuryEntry[],
+      nfl: injuriesNfl as unknown as InjuryEntry[],
+    };
 
     const summary = buildFreeStatsSummary(rows, {
       oddsEvents: oddsEvents as never[],
@@ -249,7 +229,6 @@ export async function GET(req: NextRequest) {
         conference: conference ?? "ALL",
       },
       source: "prisma",
-      _debug: { oddsEventCount: oddsEvents.length, nbaOddsTodayCount: nbaOddsToday.length, todayEt, bestBetsCount: summary.bestBets.length },
     });
   } catch {
     const fallback = await readProcessedFallback();
