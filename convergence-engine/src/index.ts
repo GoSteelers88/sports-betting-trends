@@ -6,7 +6,7 @@
  *                   Friction → Edge → Threshold → Risk Governor → Signal
  */
 
-import { fetchPair } from "./ingestion";
+import { discoverPair as fetchPair } from "./ingestion";
 import { validateMapping } from "./validation";
 import { computeEdge } from "./edge";
 import { dynamicThreshold } from "./threshold";

@@ -284,4 +284,9 @@ export async function fetchTrackedPairs(): Promise<MarketPair[]> {
       console.log(`   Poly: ${(pair.poly.midpoint * 100).toFixed(1)}¢ | Depth: $${pair.poly.depthAtBest.toFixed(0)} | Vol: $${(pair.poly.volume24h / 1e6).toFixed(2)}M`);
     }
     if (pair.kalshi) {
-      console.log(`   Kalshi: ${(pair.kalshi.midpoint * 100).toFixed(1)}¢ | Depth: $${
+      console.log(`   Kalshi: ${(pair.kalshi.midpoint * 100).toFixed(1)}¢ | Depth: $${pair.kalshi.depthAtBest.toFixed(0)} | Vol: $${(pair.kalshi.volume24h / 1e6).toFixed(2)}M`);
+    }
+  }
+
+  return pairs;
+}

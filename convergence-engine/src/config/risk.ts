@@ -33,6 +33,6 @@ export const CORRELATION_CLUSTERS = {
 
 export function isInSameCluster(eventA: string, eventB: string): boolean {
   return Object.values(CORRELATION_CLUSTERS).some(
-    cluster => cluster.includes(eventA) && cluster.includes(eventB)
+    cluster => (cluster as readonly string[]).includes(eventA) && (cluster as readonly string[]).includes(eventB)
   );
 }

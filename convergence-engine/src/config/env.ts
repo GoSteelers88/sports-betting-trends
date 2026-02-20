@@ -36,7 +36,7 @@ export const env = {
     });
     
     if (!parsed.success) {
-      console.error("Invalid environment variables:", parsed.error.errors);
+      console.error("Invalid environment variables:", parsed.error.issues);
       throw new Error("Environment validation failed");
     }
     
