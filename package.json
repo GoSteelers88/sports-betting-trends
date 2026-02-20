@@ -12,8 +12,12 @@
     "db:seed": "prisma db seed",
     "ingest:context": "tsx scripts/ingest-context.ts",
     "ingest:free": "tsx scripts/ingest-free-stats.ts",
+    "ingest:polymarket": "tsx scripts/ingest-polymarket.ts",
     "ingest:odds": "tsx scripts/ingest-odds-api.ts",
-    "ingest:all": "npm run ingest:context && npm run ingest:odds && npm run ingest:free",
+    "ingest:props": "tsx scripts/ingest-props.ts",
+    "ingest:kalshi": "tsx scripts/ingest-kalshi.ts",
+    "test:kalshi": "tsx scripts/test-kalshi.ts",
+    "ingest:all": "npm run ingest:context && npm run ingest:odds && npm run ingest:free && npm run ingest:kalshi",
     "validate:latest-games": "tsx scripts/validate-latest-games.ts",
     "qa:data": "npm run ingest:all && npm run validate:latest-games && npm run lint && npm run build"
   },
