@@ -341,14 +341,22 @@ export default function Home() {
                 {topPlayerProps.length === 0 ? (
                   <div className="rounded-md border border-violet-500/20 bg-slate-900/80 p-3 text-sm text-slate-300">No eligible NBA player props for this filter.</div>
                 ) : (
-                  <div className="space-y-2">{topPlayerProps.map((prop, idx) => (
-                    <div key={`${prop.player}-${prop.market}-${idx}`} className="rounded-md border border-violet-500/20 bg-slate-900/80 p-3">
-                      <p className="text-sm font-semibold text-white">#${idx + 1} ${prop.player} (${prop.marketLabel})</p>
-                      <p className="text-xs text-slate-300">${prop.team ?? "—"} vs ${prop.opponent ?? "—"} · Line ${prop.line} · Over ${fmtOdds(prop.overPrice)} / Under ${fmtOdds(prop.underPrice)}</p>
-                      <p className="text-xs text-slate-300">Pick ${prop.pickSide.toUpperCase()} · Confidence ${prop.confidence}% · Data quality ${prop.dataQuality}</p>
-                      <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-slate-400">{(prop.rationaleSignals ?? []).slice(0, 3).map((signal) => (<li key={signal}>{signal}</li>))}</ul>
-                    </div>
-                  ))}</div>
+                  <div className="space-y-2">{topPlayerProps.map((prop, idx) => {
+                    const pickedOdds = prop.pickSide === "over" ? prop.overPrice : prop.underPrice;
+                    const otherOdds  = prop.pickSide === "over" ? prop.underPrice : prop.overPrice;
+                    return (
+                      <div key={`${prop.player}-${prop.market}-${idx}`} className="rounded-md border border-violet-500/20 bg-slate-900/80 p-3">
+                        <p className="text-sm font-semibold text-white">#{idx + 1} {prop.player} — {prop.marketLabel}</p>
+                        <p className="text-xs text-slate-400">{prop.team ?? "—"} vs {prop.opponent ?? "—"}</p>
+                        <p className="mt-1.5 text-sm font-bold text-violet-200">
+                          BET {prop.pickSide.toUpperCase()} {prop.line} @ {fmtOdds(pickedOdds)}
+                          <span className="ml-2 text-xs font-normal text-slate-400">(other side: {fmtOdds(otherOdds)})</span>
+                        </p>
+                        <p className="text-xs text-slate-400">Confidence {prop.confidence}% · Data quality: {prop.dataQuality}</p>
+                        <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-slate-400">{(prop.rationaleSignals ?? []).slice(0, 3).map((signal) => (<li key={signal}>{signal}</li>))}</ul>
+                      </div>
+                    );
+                  })}</div>
                 )}
               </section>
             )}
