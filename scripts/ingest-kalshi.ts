@@ -250,4 +250,67 @@ function formatKalshiForAgents(
     day: "numeric",
     year: "numeric",
     hour: "numeric",
-    minute:
+    minute: "2-digit",
+    hour12: true,
+  });
+  const timeStr = etFormatter.format(fetchedAt);
+  const top10 = markets.slice(0, 10);
+
+  const lines: string[] = [
+    `# Kalshi Markets Snapshot — ${timeStr} ET`,
+    `_Last refreshed: ${timeStr} ET · ${markets.length} markets tracked_`,
+    "",
+    "## Top 10 by Liquidity",
+    "",
+  ];
+
+  for (let i = 0; i < top10.length; i++) {
+    const m = top10[i];
+    const yesBidCents = Math.round(m.yesBid * 100);
+    const yesAskCents = Math.round(m.yesAsk * 100);
+    const spreadCents = Math.round(m.spread * 100);
+    const impliedPct = Math.round(m.impliedProbYes * 10) / 10;
+
+    lines.push(`**${i + 1}. ${m.title}**`);
+    lines.push(`YES bid/ask: ${yesBidCents}¢ / ${yesAskCents}¢ → Implied: ${impliedPct}%`);
+    lines.push(`Spread: ${spreadCents}¢ · Actionability: ${m.actionability} · Liq: ${m.liquidity.toLocaleString()}`);
+    lines.push(`Closes: ${m.closeTime ? new Date(m.closeTime).toLocaleDateString() : "Unknown"} · Status: ${m.status}`);
+    lines.push("");
+  }
+
+  lines.push("_Run `npm run ingest:kalshi` to refresh._");
+  return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+async function main() {
+  const outDir = path.join(process.cwd(), "data", "processed");
+  fs.mkdirSync(outDir, { recursive: true });
+
+  const apiKey = process.env.KALSHI_API_KEY ?? "";
+  const fetchedAt = new Date();
+
+  console.log("Fetching Kalshi markets...");
+  const rawMarkets = await fetchKalshiMarkets(apiKey);
+  console.log(`Fetched ${rawMarkets.length} markets`);
+
+  const processed = processMarkets(rawMarkets);
+  console.log(`Processed ${processed.length} markets`);
+
+  const outPath = path.join(outDir, "latest-kalshi.json");
+  const output = { fetchedAt: fetchedAt.toISOString(), marketCount: processed.length, markets: processed };
+  fs.writeFileSync(outPath, JSON.stringify(output, null, 2), "utf-8");
+  console.log(`Wrote ${outPath}`);
+
+  const agentsBlock = formatKalshiForAgents(processed, fetchedAt);
+  const agentsPath = path.join(process.cwd(), "data", "processed", "latest-kalshi-agents.md");
+  fs.writeFileSync(agentsPath, agentsBlock, "utf-8");
+  console.log(`Wrote ${agentsPath}`);
+}
+
+main().catch((err) => {
+  console.error("ingest-kalshi failed:", err);
+  process.exit(1);
+});
