@@ -4,7 +4,7 @@
  * Run: npm run dev:live
  */
 
-import { fetchPolymarket, findPolymarketByQuestion } from "../ingestion.js";
+import { fetchPolymarket, searchPolymarket } from "../ingestion.js";
 import { fetchPolymarketSnapshot, fetchGammaMarkets } from "../adapters/polymarketAdapter.js";
 import { computeEdge } from "../edge.js";
 import { liquidityConfidence } from "../liquidity.js";
@@ -46,7 +46,7 @@ async function runLiveDemo() {
 
     // Demo: Search for specific market
     console.log("Searching for Fed chair markets...");
-    const fedSnapshot = await findPolymarketByQuestion("Fed chair");
+    const fedSnapshot = await searchPolymarket("Fed chair");
     if (fedSnapshot) {
       console.log(`\nFed Chair Market:`);
       console.log(`  Bid: ${(fedSnapshot.top.bid * 100).toFixed(0)}¢`);
