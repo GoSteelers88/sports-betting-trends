@@ -413,12 +413,28 @@ function buildProjection(rows: PlayerGame[], market: MarketKey, opponent: string
 
 function runPythonModel(players: PythonPlayerInput[]): PythonModelResult[] | null {
   const payload = { players };
-  const result = spawnSync("python", [path.join(pythonDir, "props_model.py")], {
-    input: JSON.stringify(payload),
-    encoding: "utf-8",
-    timeout: 180_000,
-    cwd: pythonDir,
-  });
+  const inFile = path.join(outDir, "_props_input.json");
+  const outFile = path.join(outDir, "_props_output.json");
+
+  try {
+    fs.writeFileSync(inFile, JSON.stringify(payload));
+  } catch (e) {
+    console.warn("[props] Failed to write Python input file:", e);
+    return null;
+  }
+
+  const result = spawnSync(
+    "python",
+    [path.join(pythonDir, "props_model.py"), "--input", inFile, "--output", outFile],
+    {
+      encoding: "utf-8",
+      timeout: 300_000,
+      cwd: pythonDir,
+    }
+  );
+
+  // Clean up input file
+  try { fs.unlinkSync(inFile); } catch { /* ignore */ }
 
   if (result.error) {
     console.warn("[props] Python spawn error:", result.error.message);
@@ -429,19 +445,17 @@ function runPythonModel(players: PythonPlayerInput[]): PythonModelResult[] | nul
     console.warn(`[props] Python exited with status ${result.status}:\n${stderr}`);
     return null;
   }
-  if (!result.stdout?.trim()) {
-    console.warn("[props] Python returned empty stdout");
-    return null;
-  }
 
   try {
-    const parsed = JSON.parse(result.stdout) as { results: PythonModelResult[]; errors: string[] };
+    const raw = fs.readFileSync(outFile, "utf-8");
+    fs.unlinkSync(outFile);
+    const parsed = JSON.parse(raw) as { results: PythonModelResult[]; errors: string[] };
     if (parsed.errors?.length) {
       for (const e of parsed.errors.slice(0, 3)) console.warn("[props] Python error:", e.slice(0, 200));
     }
     return parsed.results;
   } catch {
-    console.warn("[props] Failed to parse Python output");
+    console.warn("[props] Failed to read/parse Python output file");
     return null;
   }
 }

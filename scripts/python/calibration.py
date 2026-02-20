@@ -63,17 +63,22 @@ def compute_ev(
     EV_under = P(under) * payout_under - P(over)  * 1
 
     A positive EV means the bet has positive expected value.
+    Payouts are capped at +400 equivalent (4.0) to avoid EV inflation from
+    extreme/lopsided market prices that indicate poor data quality.
     """
+    _MAX_PAYOUT = 4.0  # cap at +400 odds equivalent
+
     model_p_under = 1.0 - model_p_over
 
     payout_over = american_to_payout(over_price)
     payout_under = american_to_payout(under_price)
 
-    # If prices not available, use breakeven assumption (-110 ≈ 0.909)
-    if payout_over is None:
-        payout_over = 100.0 / 110.0
-    if payout_under is None:
-        payout_under = 100.0 / 110.0
+    # If prices not available or extreme, use breakeven assumption (-110 ≈ 0.909)
+    default_payout = 100.0 / 110.0
+    if payout_over is None or payout_over > _MAX_PAYOUT:
+        payout_over = default_payout
+    if payout_under is None or payout_under > _MAX_PAYOUT:
+        payout_under = default_payout
 
     ev_over = model_p_over * payout_over - model_p_under * 1.0
     ev_under = model_p_under * payout_under - model_p_over * 1.0

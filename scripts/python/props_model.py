@@ -128,7 +128,18 @@ def process_player(item: dict) -> dict:
 
 
 def main():
-    payload = json.loads(sys.stdin.read())
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", default=None, help="Path to input JSON file")
+    parser.add_argument("--output", default=None, help="Path to output JSON file")
+    args = parser.parse_args()
+
+    if args.input:
+        with open(args.input, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+    else:
+        payload = json.loads(sys.stdin.read())
+
     players = payload.get("players", [])
 
     results = []
@@ -143,7 +154,6 @@ def main():
             market = item.get("market", "?")
             tb = traceback.format_exc()
             errors.append(f"{player}/{market}: {tb}")
-            # Return a fallback entry so TS can still merge with its heuristic
             results.append({
                 "player": player,
                 "market": market,
@@ -159,7 +169,12 @@ def main():
                 "minutesPDNP": None,
             })
 
-    print(json.dumps({"results": results, "errors": errors}))
+    out = json.dumps({"results": results, "errors": errors})
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as f:
+            f.write(out)
+    else:
+        print(out)
 
 
 if __name__ == "__main__":
