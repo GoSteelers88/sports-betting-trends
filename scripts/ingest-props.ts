@@ -743,9 +743,18 @@ async function main() {
     return `${a.player}-${a.market}`.localeCompare(`${b.player}-${b.market}`);
   });
 
+  // Deduplicate: one prop per player (best rank wins)
+  const seenPlayers = new Set<string>();
+  const deduped = ranked.filter((r) => {
+    const key = normalizeName(r.player);
+    if (seenPlayers.has(key)) return false;
+    seenPlayers.add(key);
+    return true;
+  });
+
   // topProps: top 5 where model has an edge (P > 52%) or fallback to overall top 5
-  const withEdge = ranked.filter((r) => r.modelPOver > 0.52 || r.modelPUnder > 0.52);
-  const topProps = withEdge.length >= 5 ? withEdge.slice(0, 5) : ranked.slice(0, 5);
+  const withEdge = deduped.filter((r) => r.modelPOver > 0.52 || r.modelPUnder > 0.52);
+  const topProps = withEdge.length >= 5 ? withEdge.slice(0, 5) : deduped.slice(0, 5);
 
   const available = ranked.length > 0;
   const note = !available
