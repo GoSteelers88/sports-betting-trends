@@ -473,7 +473,19 @@ async function main() {
   if (!fs.existsSync(oddsPath)) throw new Error("Missing latest-odds-api-basketball_nba.json. Run npm run ingest:odds first.");
 
   const stored = JSON.parse(fs.readFileSync(oddsPath, "utf-8")) as StoredOdds;
-  const events = (stored.events ?? []).filter((e) => isTodayEt(e.commence_time));
+
+  function isAllStarEvent(e: StoredEvent): boolean {
+    const h = e.home_team?.toLowerCase() ?? "";
+    const a = e.away_team?.toLowerCase() ?? "";
+    return (
+      !h || !a ||
+      h.includes("all-star") || a.includes("all-star") ||
+      h.includes("all star") || a.includes("all star") ||
+      h.startsWith("team ") || a.startsWith("team ")
+    );
+  }
+
+  const events = (stored.events ?? []).filter((e) => isTodayEt(e.commence_time) && !isAllStarEvent(e));
 
   if (!events.length) {
     const out: Output = {
