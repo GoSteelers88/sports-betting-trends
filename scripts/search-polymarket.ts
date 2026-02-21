@@ -63,7 +63,8 @@ async function searchMarkets(keywords: string) {
   }
 }
 
-function tryParse(json: string | undefined): unknown {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function tryParse(json: string | undefined): any {
   if (!json) return null;
   try { return JSON.parse(json); } catch { return null; }
 }
