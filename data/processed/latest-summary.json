@@ -1,89 +1,141 @@
 {
-  "generatedAt": "2026-02-20T13:32:29.516Z",
+  "generatedAt": "2026-02-21T10:03:34.613Z",
   "ready": true,
-  "recordsIngested": 3090,
-  "recordsCompleted": 3090,
+  "recordsIngested": 3027,
+  "recordsCompleted": 3027,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 4,
+      "games": 10,
       "conferences": [
-        "NL West",
-        "AL East"
+        "AL East",
+        "NL Central",
+        "Unknown",
+        "AL West",
+        "AL Central",
+        "NL West"
       ],
-      "avgPoints": 4.5,
-      "avgRebounds": 7.5,
-      "avgAssists": 1,
+      "avgPoints": 3.7,
+      "avgRebounds": null,
+      "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 4.5,
-      "recentAvgYards": null,
-      "trendScore": 50,
-      "trendSignal": "flat",
-      "confidence": 0.4,
-      "ncaab": null,
-      "advanced": {
-        "games": 4,
-        "rpg": 4.5,
-        "oppRpg": 4.5,
-        "hitsPerGame": 0,
-        "errorsPerGame": 0,
-        "sos": 0
-      },
-      "teamAdvanced": {
-        "LAD": {
-          "games": 1,
-          "rpg": 5,
-          "oppRpg": 3,
-          "hitsPerGame": 0,
-          "errorsPerGame": 0,
-          "sos": 0
-        },
-        "SD": {
-          "games": 1,
-          "rpg": 3,
-          "oppRpg": 5,
-          "hitsPerGame": 0,
-          "errorsPerGame": 0,
-          "sos": 0
-        },
-        "NYY": {
-          "games": 1,
-          "rpg": 6,
-          "oppRpg": 4,
-          "hitsPerGame": 0,
-          "errorsPerGame": 0,
-          "sos": 0
-        },
-        "BOS": {
-          "games": 1,
-          "rpg": 4,
-          "oppRpg": 6,
-          "hitsPerGame": 0,
-          "errorsPerGame": 0,
-          "sos": 0
-        }
-      }
-    },
-    {
-      "league": "NBA",
-      "games": 292,
-      "conferences": [
-        "Eastern",
-        "Western"
-      ],
-      "avgPoints": 113.1986301369863,
-      "avgRebounds": 43.92123287671233,
-      "avgAssists": 26.003424657534246,
-      "avgYards": null,
-      "recentAvgPoints": 107,
+      "recentAvgPoints": 3.7,
       "recentAvgYards": null,
       "trendScore": 42,
       "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 292,
+        "games": 10,
+        "rpg": 3.7,
+        "oppRpg": 3.7,
+        "hitsPerGame": 7.9,
+        "errorsPerGame": 0.6,
+        "sos": null
+      },
+      "teamAdvanced": {
+        "Orioles": {
+          "games": 1,
+          "rpg": 2,
+          "oppRpg": 0,
+          "hitsPerGame": 8,
+          "errorsPerGame": 0,
+          "sos": null
+        },
+        "Yankees": {
+          "games": 1,
+          "rpg": 0,
+          "oppRpg": 2,
+          "hitsPerGame": 3,
+          "errorsPerGame": 0,
+          "sos": null
+        },
+        "Cubs": {
+          "games": 1,
+          "rpg": 1,
+          "oppRpg": 8,
+          "hitsPerGame": 7,
+          "errorsPerGame": 1,
+          "sos": null
+        },
+        "White Sox": {
+          "games": 1,
+          "rpg": 8,
+          "oppRpg": 1,
+          "hitsPerGame": 12,
+          "errorsPerGame": 1,
+          "sos": null
+        },
+        "Rangers": {
+          "games": 1,
+          "rpg": 3,
+          "oppRpg": 7,
+          "hitsPerGame": 7,
+          "errorsPerGame": 2,
+          "sos": null
+        },
+        "Royals": {
+          "games": 1,
+          "rpg": 7,
+          "oppRpg": 3,
+          "hitsPerGame": 10,
+          "errorsPerGame": 0,
+          "sos": null
+        },
+        "Rockies": {
+          "games": 1,
+          "rpg": 2,
+          "oppRpg": 3,
+          "hitsPerGame": 3,
+          "errorsPerGame": 2,
+          "sos": null
+        },
+        "Diamondbacks": {
+          "games": 1,
+          "rpg": 3,
+          "oppRpg": 2,
+          "hitsPerGame": 8,
+          "errorsPerGame": 0,
+          "sos": null
+        },
+        "Mariners": {
+          "games": 1,
+          "rpg": 7,
+          "oppRpg": 4,
+          "hitsPerGame": 13,
+          "errorsPerGame": 0,
+          "sos": null
+        },
+        "Padres": {
+          "games": 1,
+          "rpg": 4,
+          "oppRpg": 7,
+          "hitsPerGame": 8,
+          "errorsPerGame": 0,
+          "sos": null
+        }
+      }
+    },
+    {
+      "league": "NBA",
+      "games": 295,
+      "conferences": [
+        "Eastern",
+        "Western"
+      ],
+      "avgPoints": 113.44406779661017,
+      "avgRebounds": 43.95593220338983,
+      "avgAssists": 26.064406779661017,
+      "avgYards": null,
+      "recentAvgPoints": 120,
+      "recentAvgYards": null,
+      "trendScore": 38,
+      "trendSignal": "down",
+      "confidence": 1,
+      "ncaab": null,
+      "advanced": {
+        "games": 295,
         "pace": null,
         "oRtg": null,
         "dRtg": null,
@@ -107,56 +159,8 @@
           "ftRate": null,
           "sos": null
         },
-        "Rockets": {
-          "games": 13,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
         "Cavaliers": {
-          "games": 11,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Nets": {
           "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "76ers": {
-          "games": 13,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Hawks": {
-          "games": 11,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -180,7 +184,175 @@
           "sos": null
         },
         "Pacers": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Grizzlies": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Hawks": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Heat": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Timberwolves": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Mavericks": {
+          "games": 10,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Bucks": {
           "games": 11,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Thunder": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Nets": {
+          "games": 13,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Trail Blazers": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Nuggets": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Lakers": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Clippers": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Rockets": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "76ers": {
+          "games": 12,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -204,7 +376,7 @@
           "sos": null
         },
         "Bulls": {
-          "games": 13,
+          "games": 12,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -264,126 +436,6 @@
           "sos": null
         },
         "Magic": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Clippers": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Nuggets": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Thunder": {
-          "games": 11,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Bucks": {
-          "games": 10,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Trail Blazers": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Lakers": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Mavericks": {
-          "games": 10,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Timberwolves": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Heat": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Grizzlies": {
           "games": 11,
           "pace": null,
           "oRtg": null,
@@ -399,11 +451,16 @@
     },
     {
       "league": "NCAAB",
-      "games": 2786,
+      "games": 2714,
       "conferences": [
+        "Big Ten Conference",
+        "Atlantic 10 Conference",
+        "Mid-American Conference",
+        "Metro Atlantic Athletic Conference",
+        "Ivy League",
+        "Horizon League",
         "American Conference",
         "Big South Conference",
-        "Horizon League",
         "Northeast Conference",
         "America East Conference",
         "Coastal Athletic Association",
@@ -419,28 +476,23 @@
         "Conference USA",
         "Big 12 Conference",
         "Big East Conference",
-        "Big Ten Conference",
         "West Coast Conference",
         "Atlantic Coast Conference",
         "Southeastern Conference",
         "Missouri Valley Conference",
         "Patriot League",
-        "Atlantic 10 Conference",
         "Mid-Eastern Athletic Conference",
         "Mountain West Conference",
-        "Mid-American Conference",
         "Southland Conference",
-        "Metro Atlantic Athletic Conference",
-        "Ivy League",
         "Unknown"
       ],
-      "avgPoints": 74.06030150753769,
-      "avgRebounds": 34.2275664034458,
-      "avgAssists": 13.489231873653985,
+      "avgPoints": 74.08364038319823,
+      "avgRebounds": 34.186072218128224,
+      "avgAssists": 13.499263080324244,
       "avgYards": null,
-      "recentAvgPoints": 72.2,
+      "recentAvgPoints": 77,
       "recentAvgYards": null,
-      "trendScore": 85,
+      "trendScore": 76,
       "trendSignal": "up",
       "confidence": 1,
       "ncaab": {
@@ -449,13 +501,15 @@
         "upsetAlertScore": 45,
         "bubbleWatchTeams": [],
         "autoBidWatchTeams": [
-          "South Florida",
-          "High Point",
-          "Wright St"
+          "Purdue",
+          "Saint Louis",
+          "VCU",
+          "Miami OH",
+          "Saint Peter's"
         ]
       },
       "advanced": {
-        "games": 2786,
+        "games": 2714,
         "pace": null,
         "oRtg": null,
         "dRtg": null,
@@ -464,10 +518,46 @@
         "efgPct": null,
         "toRate": null,
         "ftRate": null,
-        "sos": 0.56
+        "sos": 0.57
       },
       "teamAdvanced": {
-        "South Florida": {
+        "Purdue": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.73
+        },
+        "Indiana": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.67
+        },
+        "Saint Louis": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.75
+        },
+        "VCU": {
           "games": 9,
           "pace": null,
           "oRtg": null,
@@ -477,7 +567,283 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.48
+          "sos": null
+        },
+        "Miami OH": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.52
+        },
+        "Bowling Green": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Iona": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Saint Peter's": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.57
+        },
+        "Fairfield": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.57
+        },
+        "Sacred Heart": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Brown": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.83
+        },
+        "Princeton": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.56
+        },
+        "Detroit Mercy": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Milwaukee": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Oakland": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Green Bay": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Mount St Marys": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.57
+        },
+        "Niagara": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.57
+        },
+        "Rider": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Canisius": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.57
+        },
+        "Manhattan": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.57
+        },
+        "Marist": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Merrimack": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Siena": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.57
+        },
+        "Ball State": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.52
+        },
+        "Akron": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.58
+        },
+        "South Florida": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.43
         },
         "Memphis": {
           "games": 8,
@@ -597,7 +963,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.37
+          "sos": 0.39
         },
         "Wagner": {
           "games": 9,
@@ -609,7 +975,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.37
+          "sos": 0.39
         },
         "New Haven": {
           "games": 8,
@@ -633,7 +999,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.37
+          "sos": 0.39
         },
         "Saint Francis": {
           "games": 8,
@@ -645,7 +1011,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.37
+          "sos": 0.39
         },
         "Long Island": {
           "games": 9,
@@ -669,7 +1035,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.37
+          "sos": 0.39
         },
         "Le Moyne": {
           "games": 9,
@@ -681,7 +1047,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.37
+          "sos": 0.39
         },
         "Chicago St": {
           "games": 9,
@@ -693,7 +1059,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.37
+          "sos": 0.39
         },
         "FDU": {
           "games": 9,
@@ -708,7 +1074,7 @@
           "sos": null
         },
         "NJIT": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -717,10 +1083,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.67
+          "sos": null
         },
         "UAlbany": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -729,10 +1095,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.59
+          "sos": 0.58
         },
         "UNC Wilmington": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -744,7 +1110,7 @@
           "sos": 0.52
         },
         "Monmouth": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -756,7 +1122,7 @@
           "sos": null
         },
         "Northeastern": {
-          "games": 7,
+          "games": 6,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -780,7 +1146,7 @@
           "sos": 0.52
         },
         "Campbell": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -792,7 +1158,7 @@
           "sos": null
         },
         "William & Mary": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -804,7 +1170,7 @@
           "sos": 0.52
         },
         "NC A&T": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -816,7 +1182,7 @@
           "sos": null
         },
         "Charleston": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -876,7 +1242,7 @@
           "sos": 0.71
         },
         "North Florida": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -888,7 +1254,7 @@
           "sos": 0.46
         },
         "Austin Peay": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -897,7 +1263,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.46
+          "sos": null
         },
         "Bethune": {
           "games": 9,
@@ -924,7 +1290,7 @@
           "sos": null
         },
         "North Dakota": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -948,7 +1314,7 @@
           "sos": null
         },
         "Hofstra": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -960,7 +1326,7 @@
           "sos": null
         },
         "Hampton": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -972,7 +1338,7 @@
           "sos": 0.52
         },
         "South Alabama": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -984,7 +1350,7 @@
           "sos": null
         },
         "Texas St": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -996,7 +1362,7 @@
           "sos": 0.64
         },
         "Louisiana": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1008,7 +1374,7 @@
           "sos": null
         },
         "Arkansas St": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1020,18 +1386,6 @@
           "sos": null
         },
         "Georgia St": {
-          "games": 9,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.64
-        },
-        "GA Southern": {
           "games": 8,
           "pace": null,
           "oRtg": null,
@@ -1043,8 +1397,20 @@
           "ftRate": null,
           "sos": 0.64
         },
+        "GA Southern": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.64
+        },
         "Stetson": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1056,7 +1422,7 @@
           "sos": 0.46
         },
         "C Arkansas": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1140,7 +1506,7 @@
           "sos": null
         },
         "Little Rock": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1149,7 +1515,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.63
+          "sos": 0.61
         },
         "UT Martin": {
           "games": 9,
@@ -1161,10 +1527,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.63
+          "sos": 0.61
         },
         "W Illinois": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1176,7 +1542,7 @@
           "sos": null
         },
         "So Indiana": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1185,10 +1551,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.63
+          "sos": 0.61
         },
         "Tennessee St": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1197,10 +1563,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.63
+          "sos": null
         },
         "Lindenwood": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1209,10 +1575,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.63
+          "sos": 0.61
         },
         "E Illinois": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1224,7 +1590,7 @@
           "sos": null
         },
         "Morehead St": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1233,7 +1599,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.63
+          "sos": 0.61
         },
         "Miss Valley St": {
           "games": 7,
@@ -1260,7 +1626,7 @@
           "sos": null
         },
         "Tennessee Tech": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1269,10 +1635,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.63
+          "sos": 0.61
         },
         "SIUE": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1308,7 +1674,7 @@
           "sos": null
         },
         "Santa Barbara": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1332,7 +1698,7 @@
           "sos": null
         },
         "Denver": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1356,7 +1722,7 @@
           "sos": null
         },
         "Weber St": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1368,7 +1734,7 @@
           "sos": null
         },
         "Montana St": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1380,18 +1746,6 @@
           "sos": null
         },
         "Idaho St": {
-          "games": 9,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Montana": {
           "games": 8,
           "pace": null,
           "oRtg": null,
@@ -1403,8 +1757,20 @@
           "ftRate": null,
           "sos": null
         },
+        "Montana": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
         "Portland St": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1416,7 +1782,7 @@
           "sos": null
         },
         "Idaho": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1476,7 +1842,7 @@
           "sos": null
         },
         "UC Riverside": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1488,7 +1854,7 @@
           "sos": null
         },
         "Bakersfield": {
-          "games": 7,
+          "games": 6,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1500,7 +1866,7 @@
           "sos": null
         },
         "Fullerton": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1512,7 +1878,7 @@
           "sos": null
         },
         "UC Davis": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1524,7 +1890,7 @@
           "sos": null
         },
         "Long Beach St": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1536,7 +1902,7 @@
           "sos": null
         },
         "UC Irvine": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1548,7 +1914,7 @@
           "sos": null
         },
         "Sacramento St": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1560,7 +1926,7 @@
           "sos": null
         },
         "E Washington": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1572,7 +1938,7 @@
           "sos": null
         },
         "Hawai’i": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1584,7 +1950,7 @@
           "sos": null
         },
         "Cal Poly": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1596,7 +1962,7 @@
           "sos": null
         },
         "UMBC": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1605,10 +1971,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.56
+          "sos": null
         },
         "Vermont": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1620,7 +1986,7 @@
           "sos": 0.63
         },
         "UMass Lowell": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1632,7 +1998,7 @@
           "sos": 0.61
         },
         "New Hampshire": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1656,7 +2022,7 @@
           "sos": null
         },
         "Binghamton": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1680,7 +2046,7 @@
           "sos": 0.44
         },
         "FIU": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1689,7 +2055,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.42
+          "sos": 0.46
         },
         "Winthrop": {
           "games": 6,
@@ -1716,7 +2082,7 @@
           "sos": null
         },
         "App State": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1728,7 +2094,7 @@
           "sos": 0.64
         },
         "Marshall": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2061,7 +2427,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.78
+          "sos": 0.75
         },
         "Loyola Chicago": {
           "games": 7,
@@ -2073,7 +2439,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.78
+          "sos": 0.75
         },
         "Duquesne": {
           "games": 7,
@@ -2097,7 +2463,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.78
+          "sos": 0.75
         },
         "George Mason": {
           "games": 8,
@@ -2121,7 +2487,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.78
+          "sos": 0.75
         },
         "Davidson": {
           "games": 8,
@@ -2133,7 +2499,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.78
+          "sos": 0.75
         },
         "Richmond": {
           "games": 7,
@@ -2145,7 +2511,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.78
+          "sos": 0.75
         },
         "East Carolina": {
           "games": 7,
@@ -2184,7 +2550,7 @@
           "sos": 0.41
         },
         "UAB": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2316,7 +2682,7 @@
           "sos": 0.21
         },
         "Coastal": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2328,7 +2694,7 @@
           "sos": null
         },
         "James Madison": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2388,7 +2754,7 @@
           "sos": null
         },
         "E Kentucky": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2400,7 +2766,7 @@
           "sos": 0.46
         },
         "West Georgia": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2412,7 +2778,7 @@
           "sos": null
         },
         "FGCU": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2424,7 +2790,7 @@
           "sos": null
         },
         "Jacksonville": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2481,7 +2847,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.47
+          "sos": 0.46
         },
         "Drake": {
           "games": 9,
@@ -2508,7 +2874,7 @@
           "sos": 0.57
         },
         "UL Monroe": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2532,7 +2898,7 @@
           "sos": null
         },
         "Bellarmine": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2544,7 +2910,7 @@
           "sos": 0.46
         },
         "Lipscomb": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2577,7 +2943,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.48
+          "sos": 0.46
         },
         "Louisiana Tech": {
           "games": 8,
@@ -2589,7 +2955,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.43
+          "sos": 0.42
         },
         "Jax State": {
           "games": 8,
@@ -2760,30 +3126,6 @@
           "sos": null
         },
         "Oral Roberts": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "S Dakota St": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "N Dakota St": {
           "games": 7,
           "pace": null,
           "oRtg": null,
@@ -2795,8 +3137,32 @@
           "ftRate": null,
           "sos": null
         },
+        "S Dakota St": {
+          "games": 7,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "N Dakota St": {
+          "games": 6,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
         "Missouri St": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -3012,7 +3378,7 @@
           "sos": 0.5
         },
         "Penn State": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -3108,7 +3474,7 @@
           "sos": null
         },
         "Youngstown St": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -3287,18 +3653,6 @@
           "ftRate": null,
           "sos": null
         },
-        "Saint Louis": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
         "SMU": {
           "games": 7,
           "pace": null,
@@ -3335,18 +3689,6 @@
           "ftRate": null,
           "sos": null
         },
-        "Miami OH": {
-          "games": 6,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.52
-        },
         "Ohio State": {
           "games": 8,
           "pace": null,
@@ -3360,7 +3702,7 @@
           "sos": 0.69
         },
         "Wisconsin": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -3395,18 +3737,6 @@
           "ftRate": null,
           "sos": 0.72
         },
-        "Bowling Green": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
         "Kent State": {
           "games": 8,
           "pace": null,
@@ -3431,18 +3761,6 @@
           "ftRate": null,
           "sos": null
         },
-        "Ball State": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.52
-        },
         "W Michigan": {
           "games": 7,
           "pace": null,
@@ -3455,30 +3773,6 @@
           "ftRate": null,
           "sos": 0.52
         },
-        "Akron": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.58
-        },
-        "VCU": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
         "G Washington": {
           "games": 8,
           "pace": null,
@@ -3489,7 +3783,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.78
+          "sos": 0.75
         },
         "Miami": {
           "games": 7,
@@ -3540,7 +3834,7 @@
           "sos": 0.5
         },
         "SE Missouri": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -3549,7 +3843,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.63
+          "sos": 0.61
         },
         "Kansas St": {
           "games": 7,
@@ -3718,18 +4012,6 @@
           "toRate": null,
           "ftRate": null,
           "sos": null
-        },
-        "Purdue": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.73
         },
         "Michigan": {
           "games": 8,
@@ -4092,7 +4374,7 @@
           "sos": null
         },
         "Stony Brook": {
-          "games": 7,
+          "games": 6,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4224,7 +4506,7 @@
           "sos": 0.59
         },
         "Towson": {
-          "games": 7,
+          "games": 6,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4233,7 +4515,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.52
+          "sos": null
         },
         "Oregon St": {
           "games": 6,
@@ -4247,18 +4529,6 @@
           "ftRate": null,
           "sos": 0.46
         },
-        "Indiana": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.67
-        },
         "Cincinnati": {
           "games": 7,
           "pace": null,
@@ -4271,103 +4541,7 @@
           "ftRate": null,
           "sos": 0.55
         },
-        "Detroit Mercy": {
-          "games": 6,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Canisius": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.56
-        },
-        "Manhattan": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.56
-        },
-        "Sacred Heart": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Rider": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Saint Peter's": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Fairfield": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.56
-        },
         "Quinnipiac": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Merrimack": {
           "games": 7,
           "pace": null,
           "oRtg": null,
@@ -4377,94 +4551,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.56
+          "sos": null
         },
         "Robert Morris": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Oakland": {
-          "games": 6,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Niagara": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.56
-        },
-        "Iona": {
           "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Marist": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Siena": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.56
-        },
-        "Milwaukee": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Green Bay": {
-          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4512,7 +4602,7 @@
           "sos": 0.46
         },
         "St Thomas (MN)": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4536,7 +4626,7 @@
           "sos": null
         },
         "Southern Miss": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4560,7 +4650,7 @@
           "sos": 0.69
         },
         "UC San Diego": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4644,7 +4734,7 @@
           "sos": 0.59
         },
         "Elon": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4656,7 +4746,7 @@
           "sos": null
         },
         "UTEP": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4665,10 +4755,10 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.48
+          "sos": null
         },
         "Maine": {
-          "games": 7,
+          "games": 6,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4728,7 +4818,7 @@
           "sos": null
         },
         "New Mexico St": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4737,7 +4827,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.43
+          "sos": 0.42
         },
         "Dartmouth": {
           "games": 6,
@@ -4750,30 +4840,6 @@
           "toRate": null,
           "ftRate": null,
           "sos": 0.83
-        },
-        "Brown": {
-          "games": 6,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.83
-        },
-        "Princeton": {
-          "games": 6,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.56
         },
         "Columbia": {
           "games": 6,
@@ -4824,18 +4890,6 @@
           "sos": 0.83
         },
         "Yale": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.56
-        },
-        "Mount St Marys": {
           "games": 7,
           "pace": null,
           "oRtg": null,
@@ -4971,15 +5025,15 @@
     {
       "league": "NBA",
       "conference": "Eastern",
-      "gameDate": "2026-02-20T00:00:00.000Z",
+      "gameDate": "2026-02-21T00:00:00.000Z",
       "team": "Hornets",
-      "opponent": "Rockets",
-      "points": 101,
-      "opponentPoints": 105,
-      "rebounds": 46,
-      "assists": 25,
+      "opponent": "Cavaliers",
+      "points": 113,
+      "opponentPoints": 118,
+      "rebounds": 45,
+      "assists": 26,
       "yards": null,
-      "spread": 4.5,
+      "spread": 5.5,
       "atsResult": "W",
       "won": false,
       "teamRank": null,
@@ -4992,10 +5046,57 @@
       "threepa": null,
       "ftm": null,
       "fta": null,
-      "offRebounds": 8,
-      "defRebounds": 31,
-      "steals": 15,
-      "blocks": 8,
+      "offRebounds": 11,
+      "defRebounds": 28,
+      "steals": 10,
+      "blocks": 3,
+      "turnovers": 12,
+      "passingYards": null,
+      "rushingYards": null,
+      "opponentYards": null,
+      "turnoversFor": null,
+      "turnoversAgainst": null,
+      "thirdDownConv": null,
+      "thirdDownAtt": null,
+      "redZoneConv": null,
+      "redZoneAtt": null,
+      "timeOfPossession": null,
+      "homeAway": "home",
+      "hits": null,
+      "errors": null,
+      "source": "espn-public-api",
+      "sourceEventId": "401810657",
+      "gameStatus": "Final",
+      "completionEvidence": "espn-status-completed"
+    },
+    {
+      "league": "NCAAB",
+      "conference": "Big Ten Conference",
+      "gameDate": "2026-02-21T00:00:00.000Z",
+      "team": "Purdue",
+      "opponent": "Indiana",
+      "points": 93,
+      "opponentPoints": 64,
+      "rebounds": 30,
+      "assists": 24,
+      "yards": null,
+      "spread": -11.5,
+      "atsResult": "W",
+      "won": true,
+      "teamRank": 7,
+      "opponentRank": 99,
+      "bubbleStatus": "LOCK",
+      "autoBidStatus": "AUTO_BID",
+      "fgm": null,
+      "fga": null,
+      "threepm": null,
+      "threepa": null,
+      "ftm": null,
+      "fta": null,
+      "offRebounds": 1,
+      "defRebounds": 14,
+      "steals": 0,
+      "blocks": 2,
       "turnovers": 11,
       "passingYards": null,
       "rushingYards": null,
@@ -5011,39 +5112,39 @@
       "hits": null,
       "errors": null,
       "source": "espn-public-api",
-      "sourceEventId": "401810647",
+      "sourceEventId": "401825528",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
     {
-      "league": "NCAAB",
-      "conference": "American Conference",
+      "league": "MLB",
+      "conference": "AL East",
       "gameDate": "2026-02-20T00:00:00.000Z",
-      "team": "South Florida",
-      "opponent": "Memphis",
-      "points": 87,
-      "opponentPoints": 66,
-      "rebounds": 52,
-      "assists": 15,
+      "team": "Orioles",
+      "opponent": "Yankees",
+      "points": 2,
+      "opponentPoints": 0,
+      "rebounds": null,
+      "assists": null,
       "yards": null,
-      "spread": -9.5,
-      "atsResult": "W",
+      "spread": null,
+      "atsResult": null,
       "won": true,
-      "teamRank": 99,
-      "opponentRank": 99,
-      "bubbleStatus": "WORK",
-      "autoBidStatus": "AUTO_BID",
+      "teamRank": null,
+      "opponentRank": null,
+      "bubbleStatus": null,
+      "autoBidStatus": null,
       "fgm": null,
       "fga": null,
       "threepm": null,
       "threepa": null,
       "ftm": null,
       "fta": null,
-      "offRebounds": 17,
-      "defRebounds": 22,
-      "steals": 3,
-      "blocks": 6,
-      "turnovers": 13,
+      "offRebounds": null,
+      "defRebounds": null,
+      "steals": null,
+      "blocks": null,
+      "turnovers": null,
       "passingYards": null,
       "rushingYards": null,
       "opponentYards": null,
@@ -5055,10 +5156,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": null,
-      "errors": null,
+      "hits": 8,
+      "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401828237",
+      "sourceEventId": "401832869",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -5108,59 +5209,14 @@
       "sourceEventId": "401772988",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
-    },
-    {
-      "league": "MLB",
-      "conference": "NL West",
-      "gameDate": "2026-01-17T00:00:00.000Z",
-      "team": "LAD",
-      "opponent": "SD",
-      "points": 5,
-      "opponentPoints": 3,
-      "rebounds": 8,
-      "assists": 0,
-      "yards": null,
-      "spread": -1.5,
-      "atsResult": "W",
-      "won": true,
-      "teamRank": null,
-      "opponentRank": null,
-      "bubbleStatus": null,
-      "autoBidStatus": null,
-      "fgm": null,
-      "fga": null,
-      "threepm": null,
-      "threepa": null,
-      "ftm": null,
-      "fta": null,
-      "offRebounds": null,
-      "defRebounds": null,
-      "steals": null,
-      "blocks": null,
-      "turnovers": null,
-      "passingYards": null,
-      "rushingYards": null,
-      "opponentYards": null,
-      "turnoversFor": null,
-      "turnoversAgainst": null,
-      "thirdDownConv": null,
-      "thirdDownAtt": null,
-      "redZoneConv": null,
-      "redZoneAtt": null,
-      "timeOfPossession": null,
-      "homeAway": null,
-      "hits": null,
-      "errors": null,
-      "source": "Manual export from public MLB game box score",
-      "sourceEventId": null,
-      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
-      "completionEvidence": "scored-game"
     }
   ],
   "conferences": [
     "AFC East",
     "AFC West",
+    "AL Central",
     "AL East",
+    "AL West",
     "ASUN Conference",
     "America East Conference",
     "American Conference",
@@ -5183,6 +5239,7 @@
     "Missouri Valley Conference",
     "Mountain West Conference",
     "NFC West",
+    "NL Central",
     "NL West",
     "Northeast Conference",
     "Ohio Valley Conference",
@@ -5202,525 +5259,624 @@
     {
       "league": "NBA",
       "conference": null,
-      "gameDate": "2026-02-21T00:40:00.000Z",
-      "matchup": "Dallas Mavericks at Minnesota Timberwolves",
-      "pickTeam": "Minnesota Timberwolves",
-      "opponent": "Dallas Mavericks",
-      "spread": -13.2,
-      "modelSpread": -9.2,
-      "line": "Minnesota Timberwolves -13.2",
-      "score": 71,
-      "confidence": 67,
+      "gameDate": "2026-02-22T01:10:00.000Z",
+      "matchup": "Memphis Grizzlies at Miami Heat",
+      "pickTeam": "Miami Heat",
+      "opponent": "Memphis Grizzlies",
+      "spread": -10.3,
+      "modelSpread": -7.9,
+      "line": "Miami Heat -10.3",
+      "score": 70,
+      "confidence": 66,
       "rationaleSignals": [
-        "Momentum edge +1.20 (last-10 trend proxy)",
-        "ATS edge +0.30",
-        "History sample Minnesota Timberwolves: 12 games (mapped Timberwolves) vs Dallas Mavericks: 10 games",
+        "Momentum edge +0.40 (last-10 trend proxy)",
+        "ATS edge +0.00",
+        "History sample Miami Heat: 12 games (mapped Heat) vs Memphis Grizzlies: 12 games",
         "Home court (+2.5 pt adjustment)",
-        "Rest: Minnesota Timberwolves 9d rest vs Dallas Mavericks 8d rest",
-        "9 books: avg -13.2, variance 0.17 (tight consensus)",
-        "Market line -13.2, model estimate -9.2 (regression to mean)"
+        "Rest: Miami Heat B2B vs Memphis Grizzlies B2B",
+        "9 books: avg -10.3, variance 0.06 (tight consensus)"
       ],
-      "momentumEdge": 1.2,
+      "momentumEdge": 0.4,
+      "atsEdge": 0
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T18:00:00.000Z",
+      "matchup": "Albany Great Danes at UMBC Retrievers",
+      "pickTeam": "UMBC Retrievers",
+      "opponent": "Albany Great Danes",
+      "spread": -6.5,
+      "modelSpread": -6,
+      "line": "UMBC Retrievers -6.5",
+      "score": 68,
+      "confidence": 64,
+      "rationaleSignals": [
+        "Momentum edge +0.71 (last-10 trend proxy)",
+        "ATS edge unavailable (limited ATS sample)",
+        "History sample UMBC Retrievers: 7 games (mapped UMBC) vs Albany Great Danes: 0 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: UMBC Retrievers 3d rest vs Albany Great Danes ?",
+        "2 books: avg -6.5, variance 0 (tight consensus)"
+      ],
+      "momentumEdge": 0.71,
+      "atsEdge": null
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T23:30:00.000Z",
+      "matchup": "Prairie View Panthers at Arkansas-Pine Bluff Golden Lions",
+      "pickTeam": "Arkansas-Pine Bluff Golden Lions",
+      "opponent": "Prairie View Panthers",
+      "spread": -2.8,
+      "modelSpread": -2.6,
+      "line": "Arkansas-Pine Bluff Golden Lions -2.8",
+      "score": 67,
+      "confidence": 63,
+      "rationaleSignals": [
+        "Momentum edge +0.96 (last-10 trend proxy)",
+        "ATS edge +0.08",
+        "History sample Arkansas-Pine Bluff Golden Lions: 7 games (mapped Kansas) vs Prairie View Panthers: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Arkansas-Pine Bluff Golden Lions 3d rest vs Prairie View Panthers 2d rest",
+        "3 books: avg -2.8, variance 0.06 (tight consensus)"
+      ],
+      "momentumEdge": 0.96,
+      "atsEdge": 0.08
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T21:00:00.000Z",
+      "matchup": "Delaware St Hornets at Morgan St Bears",
+      "pickTeam": "Morgan St Bears",
+      "opponent": "Delaware St Hornets",
+      "spread": -5.5,
+      "modelSpread": -5.1,
+      "line": "Morgan St Bears -5.5",
+      "score": 66,
+      "confidence": 62,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.25",
+        "History sample Morgan St Bears: 5 games (mapped Morgan St) vs Delaware St Hornets: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Morgan St Bears 5d rest vs Delaware St Hornets 3d rest",
+        "4 books: avg -5.5, variance 0 (tight consensus)"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.25
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T22:30:20.000Z",
+      "matchup": "UConn Huskies at Villanova Wildcats",
+      "pickTeam": "Villanova Wildcats",
+      "opponent": "UConn Huskies",
+      "spread": 2.5,
+      "modelSpread": 2.3,
+      "line": "Villanova Wildcats +2.5",
+      "score": 66,
+      "confidence": 62,
+      "rationaleSignals": [
+        "Momentum edge +0.21 (last-10 trend proxy)",
+        "ATS edge +0.46",
+        "History sample Villanova Wildcats: 7 games (mapped Villanova) vs UConn Huskies: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Villanova Wildcats 5d rest vs UConn Huskies 3d rest",
+        "8 books: avg 2.5, variance 0 (tight consensus)"
+      ],
+      "momentumEdge": 0.21,
+      "atsEdge": 0.46
+    },
+    {
+      "league": "NBA",
+      "conference": null,
+      "gameDate": "2026-02-22T01:10:00.000Z",
+      "matchup": "Detroit Pistons at Chicago Bulls",
+      "pickTeam": "Detroit Pistons",
+      "opponent": "Chicago Bulls",
+      "spread": -10.6,
+      "modelSpread": -8.1,
+      "line": "Detroit Pistons -10.6",
+      "score": 66,
+      "confidence": 62,
+      "rationaleSignals": [
+        "Momentum edge +1.40 (last-10 trend proxy)",
+        "ATS edge +0.50",
+        "History sample Detroit Pistons: 12 games (mapped Pistons) vs Chicago Bulls: 12 games",
+        "Away (+-2.5 pt adjustment)",
+        "Rest: Detroit Pistons 2d rest vs Chicago Bulls 2d rest",
+        "9 books: avg -10.6, variance 0.04 (tight consensus)"
+      ],
+      "momentumEdge": 1.4,
+      "atsEdge": 0.5
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T17:00:00.000Z",
+      "matchup": "Loyola (Chi) Ramblers at Saint Joseph's Hawks",
+      "pickTeam": "Saint Joseph's Hawks",
+      "opponent": "Loyola (Chi) Ramblers",
+      "spread": -9.2,
+      "modelSpread": -7.4,
+      "line": "Saint Joseph's Hawks -9.2",
+      "score": 65,
+      "confidence": 61,
+      "rationaleSignals": [
+        "Momentum edge +1.14 (last-10 trend proxy)",
+        "ATS edge +0.28",
+        "History sample Saint Joseph's Hawks: 7 games (mapped Saint Joseph's) vs Loyola (Chi) Ramblers: 7 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Saint Joseph's Hawks 3d rest vs Loyola (Chi) Ramblers 3d rest",
+        "7 books: avg -9.2, variance 0.06 (tight consensus)"
+      ],
+      "momentumEdge": 1.14,
+      "atsEdge": 0.28
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T20:30:00.000Z",
+      "matchup": "Jacksonville St Gamecocks at Sam Houston St Bearkats",
+      "pickTeam": "Sam Houston St Bearkats",
+      "opponent": "Jacksonville St Gamecocks",
+      "spread": -7.5,
+      "modelSpread": -6.7,
+      "line": "Sam Houston St Bearkats -7.5",
+      "score": 65,
+      "confidence": 61,
+      "rationaleSignals": [
+        "Momentum edge +0.96 (last-10 trend proxy)",
+        "ATS edge +0.33",
+        "History sample Sam Houston St Bearkats: 7 games (mapped Sam Houston) vs Jacksonville St Gamecocks: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Sam Houston St Bearkats 3d rest vs Jacksonville St Gamecocks 3d rest",
+        "6 books: avg -7.5, variance 0 (tight consensus)",
+        "SOS: 0.420 vs 0.460"
+      ],
+      "momentumEdge": 0.96,
+      "atsEdge": 0.33
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T21:00:00.000Z",
+      "matchup": "Longwood Lancers at Charleston Southern Buccaneers",
+      "pickTeam": "Charleston Southern Buccaneers",
+      "opponent": "Longwood Lancers",
+      "spread": -4.3,
+      "modelSpread": -4,
+      "line": "Charleston Southern Buccaneers -4.3",
+      "score": 65,
+      "confidence": 61,
+      "rationaleSignals": [
+        "Momentum edge +0.75 (last-10 trend proxy)",
+        "ATS edge +0.25",
+        "History sample Charleston Southern Buccaneers: 8 games (mapped Charleston) vs Longwood Lancers: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Charleston Southern Buccaneers 2d rest vs Longwood Lancers 2d rest",
+        "4 books: avg -4.2, variance 0.06 (tight consensus)"
+      ],
+      "momentumEdge": 0.75,
+      "atsEdge": 0.25
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-22T01:00:00.000Z",
+      "matchup": "Indiana St Sycamores at Belmont Bruins",
+      "pickTeam": "Belmont Bruins",
+      "opponent": "Indiana St Sycamores",
+      "spread": -13.5,
+      "modelSpread": -9.4,
+      "line": "Belmont Bruins -13.5",
+      "score": 65,
+      "confidence": 61,
+      "rationaleSignals": [
+        "Momentum edge +0.50 (last-10 trend proxy)",
+        "ATS edge +0.25",
+        "History sample Belmont Bruins: 8 games (mapped Belmont) vs Indiana St Sycamores: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Belmont Bruins 7d rest vs Indiana St Sycamores B2B",
+        "5 books: avg -13.5, variance 0 (tight consensus)",
+        "Market line -13.5, model estimate -9.4 (regression to mean)",
+        "SOS: 0.570 vs 0.670"
+      ],
+      "momentumEdge": 0.5,
+      "atsEdge": 0.25
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T18:00:00.000Z",
+      "matchup": "Cincinnati Bearcats at Kansas Jayhawks",
+      "pickTeam": "Kansas Jayhawks",
+      "opponent": "Cincinnati Bearcats",
+      "spread": -10.3,
+      "modelSpread": -7.9,
+      "line": "Kansas Jayhawks -10.3",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.57 (last-10 trend proxy)",
+        "ATS edge +0.28",
+        "History sample Kansas Jayhawks: 7 games (mapped Kansas) vs Cincinnati Bearcats: 7 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Kansas Jayhawks 3d rest vs Cincinnati Bearcats 7d rest",
+        "8 books: avg -10.2, variance 0.06 (tight consensus)",
+        "SOS: 0.560 vs 0.550"
+      ],
+      "momentumEdge": 0.57,
+      "atsEdge": 0.28
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T19:00:00.000Z",
+      "matchup": "Delaware Blue Hens at Middle Tennessee Blue Raiders",
+      "pickTeam": "Middle Tennessee Blue Raiders",
+      "opponent": "Delaware Blue Hens",
+      "spread": -8.5,
+      "modelSpread": -7.1,
+      "line": "Middle Tennessee Blue Raiders -8.5",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.75 (last-10 trend proxy)",
+        "ATS edge -0.12",
+        "History sample Middle Tennessee Blue Raiders: 8 games (mapped Tennessee) vs Delaware Blue Hens: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Middle Tennessee Blue Raiders 3d rest vs Delaware Blue Hens 3d rest",
+        "7 books: avg -8.5, variance 0 (tight consensus)",
+        "SOS: 0.540 vs 0.440"
+      ],
+      "momentumEdge": 0.75,
+      "atsEdge": -0.12
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T19:00:00.000Z",
+      "matchup": "Samford Bulldogs at Mercer Bears",
+      "pickTeam": "Samford Bulldogs",
+      "opponent": "Mercer Bears",
+      "spread": 3.9,
+      "modelSpread": 3.6,
+      "line": "Samford Bulldogs +3.9",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.75 (last-10 trend proxy)",
+        "ATS edge +0.50",
+        "History sample Samford Bulldogs: 8 games (mapped Samford) vs Mercer Bears: 8 games",
+        "Away (+-3.5 pt adjustment)",
+        "Rest: Samford Bulldogs 2d rest vs Mercer Bears 2d rest",
+        "7 books: avg 3.9, variance 0.12 (tight consensus)",
+        "SOS: 0.710 vs 0.210"
+      ],
+      "momentumEdge": 0.75,
+      "atsEdge": 0.5
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T21:00:00.000Z",
+      "matchup": "Hampton Pirates at Stony Brook Seawolves",
+      "pickTeam": "Stony Brook Seawolves",
+      "opponent": "Hampton Pirates",
+      "spread": -4.5,
+      "modelSpread": -4.1,
+      "line": "Stony Brook Seawolves -4.5",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.76 (last-10 trend proxy)",
+        "ATS edge +0.38",
+        "History sample Stony Brook Seawolves: 6 games (mapped Stony Brook) vs Hampton Pirates: 7 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Stony Brook Seawolves 5d rest vs Hampton Pirates 2d rest",
+        "5 books: avg -4.5, variance 0 (tight consensus)",
+        "SOS: 0.520 vs 0.520"
+      ],
+      "momentumEdge": 0.76,
+      "atsEdge": 0.38
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T21:00:00.000Z",
+      "matchup": "Winthrop Eagles at High Point Panthers",
+      "pickTeam": "High Point Panthers",
+      "opponent": "Winthrop Eagles",
+      "spread": -8.5,
+      "modelSpread": -7.1,
+      "line": "High Point Panthers -8.5",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.30",
+        "History sample High Point Panthers: 8 games (mapped High Point) vs Winthrop Eagles: 6 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: High Point Panthers 2d rest vs Winthrop Eagles 3d rest",
+        "4 books: avg -8.5, variance 0 (tight consensus)"
+      ],
+      "momentumEdge": 0,
       "atsEdge": 0.3
     },
     {
       "league": "NCAAB",
       "conference": null,
-      "gameDate": "2026-02-21T01:30:00.000Z",
-      "matchup": "Bowling Green Falcons at Miami (OH) RedHawks",
-      "pickTeam": "Miami (OH) RedHawks",
-      "opponent": "Bowling Green Falcons",
-      "spread": -7.9,
-      "modelSpread": -6.8,
-      "line": "Miami (OH) RedHawks -7.9",
-      "score": 70,
-      "confidence": 66,
+      "gameDate": "2026-02-21T21:00:00.000Z",
+      "matchup": "Lindenwood Lions at Tennessee Tech Golden Eagles",
+      "pickTeam": "Tennessee Tech Golden Eagles",
+      "opponent": "Lindenwood Lions",
+      "spread": 2.3,
+      "modelSpread": 2.1,
+      "line": "Tennessee Tech Golden Eagles +2.3",
+      "score": 64,
+      "confidence": 60,
       "rationaleSignals": [
-        "Momentum edge +1.25 (last-10 trend proxy)",
-        "ATS edge +0.29",
-        "History sample Miami (OH) RedHawks: 6 games (mapped Miami OH) vs Bowling Green Falcons: 8 games",
+        "Momentum edge +0.25 (last-10 trend proxy)",
+        "ATS edge +0.50",
+        "History sample Tennessee Tech Golden Eagles: 8 games (mapped Tennessee Tech) vs Lindenwood Lions: 8 games",
         "Home court (+3.5 pt adjustment)",
-        "Rest: Miami (OH) RedHawks 3d rest vs Bowling Green Falcons 3d rest",
-        "7 books: avg -7.9, variance 0.27 (moderate consensus)"
+        "Rest: Tennessee Tech Golden Eagles 2d rest vs Lindenwood Lions 2d rest",
+        "6 books: avg 2.3, variance 0.06 (tight consensus)",
+        "SOS: 0.610 vs 0.610"
       ],
-      "momentumEdge": 1.25,
+      "momentumEdge": 0.25,
+      "atsEdge": 0.5
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T21:30:00.000Z",
+      "matchup": "Southern Indiana Screaming Eagles at Eastern Illinois Panthers",
+      "pickTeam": "Eastern Illinois Panthers",
+      "opponent": "Southern Indiana Screaming Eagles",
+      "spread": -4.2,
+      "modelSpread": -3.9,
+      "line": "Eastern Illinois Panthers -4.2",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.25 (last-10 trend proxy)",
+        "ATS edge +0.13",
+        "History sample Eastern Illinois Panthers: 8 games (mapped Illinois) vs Southern Indiana Screaming Eagles: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Eastern Illinois Panthers 3d rest vs Southern Indiana Screaming Eagles B2B",
+        "6 books: avg -4.2, variance 0.06 (tight consensus)",
+        "SOS: 0.690 vs 0.670"
+      ],
+      "momentumEdge": 0.25,
+      "atsEdge": 0.13
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T22:00:00.000Z",
+      "matchup": "Western Michigan Broncos at Central Michigan Chippewas",
+      "pickTeam": "Central Michigan Chippewas",
+      "opponent": "Western Michigan Broncos",
+      "spread": -3.8,
+      "modelSpread": -3.5,
+      "line": "Central Michigan Chippewas -3.8",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.00",
+        "History sample Central Michigan Chippewas: 8 games (mapped Michigan) vs Western Michigan Broncos: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Central Michigan Chippewas 5d rest vs Western Michigan Broncos 5d rest",
+        "6 books: avg -3.8, variance 0.06 (tight consensus)",
+        "SOS: 0.650 vs 0.650"
+      ],
+      "momentumEdge": 0,
+      "atsEdge": 0
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-22T00:00:00.000Z",
+      "matchup": "Vermont Catamounts at NJIT Highlanders",
+      "pickTeam": "NJIT Highlanders",
+      "opponent": "Vermont Catamounts",
+      "spread": 4,
+      "modelSpread": 3.7,
+      "line": "NJIT Highlanders +4",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.46 (last-10 trend proxy)",
+        "ATS edge +0.36",
+        "History sample NJIT Highlanders: 7 games (mapped NJIT) vs Vermont Catamounts: 8 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: NJIT Highlanders 2d rest vs Vermont Catamounts 3d rest",
+        "2 books: avg 4, variance 0 (tight consensus)"
+      ],
+      "momentumEdge": 0.46,
+      "atsEdge": 0.36
+    },
+    {
+      "league": "NCAAB",
+      "conference": null,
+      "gameDate": "2026-02-21T17:00:00.000Z",
+      "matchup": "North Carolina Central Eagles at Howard Bison",
+      "pickTeam": "Howard Bison",
+      "opponent": "North Carolina Central Eagles",
+      "spread": -11.8,
+      "modelSpread": -8.6,
+      "line": "Howard Bison -11.8",
+      "score": 63,
+      "confidence": 59,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.29",
+        "History sample Howard Bison: 7 games (mapped Howard) vs North Carolina Central Eagles: 7 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Howard Bison 5d rest vs North Carolina Central Eagles 4d rest",
+        "6 books: avg -11.8, variance 0.22 (tight consensus)",
+        "Market line -11.8, model estimate -8.6 (regression to mean)",
+        "SOS: 0.830 vs 0.630"
+      ],
+      "momentumEdge": 0,
       "atsEdge": 0.29
     },
     {
       "league": "NCAAB",
       "conference": null,
-      "gameDate": "2026-02-21T01:00:00.000Z",
-      "matchup": "Siena Saints at Merrimack Warriors",
-      "pickTeam": "Merrimack Warriors",
-      "opponent": "Siena Saints",
-      "spread": -3.4,
-      "modelSpread": -3.1,
-      "line": "Merrimack Warriors -3.4",
-      "score": 66,
-      "confidence": 62,
-      "rationaleSignals": [
-        "Momentum edge +0.28 (last-10 trend proxy)",
-        "ATS edge +0.43",
-        "History sample Merrimack Warriors: 7 games (mapped Merrimack) vs Siena Saints: 7 games",
-        "Home court (+3.5 pt adjustment)",
-        "Rest: Merrimack Warriors 6d rest vs Siena Saints 6d rest",
-        "7 books: avg -3.4, variance 0.05 (tight consensus)",
-        "SOS: 0.560 vs 0.560"
-      ],
-      "momentumEdge": 0.28,
-      "atsEdge": 0.43
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-21T00:00:00.000Z",
-      "matchup": "Milwaukee Panthers at Detroit Mercy Titans",
-      "pickTeam": "Detroit Mercy Titans",
-      "opponent": "Milwaukee Panthers",
-      "spread": -2.3,
-      "modelSpread": -2.1,
-      "line": "Detroit Mercy Titans -2.3",
-      "score": 64,
-      "confidence": 60,
-      "rationaleSignals": [
-        "Momentum edge +0.58 (last-10 trend proxy)",
-        "ATS edge +0.17",
-        "History sample Detroit Mercy Titans: 6 games (mapped Detroit Mercy) vs Milwaukee Panthers: 8 games",
-        "Home court (+3.5 pt adjustment)",
-        "Rest: Detroit Mercy Titans 6d rest vs Milwaukee Panthers 6d rest",
-        "8 books: avg -2.2, variance 0.06 (tight consensus)"
-      ],
-      "momentumEdge": 0.58,
-      "atsEdge": 0.17
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-21T00:00:00.000Z",
-      "matchup": "Niagara Purple Eagles at Mt. St. Mary's Mountaineers",
-      "pickTeam": "Mt. St. Mary's Mountaineers",
-      "opponent": "Niagara Purple Eagles",
-      "spread": -6.9,
-      "modelSpread": -6.3,
-      "line": "Mt. St. Mary's Mountaineers -6.9",
+      "gameDate": "2026-02-21T19:00:00.000Z",
+      "matchup": "Davidson Wildcats at Fordham Rams",
+      "pickTeam": "Fordham Rams",
+      "opponent": "Davidson Wildcats",
+      "spread": -1.3,
+      "modelSpread": -1.2,
+      "line": "Fordham Rams -1.3",
       "score": 63,
       "confidence": 59,
       "rationaleSignals": [
-        "Momentum edge +1.50 (last-10 trend proxy)",
-        "ATS edge -0.18",
-        "History sample Mt. St. Mary's Mountaineers: 7 games (mapped St John's) vs Niagara Purple Eagles: 8 games",
+        "Momentum edge +0.43 (last-10 trend proxy)",
+        "ATS edge +0.42",
+        "History sample Fordham Rams: 7 games (mapped Fordham) vs Davidson Wildcats: 8 games",
         "Home court (+3.5 pt adjustment)",
-        "Rest: Mt. St. Mary's Mountaineers 2d rest vs Niagara Purple Eagles 6d rest",
-        "7 books: avg -6.9, variance 0.1 (tight consensus)"
+        "Rest: Fordham Rams 3d rest vs Davidson Wildcats 3d rest",
+        "7 books: avg -1.3, variance 0.06 (tight consensus)",
+        "SOS: 0.750 vs 0.750"
       ],
-      "momentumEdge": 1.5,
-      "atsEdge": -0.18
-    },
-    {
-      "league": "NBA",
-      "conference": null,
-      "gameDate": "2026-02-21T03:10:00.000Z",
-      "matchup": "Los Angeles Clippers at Los Angeles Lakers",
-      "pickTeam": "Los Angeles Lakers",
-      "opponent": "Los Angeles Clippers",
-      "spread": -6.5,
-      "modelSpread": -6,
-      "line": "Los Angeles Lakers -6.5",
-      "score": 59,
-      "confidence": 54,
-      "rationaleSignals": [
-        "Momentum edge +0.00 (last-10 trend proxy)",
-        "ATS edge +0.00",
-        "History sample Los Angeles Lakers: 12 games (mapped Lakers) vs Los Angeles Clippers: 12 games",
-        "Home court (+2.5 pt adjustment)",
-        "Rest: Los Angeles Lakers 8d rest vs Los Angeles Clippers B2B",
-        "9 books: avg -6.5, variance 0 (tight consensus)"
-      ],
-      "momentumEdge": 0,
-      "atsEdge": 0
+      "momentumEdge": 0.43,
+      "atsEdge": 0.42
     },
     {
       "league": "NCAAB",
       "conference": null,
-      "gameDate": "2026-02-21T00:00:00.000Z",
-      "matchup": "Sacred Heart Pioneers at Fairfield Stags",
-      "pickTeam": "Fairfield Stags",
-      "opponent": "Sacred Heart Pioneers",
-      "spread": -4.8,
-      "modelSpread": -4.4,
-      "line": "Fairfield Stags -4.8",
-      "score": 58,
-      "confidence": 53,
+      "gameDate": "2026-02-21T20:00:00.000Z",
+      "matchup": "Ohio Bobcats at Northern Illinois Huskies",
+      "pickTeam": "Northern Illinois Huskies",
+      "opponent": "Ohio Bobcats",
+      "spread": 6,
+      "modelSpread": 5.5,
+      "line": "Northern Illinois Huskies +6",
+      "score": 63,
+      "confidence": 59,
       "rationaleSignals": [
-        "Momentum edge +0.18 (last-10 trend proxy)",
-        "ATS edge +0.05",
-        "History sample Fairfield Stags: 7 games (mapped Fairfield) vs Sacred Heart Pioneers: 8 games",
-        "Home court (+3.5 pt adjustment)",
-        "Rest: Fairfield Stags 6d rest vs Sacred Heart Pioneers 6d rest",
-        "8 books: avg -4.8, variance 0.12 (tight consensus)"
-      ],
-      "momentumEdge": 0.18,
-      "atsEdge": 0.05
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-21T00:00:00.000Z",
-      "matchup": "Marist Red Foxes at Manhattan Jaspers",
-      "pickTeam": "Manhattan Jaspers",
-      "opponent": "Marist Red Foxes",
-      "spread": 4.7,
-      "modelSpread": 4.3,
-      "line": "Manhattan Jaspers +4.7",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.14 (last-10 trend proxy)",
-        "ATS edge +0.05",
-        "History sample Manhattan Jaspers: 7 games (mapped Manhattan) vs Marist Red Foxes: 8 games",
-        "Home court (+3.5 pt adjustment)",
-        "Rest: Manhattan Jaspers 6d rest vs Marist Red Foxes 6d rest",
-        "7 books: avg 4.7, variance 0.13 (tight consensus)"
-      ],
-      "momentumEdge": 0.14,
-      "atsEdge": 0.05
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-21T00:00:00.000Z",
-      "matchup": "VCU Rams at Saint Louis Billikens",
-      "pickTeam": "VCU Rams",
-      "opponent": "Saint Louis Billikens",
-      "spread": 7.5,
-      "modelSpread": 6.7,
-      "line": "VCU Rams +7.5",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.29 (last-10 trend proxy)",
-        "ATS edge -0.21",
-        "History sample VCU Rams: 8 games (mapped VCU) vs Saint Louis Billikens: 7 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: VCU Rams 3d rest vs Saint Louis Billikens 3d rest",
-        "8 books: avg 7.5, variance 0 (tight consensus)"
-      ],
-      "momentumEdge": 0.29,
-      "atsEdge": -0.21
-    },
-    {
-      "league": "NBA",
-      "conference": null,
-      "gameDate": "2026-02-21T00:10:00.000Z",
-      "matchup": "Cleveland Cavaliers at Charlotte Hornets",
-      "pickTeam": "Cleveland Cavaliers",
-      "opponent": "Charlotte Hornets",
-      "spread": -6.3,
-      "modelSpread": -5.8,
-      "line": "Cleveland Cavaliers -6.3",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.20 (last-10 trend proxy)",
-        "ATS edge +0.00",
-        "History sample Cleveland Cavaliers: 11 games (mapped Cavaliers) vs Charlotte Hornets: 12 games",
-        "Away (+-2.5 pt adjustment)",
-        "Rest: Cleveland Cavaliers B2B vs Charlotte Hornets B2B",
-        "9 books: avg -6.3, variance 0.06 (tight consensus)"
-      ],
-      "momentumEdge": 0.2,
-      "atsEdge": 0
-    },
-    {
-      "league": "NBA",
-      "conference": null,
-      "gameDate": "2026-02-21T00:40:00.000Z",
-      "matchup": "Miami Heat at Atlanta Hawks",
-      "pickTeam": "Miami Heat",
-      "opponent": "Atlanta Hawks",
-      "spread": -3.6,
-      "modelSpread": -3.3,
-      "line": "Miami Heat -3.6",
-      "score": 56,
-      "confidence": 51,
-      "rationaleSignals": [
-        "Momentum edge +0.00 (last-10 trend proxy)",
+        "Momentum edge +0.64 (last-10 trend proxy)",
         "ATS edge +0.20",
-        "History sample Miami Heat: 12 games (mapped Heat) vs Atlanta Hawks: 11 games",
-        "Away (+-2.5 pt adjustment)",
-        "Rest: Miami Heat 9d rest vs Atlanta Hawks B2B",
-        "9 books: avg -3.6, variance 0.02 (tight consensus)"
+        "History sample Northern Illinois Huskies: 8 games (mapped Illinois) vs Ohio Bobcats: 7 games",
+        "Home court (+3.5 pt adjustment)",
+        "Rest: Northern Illinois Huskies 3d rest vs Ohio Bobcats 4d rest",
+        "6 books: avg 6, variance 0.08 (tight consensus)"
       ],
-      "momentumEdge": 0,
+      "momentumEdge": 0.64,
       "atsEdge": 0.2
     },
     {
       "league": "NBA",
       "conference": null,
-      "gameDate": "2026-02-21T01:10:00.000Z",
-      "matchup": "Brooklyn Nets at Oklahoma City Thunder",
-      "pickTeam": "Oklahoma City Thunder",
-      "opponent": "Brooklyn Nets",
-      "spread": -17.3,
-      "modelSpread": -11.1,
-      "line": "Oklahoma City Thunder -17.3",
-      "score": 56,
-      "confidence": 51,
-      "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge -0.10",
-        "History sample Oklahoma City Thunder: 11 games (mapped Thunder) vs Brooklyn Nets: 12 games",
-        "Home court (+2.5 pt adjustment)",
-        "Rest: Oklahoma City Thunder 8d rest vs Brooklyn Nets B2B",
-        "9 books: avg -17.3, variance 0.06 (tight consensus)",
-        "Market line -17.3, model estimate -11.1 (regression to mean)"
-      ],
-      "momentumEdge": 0.4,
-      "atsEdge": -0.1
-    },
-    {
-      "league": "NBA",
-      "conference": null,
-      "gameDate": "2026-02-21T01:10:00.000Z",
-      "matchup": "Milwaukee Bucks at New Orleans Pelicans",
-      "pickTeam": "New Orleans Pelicans",
-      "opponent": "Milwaukee Bucks",
-      "spread": -3.8,
-      "modelSpread": -3.5,
-      "line": "New Orleans Pelicans -3.8",
-      "score": 55,
-      "confidence": 50,
-      "rationaleSignals": [
-        "Momentum edge +0.00 (last-10 trend proxy)",
-        "ATS edge unavailable (limited ATS sample)",
-        "History sample New Orleans Pelicans: 0 games (mapped New Orleans Pelicans) vs Milwaukee Bucks: 10 games",
-        "Home court (+2.5 pt adjustment)",
-        "Rest: New Orleans Pelicans ? vs Milwaukee Bucks 8d rest",
-        "9 books: avg -3.8, variance 0.06 (tight consensus)"
-      ],
-      "momentumEdge": 0,
-      "atsEdge": null
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-21T01:00:00.000Z",
-      "matchup": "Indiana Hoosiers at Purdue Boilermakers",
-      "pickTeam": "Indiana Hoosiers",
-      "opponent": "Purdue Boilermakers",
-      "spread": 10.9,
-      "modelSpread": 8.2,
-      "line": "Indiana Hoosiers +10.9",
-      "score": 54,
-      "confidence": 49,
-      "rationaleSignals": [
-        "Momentum edge +0.29 (last-10 trend proxy)",
-        "ATS edge +0.14",
-        "History sample Indiana Hoosiers: 7 games (mapped Indiana) vs Purdue Boilermakers: 7 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: Indiana Hoosiers 6d rest vs Purdue Boilermakers 4d rest",
-        "8 books: avg 10.9, variance 0.11 (tight consensus)",
-        "SOS: 0.670 vs 0.730"
-      ],
-      "momentumEdge": 0.29,
-      "atsEdge": 0.14
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-20T23:30:00.000Z",
-      "matchup": "Akron Zips at Ball State Cardinals",
-      "pickTeam": "Akron Zips",
-      "opponent": "Ball State Cardinals",
-      "spread": -14.6,
-      "modelSpread": -9.9,
-      "line": "Akron Zips -14.6",
-      "score": 53,
-      "confidence": 48,
-      "rationaleSignals": [
-        "Momentum edge +1.14 (last-10 trend proxy)",
-        "ATS edge +0.14",
-        "History sample Akron Zips: 7 games (mapped Akron) vs Ball State Cardinals: 7 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: Akron Zips 3d rest vs Ball State Cardinals 3d rest",
-        "8 books: avg -14.6, variance 0.03 (tight consensus)",
-        "Market line -14.6, model estimate -9.9 (regression to mean)",
-        "SOS: 0.580 vs 0.520"
-      ],
-      "momentumEdge": 1.14,
-      "atsEdge": 0.14
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-21T00:00:00.000Z",
-      "matchup": "Princeton Tigers at Brown Bears",
-      "pickTeam": "Brown Bears",
-      "opponent": "Princeton Tigers",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Brown Bears -1.5",
-      "score": 53,
-      "confidence": 48,
-      "rationaleSignals": [
-        "Momentum edge -0.34 (last-10 trend proxy)",
-        "ATS edge +0.00",
-        "History sample Brown Bears: 6 games (mapped Brown) vs Princeton Tigers: 6 games",
-        "Home court (+3.5 pt adjustment)",
-        "Rest: Brown Bears 7d rest vs Princeton Tigers 7d rest",
-        "8 books: avg -1.5, variance 0 (tight consensus)",
-        "SOS: 0.830 vs 0.560"
-      ],
-      "momentumEdge": -0.34,
-      "atsEdge": 0
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-21T00:00:00.000Z",
-      "matchup": "Saint Peter's Peacocks at Iona Gaels",
-      "pickTeam": "Saint Peter's Peacocks",
-      "opponent": "Iona Gaels",
-      "spread": 1.2,
-      "modelSpread": 1.1,
-      "line": "Saint Peter's Peacocks +1.2",
-      "score": 53,
-      "confidence": 48,
-      "rationaleSignals": [
-        "Momentum edge +0.28 (last-10 trend proxy)",
-        "ATS edge +0.00",
-        "History sample Saint Peter's Peacocks: 7 games (mapped Saint Peter's) vs Iona Gaels: 7 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: Saint Peter's Peacocks 6d rest vs Iona Gaels 6d rest",
-        "7 books: avg 1.2, variance 0.06 (tight consensus)"
-      ],
-      "momentumEdge": 0.28,
-      "atsEdge": 0
-    },
-    {
-      "league": "NBA",
-      "conference": null,
-      "gameDate": "2026-02-21T00:10:00.000Z",
-      "matchup": "Utah Jazz at Memphis Grizzlies",
-      "pickTeam": "Utah Jazz",
-      "opponent": "Memphis Grizzlies",
-      "spread": 0.9,
-      "modelSpread": 0.8,
-      "line": "Utah Jazz +0.9",
-      "score": 53,
-      "confidence": 48,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge unavailable (limited ATS sample)",
-        "History sample Utah Jazz: 0 games (mapped Utah Jazz) vs Memphis Grizzlies: 11 games",
-        "Away (+-2.5 pt adjustment)",
-        "Rest: Utah Jazz ? vs Memphis Grizzlies 9d rest",
-        "9 books: avg 0.9, variance 0.27 (moderate consensus)"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": null
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-21T00:00:00.000Z",
-      "matchup": "Green Bay Phoenix at Oakland Golden Grizzlies",
-      "pickTeam": "Green Bay Phoenix",
-      "opponent": "Oakland Golden Grizzlies",
-      "spread": 6.6,
-      "modelSpread": 6.1,
-      "line": "Green Bay Phoenix +6.6",
-      "score": 50,
-      "confidence": 45,
-      "rationaleSignals": [
-        "Momentum edge +0.00 (last-10 trend proxy)",
-        "ATS edge +0.13",
-        "History sample Green Bay Phoenix: 8 games (mapped Green Bay) vs Oakland Golden Grizzlies: 6 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: Green Bay Phoenix 6d rest vs Oakland Golden Grizzlies 6d rest",
-        "8 books: avg 6.6, variance 0.11 (tight consensus)"
-      ],
-      "momentumEdge": 0,
-      "atsEdge": 0.13
-    },
-    {
-      "league": "NBA",
-      "conference": null,
-      "gameDate": "2026-02-21T00:15:00.000Z",
-      "matchup": "Indiana Pacers at Washington Wizards",
-      "pickTeam": "Indiana Pacers",
-      "opponent": "Washington Wizards",
-      "spread": -2,
-      "modelSpread": -1.8,
-      "line": "Indiana Pacers -2",
-      "score": 50,
-      "confidence": 45,
+      "gameDate": "2026-02-22T01:40:00.000Z",
+      "matchup": "Houston Rockets at New York Knicks",
+      "pickTeam": "New York Knicks",
+      "opponent": "Houston Rockets",
+      "spread": -3.4,
+      "modelSpread": -3.1,
+      "line": "New York Knicks -3.4",
+      "score": 61,
+      "confidence": 57,
       "rationaleSignals": [
         "Momentum edge -0.20 (last-10 trend proxy)",
-        "ATS edge +0.00",
-        "History sample Indiana Pacers: 11 games (mapped Pacers) vs Washington Wizards: 12 games",
-        "Away (+-2.5 pt adjustment)",
-        "Rest: Indiana Pacers B2B vs Washington Wizards B2B",
-        "9 books: avg -2, variance 0.06 (tight consensus)"
+        "ATS edge unavailable (limited ATS sample)",
+        "History sample New York Knicks: 0 games (mapped New York Knicks) vs Houston Rockets: 12 games",
+        "Home court (+2.5 pt adjustment)",
+        "Rest: New York Knicks ? vs Houston Rockets 2d rest",
+        "9 books: avg -3.4, variance 0.02 (tight consensus)"
       ],
       "momentumEdge": -0.2,
-      "atsEdge": 0
+      "atsEdge": null
     },
     {
       "league": "NBA",
       "conference": null,
-      "gameDate": "2026-02-21T03:10:00.000Z",
-      "matchup": "Denver Nuggets at Portland Trail Blazers",
-      "pickTeam": "Denver Nuggets",
-      "opponent": "Portland Trail Blazers",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Denver Nuggets -1.5",
-      "score": 47,
-      "confidence": 48,
+      "gameDate": "2026-02-21T22:10:00.000Z",
+      "matchup": "Orlando Magic at Phoenix Suns",
+      "pickTeam": "Orlando Magic",
+      "opponent": "Phoenix Suns",
+      "spread": 1.6,
+      "modelSpread": 1.5,
+      "line": "Orlando Magic +1.6",
+      "score": 60,
+      "confidence": 56,
       "rationaleSignals": [
-        "Momentum edge +0.00 (last-10 trend proxy)",
-        "ATS edge +0.00",
-        "History sample Denver Nuggets: 12 games (mapped Nuggets) vs Portland Trail Blazers: 12 games",
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.10",
+        "History sample Orlando Magic: 11 games (mapped Magic) vs Phoenix Suns: 12 games",
         "Away (+-2.5 pt adjustment)",
-        "Rest: Denver Nuggets B2B vs Portland Trail Blazers 8d rest",
-        "9 books: avg -1.5, variance 0 (tight consensus)"
+        "Rest: Orlando Magic 2d rest vs Phoenix Suns 2d rest",
+        "9 books: avg 1.6, variance 0.04 (tight consensus)"
       ],
-      "momentumEdge": 0,
-      "atsEdge": 0
+      "momentumEdge": 0.2,
+      "atsEdge": 0.1
     },
     {
-      "league": "NCAAB",
+      "league": "NBA",
       "conference": null,
-      "gameDate": "2026-02-21T00:00:00.000Z",
-      "matchup": "Canisius Golden Griffins at Rider Broncs",
-      "pickTeam": "Canisius Golden Griffins",
-      "opponent": "Rider Broncs",
-      "spread": 1.3,
-      "modelSpread": 1.2,
-      "line": "Canisius Golden Griffins +1.3",
-      "score": 42,
-      "confidence": 53,
+      "gameDate": "2026-02-22T00:10:00.000Z",
+      "matchup": "Philadelphia 76ers at New Orleans Pelicans",
+      "pickTeam": "New Orleans Pelicans",
+      "opponent": "Philadelphia 76ers",
+      "spread": 4.1,
+      "modelSpread": 3.8,
+      "line": "New Orleans Pelicans +4.1",
+      "score": 53,
+      "confidence": 48,
       "rationaleSignals": [
-        "Momentum edge -0.29 (last-10 trend proxy)",
-        "ATS edge +0.21",
-        "History sample Canisius Golden Griffins: 8 games (mapped Canisius) vs Rider Broncs: 7 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: Canisius Golden Griffins 6d rest vs Rider Broncs 6d rest",
-        "7 books: avg 1.3, variance 0.06 (tight consensus)"
+        "Momentum edge -0.20 (last-10 trend proxy)",
+        "ATS edge unavailable (limited ATS sample)",
+        "History sample New Orleans Pelicans: 0 games (mapped New Orleans Pelicans) vs Philadelphia 76ers: 12 games",
+        "Home court (+2.5 pt adjustment)",
+        "Rest: New Orleans Pelicans ? vs Philadelphia 76ers 2d rest",
+        "9 books: avg 4.1, variance 0.1 (tight consensus)"
       ],
-      "momentumEdge": -0.29,
-      "atsEdge": 0.21
+      "momentumEdge": -0.2,
+      "atsEdge": null
+    },
+    {
+      "league": "NBA",
+      "conference": null,
+      "gameDate": "2026-02-22T01:10:00.000Z",
+      "matchup": "Sacramento Kings at San Antonio Spurs",
+      "pickTeam": "San Antonio Spurs",
+      "opponent": "Sacramento Kings",
+      "spread": -18.3,
+      "modelSpread": -11.5,
+      "line": "San Antonio Spurs -18.3",
+      "score": 53,
+      "confidence": 48,
+      "rationaleSignals": [
+        "Momentum edge +1.00 (last-10 trend proxy)",
+        "ATS edge unavailable (limited ATS sample)",
+        "History sample San Antonio Spurs: 0 games (mapped San Antonio Spurs) vs Sacramento Kings: 12 games",
+        "Home court (+2.5 pt adjustment)",
+        "Rest: San Antonio Spurs ? vs Sacramento Kings 2d rest",
+        "9 books: avg -18.3, variance 0.12 (tight consensus)",
+        "Market line -18.3, model estimate -11.5 (regression to mean)"
+      ],
+      "momentumEdge": 1,
+      "atsEdge": null
     }
   ],
   "topBestBetsTarget": 5,
-  "topBestBetsDateEt": "2026-02-20",
+  "topBestBetsDateEt": "2026-02-21",
   "topBestBetsFallbackUsed": false,
   "bestBetsNote": null,
   "bestBetModel": {
     "momentumWeight": 28,
-    "atsWeight": 36,
-    "upsetWeight": 0.5,
+    "atsWeight": 18,
+    "upsetWeight": 0.4,
     "threshold": 55,
     "calibrated": true
   },
@@ -5743,20 +5899,28 @@
         "returnDate": "2026-03-04"
       },
       {
+        "player": "Ziaire Williams",
+        "team": "Brooklyn Nets",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Personal",
+        "returnDate": "2026-02-22"
+      },
+      {
         "player": "Nic Claxton",
         "team": "Brooklyn Nets",
         "position": "C",
         "status": "Out",
         "injuryType": "Ankle",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-22"
       },
       {
-        "player": "Coby White",
+        "player": "Grant Williams",
         "team": "Charlotte Hornets",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Calf",
-        "returnDate": "2026-02-20"
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Liam McNeeley",
@@ -5764,7 +5928,15 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Ankle",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-22"
+      },
+      {
+        "player": "Coby White",
+        "team": "Charlotte Hornets",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Calf",
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Moussa Diabate",
@@ -5783,36 +5955,28 @@
         "returnDate": "2026-02-24"
       },
       {
+        "player": "Guerschon Yabusele",
+        "team": "Chicago Bulls",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Calf",
+        "returnDate": "2026-02-21"
+      },
+      {
+        "player": "Jaden Ivey",
+        "team": "Chicago Bulls",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-02-21"
+      },
+      {
         "player": "Zach Collins",
         "team": "Chicago Bulls",
         "position": "F",
         "status": "Out",
         "injuryType": "Toe",
-        "returnDate": "2026-02-26"
-      },
-      {
-        "player": "Tre Jones",
-        "team": "Chicago Bulls",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-02-19"
-      },
-      {
-        "player": "Jalen Smith",
-        "team": "Chicago Bulls",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Calf",
-        "returnDate": "2026-02-19"
-      },
-      {
-        "player": "Josh Giddey",
-        "team": "Chicago Bulls",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-02-19"
+        "returnDate": "2026-02-24"
       },
       {
         "player": "Noa Essengue",
@@ -5823,12 +5987,12 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Nae'Qwan Tomlin",
+        "player": "Evan Mobley",
         "team": "Cleveland Cavaliers",
-        "position": "F",
-        "status": "Out",
+        "position": "C",
+        "status": "Day-To-Day",
         "injuryType": "Calf",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Max Strus",
@@ -5839,6 +6003,22 @@
         "returnDate": "2026-02-27"
       },
       {
+        "player": "Max Christie",
+        "team": "Dallas Mavericks",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-02-22"
+      },
+      {
+        "player": "Cooper Flagg",
+        "team": "Dallas Mavericks",
+        "position": "F",
+        "status": "Out",
+        "injuryType": "Foot",
+        "returnDate": "2026-02-22"
+      },
+      {
         "player": "Kyrie Irving",
         "team": "Dallas Mavericks",
         "position": "G",
@@ -5847,52 +6027,12 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Daniel Gafford",
-        "team": "Dallas Mavericks",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Ankle",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Naji Marshall",
-        "team": "Dallas Mavericks",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Foot",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Caleb Martin",
-        "team": "Dallas Mavericks",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Ankle",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Cooper Flagg",
-        "team": "Dallas Mavericks",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Foot",
-        "returnDate": "2026-02-20"
-      },
-      {
         "player": "Dereck Lively II",
         "team": "Dallas Mavericks",
         "position": "C",
         "status": "Out",
         "injuryType": "Foot",
         "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Jalen Pickett",
-        "team": "Denver Nuggets",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-02-19"
       },
       {
         "player": "Peyton Watson",
@@ -5919,11 +6059,11 @@
         "returnDate": "2026-04-01"
       },
       {
-        "player": "Jalen Duren",
+        "player": "Tolu Smith",
         "team": "Detroit Pistons",
-        "position": "C",
-        "status": "Suspension",
-        "injuryType": "Suspension",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
         "returnDate": "2026-02-21"
       },
       {
@@ -5935,20 +6075,12 @@
         "returnDate": "2026-03-03"
       },
       {
-        "player": "Kristaps Porzingis",
-        "team": "Golden State Warriors",
-        "position": "C",
-        "status": "Out",
-        "injuryType": "Achilles",
-        "returnDate": "2026-02-19"
-      },
-      {
         "player": "Stephen Curry",
         "team": "Golden State Warriors",
         "position": "G",
         "status": "Out",
         "injuryType": "Knee",
-        "returnDate": "2026-02-22"
+        "returnDate": "2026-03-02"
       },
       {
         "player": "Seth Curry",
@@ -5959,20 +6091,12 @@
         "returnDate": "2026-03-05"
       },
       {
-        "player": "Will Richard",
-        "team": "Golden State Warriors",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-02-19"
-      },
-      {
         "player": "L.J. Cryer",
         "team": "Golden State Warriors",
         "position": "G",
         "status": "Out",
         "injuryType": "Hamstring",
-        "returnDate": "2026-02-19"
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Jimmy Butler III",
@@ -5999,28 +6123,20 @@
         "returnDate": "2026-06-01"
       },
       {
-        "player": "Micah Potter",
-        "team": "Indiana Pacers",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
-        "returnDate": "2026-02-19"
-      },
-      {
-        "player": "T.J. McConnell",
-        "team": "Indiana Pacers",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-02-19"
-      },
-      {
         "player": "Aaron Nesmith",
         "team": "Indiana Pacers",
         "position": "G",
-        "status": "Out",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-02-22"
+      },
+      {
+        "player": "Andrew Nembhard",
+        "team": "Indiana Pacers",
+        "position": "G",
+        "status": "Day-To-Day",
         "injuryType": "Back",
-        "returnDate": "2026-02-19"
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Pascal Siakam",
@@ -6028,7 +6144,7 @@
         "position": "F",
         "status": "Out",
         "injuryType": "Personal",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Obi Toppin",
@@ -6063,6 +6179,22 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Kawhi Leonard",
+        "team": "LA Clippers",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-02-22"
+      },
+      {
+        "player": "John Collins",
+        "team": "LA Clippers",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Head",
+        "returnDate": "2026-02-22"
+      },
+      {
         "player": "Darius Garland",
         "team": "LA Clippers",
         "position": "G",
@@ -6079,12 +6211,52 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Deandre Ayton",
-        "team": "Los Angeles Lakers",
-        "position": "C",
+        "player": "Scotty Pippen Jr.",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Toe",
+        "returnDate": "2026-02-21"
+      },
+      {
+        "player": "Ty Jerome",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Calf",
+        "returnDate": "2026-02-21"
+      },
+      {
+        "player": "Walter Clayton Jr.",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Calf",
+        "returnDate": "2026-02-21"
+      },
+      {
+        "player": "Kentavious Caldwell-Pope",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Finger",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Cedric Coward",
+        "team": "Memphis Grizzlies",
+        "position": "F",
         "status": "Out",
         "injuryType": "Knee",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-21"
+      },
+      {
+        "player": "Santi Aldama",
+        "team": "Memphis Grizzlies",
+        "position": "F",
+        "status": "Out",
+        "injuryType": "Knee",
+        "returnDate": "2026-02-21"
       },
       {
         "player": "Ja Morant",
@@ -6093,38 +6265,6 @@
         "status": "Out",
         "injuryType": "Elbow",
         "returnDate": "2026-03-07"
-      },
-      {
-        "player": "Kentavious Caldwell-Pope",
-        "team": "Memphis Grizzlies",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Finger",
-        "returnDate": "2026-03-01"
-      },
-      {
-        "player": "Cedric Coward",
-        "team": "Memphis Grizzlies",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Walter Clayton Jr.",
-        "team": "Memphis Grizzlies",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Calf",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Santi Aldama",
-        "team": "Memphis Grizzlies",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-02-20"
       },
       {
         "player": "Zach Edey",
@@ -6140,31 +6280,7 @@
         "position": "F",
         "status": "Out",
         "injuryType": "Calf",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Tyler Herro",
-        "team": "Miami Heat",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Ribs",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Andrew Wiggins",
-        "team": "Miami Heat",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Toe",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Pelle Larsson",
-        "team": "Miami Heat",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Forearm",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-27"
       },
       {
         "player": "Terry Rozier",
@@ -6180,7 +6296,7 @@
         "position": "F",
         "status": "Out",
         "injuryType": "Calf",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Myles Turner",
@@ -6188,15 +6304,7 @@
         "position": "C",
         "status": "Out",
         "injuryType": "Calf",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Ryan Rollins",
-        "team": "Milwaukee Bucks",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Foot",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Taurean Prince",
@@ -6207,20 +6315,12 @@
         "returnDate": "2026-03-02"
       },
       {
-        "player": "Terrence Shannon Jr.",
-        "team": "Minnesota Timberwolves",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Foot",
-        "returnDate": "2026-02-20"
-      },
-      {
         "player": "Trey Murphy III",
         "team": "New Orleans Pelicans",
         "position": "F",
         "status": "Out",
         "injuryType": "Shoulder",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-21"
       },
       {
         "player": "Yves Missi",
@@ -6228,7 +6328,7 @@
         "position": "C",
         "status": "Out",
         "injuryType": "Calf",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-21"
       },
       {
         "player": "Micah Peavy",
@@ -6236,7 +6336,7 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Toe",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-21"
       },
       {
         "player": "Dejounte Murray",
@@ -6244,15 +6344,7 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Achilles",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "OG Anunoby",
-        "team": "New York Knicks",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Toe",
-        "returnDate": "2026-02-19"
+        "returnDate": "2026-02-21"
       },
       {
         "player": "Miles McBride",
@@ -6263,36 +6355,12 @@
         "returnDate": "2026-04-01"
       },
       {
-        "player": "Branden Carlson",
-        "team": "Oklahoma City Thunder",
-        "position": "C",
-        "status": "Out",
-        "injuryType": "Back",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Jalen Williams",
-        "team": "Oklahoma City Thunder",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-02-20"
-      },
-      {
         "player": "Ajay Mitchell",
         "team": "Oklahoma City Thunder",
         "position": "G",
         "status": "Out",
         "injuryType": "Abdomen",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Isaiah Hartenstein",
-        "team": "Oklahoma City Thunder",
-        "position": "C",
-        "status": "Out",
-        "injuryType": "Calf",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-27"
       },
       {
         "player": "Shai Gilgeous-Alexander",
@@ -6300,7 +6368,15 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Abdomen",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-27"
+      },
+      {
+        "player": "Jalen Williams",
+        "team": "Oklahoma City Thunder",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-03-07"
       },
       {
         "player": "Thomas Sorber",
@@ -6311,6 +6387,14 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Jalen Suggs",
+        "team": "Orlando Magic",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
+        "returnDate": "2026-02-21"
+      },
+      {
         "player": "Franz Wagner",
         "team": "Orlando Magic",
         "position": "F",
@@ -6319,20 +6403,12 @@
         "returnDate": "2026-03-11"
       },
       {
-        "player": "Colin Castleton",
-        "team": "Orlando Magic",
-        "position": "C",
-        "status": "Out",
-        "injuryType": "Thumb",
-        "returnDate": "2026-02-19"
-      },
-      {
         "player": "Joel Embiid",
         "team": "Philadelphia 76ers",
         "position": "C",
         "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-02-21"
+        "injuryType": "Lower Leg",
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Paul George",
@@ -6343,20 +6419,44 @@
         "returnDate": "2026-03-25"
       },
       {
+        "player": "Grayson Allen",
+        "team": "Phoenix Suns",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Ankle",
+        "returnDate": "2026-02-21"
+      },
+      {
+        "player": "Devin Booker",
+        "team": "Phoenix Suns",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Hip",
+        "returnDate": "2026-02-22"
+      },
+      {
         "player": "Cole Anthony",
         "team": "Phoenix Suns",
         "position": "G",
         "status": "Out",
         "injuryType": "Not Injury Related",
-        "returnDate": "2026-02-21"
+        "returnDate": "2026-02-22"
       },
       {
-        "player": "Dillon Brooks",
+        "player": "Haywood Highsmith",
         "team": "Phoenix Suns",
         "position": "F",
-        "status": "Suspension",
-        "injuryType": "Suspension",
-        "returnDate": "2026-02-21"
+        "status": "Out",
+        "injuryType": "Knee",
+        "returnDate": "2026-03-03"
+      },
+      {
+        "player": "Shaedon Sharpe",
+        "team": "Portland Trail Blazers",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Calf",
+        "returnDate": "2026-02-22"
       },
       {
         "player": "Damian Lillard",
@@ -6367,44 +6467,12 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Robert Williams III",
-        "team": "Portland Trail Blazers",
-        "position": "C",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Kris Murray",
-        "team": "Portland Trail Blazers",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Back",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Shaedon Sharpe",
-        "team": "Portland Trail Blazers",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Calf",
-        "returnDate": "2026-02-20"
-      },
-      {
-        "player": "Matisse Thybulle",
-        "team": "Portland Trail Blazers",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-02-20"
-      },
-      {
         "player": "De'Andre Hunter",
         "team": "Sacramento Kings",
         "position": "F",
         "status": "Out",
         "injuryType": "Eye",
-        "returnDate": "2026-02-21"
+        "returnDate": "2026-10-01"
       },
       {
         "player": "Dylan Cardwell",
@@ -6427,7 +6495,7 @@
         "team": "Sacramento Kings",
         "position": "G",
         "status": "Out",
-        "injuryType": "Hand",
+        "injuryType": "Finger",
         "returnDate": "2026-10-01"
       },
       {
@@ -6436,7 +6504,7 @@
         "position": "C",
         "status": "Out",
         "injuryType": "Not Injury Related",
-        "returnDate": "2026-02-21"
+        "returnDate": "2026-02-23"
       },
       {
         "player": "Lindy Waters III",
@@ -6455,36 +6523,28 @@
         "returnDate": "2026-07-02"
       },
       {
-        "player": "Collin Murray-Boyles",
-        "team": "Toronto Raptors",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Thumb",
-        "returnDate": "2026-02-19"
-      },
-      {
-        "player": "Sandro Mamukelashvili",
-        "team": "Toronto Raptors",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Ribs",
-        "returnDate": "2026-02-19"
-      },
-      {
         "player": "Chucky Hepburn",
         "team": "Toronto Raptors",
         "position": "G",
         "status": "Out",
         "injuryType": "Knee",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-24"
       },
       {
-        "player": "Oscar Tshiebwe",
+        "player": "Jusuf Nurkic",
         "team": "Utah Jazz",
         "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Nose",
+        "returnDate": "2026-02-23"
+      },
+      {
+        "player": "Lauri Markkanen",
+        "team": "Utah Jazz",
+        "position": "F",
         "status": "Out",
-        "injuryType": "Concussion",
-        "returnDate": "2026-02-20"
+        "injuryType": "Illness",
+        "returnDate": "2026-02-23"
       },
       {
         "player": "Keyonte George",
@@ -6492,7 +6552,7 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Ankle",
-        "returnDate": "2026-02-20"
+        "returnDate": "2026-02-23"
       },
       {
         "player": "Jaren Jackson Jr.",
@@ -6503,14 +6563,6 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Elijah Harkless",
-        "team": "Utah Jazz",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-02-20"
-      },
-      {
         "player": "Walker Kessler",
         "team": "Utah Jazz",
         "position": "C",
@@ -6519,12 +6571,44 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Kyshawn George",
+        "team": "Washington Wizards",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Toe",
+        "returnDate": "2026-02-22"
+      },
+      {
+        "player": "Tristan Vukcevic",
+        "team": "Washington Wizards",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Hand",
+        "returnDate": "2026-02-22"
+      },
+      {
+        "player": "Justin Champagnie",
+        "team": "Washington Wizards",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-02-22"
+      },
+      {
         "player": "Trae Young",
         "team": "Washington Wizards",
         "position": "G",
         "status": "Out",
         "injuryType": "Knee",
         "returnDate": "2026-02-28"
+      },
+      {
+        "player": "Anthony Davis",
+        "team": "Washington Wizards",
+        "position": "F",
+        "status": "Out",
+        "injuryType": "Finger",
+        "returnDate": "2026-10-01"
       },
       {
         "player": "Alex Sarr",
@@ -6541,14 +6625,6 @@
         "status": "Out",
         "injuryType": "Not Injury Related",
         "returnDate": "2026-02-28"
-      },
-      {
-        "player": "Anthony Davis",
-        "team": "Washington Wizards",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Finger",
-        "returnDate": "2026-10-01"
       },
       {
         "player": "Cam Whitmore",
@@ -7761,6 +7837,22 @@
         "returnDate": ""
       },
       {
+        "player": "Jalen Davis",
+        "team": "Cincinnati Bengals",
+        "position": "CB",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
+        "player": "Kendall Milton",
+        "team": "Cincinnati Bengals",
+        "position": "RB",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
         "player": "Kendric Pryor",
         "team": "Cincinnati Bengals",
         "position": "WR",
@@ -7844,14 +7936,6 @@
         "player": "Shemar Stewart",
         "team": "Cincinnati Bengals",
         "position": "DE",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "Jalen Davis",
-        "team": "Cincinnati Bengals",
-        "position": "CB",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
@@ -7948,14 +8032,6 @@
         "player": "Demetrius Knight Jr.",
         "team": "Cincinnati Bengals",
         "position": "LB",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "Evan McPherson",
-        "team": "Cincinnati Bengals",
-        "position": "PK",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
@@ -8337,14 +8413,6 @@
         "returnDate": ""
       },
       {
-        "player": "Logan Wilson",
-        "team": "Dallas Cowboys",
-        "position": "LB",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
         "player": "Will Grier",
         "team": "Dallas Cowboys",
         "position": "QB",
@@ -8356,6 +8424,22 @@
         "player": "Jadeveon Clowney",
         "team": "Dallas Cowboys",
         "position": "DE",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
+        "player": "Donovan Wilson",
+        "team": "Dallas Cowboys",
+        "position": "S",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
+        "player": "Michael Bandy",
+        "team": "Denver Broncos",
+        "position": "WR",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
@@ -8548,14 +8632,6 @@
         "player": "Eyioma Uwazurike",
         "team": "Denver Broncos",
         "position": "DE",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "D.J. Jones",
-        "team": "Denver Broncos",
-        "position": "DT",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
@@ -11561,6 +11637,14 @@
         "returnDate": ""
       },
       {
+        "player": "Lane Johnson",
+        "team": "Philadelphia Eagles",
+        "position": "OT",
+        "status": "Questionable",
+        "injuryType": "Foot",
+        "returnDate": "2026-03-01"
+      },
+      {
         "player": "Brandon Graham",
         "team": "Philadelphia Eagles",
         "position": "DE",
@@ -11748,14 +11832,6 @@
         "player": "Cooper DeJean",
         "team": "Philadelphia Eagles",
         "position": "CB",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "Zack Baun",
-        "team": "Philadelphia Eagles",
-        "position": "LB",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
@@ -11961,6 +12037,22 @@
         "returnDate": ""
       },
       {
+        "player": "Alfred Collins",
+        "team": "San Francisco 49ers",
+        "position": "DT",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
+        "player": "C.J. West",
+        "team": "San Francisco 49ers",
+        "position": "DT",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
         "player": "Clelin Ferrell",
         "team": "San Francisco 49ers",
         "position": "DE",
@@ -12145,20 +12237,36 @@
         "returnDate": "2026-05-01"
       },
       {
-        "player": "Kyle Juszczyk",
-        "team": "San Francisco 49ers",
-        "position": "FB",
+        "player": "Zach Charbonnet",
+        "team": "Seattle Seahawks",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Knee - ACL",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Rashid Shaheed",
+        "team": "Seattle Seahawks",
+        "position": "WR",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
       },
       {
-        "player": "Keion White",
-        "team": "San Francisco 49ers",
-        "position": "DE",
-        "status": "Questionable",
-        "injuryType": "Ankle",
-        "returnDate": "2026-05-01"
+        "player": "Nick Emmanwori",
+        "team": "Seattle Seahawks",
+        "position": "S",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
+        "player": "Drake Thomas",
+        "team": "Seattle Seahawks",
+        "position": "LB",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
       },
       {
         "player": "Kenneth Walker III",
@@ -12215,14 +12323,6 @@
         "status": "Questionable",
         "injuryType": "Knee",
         "returnDate": "2026-03-01"
-      },
-      {
-        "player": "Zach Charbonnet",
-        "team": "Seattle Seahawks",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-01"
       },
       {
         "player": "Jacardia Wright",
@@ -12332,30 +12432,6 @@
         "player": "Julian Love",
         "team": "Seattle Seahawks",
         "position": "S",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "Ernest Jones IV",
-        "team": "Seattle Seahawks",
-        "position": "LB",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "Uchenna Nwosu",
-        "team": "Seattle Seahawks",
-        "position": "LB",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "Michael Dickson",
-        "team": "Seattle Seahawks",
-        "position": "P",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
