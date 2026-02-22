@@ -1124,7 +1124,7 @@ async function main() {
   // Discord bot can respond instantly (one tiny file read vs full JSON parse).
   try {
     const picksWorkspacePath = path.join(
-      process.env.OPENCLAW_WORKSPACE_BETTING ?? "C:\\Users\\Nate\\.openclaw\\workspace-betting",
+      process.env.OPENCLAW_WORKSPACE_BETTING ?? "C:\\Users\\nbber\\.openclaw\\workspace-betting",
       "PICKS.md",
     );
     const generatedEt = new Intl.DateTimeFormat("en-US", {
@@ -1187,7 +1187,7 @@ async function main() {
     // Also embed picks into AGENTS.md between <!-- PICKS-START --> and <!-- PICKS-END -->
     // markers so the bot gets them in its system prompt with zero tool calls.
     const agentsPath = path.join(
-      process.env.OPENCLAW_WORKSPACE_BETTING ?? "C:\\Users\\Nate\\.openclaw\\workspace-betting",
+      process.env.OPENCLAW_WORKSPACE_BETTING ?? "C:\\Users\\nbber\\.openclaw\\workspace-betting",
       "AGENTS.md",
     );
     if (fs.existsSync(agentsPath)) {
