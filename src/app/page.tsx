@@ -223,7 +223,7 @@ export default function Home() {
   const topPlayerProps = useMemo(() => {
     const props = data?.playerProps ?? [];
     const filtered = propCategoryFilter === "all" ? props : props.filter((p) => p.category === propCategoryFilter);
-    return filtered.slice(0, 5);
+    return filtered.sort((a, b) => b.confidence - a.confidence).slice(0, 5);
   }, [data?.playerProps, propCategoryFilter]);  return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
