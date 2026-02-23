@@ -1,56 +1,56 @@
-# Kalshi Markets Snapshot — 2/21/2026, 5:03 AM ET
-_Last refreshed: 2/21/2026, 5:03 AM ET · 37 markets tracked_
+# Kalshi Markets Snapshot — 2/23/2026, 5:07 AM ET
+_Last refreshed: 2/23/2026, 5:07 AM ET · 17 markets tracked_
 
 ## Top 10 by Liquidity
 
-**1. yes Joselyne Edwards,yes Alden Coria,yes Melquizael Costa,yes Yadier Delvalle,yes Carli Judice,yes Alibi Idiris,yes Jean-Paul Lebosnoyani,yes Ante Delija**
-YES bid/ask: 0¢ / 8¢ → Implied: 7%
-Spread: 800¢ · Actionability: Low · Liq: 75
-Closes: 3/7/2026 · Status: active
+**1. yes Russell Westbrook: 2+,yes Russell Westbrook: 10+,yes Cade Cunningham: 20+,yes Victor Wembanyama: 20+,yes Alperen Sengun: 10+,yes Kevin Durant: 20+,yes Cade Cunningham: 2+,yes Alperen Sengun: 6+,yes Kevin Durant: 2+**
+YES bid/ask: 0¢ / 27¢ → Implied: 13.5%
+Spread: 2700¢ · Actionability: Low · Liq: 0
+Closes: 3/9/2026 · Status: active
 
-**2. yes UMBC,yes Arkansas St.,yes UMass Lowell,yes Kansas,yes St. John's,yes Charlotte,yes Florida,yes Clemson,yes Louisville,yes Texas Tech,yes Saint Joseph's,yes Navy,yes Howard,yes Yale,yes Nebraska,yes North Dakota St.,yes UNLV,yes Queens University,yes Virginia Tech,yes Western Carolina**
-YES bid/ask: 0¢ / 5¢ → Implied: 5%
-Spread: 500¢ · Actionability: Low · Liq: 4
-Closes: 3/7/2026 · Status: active
+**2. yes Dylan Harper: 15+,yes New Orleans**
+YES bid/ask: 0¢ / 12¢ → Implied: 6%
+Spread: 1200¢ · Actionability: Low · Liq: 0
+Closes: 3/9/2026 · Status: active
 
-**3. yes Cade Cunningham: 8+,yes Philadelphia,yes Kevin Durant: 25+,yes Tyrese Maxey: 25+**
-YES bid/ask: 0¢ / 23¢ → Implied: 11.5%
-Spread: 2300¢ · Actionability: Low · Liq: 0
-Closes: 3/7/2026 · Status: active
+**3. yes DeMar DeRozan: 15+,yes Over 216.5 points scored**
+YES bid/ask: 0¢ / 53¢ → Implied: 26.5%
+Spread: 5300¢ · Actionability: Low · Liq: 0
+Closes: 3/9/2026 · Status: active
 
-**4. yes Josh Giddey: 10+,yes Matas Buzelis: 10+,yes Cade Cunningham: 20+,yes Alperen Sengun: 15+,yes Kevin Durant: 20+,yes Jalen Brunson: 20+,yes Karl-Anthony Towns: 15+,yes Andrew Wiggins: 10+,yes Tyler Herro: 15+,yes DeMar DeRozan: 10+,yes Russell Westbrook: 10+,yes De'Aaron Fox: 10+,yes Stephon Castle: 10+**
-YES bid/ask: 0¢ / 9¢ → Implied: 4.5%
-Spread: 900¢ · Actionability: Low · Liq: 0
-Closes: 3/7/2026 · Status: active
+**4. yes DeMar DeRozan: 15+,yes Over 219.5 points scored**
+YES bid/ask: 0¢ / 50¢ → Implied: 25%
+Spread: 5000¢ · Actionability: Low · Liq: 0
+Closes: 3/9/2026 · Status: active
 
-**5. yes Bayern Munich wins by over 1.5 goals,yes Chelsea,yes Over 2.5 goals scored,yes Real Madrid wins by over 1.5 goals,yes Over 1.5 goals scored,yes PSG,yes Desmond Bane: 1+,yes Desmond Bane: 10+,yes Tyrese Maxey: 25+,yes Derik Queen: 4+,yes Inter**
-YES bid/ask: 0¢ / 6¢ → Implied: 3%
-Spread: 600¢ · Actionability: Low · Liq: 0
-Closes: 3/7/2026 · Status: active
+**5. yes DeMar DeRozan: 2+,yes Keegan Murray: 4+,yes Ausar Thompson: 4+,yes Cade Cunningham: 2+,yes Tobias Harris: 4+,yes Stephon Castle: 2+,yes Victor Wembanyama: 10+,yes Alperen Sengun: 6+,yes Jabari Smith Jr.: 7+,yes Kevin Durant: 4+**
+YES bid/ask: 0¢ / 14¢ → Implied: 7%
+Spread: 1400¢ · Actionability: Low · Liq: 0
+Closes: 3/9/2026 · Status: active
 
-**6. yes South Dakota St.,yes UMass Lowell wins by over 2.5 Points,yes Kansas wins by over 5.5 Points,yes Florida wins by over 9.5 Points,yes Sam Houston wins by over 2.5 Points,yes Colgate wins by over 2.5 Points,yes Virginia wins by over 2.5 Points,yes Navy wins by over 6.5 Points,yes Yale wins by over 3.5 Points,yes North Carolina wins by over 1.5 Points**
-YES bid/ask: 0¢ / 4¢ → Implied: 2%
-Spread: 400¢ · Actionability: Low · Liq: 0
-Closes: 3/7/2026 · Status: active
+**6. yes DeMar DeRozan: 15+,yes Over 213.5 points scored**
+YES bid/ask: 0¢ / 55¢ → Implied: 27.5%
+Spread: 5500¢ · Actionability: Low · Liq: 0
+Closes: 3/9/2026 · Status: active
 
-**7. yes Both Teams To Score,no Over 4.5 goals scored,yes Over 1.5 goals scored,yes Over 1.5 goals scored,yes Over 2.5 goals scored,yes Over 2.5 goals scored**
-YES bid/ask: 0¢ / 6¢ → Implied: 3%
-Spread: 600¢ · Actionability: Low · Liq: 0
-Closes: 3/7/2026 · Status: active
+**7. yes DeMar DeRozan: 15+,no Over 228.5 points scored**
+YES bid/ask: 0¢ / 33¢ → Implied: 16.5%
+Spread: 3300¢ · Actionability: Low · Liq: 0
+Closes: 3/9/2026 · Status: active
 
-**8. yes Norman Powell: 20+,yes Desmond Bane: 15+,yes Dillon Brooks: 20+,yes Zion Williamson: 20+,yes Kelly Oubre Jr.: 15+,yes Russell Westbrook: 10+,yes De'Aaron Fox: 15+**
-YES bid/ask: 0¢ / 20¢ → Implied: 10%
-Spread: 2000¢ · Actionability: Low · Liq: 0
-Closes: 3/7/2026 · Status: active
+**8. yes James Harden: 4+,yes Memphis,yes Detroit,yes Houston,yes Boston,yes Charlotte,yes Dallas,yes Golden State,yes Miami,yes Minnesota,yes Cleveland,yes Oklahoma City,yes Los Angeles L,yes Philadelphia,yes Atlanta,yes Alperen Sengun: 10+,yes Amen Thompson: 10+,yes Kevin Durant: 20+,yes Jaylen Brown: 25+,yes Donovan Mitchell: 20+,yes James Harden: 15+,yes LeBron James: 15+,yes Amen Thompson: 4+,yes Mark Williams: 4+,yes Over 234.5 points scored**
+YES bid/ask: 0¢ / 1¢ → Implied: 0.5%
+Spread: 100¢ · Actionability: Low · Liq: 0
+Closes: 3/10/2026 · Status: active
 
-**9. yes Detroit,yes Houston,yes Miami,yes Phoenix,yes Philadelphia,yes San Antonio,yes Chattanooga,yes St. John's,yes Charlotte,yes Florida,yes Clemson,yes Saint Joseph's,yes Howard,yes Minnesota,yes North Carolina,yes Virginia Tech**
-YES bid/ask: 0¢ / 2¢ → Implied: 1%
-Spread: 200¢ · Actionability: Low · Liq: 0
-Closes: 3/7/2026 · Status: active
+**9. yes Cade Cunningham: 25+,yes Victor Wembanyama: 20+,yes Amen Thompson: 10+,yes Kevin Durant: 25+**
+YES bid/ask: 0¢ / 28¢ → Implied: 14%
+Spread: 2800¢ · Actionability: Low · Liq: 0
+Closes: 3/9/2026 · Status: active
 
-**10. yes Josh Giddey: 4+,yes Detroit,yes New York,yes Miami,yes Orlando,yes Philadelphia,yes San Antonio,yes De'Aaron Fox: 15+,yes Dylan Harper: 10+,yes Cade Cunningham: 4+**
+**10. yes Manchester United,yes Atletico,yes Udinese,yes Como**
 YES bid/ask: 0¢ / 5¢ → Implied: 2.5%
 Spread: 500¢ · Actionability: Low · Liq: 0
-Closes: 3/7/2026 · Status: active
+Closes: 3/9/2026 · Status: active
 
 _Run `npm run ingest:kalshi` to refresh._
