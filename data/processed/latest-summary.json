@@ -1,87 +1,263 @@
 {
-  "generatedAt": "2026-02-23T10:07:00.017Z",
+  "generatedAt": "2026-02-24T10:02:08.585Z",
   "ready": true,
-  "recordsIngested": 3115,
-  "recordsCompleted": 3115,
+  "recordsIngested": 3144,
+  "recordsCompleted": 3144,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 74,
+      "games": 102,
       "conferences": [
+        "AL East",
         "NL East",
         "AL Central",
-        "AL East",
-        "AL West",
         "NL Central",
-        "Unknown",
-        "NL West"
+        "NL West",
+        "AL West",
+        "Unknown"
       ],
-      "avgPoints": 5.324324324324325,
+      "avgPoints": 4.980392156862745,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 5.9,
+      "recentAvgPoints": 4,
       "recentAvgYards": null,
-      "trendScore": 26,
-      "trendSignal": "down",
+      "trendScore": 65,
+      "trendSignal": "up",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 74,
-        "rpg": 5.32,
-        "oppRpg": 5.32,
-        "hitsPerGame": 8.65,
-        "errorsPerGame": 0.7,
+        "games": 102,
+        "rpg": 4.98,
+        "oppRpg": 4.98,
+        "hitsPerGame": 8.43,
+        "errorsPerGame": 0.71,
         "sos": 0
       },
       "teamAdvanced": {
+        "Orioles": {
+          "games": 4,
+          "rpg": 3.75,
+          "oppRpg": 5.5,
+          "hitsPerGame": 7.5,
+          "errorsPerGame": 0.75,
+          "sos": null
+        },
         "Braves": {
-          "games": 2,
-          "rpg": 3,
-          "oppRpg": 4.5,
-          "hitsPerGame": 8,
-          "errorsPerGame": 0,
+          "games": 3,
+          "rpg": 5.33,
+          "oppRpg": 5.33,
+          "hitsPerGame": 9.67,
+          "errorsPerGame": 0.33,
+          "sos": null
+        },
+        "Tigers": {
+          "games": 3,
+          "rpg": 2.33,
+          "oppRpg": 9,
+          "hitsPerGame": 5,
+          "errorsPerGame": 1,
           "sos": null
         },
         "Twins": {
-          "games": 2,
-          "rpg": 5,
-          "oppRpg": 4,
+          "games": 3,
+          "rpg": 4.33,
+          "oppRpg": 2.67,
           "hitsPerGame": 7,
           "errorsPerGame": 2,
           "sos": null
         },
+        "Pirates": {
+          "games": 4,
+          "rpg": 5.25,
+          "oppRpg": 3.75,
+          "hitsPerGame": 7.5,
+          "errorsPerGame": 0.5,
+          "sos": null
+        },
+        "Yankees": {
+          "games": 4,
+          "rpg": 7.5,
+          "oppRpg": 3.25,
+          "hitsPerGame": 8.75,
+          "errorsPerGame": 0.5,
+          "sos": null
+        },
+        "Cardinals": {
+          "games": 3,
+          "rpg": 4.33,
+          "oppRpg": 5,
+          "hitsPerGame": 5.67,
+          "errorsPerGame": 0.67,
+          "sos": null
+        },
+        "Marlins": {
+          "games": 3,
+          "rpg": 4.67,
+          "oppRpg": 7.33,
+          "hitsPerGame": 7,
+          "errorsPerGame": 1,
+          "sos": null
+        },
+        "Rays": {
+          "games": 3,
+          "rpg": 2.33,
+          "oppRpg": 4.33,
+          "hitsPerGame": 7,
+          "errorsPerGame": 1,
+          "sos": null
+        },
         "Red Sox": {
-          "games": 2,
-          "rpg": 9,
-          "oppRpg": 6,
-          "hitsPerGame": 12,
+          "games": 3,
+          "rpg": 6.33,
+          "oppRpg": 4.67,
+          "hitsPerGame": 10.67,
           "errorsPerGame": 0,
           "sos": null
         },
         "Blue Jays": {
-          "games": 2,
-          "rpg": 6.5,
-          "oppRpg": 5.5,
-          "hitsPerGame": 11.5,
+          "games": 3,
+          "rpg": 5.33,
+          "oppRpg": 5,
+          "hitsPerGame": 10,
+          "errorsPerGame": 1.33,
+          "sos": null
+        },
+        "Mets": {
+          "games": 3,
+          "rpg": 3.67,
+          "oppRpg": 3,
+          "hitsPerGame": 6.33,
+          "errorsPerGame": 0.33,
+          "sos": null
+        },
+        "Guardians": {
+          "games": 4,
+          "rpg": 7,
+          "oppRpg": 3.25,
+          "hitsPerGame": 9.75,
+          "errorsPerGame": 0.25,
+          "sos": 0
+        },
+        "Diamondbacks": {
+          "games": 4,
+          "rpg": 5.75,
+          "oppRpg": 8,
+          "hitsPerGame": 8.75,
+          "errorsPerGame": 0.25,
+          "sos": null
+        },
+        "Royals": {
+          "games": 4,
+          "rpg": 4.75,
+          "oppRpg": 4.75,
+          "hitsPerGame": 8,
+          "errorsPerGame": 0.75,
+          "sos": null
+        },
+        "Cubs": {
+          "games": 4,
+          "rpg": 2,
+          "oppRpg": 4.25,
+          "hitsPerGame": 7.75,
+          "errorsPerGame": 0.5,
+          "sos": null
+        },
+        "Dodgers": {
+          "games": 3,
+          "rpg": 7.67,
+          "oppRpg": 1,
+          "hitsPerGame": 11,
           "errorsPerGame": 1,
           "sos": null
         },
-        "Tigers": {
-          "games": 2,
-          "rpg": 3.5,
-          "oppRpg": 12,
-          "hitsPerGame": 6,
-          "errorsPerGame": 1.5,
+        "Mariners": {
+          "games": 4,
+          "rpg": 6.5,
+          "oppRpg": 6.25,
+          "hitsPerGame": 11,
+          "errorsPerGame": 0.25,
           "sos": null
         },
-        "Orioles": {
+        "Giants": {
+          "games": 3,
+          "rpg": 6.67,
+          "oppRpg": 3,
+          "hitsPerGame": 10.67,
+          "errorsPerGame": 1,
+          "sos": 0
+        },
+        "Athletics": {
+          "games": 3,
+          "rpg": 1.33,
+          "oppRpg": 7.67,
+          "hitsPerGame": 8.33,
+          "errorsPerGame": 1.67,
+          "sos": null
+        },
+        "Rockies": {
+          "games": 4,
+          "rpg": 5.75,
+          "oppRpg": 5.5,
+          "hitsPerGame": 8,
+          "errorsPerGame": 1.25,
+          "sos": null
+        },
+        "White Sox": {
+          "games": 4,
+          "rpg": 7,
+          "oppRpg": 2.5,
+          "hitsPerGame": 11,
+          "errorsPerGame": 1,
+          "sos": 0
+        },
+        "Angels": {
+          "games": 3,
+          "rpg": 4,
+          "oppRpg": 10,
+          "hitsPerGame": 9.67,
+          "errorsPerGame": 0.33,
+          "sos": null
+        },
+        "Rangers": {
+          "games": 4,
+          "rpg": 5.25,
+          "oppRpg": 3.5,
+          "hitsPerGame": 8.25,
+          "errorsPerGame": 0.75,
+          "sos": null
+        },
+        "Padres": {
+          "games": 4,
+          "rpg": 5.5,
+          "oppRpg": 5,
+          "hitsPerGame": 10,
+          "errorsPerGame": 0,
+          "sos": null
+        },
+        "Brewers": {
+          "games": 4,
+          "rpg": 4,
+          "oppRpg": 7,
+          "hitsPerGame": 8.25,
+          "errorsPerGame": 0.75,
+          "sos": null
+        },
+        "Nationals": {
+          "games": 4,
+          "rpg": 7.25,
+          "oppRpg": 4,
+          "hitsPerGame": 8,
+          "errorsPerGame": 1,
+          "sos": null
+        },
+        "Phillies": {
           "games": 3,
           "rpg": 2.67,
           "oppRpg": 4,
-          "hitsPerGame": 7,
-          "errorsPerGame": 0.67,
+          "hitsPerGame": 6,
+          "errorsPerGame": 0.33,
           "sos": null
         },
         "Astros": {
@@ -92,102 +268,6 @@
           "errorsPerGame": 1,
           "sos": null
         },
-        "Cardinals": {
-          "games": 2,
-          "rpg": 4,
-          "oppRpg": 5.5,
-          "hitsPerGame": 6,
-          "errorsPerGame": 0.5,
-          "sos": null
-        },
-        "Yankees": {
-          "games": 3,
-          "rpg": 8,
-          "oppRpg": 3.67,
-          "hitsPerGame": 10,
-          "errorsPerGame": 0.67,
-          "sos": null
-        },
-        "Mets": {
-          "games": 2,
-          "rpg": 3.5,
-          "oppRpg": 3,
-          "hitsPerGame": 6.5,
-          "errorsPerGame": 0.5,
-          "sos": null
-        },
-        "Phillies": {
-          "games": 2,
-          "rpg": 1.5,
-          "oppRpg": 3.5,
-          "hitsPerGame": 6,
-          "errorsPerGame": 0.5,
-          "sos": null
-        },
-        "Pirates": {
-          "games": 3,
-          "rpg": 6.33,
-          "oppRpg": 3,
-          "hitsPerGame": 6.67,
-          "errorsPerGame": 0.33,
-          "sos": null
-        },
-        "Rays": {
-          "games": 2,
-          "rpg": 2.5,
-          "oppRpg": 6,
-          "hitsPerGame": 8,
-          "errorsPerGame": 1.5,
-          "sos": null
-        },
-        "Marlins": {
-          "games": 2,
-          "rpg": 5,
-          "oppRpg": 8.5,
-          "hitsPerGame": 6,
-          "errorsPerGame": 0.5,
-          "sos": null
-        },
-        "Nationals": {
-          "games": 3,
-          "rpg": 8,
-          "oppRpg": 3.67,
-          "hitsPerGame": 8.67,
-          "errorsPerGame": 0,
-          "sos": null
-        },
-        "Athletics": {
-          "games": 2,
-          "rpg": 1,
-          "oppRpg": 8.5,
-          "hitsPerGame": 7.5,
-          "errorsPerGame": 1.5,
-          "sos": null
-        },
-        "Guardians": {
-          "games": 3,
-          "rpg": 6.33,
-          "oppRpg": 2.67,
-          "hitsPerGame": 9.33,
-          "errorsPerGame": 0.33,
-          "sos": 0
-        },
-        "White Sox": {
-          "games": 3,
-          "rpg": 8,
-          "oppRpg": 1.67,
-          "hitsPerGame": 11,
-          "errorsPerGame": 1,
-          "sos": 0
-        },
-        "Brewers": {
-          "games": 3,
-          "rpg": 3.67,
-          "oppRpg": 7,
-          "hitsPerGame": 8,
-          "errorsPerGame": 1,
-          "sos": null
-        },
         "Reds": {
           "games": 2,
           "rpg": 5,
@@ -195,108 +275,28 @@
           "hitsPerGame": 8,
           "errorsPerGame": 0,
           "sos": null
-        },
-        "Mariners": {
-          "games": 3,
-          "rpg": 8.67,
-          "oppRpg": 7.33,
-          "hitsPerGame": 13,
-          "errorsPerGame": 0,
-          "sos": null
-        },
-        "Giants": {
-          "games": 2,
-          "rpg": 7,
-          "oppRpg": 3.5,
-          "hitsPerGame": 10.5,
-          "errorsPerGame": 1,
-          "sos": null
-        },
-        "Cubs": {
-          "games": 3,
-          "rpg": 1.67,
-          "oppRpg": 5,
-          "hitsPerGame": 8.33,
-          "errorsPerGame": 0.67,
-          "sos": null
-        },
-        "Rangers": {
-          "games": 3,
-          "rpg": 5,
-          "oppRpg": 4.67,
-          "hitsPerGame": 8.67,
-          "errorsPerGame": 1,
-          "sos": null
-        },
-        "Rockies": {
-          "games": 3,
-          "rpg": 6,
-          "oppRpg": 6,
-          "hitsPerGame": 8.67,
-          "errorsPerGame": 1.67,
-          "sos": null
-        },
-        "Diamondbacks": {
-          "games": 3,
-          "rpg": 6,
-          "oppRpg": 7.67,
-          "hitsPerGame": 8,
-          "errorsPerGame": 0.33,
-          "sos": null
-        },
-        "Angels": {
-          "games": 2,
-          "rpg": 6,
-          "oppRpg": 12,
-          "hitsPerGame": 10.5,
-          "errorsPerGame": 0.5,
-          "sos": null
-        },
-        "Royals": {
-          "games": 3,
-          "rpg": 5.67,
-          "oppRpg": 5.33,
-          "hitsPerGame": 8.33,
-          "errorsPerGame": 0.67,
-          "sos": null
-        },
-        "Padres": {
-          "games": 3,
-          "rpg": 5,
-          "oppRpg": 5,
-          "hitsPerGame": 10.33,
-          "errorsPerGame": 0,
-          "sos": null
-        },
-        "Dodgers": {
-          "games": 2,
-          "rpg": 10,
-          "oppRpg": 1.5,
-          "hitsPerGame": 11.5,
-          "errorsPerGame": 1.5,
-          "sos": null
         }
       }
     },
     {
       "league": "NBA",
-      "games": 299,
+      "games": 294,
       "conferences": [
-        "Western",
-        "Eastern"
+        "Eastern",
+        "Western"
       ],
-      "avgPoints": 113.32441471571906,
-      "avgRebounds": 43.96655518394649,
-      "avgAssists": 26.043478260869566,
+      "avgPoints": 113.52721088435374,
+      "avgRebounds": 43.945578231292515,
+      "avgAssists": 26.187074829931973,
       "avgYards": null,
-      "recentAvgPoints": 108,
+      "recentAvgPoints": 108.5,
       "recentAvgYards": null,
-      "trendScore": 44,
+      "trendScore": 43,
       "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 299,
+        "games": 294,
         "pace": null,
         "oRtg": null,
         "dRtg": null,
@@ -308,8 +308,56 @@
         "sos": null
       },
       "teamAdvanced": {
-        "Timberwolves": {
+        "Pistons": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Grizzlies": {
           "games": 13,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Kings": {
+          "games": 12,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Rockets": {
+          "games": 13,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Timberwolves": {
+          "games": 12,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -345,7 +393,7 @@
           "sos": null
         },
         "Suns": {
-          "games": 13,
+          "games": 12,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -369,7 +417,7 @@
           "sos": null
         },
         "Clippers": {
-          "games": 13,
+          "games": 12,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -393,7 +441,7 @@
           "sos": null
         },
         "Thunder": {
-          "games": 12,
+          "games": 11,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -429,7 +477,7 @@
           "sos": null
         },
         "Nets": {
-          "games": 13,
+          "games": 12,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -453,7 +501,7 @@
           "sos": null
         },
         "Raptors": {
-          "games": 10,
+          "games": 9,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -549,55 +597,7 @@
           "sos": null
         },
         "Heat": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Grizzlies": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Pistons": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Kings": {
-          "games": 12,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Rockets": {
-          "games": 12,
+          "games": 11,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -612,22 +612,23 @@
     },
     {
       "league": "NCAAB",
-      "games": 2734,
+      "games": 2744,
       "conferences": [
+        "Big 12 Conference",
+        "Atlantic Coast Conference",
+        "Southland Conference",
+        "Southwestern Athletic Conference",
         "Big Ten Conference",
         "Patriot League",
         "American Conference",
         "Metro Atlantic Athletic Conference",
         "Horizon League",
         "Coastal Athletic Association",
-        "Big 12 Conference",
         "West Coast Conference",
         "Northeast Conference",
         "America East Conference",
         "Southern Conference",
-        "Southland Conference",
         "ASUN Conference",
-        "Southwestern Athletic Conference",
         "Missouri Valley Conference",
         "Mountain West Conference",
         "Summit League",
@@ -636,7 +637,6 @@
         "Southeastern Conference",
         "Big West Conference",
         "Conference USA",
-        "Atlantic Coast Conference",
         "Mid-Eastern Athletic Conference",
         "Atlantic 10 Conference",
         "Sun Belt Conference",
@@ -647,27 +647,28 @@
         "Big South Conference",
         "Unknown"
       ],
-      "avgPoints": 74.13167520117045,
-      "avgRebounds": 34.12362838332114,
-      "avgAssists": 13.507315288953913,
+      "avgPoints": 74.09584548104957,
+      "avgRebounds": 34.11734693877551,
+      "avgAssists": 13.501457725947521,
       "avgYards": null,
-      "recentAvgPoints": 69.7,
+      "recentAvgPoints": 62.5,
       "recentAvgYards": null,
-      "trendScore": 52,
-      "trendSignal": "flat",
+      "trendScore": 73,
+      "trendSignal": "up",
       "confidence": 1,
       "ncaab": {
         "last10Momentum": 0,
         "atsForm": 0.5,
-        "upsetAlertScore": 35,
+        "upsetAlertScore": 85,
         "bubbleWatchTeams": [],
         "autoBidWatchTeams": [
-          "Michigan St",
-          "Wisconsin"
+          "Kansas",
+          "Houston",
+          "North Carolina"
         ]
       },
       "advanced": {
-        "games": 2734,
+        "games": 2744,
         "pace": null,
         "oRtg": null,
         "dRtg": null,
@@ -679,6 +680,222 @@
         "sos": 0.56
       },
       "teamAdvanced": {
+        "Kansas": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.56
+        },
+        "Houston": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.62
+        },
+        "North Carolina": {
+          "games": 8,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.65
+        },
+        "Louisville": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": 0.78
+        },
+        "SE Louisiana": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Texas A&M-CC": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Lamar": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Nicholls": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "N'Western St": {
+          "games": 10,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Incarnate Word": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "SF Austin": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "New Orleans": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "McNeese": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "UT Rio Grande": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "E Texas A&M": {
+          "games": 10,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Hou Christian": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Grambling": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Miss Valley St": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
         "Michigan St": {
           "games": 7,
           "pace": null,
@@ -704,7 +921,7 @@
           "sos": 0.67
         },
         "Wisconsin": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -713,7 +930,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.69
+          "sos": 0.7
         },
         "Iowa": {
           "games": 8,
@@ -1172,7 +1389,7 @@
           "sos": 0.44
         },
         "FAU": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -1351,30 +1568,6 @@
           "ftRate": null,
           "sos": 0.55
         },
-        "Lamar": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "New Orleans": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
         "Bellarmine": {
           "games": 8,
           "pace": null,
@@ -1412,18 +1605,6 @@
           "sos": 0.48
         },
         "Austin Peay": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Miss Valley St": {
           "games": 8,
           "pace": null,
           "oRtg": null,
@@ -1581,30 +1762,6 @@
         },
         "South Dakota": {
           "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "McNeese": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Texas A&M-CC": {
-          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2023,18 +2180,6 @@
           "ftRate": null,
           "sos": 0.8
         },
-        "Houston": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.62
-        },
         "Arizona": {
           "games": 7,
           "pace": null,
@@ -2070,18 +2215,6 @@
           "toRate": null,
           "ftRate": null,
           "sos": null
-        },
-        "Kansas": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.56
         },
         "Cincinnati": {
           "games": 7,
@@ -2203,18 +2336,6 @@
           "ftRate": null,
           "sos": 0.82
         },
-        "North Carolina": {
-          "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.65
-        },
         "St John's": {
           "games": 7,
           "pace": null,
@@ -2286,18 +2407,6 @@
           "toRate": null,
           "ftRate": null,
           "sos": null
-        },
-        "Louisville": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": 0.78
         },
         "Georgia Tech": {
           "games": 8,
@@ -2864,7 +2973,7 @@
           "sos": null
         },
         "Chicago St": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -2960,7 +3069,7 @@
           "sos": 0.38
         },
         "Mercyhurst": {
-          "games": 9,
+          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -3188,7 +3297,7 @@
           "sos": 0.7
         },
         "Washington": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -3584,7 +3693,7 @@
           "sos": 0.55
         },
         "USC": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -3596,7 +3705,7 @@
           "sos": 0.7
         },
         "Oregon": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -3981,54 +4090,6 @@
         },
         "MD Eastern": {
           "games": 7,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "SE Louisiana": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "UT Rio Grande": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "N'Western St": {
-          "games": 9,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Hou Christian": {
-          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4483,18 +4544,6 @@
           "ftRate": null,
           "sos": null
         },
-        "Grambling": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
         "Colorado St": {
           "games": 7,
           "pace": null,
@@ -4590,54 +4639,6 @@
           "toRate": null,
           "ftRate": null,
           "sos": 0.54
-        },
-        "SF Austin": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Nicholls": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "E Texas A&M": {
-          "games": 9,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Incarnate Word": {
-          "games": 8,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
         },
         "Idaho St": {
           "games": 8,
@@ -4868,7 +4869,7 @@
           "sos": 0.62
         },
         "South Florida": {
-          "games": 8,
+          "games": 7,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -4877,7 +4878,7 @@
           "efgPct": null,
           "toRate": null,
           "ftRate": null,
-          "sos": 0.42
+          "sos": 0.36
         },
         "Gardner-Webb": {
           "games": 7,
@@ -5075,58 +5076,57 @@
     },
     {
       "league": "NFL",
-      "games": 8,
+      "games": 4,
       "conferences": [
         "AFC East",
-        "NFC West",
-        "AFC West"
+        "NFC West"
       ],
-      "avgPoints": 29.375,
+      "avgPoints": 40,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 29.375,
+      "recentAvgPoints": 40,
       "recentAvgYards": null,
-      "trendScore": 30,
-      "trendSignal": "down",
-      "confidence": 0.8,
+      "trendScore": 40,
+      "trendSignal": "flat",
+      "confidence": 0.4,
       "ncaab": null,
       "advanced": {
-        "games": 8,
-        "ppg": 29.38,
-        "oppPpg": 29.38,
-        "ypg": 241,
-        "oppYpg": 241,
+        "games": 4,
+        "ppg": 40,
+        "oppPpg": 40,
+        "ypg": 166.5,
+        "oppYpg": 166.5,
         "turnoverMargin": 0,
-        "thirdDownPct": 0.33,
-        "redZonePct": 0.59,
+        "thirdDownPct": 0.32,
+        "redZonePct": 0.4,
         "avgTop": 30,
-        "sos": 0.8
+        "sos": 0.82
       },
       "teamAdvanced": {
         "NE": {
-          "games": 2,
-          "ppg": 11.5,
-          "oppPpg": 18,
-          "ypg": 258,
-          "oppYpg": 268.5,
-          "turnoverMargin": 0.5,
-          "thirdDownPct": 0.27,
-          "redZonePct": 0.33,
-          "avgTop": 30.02,
+          "games": 1,
+          "ppg": 13,
+          "oppPpg": 29,
+          "ypg": 335,
+          "oppYpg": 331,
+          "turnoverMargin": 3,
+          "thirdDownPct": 0.25,
+          "redZonePct": 0.25,
+          "avgTop": 33.18,
           "sos": 0.82
         },
         "SEA": {
-          "games": 2,
-          "ppg": 30,
-          "oppPpg": 20,
-          "ypg": 405,
-          "oppYpg": 365.5,
-          "turnoverMargin": -2,
-          "thirdDownPct": 0.3,
-          "redZonePct": 0.75,
-          "avgTop": 27.49,
-          "sos": 0.76
+          "games": 1,
+          "ppg": 29,
+          "oppPpg": 13,
+          "ypg": 331,
+          "oppYpg": 335,
+          "turnoverMargin": -3,
+          "thirdDownPct": 0.4,
+          "redZonePct": 1,
+          "avgTop": 26.82,
+          "sos": 0.82
         },
         "AFC": {
           "games": 1,
@@ -5151,30 +5151,6 @@
           "redZonePct": null,
           "avgTop": null,
           "sos": null
-        },
-        "DEN": {
-          "games": 1,
-          "ppg": 7,
-          "oppPpg": 10,
-          "ypg": 206,
-          "oppYpg": 181,
-          "turnoverMargin": 2,
-          "thirdDownPct": 0.33,
-          "redZonePct": 0.5,
-          "avgTop": 33.15,
-          "sos": 0.82
-        },
-        "LAR": {
-          "games": 1,
-          "ppg": 27,
-          "oppPpg": 31,
-          "ypg": 396,
-          "oppYpg": 479,
-          "turnoverMargin": 1,
-          "thirdDownPct": 0.54,
-          "redZonePct": 0.8,
-          "avgTop": 31.83,
-          "sos": 0.82
         }
       }
     }
@@ -5182,16 +5158,16 @@
   "latestByLeague": [
     {
       "league": "NBA",
-      "conference": "Western",
-      "gameDate": "2026-02-23T00:00:00.000Z",
-      "team": "Timberwolves",
-      "opponent": "76ers",
-      "points": 108,
-      "opponentPoints": 135,
-      "rebounds": 39,
-      "assists": 22,
+      "conference": "Eastern",
+      "gameDate": "2026-02-24T00:00:00.000Z",
+      "team": "Pistons",
+      "opponent": "Spurs",
+      "points": 103,
+      "opponentPoints": 114,
+      "rebounds": 55,
+      "assists": 21,
       "yards": null,
-      "spread": -9.5,
+      "spread": -1.5,
       "atsResult": "L",
       "won": false,
       "teamRank": null,
@@ -5204,11 +5180,11 @@
       "threepa": null,
       "ftm": null,
       "fta": null,
-      "offRebounds": 10,
-      "defRebounds": 29,
-      "steals": 14,
-      "blocks": 1,
-      "turnovers": 10,
+      "offRebounds": 16,
+      "defRebounds": 34,
+      "steals": 8,
+      "blocks": 11,
+      "turnovers": 12,
       "passingYards": null,
       "rushingYards": null,
       "opponentYards": null,
@@ -5223,26 +5199,26 @@
       "hits": null,
       "errors": null,
       "source": "espn-public-api",
-      "sourceEventId": "401810679",
+      "sourceEventId": "401810683",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
     {
       "league": "NCAAB",
-      "conference": "Big Ten Conference",
-      "gameDate": "2026-02-22T00:00:00.000Z",
-      "team": "Michigan St",
-      "opponent": "Ohio State",
-      "points": 66,
-      "opponentPoints": 60,
-      "rebounds": 43,
-      "assists": 18,
+      "conference": "Big 12 Conference",
+      "gameDate": "2026-02-24T00:00:00.000Z",
+      "team": "Kansas",
+      "opponent": "Houston",
+      "points": 69,
+      "opponentPoints": 56,
+      "rebounds": 38,
+      "assists": 11,
       "yards": null,
-      "spread": -10.5,
-      "atsResult": "L",
+      "spread": 2.5,
+      "atsResult": "W",
       "won": true,
-      "teamRank": 15,
-      "opponentRank": 99,
+      "teamRank": 14,
+      "opponentRank": 5,
       "bubbleStatus": "LOCK",
       "autoBidStatus": "AUTO_BID",
       "fgm": null,
@@ -5251,11 +5227,11 @@
       "threepa": null,
       "ftm": null,
       "fta": null,
-      "offRebounds": 4,
-      "defRebounds": 22,
-      "steals": 5,
-      "blocks": 2,
-      "turnovers": 6,
+      "offRebounds": 13,
+      "defRebounds": 20,
+      "steals": 6,
+      "blocks": 3,
+      "turnovers": 8,
       "passingYards": null,
       "rushingYards": null,
       "opponentYards": null,
@@ -5270,18 +5246,18 @@
       "hits": null,
       "errors": null,
       "source": "espn-public-api",
-      "sourceEventId": "401825534",
+      "sourceEventId": "401820820",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
     {
       "league": "MLB",
-      "conference": "NL East",
-      "gameDate": "2026-02-22T00:00:00.000Z",
-      "team": "Braves",
-      "opponent": "Twins",
-      "points": 1,
-      "opponentPoints": 8,
+      "conference": "AL East",
+      "gameDate": "2026-02-23T00:00:00.000Z",
+      "team": "Orioles",
+      "opponent": "Braves",
+      "points": 7,
+      "opponentPoints": 10,
       "rebounds": null,
       "assists": null,
       "yards": null,
@@ -5315,9 +5291,9 @@
       "timeOfPossession": null,
       "homeAway": "home",
       "hits": 9,
-      "errors": 0,
+      "errors": 1,
       "source": "espn-public-api",
-      "sourceEventId": "401832912",
+      "sourceEventId": "401832926",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -5371,7 +5347,6 @@
   ],
   "conferences": [
     "AFC East",
-    "AFC West",
     "AL Central",
     "AL East",
     "AL West",
@@ -5418,293 +5393,104 @@
     {
       "league": "NBA",
       "conference": null,
-      "gameDate": "2026-02-24T00:10:00.000Z",
-      "matchup": "San Antonio Spurs at Detroit Pistons",
-      "pickTeam": "Detroit Pistons",
-      "opponent": "San Antonio Spurs",
-      "spread": -1.3,
-      "modelSpread": -1.2,
-      "line": "Detroit Pistons -1.3",
-      "score": 71,
-      "confidence": 67,
+      "gameDate": "2026-02-25T02:10:00.000Z",
+      "matchup": "Boston Celtics at Phoenix Suns",
+      "pickTeam": "Boston Celtics",
+      "opponent": "Phoenix Suns",
+      "spread": -6.5,
+      "modelSpread": -6,
+      "line": "Boston Celtics -6.5",
+      "score": 72,
+      "confidence": 68,
       "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge unavailable (limited ATS sample)",
-        "History sample Detroit Pistons: 12 games (mapped Pistons) vs San Antonio Spurs: 0 games",
-        "Home court (+2.5 pt adjustment)",
-        "Rest: Detroit Pistons 2d rest vs San Antonio Spurs ?",
-        "9 books: avg -1.3, variance 0.06 (tight consensus)"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": null
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-24T00:00:00.000Z",
-      "matchup": "Texas A&M-CC Islanders at SE Louisiana Lions",
-      "pickTeam": "SE Louisiana Lions",
-      "opponent": "Texas A&M-CC Islanders",
-      "spread": 2.5,
-      "modelSpread": 2.3,
-      "line": "SE Louisiana Lions +2.5",
-      "score": 65,
-      "confidence": 61,
-      "rationaleSignals": [
-        "Momentum edge +0.50 (last-10 trend proxy)",
-        "ATS edge +0.38",
-        "History sample SE Louisiana Lions: 8 games (mapped Louisiana) vs Texas A&M-CC Islanders: 8 games",
-        "Home court (+3.5 pt adjustment)",
-        "Rest: SE Louisiana Lions 3d rest vs Texas A&M-CC Islanders 2d rest",
-        "6 books: avg 2.5, variance 0 (tight consensus)"
-      ],
-      "momentumEdge": 0.5,
-      "atsEdge": 0.38
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-24T00:00:00.000Z",
-      "matchup": "Louisville Cardinals at North Carolina Tar Heels",
-      "pickTeam": "North Carolina Tar Heels",
-      "opponent": "Louisville Cardinals",
-      "spread": 2.5,
-      "modelSpread": 2.3,
-      "line": "North Carolina Tar Heels +2.5",
-      "score": 61,
-      "confidence": 57,
-      "rationaleSignals": [
-        "Momentum edge -0.07 (last-10 trend proxy)",
-        "ATS edge +0.19",
-        "History sample North Carolina Tar Heels: 7 games (mapped North Carolina) vs Louisville Cardinals: 8 games",
-        "Home court (+3.5 pt adjustment)",
-        "Rest: North Carolina Tar Heels 3d rest vs Louisville Cardinals 3d rest",
-        "8 books: avg 2.5, variance 0 (tight consensus)",
-        "SOS: 0.650 vs 0.780"
-      ],
-      "momentumEdge": -0.07,
-      "atsEdge": 0.19
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-24T00:30:00.000Z",
-      "matchup": "UT Rio Grande Valley Vaqueros at McNeese Cowboys",
-      "pickTeam": "UT Rio Grande Valley Vaqueros",
-      "opponent": "McNeese Cowboys",
-      "spread": 10.7,
-      "modelSpread": 8.1,
-      "line": "UT Rio Grande Valley Vaqueros +10.7",
-      "score": 59,
-      "confidence": 54,
-      "rationaleSignals": [
-        "Momentum edge +0.00 (last-10 trend proxy)",
-        "ATS edge +0.37",
-        "History sample UT Rio Grande Valley Vaqueros: 8 games (mapped UT Rio Grande) vs McNeese Cowboys: 8 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: UT Rio Grande Valley Vaqueros 3d rest vs McNeese Cowboys 2d rest",
-        "7 books: avg 10.7, variance 0.13 (tight consensus)"
-      ],
-      "momentumEdge": 0,
-      "atsEdge": 0.37
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-24T00:30:00.000Z",
-      "matchup": "New Orleans Privateers at Stephen F. Austin Lumberjacks",
-      "pickTeam": "New Orleans Privateers",
-      "opponent": "Stephen F. Austin Lumberjacks",
-      "spread": 12.9,
-      "modelSpread": 9.1,
-      "line": "New Orleans Privateers +12.9",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge -0.50 (last-10 trend proxy)",
-        "ATS edge +0.25",
-        "History sample New Orleans Privateers: 8 games (mapped New Orleans) vs Stephen F. Austin Lumberjacks: 8 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: New Orleans Privateers 2d rest vs Stephen F. Austin Lumberjacks 2d rest",
-        "6 books: avg 12.9, variance 0.2 (tight consensus)",
-        "Market line +12.9, model estimate +9.1 (regression to mean)"
-      ],
-      "momentumEdge": -0.5,
-      "atsEdge": 0.25
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-24T00:30:00.000Z",
-      "matchup": "Houston Christian Huskies at East Texas A&M Lions",
-      "pickTeam": "Houston Christian Huskies",
-      "opponent": "East Texas A&M Lions",
-      "spread": 2.6,
-      "modelSpread": 2.4,
-      "line": "Houston Christian Huskies +2.6",
-      "score": 56,
-      "confidence": 51,
-      "rationaleSignals": [
-        "Momentum edge +0.64 (last-10 trend proxy)",
-        "ATS edge +0.07",
-        "History sample Houston Christian Huskies: 8 games (mapped Houston) vs East Texas A&M Lions: 7 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: Houston Christian Huskies 3d rest vs East Texas A&M Lions 2d rest",
-        "7 books: avg 2.6, variance 0.03 (tight consensus)"
-      ],
-      "momentumEdge": 0.64,
-      "atsEdge": 0.07
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-24T02:00:00.000Z",
-      "matchup": "Houston Cougars at Kansas Jayhawks",
-      "pickTeam": "Houston Cougars",
-      "opponent": "Kansas Jayhawks",
-      "spread": -2.7,
-      "modelSpread": -2.5,
-      "line": "Houston Cougars -2.7",
-      "score": 54,
-      "confidence": 49,
-      "rationaleSignals": [
-        "Momentum edge +0.07 (last-10 trend proxy)",
-        "ATS edge -0.07",
-        "History sample Houston Cougars: 8 games (mapped Houston) vs Kansas Jayhawks: 7 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: Houston Cougars 3d rest vs Kansas Jayhawks 3d rest",
-        "8 books: avg -2.7, variance 0.06 (tight consensus)",
-        "SOS: 0.620 vs 0.560"
-      ],
-      "momentumEdge": 0.07,
-      "atsEdge": -0.07
-    },
-    {
-      "league": "NBA",
-      "conference": null,
-      "gameDate": "2026-02-24T01:10:00.000Z",
-      "matchup": "Sacramento Kings at Memphis Grizzlies",
-      "pickTeam": "Memphis Grizzlies",
-      "opponent": "Sacramento Kings",
-      "spread": -4.8,
-      "modelSpread": -4.4,
-      "line": "Memphis Grizzlies -4.8",
-      "score": 54,
-      "confidence": 49,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.20",
-        "History sample Memphis Grizzlies: 12 games (mapped Grizzlies) vs Sacramento Kings: 12 games",
-        "Home court (+2.5 pt adjustment)",
-        "Rest: Memphis Grizzlies 2d rest vs Sacramento Kings 2d rest",
-        "9 books: avg -4.8, variance 0.06 (tight consensus)"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.2
-    },
-    {
-      "league": "NCAAB",
-      "conference": null,
-      "gameDate": "2026-02-24T00:00:00.000Z",
-      "matchup": "Nicholls St Colonels at Lamar Cardinals",
-      "pickTeam": "Nicholls St Colonels",
-      "opponent": "Lamar Cardinals",
-      "spread": 4.1,
-      "modelSpread": 3.8,
-      "line": "Nicholls St Colonels +4.1",
-      "score": 51,
-      "confidence": 46,
-      "rationaleSignals": [
-        "Momentum edge +0.25 (last-10 trend proxy)",
-        "ATS edge +0.00",
-        "History sample Nicholls St Colonels: 8 games (mapped Nicholls) vs Lamar Cardinals: 8 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: Nicholls St Colonels 3d rest vs Lamar Cardinals 2d rest",
-        "7 books: avg 4.1, variance 0.19 (tight consensus)"
-      ],
-      "momentumEdge": 0.25,
-      "atsEdge": 0
-    },
-    {
-      "league": "NBA",
-      "conference": null,
-      "gameDate": "2026-02-24T02:40:00.000Z",
-      "matchup": "Utah Jazz at Houston Rockets",
-      "pickTeam": "Utah Jazz",
-      "opponent": "Houston Rockets",
-      "spread": 14.3,
-      "modelSpread": 9.7,
-      "line": "Utah Jazz +14.3",
-      "score": 51,
-      "confidence": 46,
-      "rationaleSignals": [
-        "Momentum edge -0.20 (last-10 trend proxy)",
-        "ATS edge unavailable (limited ATS sample)",
-        "History sample Utah Jazz: 0 games (mapped Utah Jazz) vs Houston Rockets: 12 games",
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.40",
+        "History sample Boston Celtics: 11 games (mapped Celtics) vs Phoenix Suns: 12 games",
         "Away (+-2.5 pt adjustment)",
-        "Rest: Utah Jazz ? vs Houston Rockets 2d rest",
-        "9 books: avg 14.3, variance 0.06 (tight consensus)",
-        "Market line +14.3, model estimate +9.7 (regression to mean)"
+        "Rest: Boston Celtics 3d rest vs Phoenix Suns 2d rest",
+        "2 books: avg -6.5, variance 0 (tight consensus)"
       ],
-      "momentumEdge": -0.2,
+      "momentumEdge": 0.8,
+      "atsEdge": 0.4
+    },
+    {
+      "league": "NBA",
+      "conference": null,
+      "gameDate": "2026-02-25T01:10:00.000Z",
+      "matchup": "New York Knicks at Cleveland Cavaliers",
+      "pickTeam": "Cleveland Cavaliers",
+      "opponent": "New York Knicks",
+      "spread": -3.3,
+      "modelSpread": -3,
+      "line": "Cleveland Cavaliers -3.3",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge unavailable (limited ATS sample)",
+        "History sample Cleveland Cavaliers: 11 games (mapped Cavaliers) vs New York Knicks: 0 games",
+        "Home court (+2.5 pt adjustment)",
+        "Rest: Cleveland Cavaliers 3d rest vs New York Knicks ?",
+        "2 books: avg -3.2, variance 0.06 (tight consensus)"
+      ],
+      "momentumEdge": 0.6,
       "atsEdge": null
     },
     {
-      "league": "NCAAB",
+      "league": "NBA",
       "conference": null,
-      "gameDate": "2026-02-24T01:00:00.000Z",
-      "matchup": "Miss Valley St Delta Devils at Grambling St Tigers",
-      "pickTeam": "Grambling St Tigers",
-      "opponent": "Miss Valley St Delta Devils",
-      "spread": -16.4,
-      "modelSpread": -10.7,
-      "line": "Grambling St Tigers -16.4",
-      "score": 47,
+      "gameDate": "2026-02-25T00:40:00.000Z",
+      "matchup": "Oklahoma City Thunder at Toronto Raptors",
+      "pickTeam": "Oklahoma City Thunder",
+      "opponent": "Toronto Raptors",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Oklahoma City Thunder -1.5",
+      "score": 53,
       "confidence": 48,
       "rationaleSignals": [
-        "Momentum edge +0.50 (last-10 trend proxy)",
-        "ATS edge -0.12",
-        "History sample Grambling St Tigers: 8 games (mapped Grambling) vs Miss Valley St Delta Devils: 8 games",
-        "Home court (+3.5 pt adjustment)",
-        "Rest: Grambling St Tigers 3d rest vs Miss Valley St Delta Devils 2d rest",
-        "7 books: avg -16.4, variance 0.1 (tight consensus)",
-        "Market line -16.4, model estimate -10.7 (regression to mean)"
+        "Momentum edge +0.09 (last-10 trend proxy)",
+        "ATS edge +0.04",
+        "History sample Oklahoma City Thunder: 11 games (mapped Thunder) vs Toronto Raptors: 9 games",
+        "Away (+-2.5 pt adjustment)",
+        "Rest: Oklahoma City Thunder 3d rest vs Toronto Raptors 3d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)"
       ],
-      "momentumEdge": 0.5,
-      "atsEdge": -0.12
+      "momentumEdge": 0.09,
+      "atsEdge": 0.04
     },
     {
-      "league": "NCAAB",
+      "league": "NBA",
       "conference": null,
-      "gameDate": "2026-02-24T00:30:00.000Z",
-      "matchup": "Incarnate Word Cardinals at Northwestern St Demons",
-      "pickTeam": "Incarnate Word Cardinals",
-      "opponent": "Northwestern St Demons",
-      "spread": 2.5,
-      "modelSpread": 2.3,
-      "line": "Incarnate Word Cardinals +2.5",
-      "score": 44,
-      "confidence": 51,
+      "gameDate": "2026-02-25T03:40:00.000Z",
+      "matchup": "Orlando Magic at Los Angeles Lakers",
+      "pickTeam": "Orlando Magic",
+      "opponent": "Los Angeles Lakers",
+      "spread": 6.5,
+      "modelSpread": 6,
+      "line": "Orlando Magic +6.5",
+      "score": 51,
+      "confidence": 46,
       "rationaleSignals": [
-        "Momentum edge -0.07 (last-10 trend proxy)",
-        "ATS edge -0.18",
-        "History sample Incarnate Word Cardinals: 8 games (mapped Incarnate Word) vs Northwestern St Demons: 7 games",
-        "Away (+-3.5 pt adjustment)",
-        "Rest: Incarnate Word Cardinals 3d rest vs Northwestern St Demons 5d rest",
-        "7 books: avg 2.5, variance 0 (tight consensus)"
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.10",
+        "History sample Orlando Magic: 12 games (mapped Magic) vs Los Angeles Lakers: 12 games",
+        "Away (+-2.5 pt adjustment)",
+        "Rest: Orlando Magic 2d rest vs Los Angeles Lakers 3d rest",
+        "2 books: avg 6.5, variance 0 (tight consensus)"
       ],
-      "momentumEdge": -0.07,
-      "atsEdge": -0.18
+      "momentumEdge": 0,
+      "atsEdge": 0.1
     }
   ],
   "topBestBetsTarget": 5,
-  "topBestBetsDateEt": "2026-02-23",
+  "topBestBetsDateEt": "2026-02-24",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": null,
+  "bestBetsNote": "Only 4 eligible games found on 2026-02-24 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 12,
     "atsWeight": 18,
-    "upsetWeight": 0.2,
+    "upsetWeight": 0.6,
     "threshold": 70,
     "calibrated": true
   },
@@ -5719,6 +5505,14 @@
         "returnDate": "2026-02-26"
       },
       {
+        "player": "Jaylen Brown",
+        "team": "Boston Celtics",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-02-24"
+      },
+      {
         "player": "Jayson Tatum",
         "team": "Boston Celtics",
         "position": "F",
@@ -5727,18 +5521,18 @@
         "returnDate": "2026-03-04"
       },
       {
-        "player": "Ziaire Williams",
-        "team": "Brooklyn Nets",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Personal",
-        "returnDate": "2026-02-24"
-      },
-      {
         "player": "Liam McNeeley",
         "team": "Charlotte Hornets",
         "position": "G",
         "status": "Out",
+        "injuryType": "Ankle",
+        "returnDate": "2026-02-26"
+      },
+      {
+        "player": "Ryan Kalkbrenner",
+        "team": "Charlotte Hornets",
+        "position": "C",
+        "status": "Day-To-Day",
         "injuryType": "Ankle",
         "returnDate": "2026-02-24"
       },
@@ -5748,22 +5542,6 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Calf",
-        "returnDate": "2026-02-24"
-      },
-      {
-        "player": "Moussa Diabate",
-        "team": "Charlotte Hornets",
-        "position": "F",
-        "status": "Suspension",
-        "injuryType": "Suspension",
-        "returnDate": "2026-02-24"
-      },
-      {
-        "player": "Miles Bridges",
-        "team": "Charlotte Hornets",
-        "position": "F",
-        "status": "Suspension",
-        "injuryType": "Suspension",
         "returnDate": "2026-02-24"
       },
       {
@@ -5780,7 +5558,7 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Wrist",
-        "returnDate": "2026-02-24"
+        "returnDate": "2026-02-26"
       },
       {
         "player": "Zach Collins",
@@ -5815,12 +5593,28 @@
         "returnDate": "2026-02-27"
       },
       {
+        "player": "Daniel Gafford",
+        "team": "Dallas Mavericks",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "Caleb Martin",
+        "team": "Dallas Mavericks",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-02-24"
+      },
+      {
         "player": "Cooper Flagg",
         "team": "Dallas Mavericks",
         "position": "F",
         "status": "Out",
         "injuryType": "Foot",
-        "returnDate": "2026-02-24"
+        "returnDate": "2026-02-26"
       },
       {
         "player": "Kyrie Irving",
@@ -5871,6 +5665,14 @@
         "returnDate": "2026-04-01"
       },
       {
+        "player": "Bobi Klintman",
+        "team": "Detroit Pistons",
+        "position": "F",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-02-25"
+      },
+      {
         "player": "Isaiah Stewart",
         "team": "Detroit Pistons",
         "position": "F",
@@ -5879,10 +5681,26 @@
         "returnDate": "2026-03-03"
       },
       {
+        "player": "De'Anthony Melton",
+        "team": "Golden State Warriors",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "Al Horford",
+        "team": "Golden State Warriors",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Toe",
+        "returnDate": "2026-02-24"
+      },
+      {
         "player": "Draymond Green",
         "team": "Golden State Warriors",
         "position": "F",
-        "status": "Out",
+        "status": "Day-To-Day",
         "injuryType": "Back",
         "returnDate": "2026-02-24"
       },
@@ -5892,7 +5710,7 @@
         "position": "C",
         "status": "Out",
         "injuryType": "Illness",
-        "returnDate": "2026-02-24"
+        "returnDate": "2026-02-28"
       },
       {
         "player": "Stephen Curry",
@@ -5916,7 +5734,7 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Hamstring",
-        "returnDate": "2026-02-24"
+        "returnDate": "2026-02-25"
       },
       {
         "player": "Jimmy Butler III",
@@ -5932,7 +5750,7 @@
         "position": "F",
         "status": "Out",
         "injuryType": "Knee",
-        "returnDate": "2026-02-25"
+        "returnDate": "2026-03-10"
       },
       {
         "player": "Steven Adams",
@@ -5951,20 +5769,52 @@
         "returnDate": "2026-06-01"
       },
       {
+        "player": "Kam Jones",
+        "team": "Indiana Pacers",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "Micah Potter",
+        "team": "Indiana Pacers",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "Pascal Siakam",
+        "team": "Indiana Pacers",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Wrist",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "T.J. McConnell",
+        "team": "Indiana Pacers",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "Andrew Nembhard",
+        "team": "Indiana Pacers",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
+        "returnDate": "2026-02-24"
+      },
+      {
         "player": "Aaron Nesmith",
         "team": "Indiana Pacers",
         "position": "G",
         "status": "Out",
         "injuryType": "Ankle",
         "returnDate": "2026-03-01"
-      },
-      {
-        "player": "T.J. McConnell",
-        "team": "Indiana Pacers",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-02-24"
       },
       {
         "player": "Obi Toppin",
@@ -6002,7 +5852,7 @@
         "player": "John Collins",
         "team": "LA Clippers",
         "position": "F",
-        "status": "Out",
+        "status": "Day-To-Day",
         "injuryType": "Head",
         "returnDate": "2026-02-26"
       },
@@ -6031,7 +5881,7 @@
         "returnDate": "2026-02-24"
       },
       {
-        "player": "Santi Aldama",
+        "player": "Kyle Anderson",
         "team": "Memphis Grizzlies",
         "position": "F",
         "status": "Out",
@@ -6039,12 +5889,20 @@
         "returnDate": "2026-02-25"
       },
       {
-        "player": "Kyle Anderson",
+        "player": "Ty Jerome",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Illness",
+        "returnDate": "2026-02-25"
+      },
+      {
+        "player": "Santi Aldama",
         "team": "Memphis Grizzlies",
         "position": "F",
-        "status": "Day-To-Day",
+        "status": "Out",
         "injuryType": "Knee",
-        "returnDate": "2026-02-23"
+        "returnDate": "2026-02-25"
       },
       {
         "player": "Cedric Coward",
@@ -6087,19 +5945,19 @@
         "returnDate": "2026-02-27"
       },
       {
-        "player": "Davion Mitchell",
-        "team": "Miami Heat",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Illness",
-        "returnDate": "2026-02-24"
-      },
-      {
         "player": "Nikola Jovic",
         "team": "Miami Heat",
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Back",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "Davion Mitchell",
+        "team": "Miami Heat",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Illness",
         "returnDate": "2026-02-24"
       },
       {
@@ -6116,7 +5974,7 @@
         "position": "F",
         "status": "Out",
         "injuryType": "Calf",
-        "returnDate": "2026-02-24"
+        "returnDate": "2026-02-25"
       },
       {
         "player": "Taurean Prince",
@@ -6135,36 +5993,12 @@
         "returnDate": "2026-02-24"
       },
       {
-        "player": "Rudy Gobert",
-        "team": "Minnesota Timberwolves",
-        "position": "C",
-        "status": "Suspension",
-        "injuryType": "Suspension",
-        "returnDate": "2026-02-24"
-      },
-      {
-        "player": "Dejounte Murray",
-        "team": "New Orleans Pelicans",
-        "position": "G",
-        "status": "Out",
-        "injuryType": "Achilles",
-        "returnDate": "2026-02-24"
-      },
-      {
         "player": "Micah Peavy",
         "team": "New Orleans Pelicans",
         "position": "G",
         "status": "Out",
         "injuryType": "Toe",
-        "returnDate": "2026-02-24"
-      },
-      {
-        "player": "Trey Murphy III",
-        "team": "New Orleans Pelicans",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Shoulder",
-        "returnDate": "2026-02-24"
+        "returnDate": "2026-02-26"
       },
       {
         "player": "Yves Missi",
@@ -6172,15 +6006,15 @@
         "position": "C",
         "status": "Out",
         "injuryType": "Calf",
-        "returnDate": "2026-02-24"
+        "returnDate": "2026-02-26"
       },
       {
-        "player": "Mitchell Robinson",
-        "team": "New York Knicks",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
-        "returnDate": "2026-02-24"
+        "player": "Trey Murphy III",
+        "team": "New Orleans Pelicans",
+        "position": "F",
+        "status": "Out",
+        "injuryType": "Shoulder",
+        "returnDate": "2026-02-26"
       },
       {
         "player": "Miles McBride",
@@ -6196,6 +6030,14 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "Chet Holmgren",
+        "team": "Oklahoma City Thunder",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
         "returnDate": "2026-02-24"
       },
       {
@@ -6247,28 +6089,28 @@
         "returnDate": "2026-03-11"
       },
       {
-        "player": "Johni Broome",
-        "team": "Philadelphia 76ers",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-04-01"
-      },
-      {
-        "player": "MarJon Beauchamp",
-        "team": "Philadelphia 76ers",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Illness",
-        "returnDate": "2026-02-24"
-      },
-      {
         "player": "Joel Embiid",
         "team": "Philadelphia 76ers",
         "position": "C",
         "status": "Out",
         "injuryType": "Lower Leg",
         "returnDate": "2026-02-24"
+      },
+      {
+        "player": "MarJon Beauchamp",
+        "team": "Philadelphia 76ers",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Illness",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "Johni Broome",
+        "team": "Philadelphia 76ers",
+        "position": "F",
+        "status": "Out",
+        "injuryType": "Knee",
+        "returnDate": "2026-04-01"
       },
       {
         "player": "Paul George",
@@ -6279,12 +6121,12 @@
         "returnDate": "2026-03-25"
       },
       {
-        "player": "Jordan Goodwin",
+        "player": "Cole Anthony",
         "team": "Phoenix Suns",
         "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Calf",
-        "returnDate": "2026-02-24"
+        "status": "Out",
+        "injuryType": "Not Injury Related",
+        "returnDate": "2026-02-26"
       },
       {
         "player": "Grayson Allen",
@@ -6295,12 +6137,12 @@
         "returnDate": "2026-02-24"
       },
       {
-        "player": "Cole Anthony",
+        "player": "Jordan Goodwin",
         "team": "Phoenix Suns",
         "position": "G",
         "status": "Out",
-        "injuryType": "Not Injury Related",
-        "returnDate": "2026-02-24"
+        "injuryType": "Calf",
+        "returnDate": "2026-03-03"
       },
       {
         "player": "Dillon Brooks",
@@ -6327,20 +6169,20 @@
         "returnDate": "2026-03-03"
       },
       {
-        "player": "Deni Avdija",
-        "team": "Portland Trail Blazers",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Back",
-        "returnDate": "2026-02-24"
-      },
-      {
         "player": "Shaedon Sharpe",
         "team": "Portland Trail Blazers",
         "position": "G",
         "status": "Out",
         "injuryType": "Calf",
-        "returnDate": "2026-02-24"
+        "returnDate": "2026-02-26"
+      },
+      {
+        "player": "Deni Avdija",
+        "team": "Portland Trail Blazers",
+        "position": "F",
+        "status": "Out",
+        "injuryType": "Back",
+        "returnDate": "2026-02-26"
       },
       {
         "player": "Damian Lillard",
@@ -6349,6 +6191,14 @@
         "status": "Out",
         "injuryType": "Achilles",
         "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Devin Carter",
+        "team": "Sacramento Kings",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
+        "returnDate": "2026-02-25"
       },
       {
         "player": "De'Andre Hunter",
@@ -6391,14 +6241,6 @@
         "returnDate": "2026-02-25"
       },
       {
-        "player": "Lindy Waters III",
-        "team": "San Antonio Spurs",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-02-23"
-      },
-      {
         "player": "David Jones Garcia",
         "team": "San Antonio Spurs",
         "position": "F",
@@ -6407,11 +6249,11 @@
         "returnDate": "2026-07-02"
       },
       {
-        "player": "Scottie Barnes",
+        "player": "Jakob Poeltl",
         "team": "Toronto Raptors",
-        "position": "F",
+        "position": "C",
         "status": "Out",
-        "injuryType": "Personal",
+        "injuryType": "Back",
         "returnDate": "2026-02-24"
       },
       {
@@ -6420,7 +6262,15 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Knee",
-        "returnDate": "2026-02-24"
+        "returnDate": "2026-02-25"
+      },
+      {
+        "player": "Vince Williams Jr.",
+        "team": "Utah Jazz",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-02-26"
       },
       {
         "player": "Keyonte George",
@@ -6428,15 +6278,7 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Ankle",
-        "returnDate": "2026-02-23"
-      },
-      {
-        "player": "Lauri Markkanen",
-        "team": "Utah Jazz",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Illness",
-        "returnDate": "2026-02-23"
+        "returnDate": "2026-02-26"
       },
       {
         "player": "Jusuf Nurkic",
@@ -6444,7 +6286,7 @@
         "position": "C",
         "status": "Out",
         "injuryType": "Nose",
-        "returnDate": "2026-02-26"
+        "returnDate": "2026-10-01"
       },
       {
         "player": "Jaren Jackson Jr.",
@@ -6463,19 +6305,19 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Justin Champagnie",
-        "team": "Washington Wizards",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-02-24"
-      },
-      {
         "player": "Tristan Vukcevic",
         "team": "Washington Wizards",
         "position": "F",
-        "status": "Out",
+        "status": "Day-To-Day",
         "injuryType": "Hand",
+        "returnDate": "2026-02-24"
+      },
+      {
+        "player": "Justin Champagnie",
+        "team": "Washington Wizards",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
         "returnDate": "2026-02-24"
       },
       {
@@ -6729,6 +6571,14 @@
         "returnDate": "2026-03-01"
       },
       {
+        "player": "Kyle Pitts Sr.",
+        "team": "Atlanta Falcons",
+        "position": "TE",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
         "player": "Bralen Trice",
         "team": "Atlanta Falcons",
         "position": "LB",
@@ -6908,14 +6758,6 @@
         "player": "Joshua Simon",
         "team": "Atlanta Falcons",
         "position": "TE",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "Dee Alford",
-        "team": "Atlanta Falcons",
-        "position": "CB",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
@@ -7129,6 +6971,22 @@
         "returnDate": "2026-03-01"
       },
       {
+        "player": "Phidarian Mathis",
+        "team": "Buffalo Bills",
+        "position": "DT",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
+        "player": "Alec Anderson",
+        "team": "Buffalo Bills",
+        "position": "OT",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
         "player": "Michael Hoecht",
         "team": "Buffalo Bills",
         "position": "DE",
@@ -7303,22 +7161,6 @@
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
-      },
-      {
-        "player": "Shaq Thompson",
-        "team": "Buffalo Bills",
-        "position": "LB",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "Dorian Williams",
-        "team": "Buffalo Bills",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Neck",
-        "returnDate": "2026-03-01"
       },
       {
         "player": "Chandler Zavala",
@@ -8121,6 +7963,14 @@
         "returnDate": ""
       },
       {
+        "player": "George Pickens",
+        "team": "Dallas Cowboys",
+        "position": "WR",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
         "player": "Javonte Williams",
         "team": "Dallas Cowboys",
         "position": "RB",
@@ -8268,14 +8118,6 @@
         "player": "Osa Odighizuwa",
         "team": "Dallas Cowboys",
         "position": "DT",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "George Pickens",
-        "team": "Dallas Cowboys",
-        "position": "WR",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
@@ -9713,7 +9555,7 @@
         "returnDate": ""
       },
       {
-        "player": "Mike Danna",
+        "player": "Charles Omenihu",
         "team": "Kansas City Chiefs",
         "position": "DE",
         "status": "Active",
@@ -9921,6 +9763,14 @@
         "returnDate": ""
       },
       {
+        "player": "Najee Harris",
+        "team": "Los Angeles Chargers",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Achilles",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Bud Dupree",
         "team": "Los Angeles Chargers",
         "position": "LB",
@@ -10039,14 +9889,6 @@
         "status": "Questionable",
         "injuryType": "Hamstring",
         "returnDate": "2026-03-01"
-      },
-      {
-        "player": "Najee Harris",
-        "team": "Los Angeles Chargers",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Achilles",
-        "returnDate": "2026-08-01"
       },
       {
         "player": "Josh Fuga",
@@ -10849,14 +10691,6 @@
         "returnDate": "2026-03-01"
       },
       {
-        "player": "Antonio Gibson",
-        "team": "New England Patriots",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Eric Gregory",
         "team": "New England Patriots",
         "position": "DT",
@@ -10916,6 +10750,14 @@
         "player": "Hunter Henry",
         "team": "New England Patriots",
         "position": "TE",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
+        "player": "DeMario Douglas",
+        "team": "New England Patriots",
+        "position": "WR",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
@@ -12721,6 +12563,14 @@
         "returnDate": ""
       },
       {
+        "player": "Andrew Wylie",
+        "team": "Washington Commanders",
+        "position": "G",
+        "status": "Active",
+        "injuryType": "active",
+        "returnDate": ""
+      },
+      {
         "player": "Noah Igbinoghene",
         "team": "Washington Commanders",
         "position": "CB",
@@ -12908,14 +12758,6 @@
         "player": "Colson Yankoff",
         "team": "Washington Commanders",
         "position": "TE",
-        "status": "Active",
-        "injuryType": "active",
-        "returnDate": ""
-      },
-      {
-        "player": "Tress Way",
-        "team": "Washington Commanders",
-        "position": "P",
         "status": "Active",
         "injuryType": "active",
         "returnDate": ""
