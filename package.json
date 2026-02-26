@@ -22,7 +22,7 @@
     "scrape:ats": "python scripts/python/scrape_ats.py",
     "scrape:consensus": "python scripts/python/scrape_consensus.py",
     "scrape:all": "npm run scrape:ats && npm run scrape:consensus",
-    "ingest:all": "npm run ingest:context && npm run ingest:odds && npm run ingest:free && npm run ingest:kalshi && npm run scrape:all",
+    "ingest:all": "npm run ingest:context && npm run ingest:odds && npm run scrape:all && npm run ingest:free && npm run ingest:props && npm run ingest:kalshi",
     "validate:latest-games": "tsx scripts/validate-latest-games.ts",
     "qa:data": "npm run ingest:all && npm run validate:latest-games && npm run lint && npm run build"
   },

@@ -1186,28 +1186,44 @@ async function main() {
     ? (JSON.parse(fs.readFileSync(oddsPath, "utf8")) as { events?: unknown[] })
     : null;
 
-  // Build merged odds array; fall back to ESPN for any league with 0 events
-  // (triggered automatically when The Odds API quota is exhausted)
+  // Build merged odds array with three-tier fallback:
+  // 1. Combined latest-odds-api.json (fresh from API)
+  // 2. Per-league latest-odds-api-{league}.json (preserved from last successful API run)
+  // 3. ESPN public scoreboard API (free, no key)
   const oddsEvents: unknown[] = (oddsPayload?.events as unknown[] | undefined) ?? [];
   const leaguesPresent = new Set(
     oddsEvents.map((e) => (e as { sport_key?: string }).sport_key).filter(Boolean),
   );
   for (const league of ["basketball_nba", "basketball_ncaab"] as const) {
-    if (!leaguesPresent.has(league)) {
-      console.log(`No ${league} odds in latest-odds-api.json — fetching ESPN fallback...`);
-      const espnEvents = await fetchEspnOddsAsFallback(league);
-      oddsEvents.push(...espnEvents);
-      if (espnEvents.length > 0) {
-        fs.writeFileSync(
-          path.join(processedDir, `scraped-odds-${league}.json`),
-          JSON.stringify(
-            { fetchedAt: new Date().toISOString(), source: "espn-fallback", league, eventCount: espnEvents.length, events: espnEvents },
-            null,
-            2,
-          ),
-        );
-        console.log(`  -> saved scraped-odds-${league}.json (${espnEvents.length} events)`);
-      }
+    if (leaguesPresent.has(league)) continue;
+
+    // Tier 2: per-league file (only overwritten when API succeeds — preserves last good data)
+    const perLeaguePath = path.join(processedDir, `latest-odds-api-${league}.json`);
+    const perLeaguePayload = fs.existsSync(perLeaguePath)
+      ? (JSON.parse(fs.readFileSync(perLeaguePath, "utf8")) as { events?: unknown[]; fetchedAt?: string })
+      : null;
+    const perLeagueEvents = (perLeaguePayload?.events as unknown[] | undefined) ?? [];
+    if (perLeagueEvents.length > 0) {
+      console.log(`No ${league} odds in combined file — using preserved per-league file (${perLeagueEvents.length} events, fetched ${perLeaguePayload?.fetchedAt?.slice(0,10) ?? "unknown"})`);
+      oddsEvents.push(...perLeagueEvents);
+      leaguesPresent.add(league);
+      continue;
+    }
+
+    // Tier 3: ESPN public API
+    console.log(`No ${league} odds anywhere — fetching ESPN fallback...`);
+    const espnEvents = await fetchEspnOddsAsFallback(league);
+    oddsEvents.push(...espnEvents);
+    if (espnEvents.length > 0) {
+      fs.writeFileSync(
+        path.join(processedDir, `scraped-odds-${league}.json`),
+        JSON.stringify(
+          { fetchedAt: new Date().toISOString(), source: "espn-fallback", league, eventCount: espnEvents.length, events: espnEvents },
+          null,
+          2,
+        ),
+      );
+      console.log(`  -> saved scraped-odds-${league}.json (${espnEvents.length} events)`);
     }
   }
 
