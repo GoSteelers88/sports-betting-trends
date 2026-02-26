@@ -138,6 +138,99 @@ type PythonModelResult = {
   minutesPDNP: number | null;
 };
 
+// NBA team abbreviation → full display name (for PrizePicks matching)
+const NBA_ABBREV: Record<string, string> = {
+  ATL: "Atlanta Hawks", BOS: "Boston Celtics", BKN: "Brooklyn Nets", CHA: "Charlotte Hornets",
+  CHI: "Chicago Bulls", CLE: "Cleveland Cavaliers", DAL: "Dallas Mavericks", DEN: "Denver Nuggets",
+  DET: "Detroit Pistons", GSW: "Golden State Warriors", HOU: "Houston Rockets", IND: "Indiana Pacers",
+  LAC: "LA Clippers", LAL: "Los Angeles Lakers", MEM: "Memphis Grizzlies", MIA: "Miami Heat",
+  MIL: "Milwaukee Bucks", MIN: "Minnesota Timberwolves", NOP: "New Orleans Pelicans",
+  NYK: "New York Knicks", OKC: "Oklahoma City Thunder", ORL: "Orlando Magic",
+  PHI: "Philadelphia 76ers", PHX: "Phoenix Suns", POR: "Portland Trail Blazers",
+  SAC: "Sacramento Kings", SAS: "San Antonio Spurs", TOR: "Toronto Raptors",
+  UTA: "Utah Jazz", WAS: "Washington Wizards",
+};
+
+// PrizePicks stat name → our MarketKey
+const PRIZEPICKS_STAT_MAP: Partial<Record<string, MarketKey>> = {
+  "Points": "player_points",
+  "Rebounds": "player_rebounds",
+  "Assists": "player_assists",
+  "3-PT Made": "player_threes",
+  "Blocked Shots": "player_blocks",
+  "Steals": "player_steals",
+  "Turnovers": "player_turnovers",
+  "Pts+Rebs+Asts": "player_points_rebounds_assists",
+  "Pts+Rebs": "player_points_rebounds",
+  "Pts+Asts": "player_points_assists",
+  "Rebs+Asts": "player_rebounds_assists",
+};
+
+type PrizePicksProp = {
+  player: string;
+  market: MarketKey;
+  teamAbbrev: string | null;
+  line: number;
+};
+
+async function fetchPrizePicksProps(): Promise<PrizePicksProp[]> {
+  try {
+    const res = await fetch(
+      "https://api.prizepicks.com/projections?league_id=7&per_page=250&single_stat=true",
+      {
+        headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+        signal: AbortSignal.timeout(15000),
+      },
+    );
+    if (!res.ok) {
+      console.warn(`[props] PrizePicks API returned ${res.status}`);
+      return [];
+    }
+    const data = (await res.json()) as {
+      data?: Array<{
+        attributes: { line_score: number; odds_type: string; is_live: boolean; description?: string };
+        relationships: {
+          new_player: { data: { id: string } };
+          stat_type: { data: { id: string } };
+        };
+      }>;
+      included?: Array<{ type: string; id: string; attributes: Record<string, unknown> }>;
+    };
+
+    const included = data.included ?? [];
+    const playerMap = new Map(included.filter((x) => x.type === "new_player").map((x) => [x.id, x.attributes]));
+    const statMap = new Map(included.filter((x) => x.type === "stat_type").map((x) => [x.id, x.attributes]));
+
+    const result: PrizePicksProp[] = [];
+    const seen = new Set<string>();
+    for (const item of data.data ?? []) {
+      const attrs = item.attributes;
+      if (attrs.odds_type !== "standard" || attrs.is_live) continue;
+      const playerInfo = playerMap.get(item.relationships.new_player.data.id);
+      const statInfo = statMap.get(item.relationships.stat_type.data.id);
+      if (!playerInfo || !statInfo) continue;
+      const playerName = playerInfo.display_name as string;
+      const statName = statInfo.name as string;
+      const market = PRIZEPICKS_STAT_MAP[statName];
+      if (!market) continue;
+      const key = `${normalizeName(playerName)}|${market}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push({
+        player: playerName,
+        market,
+        teamAbbrev: (attrs.description as string | null) ?? null,
+        line: attrs.line_score,
+      });
+    }
+    console.log(`[props] PrizePicks fallback: ${result.length} props`);
+    return result;
+  } catch (err) {
+    console.warn("[props] PrizePicks fetch error:", err);
+    return [];
+  }
+}
+
 function normalizeName(value: string) {
   return value.toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -629,6 +722,63 @@ async function main() {
     }
   }
 
+  // If The Odds API denied access to all prop markets, fall back to PrizePicks for lines
+  if (accessDenied > 0 && allAccumulators.length === 0) {
+    console.log("[props] Odds API denied access — fetching PrizePicks lines as fallback...");
+    const ppProps = await fetchPrizePicksProps();
+    for (const pp of ppProps) {
+      const playerKey = normalizeName(pp.player);
+      const playerGames = history.get(playerKey) ?? [];
+      // Match team abbrev to today's events to find opponent
+      const fullTeam = pp.teamAbbrev ? (NBA_ABBREV[pp.teamAbbrev] ?? null) : null;
+      const matchingEvent = fullTeam
+        ? events.find((e) => {
+            const h = normalizeName(e.home_team);
+            const a = normalizeName(e.away_team);
+            const t = normalizeName(fullTeam);
+            return h === t || a === t || h.includes(t.split(" ").pop()!) || a.includes(t.split(" ").pop()!);
+          })
+        : undefined;
+      const isHome = matchingEvent && fullTeam
+        ? normalizeName(matchingEvent.home_team) === normalizeName(fullTeam) ||
+          normalizeName(matchingEvent.home_team).includes(normalizeName(fullTeam).split(" ").pop()!)
+        : null;
+      const opponent = matchingEvent ? (isHome ? matchingEvent.away_team : matchingEvent.home_team) : null;
+      const gameDate = matchingEvent?.commence_time ?? new Date().toISOString();
+      const proj = buildProjection(playerGames, pp.market, opponent, isHome, gameDate, history);
+      const lastGame = playerGames[0] ? new Date(playerGames[0].date).getTime() : null;
+      const restDays = lastGame == null ? null : Math.round((new Date(gameDate).getTime() - lastGame) / 86400000);
+      availableMarkets.add(pp.market);
+      allAccumulators.push({
+        player: pp.player,
+        market: pp.market,
+        team: fullTeam,
+        opponent,
+        gameDate,
+        lines: [pp.line],
+        overPrices: [],
+        underPrices: [],
+        isHome,
+        playerGames,
+        heuristicProjection: proj.projection,
+        restDays,
+      });
+      pythonInputs.push({
+        player: pp.player,
+        market: pp.market,
+        consensusLine: pp.line,
+        overPrices: [],
+        underPrices: [],
+        isHome,
+        opponent,
+        restDays,
+        heuristicProjection: proj.projection,
+        games: playerGames,
+      });
+    }
+    if (ppProps.length > 0) eventsWithProps = events.length;
+  }
+
   // Run Python model (batch — one call for all players)
   console.log(`[props] Running Python model for ${pythonInputs.length} player-market pairs...`);
   const pythonResults = runPythonModel(pythonInputs);
@@ -769,11 +919,14 @@ async function main() {
   const topProps = withEdge.length >= 5 ? withEdge.slice(0, 5) : deduped.slice(0, 5);
 
   const available = ranked.length > 0;
+  const prizePicksUsed = accessDenied > 0 && ranked.length > 0;
   const note = !available
     ? accessDenied > 0
-      ? "Player prop markets unavailable for current The Odds API plan or market access."
+      ? "Player prop markets unavailable — The Odds API plan restriction and PrizePicks fallback returned no data."
       : "No NBA player props returned for today."
-    : null;
+    : prizePicksUsed
+      ? "Lines sourced from PrizePicks (Odds API plan does not include prop markets). No vig prices — model edge only."
+      : null;
 
   const output: Output = {
     generatedAt: new Date().toISOString(),
