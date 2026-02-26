@@ -630,30 +630,36 @@ function normalizeTeamName(value: string) {
 function resolveHistoryForOddsTeam(oddsTeam: string, historyByTeam: Record<string, FreeStatLike[]>) {
   const entries = Object.entries(historyByTeam);
   const normalizedOdds = normalizeTeamName(oddsTeam);
+  const oddsTokens = new Set(normalizedOdds.split(" ").filter(Boolean));
 
+  // 1. Exact match
   const exact = entries.find(([team]) => normalizeTeamName(team) === normalizedOdds);
   if (exact) return exact;
 
-  const containment = entries.find(([team]) => {
-    const t = normalizeTeamName(team);
-    return normalizedOdds.includes(t) || t.includes(normalizedOdds);
-  });
-  if (containment) return containment;
-
-  const byTokenOverlap = entries
+  // 2. Jaccard token similarity — avoids false containment matches like
+  //    "Alabama" ⊂ "North Alabama Lions" or "Duke" ⊂ "Duquesne Dukes".
+  //    Tokens are whole words only (no substring checks).
+  const scored = entries
     .map(([team, rows]) => {
-      const tokensA = new Set(normalizedOdds.split(" ").filter(Boolean));
-      const tokensB = new Set(normalizeTeamName(team).split(" ").filter(Boolean));
-      const overlap = [...tokensA].filter((token) => tokensB.has(token)).length;
-      return { team, rows, overlap };
+      const teamTokens = new Set(normalizeTeamName(team).split(" ").filter(Boolean));
+      const intersection = [...oddsTokens].filter((tok) => teamTokens.has(tok)).length;
+      if (intersection === 0) return null;
+      const union = new Set([...oddsTokens, ...teamTokens]).size;
+      const jaccard = intersection / union;
+      return { team, rows, intersection, jaccard };
     })
-    .sort((a, b) => b.overlap - a.overlap)[0];
+    .filter((s): s is NonNullable<typeof s> => s !== null)
+    .sort((a, b) => {
+      if (Math.abs(b.jaccard - a.jaccard) > 0.01) return b.jaccard - a.jaccard;
+      return b.intersection - a.intersection;
+    });
 
-  if (!byTokenOverlap || byTokenOverlap.overlap === 0) return [oddsTeam, []] as const;
-  return [byTokenOverlap.team, byTokenOverlap.rows] as const;
+  const best = scored[0];
+  if (!best) return [oddsTeam, []] as const;
+  return [best.team, best.rows] as const;
 }
 
-function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey: string, completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[]) {
+function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey: string, completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[], scrapedAts?: ScrapedAtsLeague, consensusGames?: ScrapedConsensusGame[]) {
   const leagueCompleted = completedRows.filter((r) => r.league === league);
   if (!leagueCompleted.length || !oddsEvents.length) return [] as BestBetGame[];
 
@@ -693,11 +699,17 @@ function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey:
         return 0;
       };
 
+      // Resolve scraped ATS before edge calculation so it feeds into team selection
+      const homeScrapedAts = resolveScrapedAtsCoverPct(home, true,  scrapedAts);
+      const awayScrapedAts = resolveScrapedAtsCoverPct(away, false, scrapedAts);
+      const homeBlendedAtsForm = blendAtsCoverPct(homeForm.atsForm, homeScrapedAts);
+      const awayBlendedAtsForm = blendAtsCoverPct(awayForm.atsForm, awayScrapedAts);
+
       const homeEdge =
-        homeForm.momentum * 22 + ((homeForm.atsForm ?? 0.5) - 0.5) * 26 + (homeForm.upsetProxy - awayForm.upsetProxy) * 0.3
+        homeForm.momentum * 22 + ((homeBlendedAtsForm ?? 0.5) - 0.5) * 26 + (homeForm.upsetProxy - awayForm.upsetProxy) * 0.3
         + netRatingBonus(homeForm, awayForm) + sosBonus(homeForm, awayForm);
       const awayEdge =
-        awayForm.momentum * 22 + ((awayForm.atsForm ?? 0.5) - 0.5) * 26 + (awayForm.upsetProxy - homeForm.upsetProxy) * 0.3
+        awayForm.momentum * 22 + ((awayBlendedAtsForm ?? 0.5) - 0.5) * 26 + (awayForm.upsetProxy - homeForm.upsetProxy) * 0.3
         + netRatingBonus(awayForm, homeForm) + sosBonus(awayForm, homeForm);
 
       const pickHome = homeEdge >= awayEdge;
@@ -707,10 +719,21 @@ function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey:
       const oppForm = pickHome ? awayForm : homeForm;
 
       const momentumEdge = Number((pickForm.momentum - oppForm.momentum).toFixed(2));
+
+      // Blend DB recent ATS form with full-season scraped ATS (70/30 weighting)
+      const pickScrapedAts = resolveScrapedAtsCoverPct(pickTeam, pickHome, scrapedAts);
+      const oppScrapedAts  = resolveScrapedAtsCoverPct(opponent,  !pickHome, scrapedAts);
+      const pickBlendedAts = blendAtsCoverPct(pickForm.atsForm, pickScrapedAts);
+      const oppBlendedAts  = blendAtsCoverPct(oppForm.atsForm,  oppScrapedAts);
       const atsEdge =
-        pickForm.atsForm == null || oppForm.atsForm == null
+        pickBlendedAts == null || oppBlendedAts == null
           ? null
-          : Number((pickForm.atsForm - oppForm.atsForm).toFixed(2));
+          : Number((pickBlendedAts - oppBlendedAts).toFixed(3));
+
+      // Match consensus game from covers.com
+      const consensusGame = consensusGames
+        ? matchConsensusGame(home, away, consensusGames)
+        : null;
 
       const modelEdge = pickHome ? homeEdge : awayEdge;
       const spread = spreadForTeamFromOdds(event, pickTeam);
@@ -753,9 +776,18 @@ function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey:
       const pickHistoryCount = pickHistory.length;
       const oppHistoryCount = oppHistory.length;
 
+      // ATS signal label: note when scraped data is augmenting the DB sample
+      const atsSignalLabel = (() => {
+        if (atsEdge == null) return "ATS edge unavailable (limited ATS sample)";
+        const edge = `${atsEdge >= 0 ? "+" : ""}${atsEdge.toFixed(3)}`;
+        if (pickScrapedAts !== null && oppScrapedAts !== null) return `ATS edge ${edge} (season blended)`;
+        if (pickScrapedAts !== null || oppScrapedAts !== null) return `ATS edge ${edge} (partial scraped)`;
+        return `ATS edge ${edge}`;
+      })();
+
       const rationaleSignals = [
         `Momentum edge ${momentumEdge >= 0 ? "+" : ""}${momentumEdge.toFixed(2)} (last-10 trend proxy)`,
-        atsEdge == null ? "ATS edge unavailable (limited ATS sample)" : `ATS edge ${atsEdge >= 0 ? "+" : ""}${atsEdge.toFixed(2)}`,
+        atsSignalLabel,
         `History sample ${pickTeam}: ${pickHistoryCount} games (mapped ${pickTeam === home ? resolvedHome : resolvedAway}) vs ${opponent}: ${oppHistoryCount} games`,
       ];
 
@@ -786,6 +818,30 @@ function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey:
       }
       if (pickForm.sos != null && oppForm.sos != null) {
         rationaleSignals.push(`SOS: ${pickForm.sos.toFixed(3)} vs ${oppForm.sos.toFixed(3)}`);
+      }
+
+      // Scraped season ATS record signal
+      if (pickScrapedAts !== null) {
+        const pct = Math.round(pickScrapedAts * 100);
+        rationaleSignals.push(`Season ATS: ${pickTeam} ${pct}% cover rate (full season)`);
+      }
+
+      // Public consensus / sharp money signal
+      if (consensusGame) {
+        const sp = consensusGame.spread;
+        const pickIsHome = pickHome;
+        const publicOnPick = pickIsHome ? sp.homePct : sp.awayPct;
+        const publicOnOpp  = pickIsHome ? sp.awayPct : sp.homePct;
+        if (publicOnPick != null && publicOnOpp != null) {
+          const sharpNote = sp.sharpSide
+            ? sp.sharpSide === (pickIsHome ? "home" : "away")
+              ? " — sharp money agrees"
+              : " — SHARP FADE (public fade pick)"
+            : "";
+          rationaleSignals.push(
+            `Public consensus: ${publicOnPick}% on ${pickTeam} / ${publicOnOpp}% on ${opponent}${sharpNote}`,
+          );
+        }
       }
 
       return {
@@ -866,10 +922,138 @@ function calibrateBestBetModel(rows: FreeStatLike[]) {
   };
 }
 
+// ── Scraped data types ──────────────────────────────────────────────────────
+
+export type ScrapedAtsSplit = {
+  wins: number;
+  losses: number;
+  pushes: number;
+  games: number;
+  coverPct: number | null;
+  mov: number | null;
+  atsDiff: number | null;
+};
+
+export type ScrapedAtsTeam = {
+  team: string;
+  overall: ScrapedAtsSplit | null;
+  home: ScrapedAtsSplit | null;
+  away: ScrapedAtsSplit | null;
+  asFavorite: ScrapedAtsSplit | null;
+};
+
+export type ScrapedAtsLeague = {
+  scrapedAt: string;
+  league: string;
+  teams: ScrapedAtsTeam[];
+};
+
+export type ScrapedConsensusGame = {
+  matchup: string;
+  league: string;
+  awayAbbr: string;
+  homeAbbr: string;
+  spread: {
+    awayPct: number | null;
+    homePct: number | null;
+    sharpSide: string | null;
+  };
+  total: {
+    overPct: number | null;
+    underPct: number | null;
+  };
+};
+
+export type ScrapedConsensus = {
+  games: ScrapedConsensusGame[];
+};
+
+// ── Scraped ATS resolver ────────────────────────────────────────────────────
+
+/**
+ * Find the best-matching team in scraped ATS data using Jaccard token similarity,
+ * then return the cover% (0–1) for the appropriate split.
+ * Returns null if no match or insufficient data.
+ */
+function resolveScrapedAtsCoverPct(
+  team: string,
+  isHome: boolean | null,
+  scrapedAts: ScrapedAtsLeague | undefined,
+): number | null {
+  if (!scrapedAts?.teams?.length) return null;
+
+  const normalizedTeam = normalizeTeamName(team);
+  const teamTokens = new Set(normalizedTeam.split(" ").filter(Boolean));
+
+  const best = scrapedAts.teams
+    .map((t) => {
+      const stTokens = new Set(normalizeTeamName(t.team).split(" ").filter(Boolean));
+      const intersection = [...teamTokens].filter((tok) => stTokens.has(tok)).length;
+      if (intersection === 0) return null;
+      const union = new Set([...teamTokens, ...stTokens]).size;
+      return { t, jaccard: intersection / union };
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null)
+    .sort((a, b) => b.jaccard - a.jaccard)[0];
+
+  if (!best || best.jaccard < 0.25) return null;
+
+  const entry = best.t;
+  // Prefer situational split (home/away), fall back to overall
+  const split = isHome === true ? entry.home : isHome === false ? entry.away : null;
+  const coverPct = (split?.coverPct ?? entry.overall?.coverPct ?? null);
+  return coverPct !== null ? coverPct / 100 : null;
+}
+
+/**
+ * Blend DB-derived recent ATS form with full-season scraped ATS.
+ * Scraped data is weighted 70% (larger sample), recent DB form 30% (recency).
+ * If only one source is available, use it alone.
+ */
+function blendAtsCoverPct(
+  recentAtsForm: number | null,  // from DB last-10, already 0–1
+  scrapedCoverPct: number | null, // from scraper, converted to 0–1
+): number | null {
+  if (recentAtsForm !== null && scrapedCoverPct !== null) {
+    return Number((recentAtsForm * 0.3 + scrapedCoverPct * 0.7).toFixed(3));
+  }
+  return scrapedCoverPct ?? recentAtsForm;
+}
+
+/**
+ * Try to match a covers.com consensus game to an odds event by abbreviation.
+ * Covers uses short city abbreviations ("Min", "Lac", "No").
+ * We match by checking if the abbreviation is a case-insensitive prefix of
+ * the team name's city (first word) or a standard acronym match.
+ */
+function matchConsensusGame(
+  homeTeam: string,
+  awayTeam: string,
+  consensusGames: ScrapedConsensusGame[],
+): ScrapedConsensusGame | null {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, "");
+  const homeNorm = norm(homeTeam.split(" ")[0]); // first word of city
+  const awayNorm = norm(awayTeam.split(" ")[0]);
+
+  return (
+    consensusGames.find((g) => {
+      const gHome = norm(g.homeAbbr);
+      const gAway = norm(g.awayAbbr);
+      const homeMatch = homeNorm.startsWith(gHome) || gHome.startsWith(homeNorm.substring(0, 3));
+      const awayMatch = awayNorm.startsWith(gAway) || gAway.startsWith(awayNorm.substring(0, 3));
+      return homeMatch && awayMatch;
+    }) ?? null
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 export type BuildOptions = {
   oddsEvents?: OddsEventLike[];
   standings?: Record<string, StandingsEntry[]>;
   injuries?: Record<string, InjuryEntry[]>;
+  scrapedAts?: Record<string, ScrapedAtsLeague>;  // keyed by league lowercase: "nba", "ncaab"
+  scrapedConsensus?: ScrapedConsensus;
 };
 
 export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptions) {
@@ -947,8 +1131,10 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptio
   const params = calibrateBestBetModel(ncaabRows);
   const injuriesMap = options?.injuries as Record<string, InjuryEntry[]> | undefined;
   const oddsEvents = options?.oddsEvents ?? [];
-  const ncaabBets = buildLeagueOddsBestBets("NCAAB", "basketball_ncaab", "ncaab", completed, oddsEvents, standingsMap, injuriesMap?.ncaab);
-  const nbaBets = buildLeagueOddsBestBets("NBA", "basketball_nba", "nba", completed, oddsEvents, standingsMap, injuriesMap?.nba);
+  const scrapedAtsMap = options?.scrapedAts ?? {};
+  const consensusGames = options?.scrapedConsensus?.games ?? [];
+  const ncaabBets = buildLeagueOddsBestBets("NCAAB", "basketball_ncaab", "ncaab", completed, oddsEvents, standingsMap, injuriesMap?.ncaab, scrapedAtsMap["ncaab"], consensusGames.filter((g) => g.league === "NCAAB"));
+  const nbaBets   = buildLeagueOddsBestBets("NBA",   "basketball_nba",   "nba",   completed, oddsEvents, standingsMap, injuriesMap?.nba,   scrapedAtsMap["nba"],   consensusGames.filter((g) => g.league === "NBA"));
   const oddsBasedBets = [...ncaabBets, ...nbaBets].sort((a, b) => b.score - a.score);
   const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed, standingsMap, injuriesMap);
   const topTarget = 5;

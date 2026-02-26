@@ -1112,10 +1112,22 @@ async function main() {
     if (data) injuriesMap[key] = data;
   }
 
+  // Load scraped ATS data if available (written by scrape:ats)
+  const scrapedAtsMap: Record<string, unknown> = {};
+  for (const key of ["nba", "ncaab"]) {
+    const data = loadJson<unknown>(path.join(processedDir, `scraped-ats-${key}.json`));
+    if (data) scrapedAtsMap[key] = data;
+  }
+
+  // Load scraped consensus data if available (written by scrape:consensus)
+  const scrapedConsensus = loadJson<unknown>(path.join(processedDir, "scraped-consensus.json"));
+
   const summary = buildFreeStatsSummary(mapped, {
     oddsEvents: (oddsPayload?.events as never[] | undefined) ?? [],
     standings: standingsMap as never,
     injuries: injuriesMap as never,
+    scrapedAts: scrapedAtsMap as never,
+    scrapedConsensus: scrapedConsensus as never,
   });
   const processedPath = path.join(root, "data", "processed", "latest-summary.json");
   fs.writeFileSync(processedPath, JSON.stringify(summary, null, 2));
