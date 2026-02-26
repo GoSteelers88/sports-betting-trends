@@ -914,9 +914,29 @@ async function main() {
     return true;
   });
 
-  // topProps: top 5 where model has an edge (P > 52%) or fallback to overall top 5
+  // topProps: top 5 enforcing at least 2 overs and 2 unders for display variety.
+  // Use the full deduped pool for diversity so one weak side doesn't collapse to all same.
   const withEdge = deduped.filter((r) => r.modelPOver > 0.52 || r.modelPUnder > 0.52);
-  const topProps = withEdge.length >= 5 ? withEdge.slice(0, 5) : deduped.slice(0, 5);
+  const topProps = (() => {
+    const dedupedOvers = deduped.filter((r) => r.pickSide === "over");
+    const dedupedUnders = deduped.filter((r) => r.pickSide === "under");
+    // If dataset genuinely has only one side, just return top 5 by EV
+    if (dedupedOvers.length < 2 || dedupedUnders.length < 2) {
+      const pool = withEdge.length >= 5 ? withEdge : deduped;
+      return pool.slice(0, 5);
+    }
+    // Top 2 from each side by EV (drawn from full deduped, not just withEdge)
+    const selected = [...dedupedOvers.slice(0, 2), ...dedupedUnders.slice(0, 2)];
+    const selectedKeys = new Set(selected.map((r) => `${r.player}|${r.market}`));
+    // Fill 5th slot: prefer withEdge picks, then deduped
+    const fillPool = withEdge.length > 4 ? withEdge : deduped;
+    const remaining = fillPool.filter((r) => !selectedKeys.has(`${r.player}|${r.market}`));
+    if (remaining.length) selected.push(remaining[0]);
+    // Re-sort final 5 by EV descending for display order
+    return selected.sort(
+      (a, b) => Math.max(b.expectedValueOver, b.expectedValueUnder) - Math.max(a.expectedValueOver, a.expectedValueUnder),
+    );
+  })();
 
   const available = ranked.length > 0;
   const prizePicksUsed = accessDenied > 0 && ranked.length > 0;
