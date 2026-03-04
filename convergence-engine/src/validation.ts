@@ -29,11 +29,8 @@ export function validateMapping(mapping: MarketMapping): ValidationResult {
     );
   }
 
-  // Check expiry drift
-  const expiryDriftHours = Math.abs(mapping.polyExpiryTs - mapping.kalshiExpiryTs) / (60 * 60 * 1000);
-  if (expiryDriftHours > config.mapping.maxExpiryDriftHours) {
-    reasons.push(`Expiry drift ${expiryDriftHours.toFixed(1)}h exceeds ${config.mapping.maxExpiryDriftHours}h limit`);
-  }
+  // Check expiry drift (polyExpiryTs removed; kalshiExpiryTs is the sole reference point)
+  // No cross-platform expiry check needed without Polymarket
 
   return {
     valid: reasons.length === 0,

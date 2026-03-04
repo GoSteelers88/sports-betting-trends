@@ -638,6 +638,64 @@ function normalizeTeamName(value: string) {
     .trim();
 }
 
+function resolveScrapedAtsCoverPct(
+  team: string,
+  isHome: boolean | null,
+  scrapedAts: ScrapedAtsLeague | undefined,
+): number | null {
+  if (!scrapedAts?.teams?.length) return null;
+
+  const normalizedTeam = normalizeTeamName(team);
+  const teamTokens = new Set(normalizedTeam.split(" ").filter(Boolean));
+
+  const best = scrapedAts.teams
+    .map((t) => {
+      const stTokens = new Set(normalizeTeamName(t.team).split(" ").filter(Boolean));
+      const intersection = [...teamTokens].filter((tok) => stTokens.has(tok)).length;
+      if (intersection === 0) return null;
+      const union = new Set([...teamTokens, ...stTokens]).size;
+      return { t, jaccard: intersection / union };
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null)
+    .sort((a, b) => b.jaccard - a.jaccard)[0];
+
+  if (!best || best.jaccard < 0.25) return null;
+
+  const entry = best.t;
+  const split = isHome === true ? entry.home : isHome === false ? entry.away : null;
+  const coverPct = (split?.coverPct ?? entry.overall?.coverPct ?? null);
+  return coverPct !== null ? coverPct / 100 : null;
+}
+
+function blendAtsCoverPct(
+  recentAtsForm: number | null,
+  scrapedCoverPct: number | null,
+): number | null {
+  if (recentAtsForm !== null && scrapedCoverPct !== null) {
+    return Number((recentAtsForm * 0.3 + scrapedCoverPct * 0.7).toFixed(3));
+  }
+  return scrapedCoverPct ?? recentAtsForm;
+}
+
+function matchConsensusGame(
+  homeTeam: string,
+  awayTeam: string,
+  consensusGames: ScrapedConsensusGame[],
+): ScrapedConsensusGame | null {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, "");
+  const homeNorm = norm(homeTeam.split(" ")[0]);
+  const awayNorm = norm(awayTeam.split(" ")[0]);
+  return (
+    consensusGames.find((g) => {
+      const gHome = norm(g.homeAbbr);
+      const gAway = norm(g.awayAbbr);
+      const homeMatch = homeNorm.startsWith(gHome) || gHome.startsWith(homeNorm.substring(0, 3));
+      const awayMatch = awayNorm.startsWith(gAway) || gAway.startsWith(awayNorm.substring(0, 3));
+      return homeMatch && awayMatch;
+    }) ?? null
+  );
+}
+
 function resolveHistoryForOddsTeam(oddsTeam: string, historyByTeam: Record<string, FreeStatLike[]>) {
   const entries = Object.entries(historyByTeam);
   const normalizedOdds = normalizeTeamName(oddsTeam);
@@ -670,7 +728,7 @@ function resolveHistoryForOddsTeam(oddsTeam: string, historyByTeam: Record<strin
   return [best.team, best.rows] as const;
 }
 
-function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey: string, completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[], nbaEfficiency?: NbaEfficiencyData) {
+function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey: string, completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[], scrapedAts?: ScrapedAtsLeague, consensusGames?: ScrapedConsensusGame[], nbaEfficiency?: NbaEfficiencyData) {
   const leagueCompleted = completedRows.filter((r) => r.league === league);
   if (!leagueCompleted.length || !oddsEvents.length) return [] as BestBetGame[];
 
@@ -942,6 +1000,47 @@ function calibrateBestBetModel(rows: FreeStatLike[]) {
 }
 
 // ---------------------------------------------------------------------------
+// Scraped ATS / consensus types
+// ---------------------------------------------------------------------------
+
+export type ScrapedAtsSplit = {
+  wins: number;
+  losses: number;
+  pushes: number;
+  games: number;
+  coverPct: number | null;
+  mov: number | null;
+  atsDiff: number | null;
+};
+
+export type ScrapedAtsTeam = {
+  team: string;
+  overall: ScrapedAtsSplit | null;
+  home: ScrapedAtsSplit | null;
+  away: ScrapedAtsSplit | null;
+  asFavorite: ScrapedAtsSplit | null;
+};
+
+export type ScrapedAtsLeague = {
+  scrapedAt: string;
+  league: string;
+  teams: ScrapedAtsTeam[];
+};
+
+export type ScrapedConsensusGame = {
+  matchup: string;
+  league: string;
+  awayAbbr: string;
+  homeAbbr: string;
+  spread: { awayPct: number | null; homePct: number | null; sharpSide: string | null };
+  total: { overPct: number | null; underPct: number | null };
+};
+
+export type ScrapedConsensus = {
+  games: ScrapedConsensusGame[];
+};
+
+// ---------------------------------------------------------------------------
 // NBA efficiency model types and helpers
 // ---------------------------------------------------------------------------
 
@@ -1025,6 +1124,8 @@ export type BuildOptions = {
   standings?: Record<string, StandingsEntry[]>;
   injuries?: Record<string, InjuryEntry[]>;
   nbaEfficiency?: NbaEfficiencyData;
+  scrapedAts?: Record<string, ScrapedAtsLeague>;
+  scrapedConsensus?: ScrapedConsensus;
 };
 
 export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptions) {
@@ -1103,8 +1204,10 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptio
   const injuriesMap = options?.injuries as Record<string, InjuryEntry[]> | undefined;
   const oddsEvents = options?.oddsEvents ?? [];
   const nbaEfficiency = options?.nbaEfficiency;
-  const ncaabBets = buildLeagueOddsBestBets("NCAAB", "basketball_ncaab", "ncaab", completed, oddsEvents, standingsMap, injuriesMap?.ncaab);
-  const nbaBets = buildLeagueOddsBestBets("NBA", "basketball_nba", "nba", completed, oddsEvents, standingsMap, injuriesMap?.nba, nbaEfficiency);
+  const scrapedAtsMap = options?.scrapedAts ?? {};
+  const consensusGames = options?.scrapedConsensus?.games ?? [];
+  const ncaabBets = buildLeagueOddsBestBets("NCAAB", "basketball_ncaab", "ncaab", completed, oddsEvents, standingsMap, injuriesMap?.ncaab, scrapedAtsMap["ncaab"], consensusGames.filter((g) => g.league === "NCAAB"));
+  const nbaBets   = buildLeagueOddsBestBets("NBA",   "basketball_nba",   "nba",   completed, oddsEvents, standingsMap, injuriesMap?.nba,   scrapedAtsMap["nba"],   consensusGames.filter((g) => g.league === "NBA"), nbaEfficiency);
   const oddsBasedBets = [...ncaabBets, ...nbaBets].sort((a, b) => b.score - a.score);
   const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed, standingsMap, injuriesMap, nbaEfficiency);
   const topTarget = 5;

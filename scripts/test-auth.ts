@@ -1,4 +1,4 @@
-import { getBalance, getPositions, getOrders } from "./execute-kalshi.ts";
+import { getBalance, getPositions, getOrders } from "./execute-kalshi.js";
 
 async function main() {
   const [balance, positions, orders] = await Promise.all([
