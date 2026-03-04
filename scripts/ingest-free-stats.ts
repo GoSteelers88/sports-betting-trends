@@ -886,6 +886,96 @@ async function fetchMlbRecentRows(daysBack: number): Promise<IngestRow[]> {
 
 // ---------- Completion evidence ----------
 
+// ─── ESPN Odds Fallback ──────────────────────────────────────────────────────
+// Used automatically when The Odds API quota is exhausted (0 events for a league).
+// Fetches DraftKings spreads from ESPN's public scoreboard API (no key required).
+
+type EspnFallbackEvent = {
+  id: string;
+  sport_key: string;
+  sport_title: string;
+  commence_time: string;
+  home_team: string;
+  away_team: string;
+  bookmakers: Array<{
+    key: string;
+    title: string;
+    markets: Array<{ key: string; outcomes: Array<{ name: string; price?: number; point?: number }> }>;
+  }>;
+};
+
+async function fetchEspnOddsAsFallback(
+  league: "basketball_nba" | "basketball_ncaab",
+): Promise<EspnFallbackEvent[]> {
+  const espnLeague = league === "basketball_nba" ? "nba" : "mens-college-basketball";
+  const sportTitle = league === "basketball_nba" ? "NBA" : "NCAAB";
+  const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/${espnLeague}/scoreboard?limit=200`;
+
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "sports-betting-trends/1.0 (espn-odds-fallback)" },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) {
+      console.warn(`ESPN fallback: ${league} request failed (${res.status})`);
+      return [];
+    }
+    const data = (await res.json()) as {
+      events?: Array<{
+        id: string;
+        date: string;
+        competitions?: Array<{
+          competitors?: Array<{ homeAway: string; team: { displayName: string } }>;
+          odds?: Array<{ spread?: number; details?: string }>;
+        }>;
+      }>;
+    };
+
+    const result: EspnFallbackEvent[] = [];
+    for (const evt of data.events ?? []) {
+      const comp = evt.competitions?.[0];
+      if (!comp) continue;
+      const home = comp.competitors?.find((c) => c.homeAway === "home");
+      const away = comp.competitors?.find((c) => c.homeAway === "away");
+      if (!home || !away) continue;
+      const odds = comp.odds?.[0];
+      if (odds?.spread == null) continue;
+      // ESPN `spread` = home team's point (negative means home is favored)
+      const homePoint = odds.spread;
+      const awayPoint = -odds.spread;
+      result.push({
+        id: `espn_${evt.id}`,
+        sport_key: league,
+        sport_title: sportTitle,
+        commence_time: evt.date,
+        home_team: home.team.displayName,
+        away_team: away.team.displayName,
+        bookmakers: [
+          {
+            key: "espn_draftkings",
+            title: "ESPN/DraftKings",
+            markets: [
+              {
+                key: "spreads",
+                outcomes: [
+                  { name: home.team.displayName, point: homePoint, price: -110 },
+                  { name: away.team.displayName, point: awayPoint, price: -110 },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    }
+    console.log(`ESPN fallback: fetched ${result.length} ${league} events`);
+    return result;
+  } catch (err) {
+    console.warn(`ESPN fallback error for ${league}:`, err);
+    return [];
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function statusLooksCompleted(status?: string | null) {
   const s = (status ?? "").toUpperCase();
   if (!s) return false;
@@ -1097,6 +1187,47 @@ async function main() {
     ? (JSON.parse(fs.readFileSync(oddsPath, "utf8")) as { events?: unknown[] })
     : null;
 
+  // Build merged odds array with three-tier fallback:
+  // 1. Combined latest-odds-api.json (fresh from API)
+  // 2. Per-league latest-odds-api-{league}.json (preserved from last successful API run)
+  // 3. ESPN public scoreboard API (free, no key)
+  const oddsEvents: unknown[] = (oddsPayload?.events as unknown[] | undefined) ?? [];
+  const leaguesPresent = new Set(
+    oddsEvents.map((e) => (e as { sport_key?: string }).sport_key).filter(Boolean),
+  );
+  for (const league of ["basketball_nba", "basketball_ncaab"] as const) {
+    if (leaguesPresent.has(league)) continue;
+
+    // Tier 2: per-league file (only overwritten when API succeeds — preserves last good data)
+    const perLeaguePath = path.join(processedDir, `latest-odds-api-${league}.json`);
+    const perLeaguePayload = fs.existsSync(perLeaguePath)
+      ? (JSON.parse(fs.readFileSync(perLeaguePath, "utf8")) as { events?: unknown[]; fetchedAt?: string })
+      : null;
+    const perLeagueEvents = (perLeaguePayload?.events as unknown[] | undefined) ?? [];
+    if (perLeagueEvents.length > 0) {
+      console.log(`No ${league} odds in combined file — using preserved per-league file (${perLeagueEvents.length} events, fetched ${perLeaguePayload?.fetchedAt?.slice(0,10) ?? "unknown"})`);
+      oddsEvents.push(...perLeagueEvents);
+      leaguesPresent.add(league);
+      continue;
+    }
+
+    // Tier 3: ESPN public API
+    console.log(`No ${league} odds anywhere — fetching ESPN fallback...`);
+    const espnEvents = await fetchEspnOddsAsFallback(league);
+    oddsEvents.push(...espnEvents);
+    if (espnEvents.length > 0) {
+      fs.writeFileSync(
+        path.join(processedDir, `scraped-odds-${league}.json`),
+        JSON.stringify(
+          { fetchedAt: new Date().toISOString(), source: "espn-fallback", league, eventCount: espnEvents.length, events: espnEvents },
+          null,
+          2,
+        ),
+      );
+      console.log(`  -> saved scraped-odds-${league}.json (${espnEvents.length} events)`);
+    }
+  }
+
   function loadJson<T>(filePath: string): T | null {
     try { return fs.existsSync(filePath) ? (JSON.parse(fs.readFileSync(filePath, "utf8")) as T) : null; }
     catch { return null; }
@@ -1141,7 +1272,7 @@ async function main() {
   const nbaEfficiency = effData?.teams ? { teams: effData.teams } : undefined;
 
   const summary = buildFreeStatsSummary(mapped, {
-    oddsEvents: (oddsPayload?.events as never[] | undefined) ?? [],
+    oddsEvents: oddsEvents as never[],
     standings: standingsMap as never,
     injuries: injuriesMap as never,
     nbaEfficiency: nbaEfficiency as never,
