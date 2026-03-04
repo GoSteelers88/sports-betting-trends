@@ -1,12 +1,6 @@
 import { NormalizedSnapshot, Venue } from "./types.js";
 import { midpoint, spread, clamp01 } from "./utils.js";
 import {
-  fetchPolymarketSnapshot,
-  fetchPolymarketBatched,
-  findMarketByQuestion,
-  fetchGammaMarkets,
-} from "./adapters/polymarketAdapter.js";
-import {
   fetchKalshiSnapshot,
   findKalshiByQuestion,
   fetchKalshiBatched,
@@ -50,54 +44,6 @@ export function normalizeSnapshot(
 }
 
 // ============================================================
-// LIVE POLYMARKET (via adapter)
-// ============================================================
-
-/**
- * Fetch live Polymarket snapshot by conditionId
- * BRD 11: Replace mock with real adapter
- */
-export async function fetchPolymarket(
-  conditionId: string
-): Promise<NormalizedSnapshot | null> {
-  const snapshot = await fetchPolymarketSnapshot(conditionId);
-  if (!snapshot) {
-    console.log(`[Polymarket] Failed to fetch ${conditionId}`);
-    return null;
-  }
-  return snapshot;
-}
-
-/**
- * Search Polymarket by question fragment
- */
-export async function searchPolymarket(
-  questionFragment: string
-): Promise<NormalizedSnapshot | null> {
-  const data = await findMarketByQuestion(questionFragment);
-  if (!data) return null;
-
-  return normalizeSnapshot("POLYMARKET", {
-    marketId: data.conditionId,
-    bid: data.bid,
-    ask: data.ask,
-    depthAtBest: data.depthAtBest,
-    volume24h: data.volume24h,
-    ts: data.ts,
-  });
-}
-
-/**
- * Batch fetch Polymarket markets
- * BRD: Support 50+ concurrent markets with rate limiting
- */
-export async function fetchPolymarketBatch(
-  conditionIds: string[]
-): Promise<Map<string, NormalizedSnapshot>> {
-  return fetchPolymarketBatched(conditionIds);
-}
-
-// ============================================================
 // LIVE KALSHI (via adapter, requires credentials)
 // ============================================================
 
@@ -134,11 +80,9 @@ export async function initKalshi(): Promise<boolean> {
 export async function fetchKalshi(
   ticker: string
 ): Promise<NormalizedSnapshot | null> {
-  // Try live first
   if (!kalshiInitialized) {
     const ok = await initKalshi();
     if (!ok) {
-      // Fall back to mock
       return mockKalshi(ticker);
     }
   }
@@ -166,7 +110,6 @@ function mockKalshi(ticker: string): NormalizedSnapshot {
 export async function searchKalshi(
   titleFragment: string
 ): Promise<NormalizedSnapshot | null> {
-  // Try live first
   if (!kalshiInitialized) {
     const ok = await initKalshi();
     if (!ok) return null;
@@ -184,7 +127,6 @@ export async function fetchKalshiBatch(
   if (!kalshiInitialized) {
     const ok = await initKalshi();
     if (!ok) {
-      // Return mock data for all
       const results = new Map<string, NormalizedSnapshot>();
       for (const t of tickers) {
         results.set(t, mockKalshi(t));
@@ -196,60 +138,39 @@ export async function fetchKalshiBatch(
 }
 
 // ============================================================
-// PAIR DISCOVERY FROM AGENTS.MD QUESTIONS
+// MARKET DISCOVERY
 // ============================================================
 
-export interface MarketPair {
-  polyConditionId?: string;
+export interface MarketResult {
   kalshiTicker?: string;
   question: string;
-  poly?: NormalizedSnapshot;
   kalshi?: NormalizedSnapshot;
-  status: "found_both" | "found_poly" | "found_kalshi" | "not_found";
+  status: "found" | "not_found";
 }
 
 /**
- * Discover pair by searching both venues
- * Uses question fragments from AGENTS.md to find matches
+ * Discover a Kalshi market by ticker or question fragment
  */
-export async function discoverPair(
+export async function discoverMarket(
   question: string,
   kalshiTicker?: string
-): Promise<MarketPair> {
+): Promise<MarketResult> {
   console.log(`\n[Discovery] Searching: "${question.slice(0, 60)}..."`);
 
-  const [poly, kalshi] = await Promise.all([
-    searchPolymarket(question).catch(() => null),
-    kalshiTicker
-      ? fetchKalshi(kalshiTicker).catch(() => null)
-      : searchKalshi(question).catch(() => null),
-  ]);
-
-  const status = poly && kalshi
-    ? "found_both"
-    : poly
-    ? "found_poly"
-    : kalshi
-    ? "found_kalshi"
-    : "not_found";
+  const kalshi = kalshiTicker
+    ? await fetchKalshi(kalshiTicker).catch(() => null)
+    : await searchKalshi(question).catch(() => null);
 
   return {
     question,
-    polyConditionId: poly?.marketId,
     kalshiTicker: kalshi?.marketId,
-    poly: poly || undefined,
     kalshi: kalshi || undefined,
-    status,
+    status: kalshi ? "found" : "not_found",
   };
 }
 
-// ============================================================
-// TOP MARKETS FROM AGENTS.MD
-// ============================================================
-
 /**
- * Markets currently tracked in AGENTS.md (approximate)
- * These will be searched on both venues
+ * Markets currently tracked in AGENTS.md
  */
 export const TRACKED_MARKETS = [
   { question: "Jesus Christ return before 2027", category: "religious" },
@@ -260,33 +181,24 @@ export const TRACKED_MARKETS = [
 ];
 
 /**
- * Fetch all tracked pairs
- * BRD: Discovery phase for real markets
+ * Fetch all tracked markets on Kalshi
  */
-export async function fetchTrackedPairs(): Promise<MarketPair[]> {
-  console.log("Fetching live data for tracked markets...\n");
+export async function fetchTrackedMarkets(): Promise<MarketResult[]> {
+  console.log("Fetching live Kalshi data for tracked markets...\n");
 
-  const pairs: MarketPair[] = [];
+  const results: MarketResult[] = [];
 
   for (const { question } of TRACKED_MARKETS) {
-    const pair = await discoverPair(question);
-    pairs.push(pair);
+    const result = await discoverMarket(question);
+    results.push(result);
 
-    // Log result
-    const icon = pair.status === "found_both" ? "✅"
-      : pair.status === "found_poly" ? "🟡 Poly"
-      : pair.status === "found_kalshi" ? "🟡 Kalshi"
-      : "❌";
-
+    const icon = result.status === "found" ? "✅" : "❌";
     console.log(`${icon} "${question.slice(0, 50)}..."`);
 
-    if (pair.poly) {
-      console.log(`   Poly: ${(pair.poly.midpoint * 100).toFixed(1)}¢ | Depth: $${pair.poly.depthAtBest.toFixed(0)} | Vol: $${(pair.poly.volume24h / 1e6).toFixed(2)}M`);
-    }
-    if (pair.kalshi) {
-      console.log(`   Kalshi: ${(pair.kalshi.midpoint * 100).toFixed(1)}¢ | Depth: $${pair.kalshi.depthAtBest.toFixed(0)} | Vol: $${(pair.kalshi.volume24h / 1e6).toFixed(2)}M`);
+    if (result.kalshi) {
+      console.log(`   Kalshi: ${(result.kalshi.midpoint * 100).toFixed(1)}¢ | Depth: $${result.kalshi.depthAtBest.toFixed(0)} | Vol: $${(result.kalshi.volume24h / 1e6).toFixed(2)}M`);
     }
   }
 
-  return pairs;
+  return results;
 }

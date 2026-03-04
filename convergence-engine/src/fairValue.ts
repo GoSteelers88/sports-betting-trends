@@ -52,16 +52,15 @@ export function fairValue(
 }
 
 export function determineLeaderLagger(
-  poly: NormalizedSnapshot,
-  kalshi: NormalizedSnapshot,
+  a: NormalizedSnapshot,
+  b: NormalizedSnapshot,
   lookback?: number[]
-): { leader: "POLYMARKET" | "KALSHI"; leaderPrice: number; laggerPrice: number } {
-  // BRD Phase 2: Use cross-correlation or recency
-  // Default: higher volume venue leads
-  const liquidPoly = poly.volume24h > kalshi.volume24h;
+): { leader: "KALSHI"; leaderPrice: number; laggerPrice: number } {
+  // Default: higher volume snapshot leads
+  const aLeads = a.volume24h >= b.volume24h;
   return {
-    leader: liquidPoly ? "POLYMARKET" : "KALSHI",
-    leaderPrice: liquidPoly ? poly.midpoint : kalshi.midpoint,
-    laggerPrice: liquidPoly ? kalshi.midpoint : poly.midpoint,
+    leader: "KALSHI",
+    leaderPrice: aLeads ? a.midpoint : b.midpoint,
+    laggerPrice: aLeads ? b.midpoint : a.midpoint,
   };
 }

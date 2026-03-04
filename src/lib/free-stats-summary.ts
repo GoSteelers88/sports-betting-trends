@@ -423,7 +423,7 @@ function computeTeamForm(league: string, rows: FreeStatLike[], standings?: Stand
   return { momentum, atsForm, upsetProxy, netRating, sos, turnoverMargin };
 }
 
-function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStatLike[], standings?: Record<string, StandingsEntry[]>, injuries?: Record<string, InjuryEntry[]>) {
+function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStatLike[], standings?: Record<string, StandingsEntry[]>, injuries?: Record<string, InjuryEntry[]>, nbaEfficiency?: NbaEfficiencyData) {
   if (!allRows.length) return [] as BestBetGame[];
 
   const todayEt = dayKeyInEt(new Date());
@@ -513,7 +513,18 @@ function buildGameLevelBestBets(allRows: FreeStatLike[], completedRows: FreeStat
         toMarginBonus(pickForm, oppForm);
 
       const spread = pick.spread ?? null;
-      const modelSpread = regressionSpread(spread);
+
+      // Use proprietary NBA efficiency model when home/away context is available
+      let modelSpread: number | null = null;
+      if (pick.league === "NBA" && nbaEfficiency && pick.homeAway) {
+        const isPickHome = pick.homeAway === "home";
+        const homeTeam = isPickHome ? pick.team : pick.opponent;
+        const awayTeam = isPickHome ? pick.opponent : pick.team;
+        modelSpread = buildNbaEfficiencySpread(homeTeam, awayTeam, nbaEfficiency, isPickHome);
+      }
+      if (modelSpread == null) {
+        modelSpread = regressionSpread(spread);
+      }
 
       // ── Contextual adjustments ──────────────────────────────────────────
       const gameMs = primary.gameDate.getTime();
@@ -653,7 +664,7 @@ function resolveHistoryForOddsTeam(oddsTeam: string, historyByTeam: Record<strin
   return [byTokenOverlap.team, byTokenOverlap.rows] as const;
 }
 
-function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey: string, completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[]) {
+function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey: string, completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[], nbaEfficiency?: NbaEfficiencyData) {
   const leagueCompleted = completedRows.filter((r) => r.league === league);
   if (!leagueCompleted.length || !oddsEvents.length) return [] as BestBetGame[];
 
@@ -714,7 +725,15 @@ function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey:
 
       const modelEdge = pickHome ? homeEdge : awayEdge;
       const spread = spreadForTeamFromOdds(event, pickTeam);
-      const modelSpread = regressionSpread(spread);
+
+      // Use proprietary NBA efficiency model when data is available — otherwise fall back to regression
+      let modelSpread: number | null = null;
+      if (league === "NBA" && nbaEfficiency) {
+        modelSpread = buildNbaEfficiencySpread(home, away, nbaEfficiency, pickHome);
+      }
+      if (modelSpread == null) {
+        modelSpread = regressionSpread(spread);
+      }
 
       // ── Contextual adjustments ──────────────────────────────────────────
       const gameMs = new Date(event.commence_time!).getTime();
@@ -866,10 +885,90 @@ function calibrateBestBetModel(rows: FreeStatLike[]) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// NBA efficiency model types and helpers
+// ---------------------------------------------------------------------------
+
+export type NbaTeamEfficiency = {
+  netRtg: number | null;
+  offRtg: number | null;
+  defRtg: number | null;
+  pace: number | null;
+  homeNetRtg: number | null;
+  awayNetRtg: number | null;
+};
+
+export type NbaEfficiencyData = {
+  fetchedAt?: string;
+  season?: string;
+  teams: Record<string, NbaTeamEfficiency>;
+};
+
+function normalizeTeamKey(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim();
+}
+
+function findTeamEfficiency(teamName: string, data: NbaEfficiencyData): NbaTeamEfficiency | null {
+  // Exact match
+  if (data.teams[teamName]) return data.teams[teamName];
+
+  const normTarget = normalizeTeamKey(teamName);
+  const targetWords = normTarget.split(/\s+/);
+  const lastWord = targetWords[targetWords.length - 1];
+
+  let bestMatch: NbaTeamEfficiency | null = null;
+
+  for (const [key, val] of Object.entries(data.teams)) {
+    const normKey = normalizeTeamKey(key);
+    if (normKey === normTarget) return val;              // normalized exact
+    if (normKey.includes(normTarget) || normTarget.includes(normKey)) {
+      bestMatch = val;
+      continue;
+    }
+    // Last-word (nickname) match — e.g. "Thunder" in "Oklahoma City Thunder"
+    const keyWords = normKey.split(/\s+/);
+    if (keyWords[keyWords.length - 1] === lastWord) {
+      bestMatch = val;
+    }
+  }
+
+  return bestMatch;
+}
+
+/**
+ * Build a model spread using NBA efficiency ratings (independent of bookmakers).
+ *
+ * predictedHomeMargin = (homeNetRtg - awayNetRtg) * 0.45 + 1.5
+ *   0.45 = pts per NetRtg point (empirical)
+ *   1.5  = residual home court not captured by split ratings
+ *
+ * Returns spread from the pick team's perspective:
+ *   negative = pick team favored, positive = pick team underdog
+ */
+function buildNbaEfficiencySpread(
+  homeTeam: string,
+  awayTeam: string,
+  data: NbaEfficiencyData,
+  isPickHome: boolean,
+): number | null {
+  const homeEff = findTeamEfficiency(homeTeam, data);
+  const awayEff = findTeamEfficiency(awayTeam, data);
+  if (!homeEff || !awayEff) return null;
+
+  const homeNetRtg = homeEff.homeNetRtg ?? homeEff.netRtg;
+  const awayNetRtg = awayEff.awayNetRtg ?? awayEff.netRtg;
+  if (homeNetRtg == null || awayNetRtg == null) return null;
+
+  const predictedHomeMargin = (homeNetRtg - awayNetRtg) * 0.45 + 1.5;
+  const spread = isPickHome ? -predictedHomeMargin : predictedHomeMargin;
+  return Math.round(spread * 10) / 10;
+}
+
 export type BuildOptions = {
   oddsEvents?: OddsEventLike[];
   standings?: Record<string, StandingsEntry[]>;
   injuries?: Record<string, InjuryEntry[]>;
+  nbaEfficiency?: NbaEfficiencyData;
 };
 
 export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptions) {
@@ -947,10 +1046,11 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptio
   const params = calibrateBestBetModel(ncaabRows);
   const injuriesMap = options?.injuries as Record<string, InjuryEntry[]> | undefined;
   const oddsEvents = options?.oddsEvents ?? [];
+  const nbaEfficiency = options?.nbaEfficiency;
   const ncaabBets = buildLeagueOddsBestBets("NCAAB", "basketball_ncaab", "ncaab", completed, oddsEvents, standingsMap, injuriesMap?.ncaab);
-  const nbaBets = buildLeagueOddsBestBets("NBA", "basketball_nba", "nba", completed, oddsEvents, standingsMap, injuriesMap?.nba);
+  const nbaBets = buildLeagueOddsBestBets("NBA", "basketball_nba", "nba", completed, oddsEvents, standingsMap, injuriesMap?.nba, nbaEfficiency);
   const oddsBasedBets = [...ncaabBets, ...nbaBets].sort((a, b) => b.score - a.score);
-  const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed, standingsMap, injuriesMap);
+  const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed, standingsMap, injuriesMap, nbaEfficiency);
   const topTarget = 5;
   const todayEt = dayKeyInEt(new Date());
   const bestBetsNote =

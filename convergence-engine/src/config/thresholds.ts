@@ -15,7 +15,6 @@ export const CATALYST_EDGE_MULTIPLIER = 1.5; // 6% edge threshold instead of 4%
 
 // Execution friction
 export const ESTIMATED_SLIPPAGE_PCT = 0.002; // 0.2%
-export const POLYMARKET_WITHDRAWAL_FEE_PCT = 0.003; // ~0.3% gas estimate
 export const KALSHI_PROFIT_FEE_PCT = 0.10; // 10% of profit
 
 // Kalshi fees only apply to winnings — net effect depends on trade outcome

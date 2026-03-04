@@ -1,4 +1,4 @@
-export type Venue = "POLYMARKET" | "KALSHI";
+export type Venue = "KALSHI";
 
 // BRD Section 7: Data requirements
 export interface BookTop {
@@ -25,11 +25,8 @@ export interface NormalizedSnapshot extends MarketSnapshot {
 // BRD Section 5.2: Contract mapping validation
 export interface MarketMapping {
   mappingId: string;
-  polyMarketId: string;
   kalshiMarketId: string;
-  polyResolutionText: string;
   kalshiResolutionText: string;
-  polyExpiryTs: number;
   kalshiExpiryTs: number;
   equivalenceScore: number;  // semantic match 0..1
   validated: boolean;

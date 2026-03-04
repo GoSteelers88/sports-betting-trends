@@ -1,17 +1,11 @@
 import { Venue } from "./core.js";
 
-export interface PolymarketConfig {
-  endpoint: string;
-  apiKey?: string;
-}
-
 export interface KalshiConfig {
   endpoint: string;
   apiKey?: string;
 }
 
 export interface VenueCredentials {
-  polymarket?: PolymarketConfig;
   kalshi?: KalshiConfig;
 }
 

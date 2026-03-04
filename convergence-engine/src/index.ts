@@ -6,7 +6,7 @@
  *                   Friction → Edge → Threshold → Risk Governor → Signal
  */
 
-import { discoverPair as fetchPair } from "./ingestion";
+import { discoverMarket as fetchPair } from "./ingestion";
 import { validateMapping } from "./validation";
 import { computeEdge } from "./edge";
 import { dynamicThreshold } from "./threshold";
@@ -25,12 +25,9 @@ import { config } from "./config";
 // Example market mapping
 const exampleMapping: MarketMapping = {
   mappingId: "demo-001",
-  polyMarketId: "0x1234...",
   kalshiMarketId: "T.BIN.001",
-  polyResolutionText: "Will Trump win 2024?",
   kalshiResolutionText: "Will Trump win 2024?",
-  polyExpiryTs: Date.now() + 72 * 60 * 60 * 1000, // 72h
-  kalshiExpiryTs: Date.now() + 72.1 * 60 * 60 * 1000,
+  kalshiExpiryTs: Date.now() + 72 * 60 * 60 * 1000, // 72h
   equivalenceScore: 0.95,
   validated: true,
 };
@@ -47,12 +44,13 @@ async function runEngine() {
   }
 
   // 2. Ingest (BRD 5.1)
-  const { poly, kalshi } = await fetchPair(
-    exampleMapping.polyMarketId,
+  const result = await fetchPair(
+    exampleMapping.kalshiResolutionText,
     exampleMapping.kalshiMarketId
   );
-  if (!poly || !kalshi) {
-    console.log("[BLOCKED] Failed to fetch one or both venues");
+  const kalshi = result.kalshi;
+  if (!kalshi) {
+    console.log("[BLOCKED] Failed to fetch Kalshi market");
     return;
   }
 
@@ -64,13 +62,13 @@ async function runEngine() {
   }
 
   // 4. Compute edge (BRD 5.5)
-  const edgeResult = computeEdge(poly, kalshi, {
+  const edgeResult = computeEdge(kalshi, kalshi, {
     convergenceRate: 0.85,
   });
 
   // 5. Dynamic threshold (BRD 5.6)
   const hoursToExpiry = 72;
-  const spreadWidening = poly.spread > config.liquidity.spreadThreshold;
+  const spreadWidening = kalshi.spread > config.liquidity.spreadThreshold;
   const threshold = dynamicThreshold(
     edgeResult.reliability,
     spreadWidening,
@@ -88,14 +86,14 @@ async function runEngine() {
     threshold,
     reasons: [],
     timestamp: Date.now(),
-    marketId: poly.marketId,
-    venue: poly.venue,
-    bid: poly.top.bid,
-    ask: poly.top.ask,
-    spread: poly.spread,
-    depth: poly.depthAtBest,
-    volume: poly.volume24h,
-    midpoint: poly.midpoint,
+    marketId: kalshi.marketId,
+    venue: kalshi.venue,
+    bid: kalshi.top.bid,
+    ask: kalshi.top.ask,
+    spread: kalshi.spread,
+    depth: kalshi.depthAtBest,
+    volume: kalshi.volume24h,
+    midpoint: kalshi.midpoint,
     fairValue: edgeResult.pFair,
     edge: edgeResult.finalEdge,
   };
@@ -106,7 +104,7 @@ async function runEngine() {
     const position = computePositionSize(
       edgeResult.finalEdge,
       edgeResult.pFair,
-      poly,
+      kalshi,
       kalshi,
       10000 // $10k bankroll
     );
@@ -139,11 +137,9 @@ async function runEngine() {
   // Backtest demo
   console.log("\n--- Backtest Demo ---");
   let bt = createBacktestResult();
-  bt = addTrade(bt, signal, poly.midpoint);
+  bt = addTrade(bt, signal, kalshi.midpoint);
 
-  // Simulate price convergence
-  const exitPrice =
-    poly.midpoint + (kalshi.midpoint - poly.midpoint) * 0.6; // 60% convergence
+  const exitPrice = kalshi.midpoint;
   bt = closeTrade(bt, 0, exitPrice);
   bt = computeBacktestMetrics(bt);
 

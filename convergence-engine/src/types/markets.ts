@@ -24,24 +24,6 @@ export interface NormalizedMarket {
   resolutionRisk: ResolutionSource;
 }
 
-export interface PolymarketRawMarket {
-  id: string;
-  conditionId: string;
-  question: string;
-  category: string;
-  endDate: string;
-  startDate: string;
-  yesTokenId: string;
-  yesPrice: number;
-  yesBid: number;
-  yesAsk: number;
-  noPrice: number;
-  liquidity: number;
-  volume: number;
-  volumeRank: number;
-  liquidityRank: number;
-}
-
 export interface KalshiRawMarket {
   // Kalshi API structure - to be defined when API access available
   ticker: string;
@@ -64,7 +46,6 @@ export interface MarketDefinition {
 }
 
 export interface MarketPair {
-  poly: MarketDefinition;
   kalshi: MarketDefinition;
   // Mapping metadata
   mappingId: string;

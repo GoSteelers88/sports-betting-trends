@@ -14,11 +14,9 @@ import { config } from "./config";
 export function createSystemHealth(): SystemHealth {
   return {
     venueHalt: new Map([
-      ["POLYMARKET", false],
       ["KALSHI", false],
     ]),
     apiLatencyMs: new Map([
-      ["POLYMARKET", 0],
       ["KALSHI", 0],
     ]),
     oracleDivergent: false,

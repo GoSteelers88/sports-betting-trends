@@ -2,7 +2,7 @@
 import fs from "node:fs";
 
 const API_KEY = process.env.KALSHI_API_KEY || "4d74101b-bf3f-4414-a440-97858cf8d668";
-const LOG_FILE = "C:\\Users\\Nate\\.openclaw\\workspace-polymarket\\kalshi-test.log";
+const LOG_FILE = "C:\\Users\\nbber\\.openclaw\\workspace-kalshi\\kalshi-test.log";
 
 const logs: string[] = [];
 function log(msg: string) {

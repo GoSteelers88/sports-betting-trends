@@ -1,10 +1,9 @@
 import { Venue } from "./core.js";
 import { NormalizedMarket } from "./markets.js";
 
-export type SignalDirection = "LONG_POLY" | "LONG_KALSHI" | "NO_EDGE" | "REJECTED";
+export type SignalDirection = "LONG_KALSHI" | "NO_EDGE" | "REJECTED";
 
 export interface PairSignal {
-  polyMarket: NormalizedMarket;
   kalshiMarket: NormalizedMarket;
   grossEdge: number; // |poly_prob - kalshi_prob|
   fees: number; // estimated combined fees

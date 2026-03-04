@@ -50,3 +50,26 @@ data/raw/mlb/latest_espn_mlb.json
 scripts/python/__pycache__/
 
 .vercel
+
+# Kalshi autopilot runtime/sensitive data
+data/processed/kalshi-state.json
+data/processed/kalshi-trades.jsonl
+data/processed/kalshi-price-history.json
+data/processed/backtest-results.json
+data/processed/latest-odds-api*.json
+
+# Compiled script output
+scripts/*.js
+
+# Autopilot runtime files
+autopilot.log
+autopilot.pid
+
+# Debug / one-off scripts
+analyze*.js
+check-*.js
+check-*.mjs
+test-order*.mjs
+watch-*.mjs
+reset-state.mjs
+prisma/prisma/

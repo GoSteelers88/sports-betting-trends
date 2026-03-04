@@ -1,6 +1,6 @@
 export type UnixMs = number;
 
-export type Venue = "POLYMARKET" | "KALSHI";
+export type Venue = "KALSHI";
 
 export interface MoneyLike {
   // For binary markets, we model prices as probability-like [0..1]

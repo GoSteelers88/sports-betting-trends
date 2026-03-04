@@ -22,6 +22,10 @@ const DEFAULT_LEAGUES = [
   "basketball_nba",
   "americanfootball_nfl",
   "baseball_mlb",
+  "icehockey_nhl",
+  "soccer_epl",
+  "soccer_spain_la_liga",
+  "soccer_italy_serie_a",
 ];
 
 async function fetchOddsForLeague(
