@@ -4,8 +4,9 @@ scrape_ats.py — Scrape full-season ATS records from teamrankings.com
 Outputs:
   data/processed/scraped-ats-nba.json
   data/processed/scraped-ats-ncaab.json
+  data/processed/scraped-ats-nhl.json
 
-Run: python scripts/python/scrape_ats.py [--league nba|ncaab|all] [--dry-run]
+Run: python scripts/python/scrape_ats.py [--league nba|ncaab|nhl|all] [--dry-run]
 """
 
 import json
@@ -31,6 +32,11 @@ LEAGUES = {
         "slug": "ncaa-basketball",
         "label": "NCAAB",
         "out_file": "scraped-ats-ncaab.json",
+    },
+    "nhl": {
+        "slug": "nhl",
+        "label": "NHL",
+        "out_file": "scraped-ats-nhl.json",
     },
 }
 
@@ -179,7 +185,7 @@ def scrape_league(league_key: str, dry_run: bool = False) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="Scrape ATS records from teamrankings.com")
-    parser.add_argument("--league", choices=["nba", "ncaab", "all"], default="all")
+    parser.add_argument("--league", choices=["nba", "ncaab", "nhl", "all"], default="all")
     parser.add_argument("--dry-run", action="store_true", help="Skip fetches, write empty output")
     args = parser.parse_args()
 

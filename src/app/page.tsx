@@ -45,7 +45,24 @@ type BaseballAdvanced = {
   sos: number | null;
 };
 
-type AdvancedMetrics = BasketballAdvanced | FootballAdvanced | BaseballAdvanced;
+type HockeyAdvanced = {
+  games: number;
+  gpg: number | null;
+  gapg: number | null;
+  spg: number | null;
+  savePct: number | null;
+  sos: number | null;
+};
+
+type SoccerAdvanced = {
+  games: number;
+  gpg: number | null;
+  gapg: number | null;
+  cleanSheetsPct: number | null;
+  sos: number | null;
+};
+
+type AdvancedMetrics = BasketballAdvanced | FootballAdvanced | BaseballAdvanced | HockeyAdvanced | SoccerAdvanced;
 
 type LeagueSummary = {
   league: string;
@@ -171,6 +188,14 @@ function isFootball(league: string) {
   return league === "NFL";
 }
 
+function isHockey(league: string) {
+  return league === "NHL";
+}
+
+function isSoccer(league: string) {
+  return league === "EPL" || league === "MLS" || league === "UCL";
+}
+
 export default function Home() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -200,7 +225,7 @@ export default function Home() {
     return new Date(data.generatedAt).toLocaleString();
   }, [data?.generatedAt]);
 
-  const leagueOptions = ["ALL", "NBA", "NFL", "NCAAB", "MLB"];
+  const leagueOptions = ["ALL", "NBA", "NFL", "NCAAB", "MLB", "NHL", "EPL", "MLS", "UCL"];
 
   const top5BestBets = useMemo(() => {
     const target = data?.topBestBetsTarget ?? 5;
@@ -230,7 +255,7 @@ export default function Home() {
         <header className="mb-6 rounded-xl border border-slate-800 bg-slate-900/80 p-5">
           <h1 className="text-2xl font-semibold tracking-tight">BJ Free-Data Betting Trends</h1>
           <p className="mt-2 text-sm text-slate-300">
-            Free-data snapshot across NBA, NFL, NCAAB, and MLB. Signals are directional support only, not betting advice.
+            Free-data snapshot across NBA, NFL, NCAAB, MLB, NHL, EPL, MLS, and UCL. Signals are directional support only, not betting advice.
           </p>
           {generatedAt && <p className="mt-1 text-xs text-slate-400">Last generated: {generatedAt}</p>}
         </header>
@@ -508,6 +533,60 @@ export default function Home() {
                     </div>
                   )}
 
+                  {/* NHL Advanced Metrics */}
+                  {isHockey(league.league) && league.advanced && "gpg" in league.advanced && (
+                    <div className="mt-3">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">Advanced Metrics</p>
+                      <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+                        <div className="rounded-md bg-sky-950/40 p-2">
+                          <span className="text-xs text-slate-400">GPG</span>
+                          <p className="font-semibold">{fmt((league.advanced as HockeyAdvanced).gpg)}</p>
+                        </div>
+                        <div className="rounded-md bg-sky-950/40 p-2">
+                          <span className="text-xs text-slate-400">GA/G</span>
+                          <p className="font-semibold">{fmt((league.advanced as HockeyAdvanced).gapg)}</p>
+                        </div>
+                        <div className="rounded-md bg-sky-950/40 p-2">
+                          <span className="text-xs text-slate-400">Shots/G</span>
+                          <p className="font-semibold">{fmt((league.advanced as HockeyAdvanced).spg)}</p>
+                        </div>
+                        <div className="rounded-md bg-sky-950/40 p-2">
+                          <span className="text-xs text-slate-400">Save%</span>
+                          <p className="font-semibold">{pct((league.advanced as HockeyAdvanced).savePct)}</p>
+                        </div>
+                        <div className="rounded-md bg-sky-950/40 p-2">
+                          <span className="text-xs text-slate-400">SOS</span>
+                          <p className="font-semibold">{fmt((league.advanced as HockeyAdvanced).sos, 3)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Soccer Advanced Metrics (EPL / MLS / UCL) */}
+                  {isSoccer(league.league) && league.advanced && "cleanSheetsPct" in league.advanced && (
+                    <div className="mt-3">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">Advanced Metrics</p>
+                      <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+                        <div className="rounded-md bg-lime-950/40 p-2">
+                          <span className="text-xs text-slate-400">GPG</span>
+                          <p className="font-semibold">{fmt((league.advanced as SoccerAdvanced).gpg)}</p>
+                        </div>
+                        <div className="rounded-md bg-lime-950/40 p-2">
+                          <span className="text-xs text-slate-400">GA/G</span>
+                          <p className="font-semibold">{fmt((league.advanced as SoccerAdvanced).gapg)}</p>
+                        </div>
+                        <div className="rounded-md bg-lime-950/40 p-2">
+                          <span className="text-xs text-slate-400">Clean Sheets</span>
+                          <p className="font-semibold">{pct((league.advanced as SoccerAdvanced).cleanSheetsPct)}</p>
+                        </div>
+                        <div className="rounded-md bg-lime-950/40 p-2">
+                          <span className="text-xs text-slate-400">SOS</span>
+                          <p className="font-semibold">{fmt((league.advanced as SoccerAdvanced).sos, 3)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {league.league === "NCAAB" && league.ncaab && (
                     <div className="mt-3 space-y-1 text-sm text-slate-200">
                       <p>NCAAB last-10 momentum: {fmt(league.ncaab.last10Momentum, 2)}</p>
@@ -549,7 +628,7 @@ export default function Home() {
             )}
 
             <section className="mb-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h3 className="mb-3 text-lg font-semibold">Full Game-Pick Ranking (NBA / NFL / NCAAB / MLB)</h3>
+              <h3 className="mb-3 text-lg font-semibold">Full Game-Pick Ranking (NBA / NFL / NCAAB / MLB / NHL / EPL / MLS / UCL)</h3>
               <div className="space-y-2 text-sm text-slate-200">
                 {data.bestBets.map((item, idx) => (
                   <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md bg-slate-800/70 p-3">

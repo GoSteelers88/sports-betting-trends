@@ -31,9 +31,13 @@ const LEAGUE_ENDPOINTS: Record<string, string> = {
   nfl: "football/nfl",
   mlb: "baseball/mlb",
   ncaab: "basketball/mens-college-basketball",
+  nhl: "hockey/nhl",
+  epl: "soccer/eng.1",
+  mls: "soccer/usa.1",
+  ucl: "soccer/uefa.champions",
 };
 
-const INJURY_LEAGUES = ["nba", "nfl"];
+const INJURY_LEAGUES = ["nba", "nfl", "nhl"];
 
 async function fetchJson(url: string): Promise<unknown> {
   const res = await fetch(url, {

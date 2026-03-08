@@ -72,6 +72,23 @@ export type BaseballAdvanced = {
   sos: number | null;
 };
 
+export type HockeyAdvanced = {
+  games: number;
+  gpg: number | null;
+  gapg: number | null;
+  spg: number | null;
+  savePct: number | null;
+  sos: number | null;
+};
+
+export type SoccerAdvanced = {
+  games: number;
+  gpg: number | null;
+  gapg: number | null;
+  cleanSheetsPct: number | null;
+  sos: number | null;
+};
+
 function safeDiv(num: number, den: number): number | null {
   if (!den || !Number.isFinite(num) || !Number.isFinite(den)) return null;
   return num / den;
@@ -219,4 +236,58 @@ export function computeBaseballAdvanced(
   const sos = computeSos(opponents, standings);
 
   return { games, rpg, oppRpg, hitsPerGame, errorsPerGame, sos };
+}
+
+export function computeHockeyAdvanced(
+  teamRows: BoxScoreRow[],
+  standings: StandingsEntry[],
+): HockeyAdvanced {
+  const games = teamRows.length;
+  if (!games) {
+    return { games: 0, gpg: null, gapg: null, spg: null, savePct: null, sos: null };
+  }
+
+  // points = goals scored; opponentPoints = goals against
+  // offRebounds reused as shots faced (for save %); defRebounds reused as shots for
+  const gpg = round2(teamRows.reduce((s, r) => s + r.points, 0) / games);
+  const gapg = round2((sumNonNull(teamRows.map((r) => r.opponentPoints)) ?? 0) / games);
+
+  // defRebounds stores shots on goal (for the team); offRebounds stores shots faced
+  const totalShots = sumNonNull(teamRows.map((r) => r.defRebounds));
+  const spg = totalShots != null ? round2(totalShots / games) : null;
+
+  // savePct: (shots faced - goals against) / shots faced
+  const totalShotsFaced = sumNonNull(teamRows.map((r) => r.offRebounds));
+  const totalGoalsAgainst = sumNonNull(teamRows.map((r) => r.opponentPoints)) ?? 0;
+  const savePct =
+    totalShotsFaced != null && totalShotsFaced > 0
+      ? round2((totalShotsFaced - totalGoalsAgainst) / totalShotsFaced)
+      : null;
+
+  const opponents = teamRows.map((r) => r.opponent);
+  const sos = computeSos(opponents, standings);
+
+  return { games, gpg, gapg, spg, savePct, sos };
+}
+
+export function computeSoccerAdvanced(
+  teamRows: BoxScoreRow[],
+  standings: StandingsEntry[],
+): SoccerAdvanced {
+  const games = teamRows.length;
+  if (!games) {
+    return { games: 0, gpg: null, gapg: null, cleanSheetsPct: null, sos: null };
+  }
+
+  const gpg = round2(teamRows.reduce((s, r) => s + r.points, 0) / games);
+  const gapg = round2((sumNonNull(teamRows.map((r) => r.opponentPoints)) ?? 0) / games);
+
+  // Clean sheet = opponent scored 0 goals
+  const cleanSheets = teamRows.filter((r) => r.opponentPoints === 0).length;
+  const cleanSheetsPct = round2(cleanSheets / games);
+
+  const opponents = teamRows.map((r) => r.opponent);
+  const sos = computeSos(opponents, standings);
+
+  return { games, gpg, gapg, cleanSheetsPct, sos };
 }

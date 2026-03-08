@@ -8,7 +8,7 @@ Sources:
 Outputs:
   data/processed/scraped-consensus.json
 
-Run: python scripts/python/scrape_consensus.py [--league nba|ncaab|all] [--dry-run]
+Run: python scripts/python/scrape_consensus.py [--league nba|ncaab|nhl|epl|all] [--dry-run]
 """
 
 import json
@@ -26,6 +26,8 @@ from scrapling.fetchers import StealthyFetcher
 LEAGUES = {
     "nba":   {"label": "NBA",   "slug": "nba"},
     "ncaab": {"label": "NCAAB", "slug": "ncaab"},
+    "nhl":   {"label": "NHL",   "slug": "nhl"},
+    "epl":   {"label": "EPL",   "slug": "soccer", "optional": True},
 }
 
 SPREAD_URL = "https://contests.covers.com/consensus/topconsensus/{slug}/overall"
@@ -205,13 +207,27 @@ def scrape_totals(slug: str, dry_run: bool = False) -> dict[str, dict]:
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-def scrape_league(slug: str, label: str, dry_run: bool = False) -> list[dict]:
+def scrape_league(slug: str, label: str, dry_run: bool = False, optional: bool = False) -> list[dict]:
     print(f"\n=== {label} ===", flush=True)
 
-    spread_data = scrape_spreads(slug, dry_run)
+    try:
+        spread_data = scrape_spreads(slug, dry_run)
+    except Exception as e:
+        if optional:
+            print(f"  WARNING: spread scrape failed for {label} (optional — skipping): {e}", file=sys.stderr)
+            spread_data = {}
+        else:
+            raise
     if not dry_run:
         time.sleep(REQUEST_DELAY)
-    total_data = scrape_totals(slug, dry_run)
+    try:
+        total_data = scrape_totals(slug, dry_run)
+    except Exception as e:
+        if optional:
+            print(f"  WARNING: totals scrape failed for {label} (optional — skipping): {e}", file=sys.stderr)
+            total_data = {}
+        else:
+            raise
 
     all_keys = set(spread_data) | set(total_data)
     games = []
@@ -248,7 +264,7 @@ def scrape_league(slug: str, label: str, dry_run: bool = False) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description="Scrape public betting consensus from covers.com")
-    parser.add_argument("--league", choices=["nba", "ncaab", "all"], default="all")
+    parser.add_argument("--league", choices=["nba", "ncaab", "nhl", "epl", "all"], default="all")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -261,7 +277,7 @@ def main():
     all_games: list[dict] = []
     for i, lk in enumerate(target_leagues):
         cfg = LEAGUES[lk]
-        games = scrape_league(cfg["slug"], cfg["label"], dry_run=args.dry_run)
+        games = scrape_league(cfg["slug"], cfg["label"], dry_run=args.dry_run, optional=cfg.get("optional", False))
         all_games.extend(games)
         if not args.dry_run and i < len(target_leagues) - 1:
             time.sleep(REQUEST_DELAY)
