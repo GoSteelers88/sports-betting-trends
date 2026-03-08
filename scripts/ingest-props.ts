@@ -544,7 +544,12 @@ function runPythonModel(players: PythonPlayerInput[]): PythonModelResult[] | nul
     fs.unlinkSync(outFile);
     const parsed = JSON.parse(raw) as { results: PythonModelResult[]; errors: string[] };
     if (parsed.errors?.length) {
-      for (const e of parsed.errors.slice(0, 3)) console.warn("[props] Python error:", e.slice(0, 200));
+      for (const e of parsed.errors.slice(0, 3)) console.warn("[props] Python error:", e);
+      const errorLogPath = path.join(outDir, "latest-player-props-python-errors.log");
+      const logHeader = `=== ${new Date().toISOString()} (${parsed.errors.length} errors) ===\n`;
+      const logBody = parsed.errors.map((err, idx) => `[${idx + 1}] ${err}`).join("\n\n");
+      fs.writeFileSync(errorLogPath, `${logHeader}${logBody}\n\n`, "utf-8");
+      console.warn(`[props] Wrote full Python error log -> ${errorLogPath}`);
     }
     return parsed.results;
   } catch {
