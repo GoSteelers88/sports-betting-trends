@@ -119,6 +119,8 @@ const TRADES_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-tra
 const MARKETS_FILE = path.resolve(process.cwd(), "data", "processed", "latest-kalshi.json");
 const SUMMARY_FILE = path.resolve(process.cwd(), "data", "processed", "latest-summary.json");
 const BACKTEST_FILE = path.resolve(process.cwd(), "data", "processed", "backtest-results.json");
+const PHASE3_SHADOW_ENABLED = (process.env.AUTOPILOT_PHASE3_SHADOW ?? "0") === "1";
+const SHADOW_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-shadow-opportunities.jsonl");
 // ═══ NEW: Price history storage for leader detection ═══
 const PRICE_HISTORY_FILE = path.resolve(process.cwd(), "data", "processed", "price-history.json");
 
@@ -693,6 +695,16 @@ function appendTrade(record: Record<string, unknown>): void {
     fs.appendFileSync(TRADES_FILE, JSON.stringify({ timestamp: new Date().toISOString(), ...record }) + "\n", "utf-8");
   } catch (err) {
     console.warn(`[autopilot] Trade log write failed: ${(err as Error).message}`);
+  }
+}
+
+function appendShadow(record: Record<string, unknown>): void {
+  if (!PHASE3_SHADOW_ENABLED) return;
+  try {
+    fs.mkdirSync(path.dirname(SHADOW_FILE), { recursive: true });
+    fs.appendFileSync(SHADOW_FILE, JSON.stringify({ timestamp: new Date().toISOString(), ...record }) + "\n", "utf-8");
+  } catch (err) {
+    console.warn(`[autopilot] Shadow log write failed: ${(err as Error).message}`);
   }
 }
 
@@ -1342,6 +1354,7 @@ async function main(): Promise<void> {
   console.log(`[autopilot] Caps: exp=$${MAX_TOTAL_EXPOSURE_USD} pos=${MAX_OPEN_POSITIONS} edge=${EDGE_THRESHOLD_PCT}% market_loss_limit=$${MARKET_LOSS_LIMIT_USD}`);
   console.log(`[autopilot] Phase 1 gates: net_edge>=${NET_EDGE_THRESHOLD} actionability>=${MIN_ACTIONABILITY} latency_ms=${NET_EDGE_LATENCY_MS} cancel_rate=${NET_EDGE_CANCEL_RATE}`);
   console.log(`[autopilot] Phase 2 sizing: kelly_fraction=${KELLY_FRACTION} min_order=$${MIN_ORDER_USD.toFixed(2)} slip_ema=${state.slippageEma.toFixed(4)} alpha=${SLIPPAGE_EMA_ALPHA}`);
+  console.log(`[autopilot] Phase 3 shadow: ${PHASE3_SHADOW_ENABLED ? `ON (${SHADOW_FILE})` : "OFF"}`);
 
   {
     const startLines = [
@@ -1350,6 +1363,7 @@ async function main(): Promise<void> {
       `⚡ POLY-leads ONLY | Per-market loss limit: $${Math.abs(MARKET_LOSS_LIMIT_USD)}`,
       `Phase 1: net_edge≥${NET_EDGE_THRESHOLD} | actionability≥${MIN_ACTIONABILITY}`,
       `Phase 2: Kelly ${Math.round(KELLY_FRACTION * 100)}% | slip EMA ${(state.slippageEma * 100).toFixed(2)}%`,
+      `Phase 3: shadow mode ${PHASE3_SHADOW_ENABLED ? "ON" : "OFF"}`,
     ];
     if (backtestMsg) startLines.push(`📊 ${backtestMsg}`);
     notifyDiscord(startLines.join("\n"));
@@ -1419,8 +1433,36 @@ async function main(): Promise<void> {
       }
     }
 
+    const shadowCandidates = findOpportunities(markets, state, orders);
+
+    if (PHASE3_SHADOW_ENABLED) {
+      for (const opp of shadowCandidates.slice(0, 25)) {
+        const implied = opp.market.impliedProbYes / 100;
+        const model = (opp.market.crossEdge?.modelConfidence ?? opp.market.impliedProbYes) / 100;
+        appendShadow({
+          phase: 3,
+          ticker: opp.market.ticker,
+          actionability: opp.market.actionability,
+          leader: opp.leaderResult.leader,
+          direction: opp.leaderResult.direction,
+          confidence: opp.leaderResult.confidence,
+          rawEdge: opp.netEdge.rawEdge,
+          netEdge: opp.netEdge.netEdge,
+          feeDrag: opp.netEdge.feeDrag,
+          slippageEst: opp.netEdge.slippageEst,
+          latencyRisk: opp.netEdge.latencyRisk,
+          cancelRisk: opp.netEdge.cancelRisk,
+          kalshiImplied: implied,
+          modelProb: model,
+          mappingConfidence: opp.leaderResult.confidence,
+          wouldTradeLive: caps.canTrade && !summaryStale,
+          blockedBy: !caps.canTrade ? caps.reasons[0] ?? "caps" : (summaryStale ? "stale_data" : null),
+        });
+      }
+    }
+
     if (caps.canTrade && !summaryStale) {
-      cycleOpportunities = findOpportunities(markets, state, orders);
+      cycleOpportunities = shadowCandidates;
       if (cycleOpportunities.length > 0) {
         try {
           cycleOrdersPlaced = await placeEntryOrders(cycleOpportunities, state, caps, orders, balance.balance / 100);
@@ -1482,3 +1524,4 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => { console.error("[autopilot] Unhandled error:", err); process.exit(1); });
+
