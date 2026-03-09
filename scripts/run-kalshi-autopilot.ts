@@ -103,9 +103,13 @@ const RELAXED_TICKER_PREFIXES = (process.env.AUTOPILOT_RELAXED_TICKER_PREFIXES ?
   .map((s) => s.trim())
   .filter(Boolean);
 /** Relaxed max spread (cents) for allowlisted tickers. */
-const RELAXED_MAX_SPREAD_CENTS = parseInt(process.env.AUTOPILOT_RELAXED_MAX_SPREAD_CENTS ?? "4", 10);
+const RELAXED_MAX_SPREAD_CENTS = parseInt(process.env.AUTOPILOT_RELAXED_MAX_SPREAD_CENTS ?? "8", 10);
 /** Relaxed minimum open interest for allowlisted tickers. */
 const RELAXED_MIN_OPEN_INTEREST = parseInt(process.env.AUTOPILOT_RELAXED_MIN_OPEN_INTEREST ?? "0", 10);
+/** Prefix-scoped lower net-edge threshold for allowlisted tickers. */
+const RELAXED_NET_EDGE_THRESHOLD = parseFloat(process.env.AUTOPILOT_RELAXED_NET_EDGE_THRESHOLD ?? "0.005");
+/** Depth floor used in slippage model for allowlisted tickers. */
+const RELAXED_DEPTH_USD_FLOOR = parseFloat(process.env.AUTOPILOT_RELAXED_DEPTH_USD_FLOOR ?? "100");
 
 const ENTRY_TIMEOUT_SEC = 28_800; // 8h
 const EXIT_TIMEOUT_SEC = 900;
@@ -1154,7 +1158,8 @@ function findOpportunities(
     const rawEdge      = Math.abs(m.crossEdge.gap) / 100;
     const kalshiPDec   = (priceCents ?? 50) / 100;
     const spreadDec    = (marketSpread) / 100;
-    const depthUsd     = m.liquidity ?? (m.openInterest ?? 0) * 0.001;
+    const baseDepthUsd = m.liquidity ?? (m.openInterest ?? 0) * 0.001;
+    const depthUsd     = relaxedLiquidity ? Math.max(baseDepthUsd, RELAXED_DEPTH_USD_FLOOR) : baseDepthUsd;
     const orderSizeUsd = rawEdge * 100 >= HIGH_EDGE_THRESHOLD_PCT ? HIGH_EDGE_COST_USD : DEFAULT_COST_USD;
 
     const netEdge = computeNetEdge(
@@ -1169,11 +1174,13 @@ function findOpportunities(
       logRejection("fee_fail", { ticker: m.ticker, rawEdge, feeDrag: netEdge.feeDrag });
       continue;
     }
-    if (netEdge.netEdge < NET_EDGE_THRESHOLD) {
+    const netEdgeThreshold = relaxedLiquidity ? RELAXED_NET_EDGE_THRESHOLD : NET_EDGE_THRESHOLD;
+    if (netEdge.netEdge < netEdgeThreshold) {
       logRejection("net_edge_fail", {
         ticker: m.ticker,
         netEdge: +netEdge.netEdge.toFixed(4),
-        threshold: NET_EDGE_THRESHOLD,
+        threshold: netEdgeThreshold,
+        relaxedLiquidity,
         components: `fee=${netEdge.feeDrag.toFixed(4)} slip=${netEdge.slippageEst.toFixed(4)} ` +
                     `lat=${netEdge.latencyRisk.toFixed(4)} cancel=${netEdge.cancelRisk.toFixed(4)}`,
       });
