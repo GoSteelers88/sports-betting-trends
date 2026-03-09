@@ -836,6 +836,11 @@ function gameKey(ticker: string): string {
 // ---------------------------------------------------------------------------
 // ═══ REWRITTEN: Find opportunities using leader detection ═══
 // ---------------------------------------------------------------------------
+function isLiveGameTicker(ticker: string): boolean {
+  const t = ticker.toUpperCase();
+  return t.includes("GAME-") || t.startsWith("KXNBAGAME") || t.startsWith("KXNFLGAME") || t.startsWith("KXNHLGAME") || t.startsWith("KXMLBGAME");
+}
+
 function findOpportunities(
   markets: ProcessedMarket[],
   state: AutopilotState,
@@ -856,7 +861,11 @@ function findOpportunities(
     if (m.ticker in state.pendingEntries || m.ticker in state.openPositions) continue;
     if (liveOrderTickers.has(m.ticker)) continue;
     if (claimedGameKeys.has(gameKey(m.ticker))) continue;
-    if (!m.closeTime || new Date(m.closeTime).getTime() < oneHourFromNow) continue;
+
+    const isLiveGame = isLiveGameTicker(m.ticker);
+    if (!m.closeTime) continue;
+    // Keep the 1h guard for non-game markets, but allow live game markets.
+    if (!isLiveGame && new Date(m.closeTime).getTime() < oneHourFromNow) continue;
 
     // Liquidity check
     const marketSpread = m.spread ?? (m.yesBid != null && m.yesAsk != null ? m.yesAsk - m.yesBid : null);
