@@ -1588,6 +1588,14 @@ async function main() {
   const outDir = path.join(root, "data", "processed");
   fs.mkdirSync(outDir, { recursive: true });
 
+  // Ensure alert log file exists so downstream heartbeat/nightly review can read it
+  // even when the real-time watcher is not running.
+  const alertsJsonlPath = path.join(outDir, "kalshi-alerts.jsonl");
+  if (!fs.existsSync(alertsJsonlPath)) {
+    fs.writeFileSync(alertsJsonlPath, "", "utf-8");
+    console.log(`[kalshi] Initialized: ${alertsJsonlPath}`);
+  }
+
   const output: KalshiOutput = {
     fetchedAtIsoUtc,
     fetchedAtIsoEt,
