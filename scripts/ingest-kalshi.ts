@@ -59,6 +59,11 @@ function isComboCMarket(ticker: string): boolean {
   return SKIP_TICKER_PATTERNS.some((p) => t.includes(p));
 }
 
+function isLikelyGameTicker(ticker: string): boolean {
+  const t = ticker.toUpperCase();
+  return t.includes("GAME-") || t.startsWith("KXNBAGAME") || t.startsWith("KXNFLGAME") || t.startsWith("KXNHLGAME") || t.startsWith("KXMLBGAME");
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -380,7 +385,7 @@ async function fetchAllMarkets(): Promise<{
   let eventsScanned = 0;
   let cursor: string | undefined;
   let page = 0;
-  const MAX_PAGES = 20; // ~4000 events max; stops runaway pagination
+  const MAX_PAGES = parseInt(process.env.KALSHI_MAX_EVENT_PAGES ?? "100", 10); // raise coverage for live game markets
 
   console.log(`  [kalshi] Fetching open events (env=${KALSHI_ENV}, max_pages=${MAX_PAGES})...`);
 
@@ -405,8 +410,9 @@ async function fetchAllMarkets(): Promise<{
         if (seen.has(m.ticker)) continue;
         // Skip combo/cross-category markets — they are multi-leg constructs
         if (isComboCMarket(m.ticker)) continue;
-        // Skip markets with zero activity
-        if ((m.open_interest ?? 0) === 0 && (m.volume ?? 0) === 0) continue;
+        // Skip fully dead markets unless they are explicit game markets
+        // (live/in-game books can momentarily show low/zero OI/vol but are still tradable)
+        if ((m.open_interest ?? 0) === 0 && (m.volume ?? 0) === 0 && !isLikelyGameTicker(m.ticker)) continue;
 
         seen.add(m.ticker);
         if (!m.category && event.category) m.category = event.category;
@@ -611,6 +617,14 @@ function detectSports(market: KalshiMarket): boolean {
   if (SPORTS_KEYWORDS.some((kw) => title.includes(kw))) return true;
 
   return false;
+}
+
+function isGameWinnerMarket(market: ProcessedMarket): boolean {
+  const t = market.ticker.toUpperCase();
+  const title = (market.title ?? "").toLowerCase();
+  const looksLikeGame = t.includes("GAME-") || t.startsWith("KXNBAGAME") || t.startsWith("KXNFLGAME") || t.startsWith("KXNHLGAME") || t.startsWith("KXMLBGAME");
+  const looksLikeWinner = title.includes("winner") || title.includes(" at ");
+  return looksLikeGame || looksLikeWinner;
 }
 
 // ---------------------------------------------------------------------------
@@ -1554,7 +1568,7 @@ async function main() {
     }
 
     // Game cross-edge
-    if (!isMarmad && bestBets.length > 0 && m.isSports) {
+    if (!isMarmad && bestBets.length > 0 && m.isSports && isGameWinnerMarket(m)) {
       const ce = findCrossEdge(m, bestBets, injuries, crossEdgeMisses);
       if (ce) {
         // Attach movement signal
