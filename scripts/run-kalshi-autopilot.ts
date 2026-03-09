@@ -121,6 +121,20 @@ const SUMMARY_FILE = path.resolve(process.cwd(), "data", "processed", "latest-su
 const BACKTEST_FILE = path.resolve(process.cwd(), "data", "processed", "backtest-results.json");
 const PHASE3_SHADOW_ENABLED = (process.env.AUTOPILOT_PHASE3_SHADOW ?? "0") === "1";
 const SHADOW_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-shadow-opportunities.jsonl");
+
+// Phase 4 (live cross-venue) config block — gated OFF by default
+const PHASE4_LIVE_ENABLED = (process.env.AUTOPILOT_PHASE4_LIVE ?? "0") === "1";
+const PHASE4_CROSS_PAIR_USD = parseFloat(process.env.AUTOPILOT_PHASE4_CROSS_PAIR_USD ?? "1.00");
+const PHASE4_CROSS_PAIR_MAX_USD = parseFloat(process.env.AUTOPILOT_PHASE4_CROSS_PAIR_MAX_USD ?? "2.00");
+const PHASE4_CROSS_EXPOSURE_MAX_USD = parseFloat(process.env.AUTOPILOT_PHASE4_CROSS_EXPOSURE_MAX_USD ?? "10.00");
+const PHASE4_MAX_CONCURRENT_PAIRS = parseInt(process.env.AUTOPILOT_PHASE4_MAX_CONCURRENT_PAIRS ?? "2", 10);
+const PHASE4_MAX_PAIR_ATTEMPTS_PER_HOUR = parseInt(process.env.AUTOPILOT_PHASE4_MAX_PAIR_ATTEMPTS_PER_HOUR ?? "8", 10);
+const PHASE4_MAX_RESTING_PER_VENUE = parseInt(process.env.AUTOPILOT_PHASE4_MAX_RESTING_PER_VENUE ?? "3", 10);
+const PHASE4_HEDGE_TIMEOUT_SEC = parseInt(process.env.AUTOPILOT_PHASE4_HEDGE_TIMEOUT_SEC ?? "8", 10);
+const PHASE4_MARKET_DAILY_STOP_USD = parseFloat(process.env.AUTOPILOT_PHASE4_MARKET_DAILY_STOP_USD ?? "-5");
+const PHASE4_GLOBAL_DAILY_STOP_USD = parseFloat(process.env.AUTOPILOT_PHASE4_GLOBAL_DAILY_STOP_USD ?? "-12");
+const PHASE4_DISABLE_ON_FAILED_HEDGES = parseInt(process.env.AUTOPILOT_PHASE4_DISABLE_ON_FAILED_HEDGES ?? "3", 10);
+const PHASE4_DISABLE_WINDOW_MIN = parseInt(process.env.AUTOPILOT_PHASE4_DISABLE_WINDOW_MIN ?? "30", 10);
 // ═══ NEW: Price history storage for leader detection ═══
 const PRICE_HISTORY_FILE = path.resolve(process.cwd(), "data", "processed", "price-history.json");
 
@@ -1355,6 +1369,12 @@ async function main(): Promise<void> {
   console.log(`[autopilot] Phase 1 gates: net_edge>=${NET_EDGE_THRESHOLD} actionability>=${MIN_ACTIONABILITY} latency_ms=${NET_EDGE_LATENCY_MS} cancel_rate=${NET_EDGE_CANCEL_RATE}`);
   console.log(`[autopilot] Phase 2 sizing: kelly_fraction=${KELLY_FRACTION} min_order=$${MIN_ORDER_USD.toFixed(2)} slip_ema=${state.slippageEma.toFixed(4)} alpha=${SLIPPAGE_EMA_ALPHA}`);
   console.log(`[autopilot] Phase 3 shadow: ${PHASE3_SHADOW_ENABLED ? `ON (${SHADOW_FILE})` : "OFF"}`);
+  console.log(
+    `[autopilot] Phase 4 live: ${PHASE4_LIVE_ENABLED ? "ON" : "OFF"} | ` +
+    `pair=$${PHASE4_CROSS_PAIR_USD.toFixed(2)} max_pair=$${PHASE4_CROSS_PAIR_MAX_USD.toFixed(2)} ` +
+    `cross_exp=$${PHASE4_CROSS_EXPOSURE_MAX_USD.toFixed(2)} pairs=${PHASE4_MAX_CONCURRENT_PAIRS} ` +
+    `attempts/hr=${PHASE4_MAX_PAIR_ATTEMPTS_PER_HOUR} hedge_timeout=${PHASE4_HEDGE_TIMEOUT_SEC}s`
+  );
 
   {
     const startLines = [
@@ -1364,6 +1384,7 @@ async function main(): Promise<void> {
       `Phase 1: net_edge≥${NET_EDGE_THRESHOLD} | actionability≥${MIN_ACTIONABILITY}`,
       `Phase 2: Kelly ${Math.round(KELLY_FRACTION * 100)}% | slip EMA ${(state.slippageEma * 100).toFixed(2)}%`,
       `Phase 3: shadow mode ${PHASE3_SHADOW_ENABLED ? "ON" : "OFF"}`,
+      `Phase 4: live ${PHASE4_LIVE_ENABLED ? "ON" : "OFF"} | pair $${PHASE4_CROSS_PAIR_USD.toFixed(2)} max $${PHASE4_CROSS_PAIR_MAX_USD.toFixed(2)}`,
     ];
     if (backtestMsg) startLines.push(`📊 ${backtestMsg}`);
     notifyDiscord(startLines.join("\n"));
