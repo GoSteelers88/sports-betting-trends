@@ -19,20 +19,30 @@
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Environment variables:
- *   KALSHI_API_KEY_ID — RSA key ID
- *   KALSHI_PRIVATE_KEY_PEM_PATH — path to RSA private key PEM
- *   KALSHI_ENV — "prod" (default)
+ *   KALSHI_API_KEY_ID                 — RSA key ID
+ *   KALSHI_PRIVATE_KEY_PEM_PATH       — path to RSA private key PEM
+ *   KALSHI_ENV                        — "prod" (default)
+ *   AUTOPILOT_NET_EDGE_THRESHOLD      — min net executable edge to trade (default: 0.03)
+ *   AUTOPILOT_MIN_ACTIONABILITY       — min actionability: "High"|"Med"|"Low" (default: "Med")
+ *   AUTOPILOT_LATENCY_MS              — assumed API round-trip latency ms (default: 200)
+ *   AUTOPILOT_CANCEL_RATE             — historical resting-order cancel rate 0–1 (default: 0.15)
  *
  * Kill switches:
  *   KALSHI_AUTOPILOT_STOP=1 — env var kill switch
  *   touch data/STOP_KALSHI_AUTOPILOT.txt — file kill switch
  *
- * Safety caps:
+ * Safety caps (hard, cannot be overridden):
  *   MAX_COST_PER_ORDER = $2.00
  *   MAX_EXPOSURE = $20.00
  *   MAX_POSITIONS = 5
  *   MAX_RESTING = 5
  *   MAX_ORDERS_PER_HOUR = 20
+ *
+ * Net edge gate (Phase 1):
+ *   net_edge = raw_edge − fee_drag − slippage_est − latency_risk − cancel_risk
+ *   Threshold default: 0.03 (env: AUTOPILOT_NET_EDGE_THRESHOLD)
+ *   Rejection codes: fee_fail | depth_fail | net_edge_fail |
+ *                    actionability_fail | stale_data_fail | kill_switch_fail
  */
 
 import crypto from "node:crypto";
@@ -66,6 +76,16 @@ const HIGH_EDGE_THRESHOLD_PCT = 10;
 const DEFAULT_COST_USD = 1.00;
 const HIGH_EDGE_COST_USD = 2.00;
 
+// ─── Phase 1: Net executable edge — configurable via env vars ────────────────
+/** Minimum net_edge to open a trade (env: AUTOPILOT_NET_EDGE_THRESHOLD, default 0.03) */
+const NET_EDGE_THRESHOLD   = parseFloat(process.env.AUTOPILOT_NET_EDGE_THRESHOLD ?? "0.03");
+/** Minimum actionability gate: "High" | "Med" | "Low" (env: AUTOPILOT_MIN_ACTIONABILITY) */
+const MIN_ACTIONABILITY    = (process.env.AUTOPILOT_MIN_ACTIONABILITY ?? "Med") as "High" | "Med" | "Low";
+/** Assumed API round-trip latency in ms (env: AUTOPILOT_LATENCY_MS, default 200) */
+const NET_EDGE_LATENCY_MS  = parseInt(process.env.AUTOPILOT_LATENCY_MS ?? "200", 10);
+/** Historical resting-order cancel rate 0–1 (env: AUTOPILOT_CANCEL_RATE, default 0.15) */
+const NET_EDGE_CANCEL_RATE = parseFloat(process.env.AUTOPILOT_CANCEL_RATE ?? "0.15");
+
 const ENTRY_TIMEOUT_SEC = 28_800; // 8h
 const EXIT_TIMEOUT_SEC = 900;
 const TP_CENTS = 1;
@@ -82,6 +102,12 @@ const RATE_LIMIT_ALERT_COOLDOWN_MS = 5 * 60 * 1000;
 
 // ═══ NEW: Per-market loss limit ═══
 const MARKET_LOSS_LIMIT_USD = -500; // Stop trading a market after losing $500 cumulatively
+
+// ═══ Phase 1: Net executable edge scoring — configurable via env vars ═══
+const NET_EDGE_THRESHOLD   = parseFloat(process.env.AUTOPILOT_NET_EDGE_THRESHOLD ?? "0.03");
+const MIN_ACTIONABILITY    = (process.env.AUTOPILOT_MIN_ACTIONABILITY ?? "Med") as "High" | "Med" | "Low";
+const NET_EDGE_LATENCY_MS  = parseInt(process.env.AUTOPILOT_LATENCY_MS ?? "200", 10);
+const NET_EDGE_CANCEL_RATE = parseFloat(process.env.AUTOPILOT_CANCEL_RATE ?? "0.15");
 
 const STOP_FILE = path.resolve(process.cwd(), "data", "STOP_KALSHI_AUTOPILOT.txt");
 const STATE_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-state.json");
@@ -151,6 +177,23 @@ interface ProcessedMarket {
   topYesAskNotional?: number;
 }
 
+interface NetEdgeBreakdown {
+  rawEdge: number;
+  feeDrag: number;
+  slippage: number;
+  latency: number;
+  cancel: number;
+  netEdge: number;
+}
+
+type RejectionReason =
+  | "fee_fail"
+  | "depth_fail"
+  | "net_edge_fail"
+  | "actionability_fail"
+  | "stale_data_fail"
+  | "kill_switch_fail";
+
 interface PendingEntry {
   ticker: string;
   orderId: string;
@@ -204,6 +247,69 @@ interface CapResult {
   canTrade: boolean;
   reasons: string[];
   slotsAvailable: number;
+}
+
+// ─── Phase 1: Net executable edge scoring ────────────────────────────────────
+//
+//   net_edge = raw_edge − fee_drag − slippage_est − latency_risk − cancel_risk
+//
+//   fee_drag     = KALSHI_FEE × (1 − kalshiPrice)   7% profit fee as edge fraction
+//   slippage_est = spread/2 + market-impact          estimated fill slippage
+//   latency_risk = latency_ms × 0.2bp/ms             detection-to-execution lag
+//   cancel_risk  = cancel_rate × 0.2%                resting-order adverse selection
+
+interface NetEdgeComponents {
+  rawEdge: number;      // |gap| in decimal (e.g. 0.08 = 8%)
+  feeDrag: number;      // KALSHI_FEE × (1 − kalshiPrice)
+  slippageEst: number;  // spread/2 + market-impact
+  latencyRisk: number;  // latencyMs × LATENCY_RISK_PER_MS
+  cancelRisk: number;   // cancelRate × CANCEL_RISK_BASE
+  netEdge: number;      // rawEdge − feeDrag − slippageEst − latencyRisk − cancelRisk
+}
+
+type RejectionReason =
+  | "fee_fail"           // fee_drag alone wipes out raw_edge
+  | "depth_fail"         // insufficient open interest / book depth
+  | "net_edge_fail"      // net_edge < NET_EDGE_THRESHOLD after all deductions
+  | "actionability_fail" // market actionability below MIN_ACTIONABILITY
+  | "stale_data_fail"    // latest-summary.json is stale
+  | "kill_switch_fail";  // kill switch engaged
+
+// Actionability rank for >= comparison
+const ACTIONABILITY_RANK: Record<string, number> = { High: 2, Med: 1, Low: 0 };
+
+// Net-edge component constants
+const LATENCY_RISK_PER_MS = 0.000002; // 0.2 bp per ms of execution latency
+const CANCEL_RISK_BASE    = 0.002;    // 0.2% base adverse-selection cost per order
+
+/**
+ * Compute net executable edge by subtracting all cost components from raw edge.
+ * All inputs and outputs are in decimal (0–1) scale.
+ *
+ * @param rawEdge      |gap| in decimal (crossEdge.gap / 100)
+ * @param kalshiPrice  Kalshi price for the intended side, 0–1
+ * @param spreadDec    Bid-ask spread in decimal
+ * @param depthUsd     Depth at best in USD-equivalent units
+ * @param orderSizeUsd Intended order size in USD
+ * @param latencyMs    Assumed API round-trip latency (default: NET_EDGE_LATENCY_MS)
+ * @param cancelRate   Historical resting-order cancel rate (default: NET_EDGE_CANCEL_RATE)
+ */
+function computeNetEdge(
+  rawEdge: number,
+  kalshiPrice: number,
+  spreadDec: number,
+  depthUsd: number,
+  orderSizeUsd: number,
+  latencyMs  = NET_EDGE_LATENCY_MS,
+  cancelRate = NET_EDGE_CANCEL_RATE,
+): NetEdgeComponents {
+  const feeDrag     = KALSHI_FEE * (1 - kalshiPrice);
+  const mktImpact   = (orderSizeUsd / Math.max(depthUsd, 1)) * 0.1;
+  const slippageEst = spreadDec / 2 + mktImpact;
+  const latencyRisk = latencyMs * LATENCY_RISK_PER_MS;
+  const cancelRisk  = cancelRate * CANCEL_RISK_BASE;
+  const netEdge     = rawEdge - feeDrag - slippageEst - latencyRisk - cancelRisk;
+  return { rawEdge, feeDrag, slippageEst, latencyRisk, cancelRisk, netEdge };
 }
 
 // ═══ NEW: Price history for leader detection ═══
@@ -593,6 +699,27 @@ function appendTrade(record: Record<string, unknown>): void {
   }
 }
 
+const ACTIONABILITY_ORDER: Record<ProcessedMarket["actionability"], number> = { Low: 0, Med: 1, High: 2 };
+const STALE_DATA_LOG_COOLDOWN_MS = 5 * 60 * 1000;
+let lastStaleDataLogMs = 0;
+
+function isActionabilityAcceptable(level: ProcessedMarket["actionability"] | undefined): boolean {
+  return ACTIONABILITY_ORDER[level ?? "Low"] >= ACTIONABILITY_ORDER[MIN_ACTIONABILITY_LEVEL];
+}
+
+function computeNetEdge(rawEdge: number): NetEdgeBreakdown {
+  const feeDrag = Math.min(rawEdge, Math.max(NET_EDGE_FEE_DRAG, 0));
+  const slippage = Math.min(Math.max(NET_EDGE_SLIPPAGE, 0), Math.max(rawEdge - feeDrag, 0));
+  const latency = Math.min(Math.max(NET_EDGE_LATENCY, 0), Math.max(rawEdge - feeDrag - slippage, 0));
+  const cancel = Math.min(Math.max(NET_EDGE_CANCEL, 0), Math.max(rawEdge - feeDrag - slippage - latency, 0));
+  const netEdge = rawEdge - feeDrag - slippage - latency - cancel;
+  return { rawEdge, feeDrag, slippage, latency, cancel, netEdge };
+}
+
+function logRejection(reason: RejectionReason, data: Record<string, unknown> = {}): void {
+  appendTrade({ type: "reject", reason, ...data });
+}
+
 // ---------------------------------------------------------------------------
 // Market data (unchanged)
 // ---------------------------------------------------------------------------
@@ -671,10 +798,10 @@ function maybeRefreshMarkets(): void {
 // ---------------------------------------------------------------------------
 // Kill switch & runtime (unchanged)
 // ---------------------------------------------------------------------------
-function checkKillSwitch(): boolean {
-  if (process.env.KALSHI_AUTOPILOT_STOP === "1") return true;
-  if (fs.existsSync(STOP_FILE)) return true;
-  return false;
+function checkKillSwitch(): { triggered: boolean; source?: "env" | "file" } {
+  if (process.env.KALSHI_AUTOPILOT_STOP === "1") return { triggered: true, source: "env" };
+  if (fs.existsSync(STOP_FILE)) return { triggered: true, source: "file" };
+  return { triggered: false };
 }
 
 function checkRuntime(state: AutopilotState): boolean {
@@ -892,11 +1019,13 @@ function isLiveGameTicker(ticker: string): boolean {
   return t.includes("GAME-") || t.startsWith("KXNBAGAME") || t.startsWith("KXNFLGAME") || t.startsWith("KXNHLGAME") || t.startsWith("KXMLBGAME");
 }
 
+type Opportunity = { market: ProcessedMarket; leaderResult: LeaderDetectionResult; netEdge: NetEdgeBreakdown; rawEdge: number };
+
 function findOpportunities(
   markets: ProcessedMarket[],
   state: AutopilotState,
   liveOrders: KalshiOrder[],
-): { market: ProcessedMarket; leaderResult: LeaderDetectionResult }[] {
+): Opportunity[] {
   const oneHourFromNow = Date.now() + 3_600_000;
   const liveOrderTickers = new Set(liveOrders.map((o) => o.ticker));
   const claimedGameKeys = new Set([
@@ -913,6 +1042,11 @@ function findOpportunities(
     if (liveOrderTickers.has(m.ticker)) continue;
     if (claimedGameKeys.has(gameKey(m.ticker))) continue;
 
+    if (!isActionabilityAcceptable(m.actionability)) {
+      logRejection("actionability_fail", { ticker: m.ticker, actionability: m.actionability ?? "Low" });
+      continue;
+    }
+
     const isLiveGame = isLiveGameTicker(m.ticker);
     if (!m.closeTime) continue;
     // Keep the 1h guard for non-game markets, but allow live game markets.
@@ -920,11 +1054,25 @@ function findOpportunities(
 
     // Liquidity check
     const marketSpread = m.spread ?? (m.yesBid != null && m.yesAsk != null ? m.yesAsk - m.yesBid : null);
-    if (marketSpread == null || marketSpread > 2) continue;
-    if ((m.openInterest ?? 0) < 50_000) continue;
+    const openInterest = m.openInterest ?? 0;
+    if (marketSpread == null || marketSpread > 2 || openInterest < 50_000) {
+      logRejection("depth_fail", { ticker: m.ticker, spread: marketSpread ?? null, openInterest });
+      continue;
+    }
 
     // Edge must exist
     if (!m.crossEdge || Math.abs(m.crossEdge.gap) < EDGE_THRESHOLD_PCT) continue;
+
+    const rawEdge = Math.abs(m.crossEdge.gap ?? 0) / 100;
+    const netEdge = computeNetEdge(rawEdge);
+    if (rawEdge <= netEdge.feeDrag) {
+      logRejection("fee_fail", { ticker: m.ticker, rawEdge });
+      continue;
+    }
+    if (netEdge.netEdge < NET_EDGE_THRESHOLD) {
+      logRejection("net_edge_fail", { ticker: m.ticker, netEdge: netEdge.netEdge, threshold: NET_EDGE_THRESHOLD });
+      continue;
+    }
 
     // ═══ NEW: Leader detection ═══
     const polyPrices = getPolyPrices(m.ticker);
@@ -962,14 +1110,14 @@ function findOpportunities(
     if (leaderResult.direction === "UP" && gap <= 0.012) continue;  // Poly up, Kalshi lagging = gap > 0
     if (leaderResult.direction === "DOWN" && gap >= -0.012) continue; // Poly down, Kalshi lagging = gap < 0
 
-    opportunities.push({ market: m, leaderResult });
+    opportunities.push({ market: m, leaderResult, netEdge, rawEdge });
   }
 
   // Sort by confidence × edge
   return opportunities
     .sort((a, b) => {
-      const scoreA = a.leaderResult.confidence * Math.abs(a.market.crossEdge?.gap ?? 0);
-      const scoreB = b.leaderResult.confidence * Math.abs(b.market.crossEdge?.gap ?? 0);
+      const scoreA = a.leaderResult.confidence * Math.max(a.netEdge.netEdge, 0);
+      const scoreB = b.leaderResult.confidence * Math.max(b.netEdge.netEdge, 0);
       return scoreB - scoreA;
     })
     .slice(0, 2);
@@ -979,7 +1127,7 @@ function findOpportunities(
 // ═══ REWRITTEN: Place entry orders with leader-aware direction ═══
 // ---------------------------------------------------------------------------
 async function placeEntryOrders(
-  opportunities: { market: ProcessedMarket; leaderResult: LeaderDetectionResult }[],
+  opportunities: Opportunity[],
   state: AutopilotState,
   caps: CapResult,
   liveOrders: KalshiOrder[],
@@ -988,7 +1136,7 @@ async function placeEntryOrders(
   const cycleGameKeys = new Set<string>();
   let placed = 0;
 
-  for (const { market, leaderResult } of opportunities) {
+  for (const { market, leaderResult, netEdge, rawEdge } of opportunities) {
     if (placed >= caps.slotsAvailable) break;
     const gk = gameKey(market.ticker);
     if (cycleGameKeys.has(gk)) continue;
@@ -1073,6 +1221,7 @@ async function placeEntryOrders(
         ticker: market.ticker, side, edgePct: edgeGap,
         leader: leaderResult.leader, direction: leaderResult.direction,
         confidence: leaderResult.confidence, momentum: leaderResult.momentumStrength,
+        netEdgePct: netEdge.netEdge * 100, rawEdgePct: rawEdge * 100,
         status: "entry_placed",
       });
 
@@ -1080,7 +1229,7 @@ async function placeEntryOrders(
         `📋 **ENTRY PLACED** | ${market.ticker}\n` +
         `Side: **${side.toUpperCase()}** @ $${priceDollars} × ${countFp} | Cost: $${costUsd.toFixed(2)}\n` +
         `Leader: **${leaderResult.leader}** ${leaderResult.direction} | Conf: ${(leaderResult.confidence * 100).toFixed(0)}% | Mom: ${(leaderResult.momentumStrength * 100).toFixed(0)}%\n` +
-        `Edge: ${edgeGap.toFixed(1)}% | Fill: ${fillMode}`
+        `Edge: ${edgeGap.toFixed(1)}% | Net edge: ${(netEdge.netEdge * 100).toFixed(1)}% (thr ${(NET_EDGE_THRESHOLD * 100).toFixed(1)}%) | Fill: ${fillMode}`
       );
     } catch (err) {
       state.lastError = (err as Error).message;
@@ -1157,7 +1306,11 @@ async function main(): Promise<void> {
   }
 
   while (true) {
-    if (checkKillSwitch()) await gracefulShutdown(state, "kill switch triggered");
+    const killSwitch = checkKillSwitch();
+    if (killSwitch.triggered) {
+      logRejection("kill_switch_fail", { source: killSwitch.source });
+      await gracefulShutdown(state, `kill switch triggered${killSwitch.source ? ` (${killSwitch.source})` : ""}`);
+    }
     if (checkRuntime(state)) await gracefulShutdown(state, "48h runtime limit reached");
 
     maybeRefreshModelData();
@@ -1203,11 +1356,18 @@ async function main(): Promise<void> {
     }
 
     const caps = checkCaps(state, orders);
-    let cycleOpportunities: { market: ProcessedMarket; leaderResult: LeaderDetectionResult }[] = [];
+    let cycleOpportunities: Opportunity[] = [];
     let cycleOrdersPlaced = 0;
 
     const summaryStale = isSummaryStale();
     const summaryAgeMin = summaryAgeMinutes();
+    if (summaryStale) {
+      const now = Date.now();
+      if (now - lastStaleDataLogMs > STALE_DATA_LOG_COOLDOWN_MS) {
+        logRejection("stale_data_fail", { age_minutes: summaryAgeMin ?? null });
+        lastStaleDataLogMs = now;
+      }
+    }
 
     if (caps.canTrade && !summaryStale) {
       cycleOpportunities = findOpportunities(markets, state, orders);
@@ -1239,12 +1399,12 @@ async function main(): Promise<void> {
         `Strategy: POLY-leads only | Session orders: ${sessionOrdersPlaced}`,
       ];
 
-      for (const { market: opp, leaderResult } of cycleOpportunities.slice(0, 3)) {
-        if (opp.crossEdge) {
-          const ce = opp.crossEdge;
+      for (const opp of cycleOpportunities.slice(0, 3)) {
+        const ce = opp.market.crossEdge;
+        if (ce) {
           lines.push(
-            `⚡ ${opp.ticker}: ${leaderResult.leader} leads ${leaderResult.direction} | ` +
-            `Conf: ${(leaderResult.confidence * 100).toFixed(0)}% | Edge: ${Math.abs(ce.gap).toFixed(1)}%`
+            `⚡ ${opp.market.ticker}: ${opp.leaderResult.leader} leads ${opp.leaderResult.direction} | ` +
+            `Conf: ${(opp.leaderResult.confidence * 100).toFixed(0)}% | Edge: ${Math.abs(ce.gap).toFixed(1)}% | Net: ${(opp.netEdge.netEdge * 100).toFixed(1)}%`
           );
         }
       }
