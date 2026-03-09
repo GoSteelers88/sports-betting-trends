@@ -48,6 +48,7 @@ export class KalshiApiError extends Error {
     public readonly status: number,
     public readonly code: string,
     message: string,
+    public readonly retryAfterMs: number | null = null,
   ) {
     super(message);
     this.name = "KalshiApiError";
@@ -187,6 +188,21 @@ async function kalshiFetch(
   if (!res.ok) {
     let code = "unknown";
     let message = `HTTP ${res.status} from ${endpoint}`;
+    let retryAfterMs: number | null = null;
+
+    const retryAfter = res.headers.get("retry-after");
+    if (retryAfter) {
+      const asNum = Number(retryAfter);
+      if (Number.isFinite(asNum) && asNum >= 0) {
+        retryAfterMs = Math.floor(asNum * 1000);
+      } else {
+        const asDate = Date.parse(retryAfter);
+        if (Number.isFinite(asDate)) {
+          retryAfterMs = Math.max(0, asDate - Date.now());
+        }
+      }
+    }
+
     try {
       const errBody = (await res.json()) as { code?: string; message?: string };
       console.error(`[kalshi-api] ${res.status} error body:`, JSON.stringify(errBody));
@@ -195,7 +211,7 @@ async function kalshiFetch(
     } catch {
       // ignore JSON parse failure
     }
-    throw new KalshiApiError(res.status, code, message);
+    throw new KalshiApiError(res.status, code, message, retryAfterMs);
   }
 
   return res.json();

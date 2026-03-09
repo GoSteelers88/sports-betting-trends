@@ -74,6 +74,9 @@ const INGEST_INTERVAL_MS = 300_000; // 5 min
 const RUN_DURATION_MS = 172_800_000; // 48h
 const ERROR_WINDOW_MS = 600_000; // 10 min
 const MAX_ERRORS_IN_WINDOW = 5;
+const RATE_LIMIT_MAX_RETRIES = 3;
+const RATE_LIMIT_BASE_BACKOFF_MS = 2_000;
+const RATE_LIMIT_ALERT_COOLDOWN_MS = 5 * 60 * 1000;
 
 // ═══ NEW: Per-market loss limit ═══
 const MARKET_LOSS_LIMIT_USD = -500; // Stop trading a market after losing $500 cumulatively
@@ -232,6 +235,41 @@ function nowET(): string {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+let lastRateLimitAlertTs = 0;
+
+function maybeNotifyRateLimit(context: string, waitMs: number, attempt: number): void {
+  const now = Date.now();
+  if (now - lastRateLimitAlertTs < RATE_LIMIT_ALERT_COOLDOWN_MS) return;
+  lastRateLimitAlertTs = now;
+  notifyDiscord(
+    `⚠️ **RATE LIMIT BACKOFF** | ${context}\n` +
+    `429 received — backing off ${(waitMs / 1000).toFixed(1)}s (attempt ${attempt}/${RATE_LIMIT_MAX_RETRIES})`
+  );
+}
+
+async function withRateLimitRetry<T>(
+  context: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= RATE_LIMIT_MAX_RETRIES; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (!(err instanceof KalshiApiError) || err.status !== 429) throw err;
+      const waitMs = Math.max(
+        err.retryAfterMs ?? 0,
+        RATE_LIMIT_BASE_BACKOFF_MS * 2 ** (attempt - 1),
+      );
+      console.warn(`[autopilot] 429 on ${context}; backoff ${waitMs}ms (attempt ${attempt}/${RATE_LIMIT_MAX_RETRIES})`);
+      maybeNotifyRateLimit(context, waitMs, attempt);
+      await sleep(waitMs);
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error(`Rate-limit retry exhausted: ${context}`);
 }
 
 function notifyDiscord(message: string): void {
@@ -599,7 +637,11 @@ async function apiPreChecks(state: AutopilotState): Promise<{
   balance: KalshiBalance; positions: KalshiPosition[]; orders: KalshiOrder[];
 } | null> {
   try {
-    const [balance, positions, orders] = await Promise.all([getBalance(), getPositions(), getOrders("resting")]);
+    const [balance, positions, orders] = await Promise.all([
+      withRateLimitRetry("getBalance", () => getBalance()),
+      withRateLimitRetry("getPositions", () => getPositions()),
+      withRateLimitRetry("getOrders(resting)", () => getOrders("resting")),
+    ]);
     return { balance, positions, orders };
   } catch (err) {
     state.apiErrors.push(new Date().toISOString());
@@ -636,7 +678,7 @@ async function managePendingEntries(
 
     if (ageMs > ENTRY_TIMEOUT_SEC * 1000 && !liveTickerSet.has(ticker)) {
       if (!orderGone) {
-        try { await cancelOrder(entry.orderId); } catch (err) {
+        try { await withRateLimitRetry(`cancelOrder(${entry.orderId})`, () => cancelOrder(entry.orderId)); } catch (err) {
           console.warn(`[autopilot] Cancel entry ${entry.orderId} failed: ${(err as Error).message}`);
         }
       }
@@ -684,7 +726,7 @@ async function placeExitOrder(pos: PositionState, state: AutopilotState, breakev
     [pos.side === "yes" ? "yes_price_dollars" : "no_price_dollars"]: priceDollars,
     count_fp: pos.countFp, client_order_id: clientOrderId, post_only: true,
   };
-  const exitOrder = await createOrder(payload);
+  const exitOrder = await withRateLimitRetry(`createOrder(exit:${pos.ticker})`, () => createOrder(payload));
   pos.exitOrderId = exitOrder.order_id;
   pos.exitAttempts++;
   pos.status = "exit_placed";
@@ -742,7 +784,7 @@ async function manageOpenPositions(
           const exitAgeMs = Date.now() - new Date(exitOrder.created_time).getTime();
           if (exitAgeMs > EXIT_TIMEOUT_SEC * 1000) {
             try {
-              await cancelOrder(pos.exitOrderId);
+              await withRateLimitRetry(`cancelOrder(${pos.exitOrderId})`, () => cancelOrder(pos.exitOrderId!));
               await placeExitOrder(pos, state, true);
             } catch (err) {
               console.warn(`[autopilot] Breakeven exit for ${ticker} failed: ${(err as Error).message}`);
@@ -954,7 +996,7 @@ async function placeEntryOrders(
 
     try {
       console.log(`[autopilot] Placing order: ${JSON.stringify(payload)} | Leader: ${leaderResult.leader} ${leaderResult.direction} conf=${leaderResult.confidence}`);
-      const order = await createOrder(payload);
+      const order = await withRateLimitRetry(`createOrder(entry:${market.ticker})`, () => createOrder(payload));
 
       state.pendingEntries[market.ticker] = {
         ticker: market.ticker, orderId: order.order_id, clientOrderId, side,
@@ -1007,7 +1049,10 @@ function printStatus(state: AutopilotState, balanceCents: number, liveOrders: Ka
 // ---------------------------------------------------------------------------
 async function gracefulShutdown(state: AutopilotState, reason: string): Promise<never> {
   console.log(`\n[autopilot] Shutting down: ${reason}`);
-  try { const cancelled = await cancelAllRestingOrders(); console.log(`[autopilot] Cancelled ${cancelled} resting order(s)`); }
+  try {
+    const cancelled = await withRateLimitRetry("cancelAllRestingOrders", () => cancelAllRestingOrders());
+    console.log(`[autopilot] Cancelled ${cancelled} resting order(s)`);
+  }
   catch (err) { console.warn(`[autopilot] cancelAllRestingOrders failed: ${(err as Error).message}`); }
   saveState(state);
   savePriceHistory();
