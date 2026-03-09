@@ -71,6 +71,8 @@ const EXIT_TIMEOUT_SEC = 900;
 const TP_CENTS = 1;
 const LOOP_INTERVAL_MS = 10_000; // 10 sec
 const INGEST_INTERVAL_MS = 300_000; // 5 min
+const SUMMARY_REFRESH_INTERVAL_MS = 600_000; // 10 min
+const SUMMARY_STALE_MS = 30 * 60 * 1000; // 30 min
 const RUN_DURATION_MS = 172_800_000; // 48h
 const ERROR_WINDOW_MS = 600_000; // 10 min
 const MAX_ERRORS_IN_WINDOW = 5;
@@ -85,6 +87,7 @@ const STOP_FILE = path.resolve(process.cwd(), "data", "STOP_KALSHI_AUTOPILOT.txt
 const STATE_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-state.json");
 const TRADES_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-trades.jsonl");
 const MARKETS_FILE = path.resolve(process.cwd(), "data", "processed", "latest-kalshi.json");
+const SUMMARY_FILE = path.resolve(process.cwd(), "data", "processed", "latest-summary.json");
 const BACKTEST_FILE = path.resolve(process.cwd(), "data", "processed", "backtest-results.json");
 // ═══ NEW: Price history storage for leader detection ═══
 const PRICE_HISTORY_FILE = path.resolve(process.cwd(), "data", "processed", "price-history.json");
@@ -600,6 +603,54 @@ function loadMarkets(): ProcessedMarket[] {
   } catch { return []; }
 }
 
+function summaryAgeMinutes(): number | null {
+  try {
+    if (!fs.existsSync(SUMMARY_FILE)) return null;
+    const ageMs = Date.now() - fs.statSync(SUMMARY_FILE).mtimeMs;
+    return Math.round(ageMs / 60_000);
+  } catch {
+    return null;
+  }
+}
+
+function isSummaryStale(): boolean {
+  const ageMin = summaryAgeMinutes();
+  if (ageMin === null) return true;
+  return ageMin * 60_000 > SUMMARY_STALE_MS;
+}
+
+function maybeRefreshModelData(): void {
+  try {
+    let needRefresh = true;
+    if (fs.existsSync(SUMMARY_FILE)) {
+      const ageMs = Date.now() - fs.statSync(SUMMARY_FILE).mtimeMs;
+      needRefresh = ageMs > SUMMARY_REFRESH_INTERVAL_MS;
+    }
+    if (!needRefresh) return;
+
+    console.log("[autopilot] Refreshing model inputs (odds + free stats)...");
+    const odds = spawnSync("npm", ["run", "ingest:odds"], {
+      stdio: "inherit", shell: true, timeout: 240_000, cwd: process.cwd(),
+    });
+    if (odds.status !== 0) {
+      console.warn(`[autopilot] ingest:odds exited ${odds.status}`);
+      return;
+    }
+
+    const free = spawnSync("npm", ["run", "ingest:free"], {
+      stdio: "inherit", shell: true, timeout: 240_000, cwd: process.cwd(),
+    });
+    if (free.status !== 0) {
+      console.warn(`[autopilot] ingest:free exited ${free.status}`);
+      return;
+    }
+
+    notifyDiscord("♻️ **MODEL REFRESHED** | latest-summary.json rebuilt (odds + free stats)");
+  } catch (err) {
+    console.warn(`[autopilot] Model refresh failed: ${(err as Error).message}`);
+  }
+}
+
 function maybeRefreshMarkets(): void {
   try {
     let needRefresh = true;
@@ -1109,6 +1160,7 @@ async function main(): Promise<void> {
     if (checkKillSwitch()) await gracefulShutdown(state, "kill switch triggered");
     if (checkRuntime(state)) await gracefulShutdown(state, "48h runtime limit reached");
 
+    maybeRefreshModelData();
     maybeRefreshMarkets();
     const markets = loadMarkets();
 
@@ -1154,7 +1206,10 @@ async function main(): Promise<void> {
     let cycleOpportunities: { market: ProcessedMarket; leaderResult: LeaderDetectionResult }[] = [];
     let cycleOrdersPlaced = 0;
 
-    if (caps.canTrade) {
+    const summaryStale = isSummaryStale();
+    const summaryAgeMin = summaryAgeMinutes();
+
+    if (caps.canTrade && !summaryStale) {
       cycleOpportunities = findOpportunities(markets, state, orders);
       if (cycleOpportunities.length > 0) {
         try {
@@ -1194,7 +1249,9 @@ async function main(): Promise<void> {
         }
       }
 
-      if (cycleOpportunities.length === 0 && caps.canTrade) {
+      if (summaryStale) {
+        lines.push(`Trading paused: model stale (${summaryAgeMin ?? "?"}m old summary)`);
+      } else if (cycleOpportunities.length === 0 && caps.canTrade) {
         lines.push("No POLY-leads signals this cycle");
       } else if (!caps.canTrade) {
         lines.push(`Trading paused: ${caps.reasons[0] ?? "cap reached"}`);
