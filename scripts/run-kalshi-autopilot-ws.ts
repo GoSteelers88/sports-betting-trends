@@ -242,7 +242,7 @@ let kalshiReconnectDelay = WS_RECONNECT_INITIAL_MS;
 let polyReconnectDelay   = WS_RECONNECT_INITIAL_MS;
 let wsMessageId = 1;
 let running = true;
-let isPlacingOrder = false; // simple mutex for order placement
+const placingTickers = new Set<string>(); // per-market mutex for order placement
 
 // âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 // Utility
@@ -586,11 +586,11 @@ async function placeEntry(
   edgePct: number,
   leader: LeaderDetectionResult,
 ): Promise<void> {
-  if (isPlacingOrder) return;
-  isPlacingOrder = true;
+  const { ticker } = ms;
+  if (placingTickers.has(ticker)) return;
+  placingTickers.add(ticker);
 
   try {
-    const { ticker } = ms;
     const dedupeKey  = `${ticker}-${side}-${priceCents}`;
 
     // Final dedupe check
@@ -636,7 +636,7 @@ async function placeEntry(
   } catch (err) {
     warn(`createOrder failed: ${(err as Error).message}`);
   } finally {
-    isPlacingOrder = false;
+    placingTickers.delete(ticker);
   }
 }
 
