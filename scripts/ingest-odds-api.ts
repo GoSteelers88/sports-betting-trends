@@ -23,9 +23,13 @@ const DEFAULT_LEAGUES = [
   "americanfootball_nfl",
   "baseball_mlb",
   "icehockey_nhl",
+  // Soccer: major Europe + MLS
   "soccer_epl",
   "soccer_spain_la_liga",
   "soccer_italy_serie_a",
+  "soccer_germany_bundesliga",
+  "soccer_france_ligue_one",
+  "soccer_usa_mls",
 ];
 
 async function fetchOddsForLeague(
