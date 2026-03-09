@@ -91,10 +91,21 @@ const BASE_SLIPPAGE_EST    = parseFloat(process.env.AUTOPILOT_BASE_SLIPPAGE ?? "
 const SLIPPAGE_EMA_ALPHA   = parseFloat(process.env.AUTOPILOT_SLIPPAGE_ALPHA ?? "0.2");
 /** Minimum slippage floor even with good fills (env: AUTOPILOT_MIN_SLIPPAGE, default 0.002) */
 const MIN_SLIPPAGE_EST     = parseFloat(process.env.AUTOPILOT_MIN_SLIPPAGE ?? "0.002");
+/** Cap historical slippage input to prevent stale/outlier state from freezing entries (default 0.03). */
+const MAX_SLIPPAGE_EST     = parseFloat(process.env.AUTOPILOT_MAX_SLIPPAGE ?? "0.03");
 /** Fraction of Kelly to deploy (env: AUTOPILOT_KELLY_FRACTION, default 0.25) */
 const KELLY_FRACTION       = parseFloat(process.env.AUTOPILOT_KELLY_FRACTION ?? "0.25");
 /** Minimum order ticket size in USD for Kelly sizing (env: AUTOPILOT_MIN_ORDER_USD, default 0.50) */
 const MIN_ORDER_USD        = parseFloat(process.env.AUTOPILOT_MIN_ORDER_USD ?? "0.50");
+/** Optional ticker-prefix allowlist for relaxed liquidity gate (comma-separated). */
+const RELAXED_TICKER_PREFIXES = (process.env.AUTOPILOT_RELAXED_TICKER_PREFIXES ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+/** Relaxed max spread (cents) for allowlisted tickers. */
+const RELAXED_MAX_SPREAD_CENTS = parseInt(process.env.AUTOPILOT_RELAXED_MAX_SPREAD_CENTS ?? "4", 10);
+/** Relaxed minimum open interest for allowlisted tickers. */
+const RELAXED_MIN_OPEN_INTEREST = parseInt(process.env.AUTOPILOT_RELAXED_MIN_OPEN_INTEREST ?? "0", 10);
 
 const ENTRY_TIMEOUT_SEC = 28_800; // 8h
 const EXIT_TIMEOUT_SEC = 900;
@@ -287,6 +298,11 @@ type RejectionReason =
 // Actionability rank for >= comparison
 const ACTIONABILITY_RANK: Record<string, number> = { High: 2, Med: 1, Low: 0 };
 
+function isRelaxedLiquidityTicker(ticker: string): boolean {
+  if (!RELAXED_TICKER_PREFIXES.length) return false;
+  return RELAXED_TICKER_PREFIXES.some((prefix) => ticker.startsWith(prefix));
+}
+
 // Net-edge component constants
 const LATENCY_RISK_PER_MS = 0.000002; // 0.2 bp per ms of execution latency
 const CANCEL_RISK_BASE    = 0.002;    // 0.2% base adverse-selection cost per order
@@ -316,7 +332,8 @@ function computeNetEdge(
   const feeDrag     = KALSHI_FEE * (1 - kalshiPrice);
   const mktImpact   = (orderSizeUsd / Math.max(depthUsd, 1)) * 0.1;
   const microstructureSlip = spreadDec / 2 + mktImpact;
-  const slippageEst = Math.max(MIN_SLIPPAGE_EST, historicalSlippage, microstructureSlip);
+  const boundedHistoricalSlippage = Math.min(Math.max(historicalSlippage, 0), MAX_SLIPPAGE_EST);
+  const slippageEst = Math.max(MIN_SLIPPAGE_EST, boundedHistoricalSlippage, microstructureSlip);
   const latencyRisk = latencyMs * LATENCY_RISK_PER_MS;
   const cancelRisk  = cancelRate * CANCEL_RISK_BASE;
   const netEdge     = rawEdge - feeDrag - slippageEst - latencyRisk - cancelRisk;
@@ -1111,8 +1128,18 @@ function findOpportunities(
     // Liquidity check
     const marketSpread = m.spread ?? (m.yesBid != null && m.yesAsk != null ? m.yesAsk - m.yesBid : null);
     const openInterest = m.openInterest ?? 0;
-    if (marketSpread == null || marketSpread > 2 || openInterest < 50_000) {
-      logRejection("depth_fail", { ticker: m.ticker, spread: marketSpread ?? null, openInterest });
+    const relaxedLiquidity = isRelaxedLiquidityTicker(m.ticker);
+    const maxSpread = relaxedLiquidity ? RELAXED_MAX_SPREAD_CENTS : 2;
+    const minOpenInterest = relaxedLiquidity ? RELAXED_MIN_OPEN_INTEREST : 50_000;
+    if (marketSpread == null || marketSpread > maxSpread || openInterest < minOpenInterest) {
+      logRejection("depth_fail", {
+        ticker: m.ticker,
+        spread: marketSpread ?? null,
+        openInterest,
+        maxSpread,
+        minOpenInterest,
+        relaxedLiquidity,
+      });
       continue;
     }
 
