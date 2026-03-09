@@ -445,10 +445,11 @@ async function fetchOrderbook(ticker: string): Promise<KalshiOrderbook | null> {
 
 async function batchFetchOrderbooks(
   tickers: string[],
-  concurrency = 5,
+  concurrency = Number(process.env.KALSHI_OB_CONCURRENCY ?? 20),
 ): Promise<Map<string, KalshiOrderbook | null>> {
   const result = new Map<string, KalshiOrderbook | null>();
   let errors = 0;
+  concurrency = Number.isFinite(concurrency) && concurrency > 0 ? Math.floor(concurrency) : 20;
 
   console.log(`  [kalshi] Fetching orderbooks for ${tickers.length} tickers (concurrency=${concurrency})...`);
 
@@ -465,7 +466,7 @@ async function batchFetchOrderbooks(
         errors++;
       }
     }
-    if (i + concurrency < tickers.length) await sleep(200);
+    if (i + concurrency < tickers.length) await sleep(Number(process.env.KALSHI_OB_CHUNK_SLEEP_MS ?? 50));
   }
 
   const fetched = result.size - errors;
