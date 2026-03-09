@@ -1306,6 +1306,52 @@ function fmtNotional(usd: number): string {
   return `$${usd.toFixed(0)}`;
 }
 
+function fmtEtDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "Unknown";
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(d);
+}
+
+function fmtTMinus(targetIso: string, now: Date): string {
+  const target = new Date(targetIso);
+  if (Number.isNaN(target.getTime())) return "—";
+  const mins = Math.round((target.getTime() - now.getTime()) / 60_000);
+  if (mins <= 0) return "started/closed";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+function parseTickerKickoffEt(ticker: string): { label: string; sortKey: string } | null {
+  // Example: KXNLGAME-26MAR091445... => 3/9 2:45 PM ET
+  const m = ticker.toUpperCase().match(/-(\d{2})(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(\d{2})(\d{4})/);
+  if (!m) return null;
+  const [, yy, mon, dd, hhmm] = m;
+  const monthMap: Record<string, string> = {
+    JAN: "01", FEB: "02", MAR: "03", APR: "04", MAY: "05", JUN: "06",
+    JUL: "07", AUG: "08", SEP: "09", OCT: "10", NOV: "11", DEC: "12",
+  };
+  const month = monthMap[mon];
+  if (!month) return null;
+
+  const hour24 = Number(hhmm.slice(0, 2));
+  const minute = hhmm.slice(2, 4);
+  if (!Number.isFinite(hour24) || hour24 < 0 || hour24 > 23) return null;
+
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  const ampm = hour24 >= 12 ? "PM" : "AM";
+  const label = `${Number(month)}/${Number(dd)} ${hour12}:${minute} ${ampm} ET`;
+  const sortKey = `20${yy}${month}${dd}${hhmm}`;
+  return { label, sortKey };
+}
+
 function formatAgentsMdBlock(
   markets: ProcessedMarket[],
   crossEdgeMarkets: ProcessedMarket[],
@@ -1359,6 +1405,52 @@ function formatAgentsMdBlock(
       lines.push(
         `- **${m.ticker}** ${m.title} — YES bid ${fmtCents(m.yesBid)} / ask ${fmtCents(m.yesAsk)} · Implied ${implStr} · ${m.actionability}`,
       );
+    }
+    lines.push("");
+  }
+
+  const now = fetchedAt;
+  const upcomingSports = markets
+    .filter((m) => m.isSports)
+    .map((m) => {
+      const kickoff = parseTickerKickoffEt(m.ticker);
+      const closeTs = m.closeTime ? new Date(m.closeTime).getTime() : Number.POSITIVE_INFINITY;
+      return { m, kickoff, closeTs };
+    })
+    .filter((x) => x.kickoff || Number.isFinite(x.closeTs))
+    .sort((a, b) => {
+      // Prefer explicit kickoff from ticker for game markets
+      if (a.kickoff && b.kickoff) return a.kickoff.sortKey.localeCompare(b.kickoff.sortKey);
+      if (a.kickoff && !b.kickoff) return -1;
+      if (!a.kickoff && b.kickoff) return 1;
+      return a.closeTs - b.closeTs;
+    })
+    .slice(0, 20);
+
+  if (upcomingSports.length > 0) {
+    lines.push("## Upcoming Sports Schedule (ET)");
+    lines.push("_Coverage helper across all sports; kickoff from ticker when available, else market close time._");
+    lines.push("");
+    for (const { m, kickoff } of upcomingSports) {
+      const when = kickoff
+        ? `Starts ${kickoff.label}`
+        : `Closes ${fmtEtDateTime(m.closeTime)} ET`;
+      const tMinus = kickoff
+        ? (() => {
+            const y = Number(kickoff.sortKey.slice(0, 4));
+            const mo = Number(kickoff.sortKey.slice(4, 6));
+            const d = Number(kickoff.sortKey.slice(6, 8));
+            const h = Number(kickoff.sortKey.slice(8, 10));
+            const mi = Number(kickoff.sortKey.slice(10, 12));
+            const kickoffLocal = new Date(y, mo - 1, d, h, mi, 0);
+            const mins = Math.round((kickoffLocal.getTime() - now.getTime()) / 60_000);
+            if (mins <= 0) return "started/closed";
+            const hh = Math.floor(mins / 60);
+            const mm = mins % 60;
+            return hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
+          })()
+        : (m.closeTime ? fmtTMinus(m.closeTime, now) : "—");
+      lines.push(`- **${m.ticker}** ${m.title} — ${when} · T-minus ${tMinus} · ${m.actionability}`);
     }
     lines.push("");
   }
