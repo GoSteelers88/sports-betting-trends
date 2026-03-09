@@ -121,6 +121,8 @@ const SUMMARY_FILE = path.resolve(process.cwd(), "data", "processed", "latest-su
 const BACKTEST_FILE = path.resolve(process.cwd(), "data", "processed", "backtest-results.json");
 const PHASE3_SHADOW_ENABLED = (process.env.AUTOPILOT_PHASE3_SHADOW ?? "0") === "1";
 const SHADOW_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-shadow-opportunities.jsonl");
+const WEATHER_SHADOW_ENABLED = (process.env.AUTOPILOT_WEATHER_SHADOW ?? "1") === "1";
+const WEATHER_SHADOW_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-weather-shadow.jsonl");
 
 // Phase 4 (live cross-venue) config block — gated OFF by default
 const PHASE4_LIVE_ENABLED = (process.env.AUTOPILOT_PHASE4_LIVE ?? "0") === "1";
@@ -722,6 +724,16 @@ function appendShadow(record: Record<string, unknown>): void {
   }
 }
 
+function appendWeatherShadow(record: Record<string, unknown>): void {
+  if (!WEATHER_SHADOW_ENABLED) return;
+  try {
+    fs.mkdirSync(path.dirname(WEATHER_SHADOW_FILE), { recursive: true });
+    fs.appendFileSync(WEATHER_SHADOW_FILE, JSON.stringify({ timestamp: new Date().toISOString(), ...record }) + "\n", "utf-8");
+  } catch (err) {
+    console.warn(`[autopilot] Weather shadow log write failed: ${(err as Error).message}`);
+  }
+}
+
 const STALE_DATA_LOG_COOLDOWN_MS = 5 * 60 * 1000;
 let lastStaleDataLogMs = 0;
 
@@ -1193,6 +1205,22 @@ function findOpportunities(
 // ---------------------------------------------------------------------------
 // ═══ REWRITTEN: Place entry orders with leader-aware direction ═══
 // ---------------------------------------------------------------------------
+function findWeatherShadowCandidates(markets: ProcessedMarket[]): ProcessedMarket[] {
+  const isWeather = (m: ProcessedMarket): boolean => {
+    const c = String(m.category ?? "").toLowerCase();
+    const t = `${m.title} ${m.subtitle} ${m.ticker}`.toLowerCase();
+    return c.includes("weather") || t.includes("hurricane") || t.includes("snow") || t.includes("rain") || t.includes("temperature");
+  };
+
+  return markets
+    .filter((m) => m.status === "open")
+    .filter((m) => isWeather(m))
+    .filter((m) => m.actionability === "High" || m.actionability === "Med")
+    .filter((m) => Number.isFinite(m.yesBid) && Number.isFinite(m.yesAsk) && m.yesBid > 0 && m.yesAsk > 0)
+    .filter((m) => Number.isFinite(m.spread) && m.spread <= 3)
+    .sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0))
+    .slice(0, 10);
+}
 async function placeEntryOrders(
   opportunities: Opportunity[],
   state: AutopilotState,
@@ -1375,6 +1403,7 @@ async function main(): Promise<void> {
     `cross_exp=$${PHASE4_CROSS_EXPOSURE_MAX_USD.toFixed(2)} pairs=${PHASE4_MAX_CONCURRENT_PAIRS} ` +
     `attempts/hr=${PHASE4_MAX_PAIR_ATTEMPTS_PER_HOUR} hedge_timeout=${PHASE4_HEDGE_TIMEOUT_SEC}s`
   );
+  console.log(`[autopilot] Weather shadow: ${WEATHER_SHADOW_ENABLED ? `ON (${WEATHER_SHADOW_FILE})` : "OFF"}`);
 
   {
     const startLines = [
@@ -1482,6 +1511,25 @@ async function main(): Promise<void> {
       }
     }
 
+    const weatherShadowCandidates = findWeatherShadowCandidates(markets);
+    if (WEATHER_SHADOW_ENABLED) {
+      for (const m of weatherShadowCandidates) {
+        appendWeatherShadow({
+          phase: "weather_shadow",
+          ticker: m.ticker,
+          title: m.title,
+          category: m.category,
+          yesBid: m.yesBid,
+          yesAsk: m.yesAsk,
+          spread: m.spread,
+          actionability: m.actionability,
+          volume: m.volume,
+          openInterest: m.openInterest,
+          closeTime: m.closeTime,
+        });
+      }
+    }
+
     if (caps.canTrade && !summaryStale) {
       cycleOpportunities = shadowCandidates;
       if (cycleOpportunities.length > 0) {
@@ -1510,6 +1558,7 @@ async function main(): Promise<void> {
         `📊 Autopilot v2 scan — ${nowET()} ET`,
         `Cash: $${cashUsd.toFixed(2)} | Exposure: $${exposure.toFixed(2)} | Positions: ${posCount}`,
         `Strategy: POLY-leads only | Session orders: ${sessionOrdersPlaced}`,
+        `Weather shadow candidates: ${weatherShadowCandidates.length}`,
       ];
 
       for (const opp of cycleOpportunities.slice(0, 3)) {
@@ -1545,4 +1594,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => { console.error("[autopilot] Unhandled error:", err); process.exit(1); });
+
+
 
