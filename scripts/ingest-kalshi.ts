@@ -199,6 +199,15 @@ interface BestBet {
   line?: string;
 }
 
+interface CrossEdgeMiss {
+  marketTicker: string;
+  marketTitle: string;
+  pickTeam: string;
+  opponent: string;
+  reason: "pick_unmatched" | "opp_unmatched" | "date_mismatch" | "below_threshold";
+  gap?: number;
+}
+
 // ---------------------------------------------------------------------------
 // RSA auth helpers
 // ---------------------------------------------------------------------------
@@ -674,7 +683,29 @@ const TEAM_ALIASES: Record<string, string[]> = {
 };
 
 function normalize(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim();
+  return s
+    .toLowerCase()
+    .replace(/\bsaint\b/g, "st")
+    .replace(/\bst\.\b/g, "st")
+    .replace(/\bstate\b/g, "st")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizedVariants(team: string): string[] {
+  const n = normalize(team);
+  const parts = n.split(" ").filter(Boolean);
+  const variants = new Set<string>([n]);
+  if (parts.length >= 2) {
+    variants.add(parts[parts.length - 1]); // mascot only
+    variants.add(parts.slice(0, 2).join(" ")); // city + next token
+  }
+  // Very common abbrev handling
+  variants.add(n.replace(/^los angeles\s+/, "la "));
+  variants.add(n.replace(/^new york\s+/, "ny "));
+  variants.add(n.replace(/^san antonio\s+/, "sa "));
+  return [...variants].filter((v) => v.length > 0);
 }
 
 function matchTeamInQuestion(
@@ -692,7 +723,9 @@ function matchTeamInQuestion(
     return normQ.includes(token);
   };
 
-  if (wordBoundaryMatch(normTeam)) return [teamName, teamName];
+  for (const v of normalizedVariants(normTeam)) {
+    if (wordBoundaryMatch(v)) return [teamName, v];
+  }
 
   for (const [canonical, aliases] of Object.entries(TEAM_ALIASES)) {
     const normCanon = normalize(canonical);
@@ -700,9 +733,13 @@ function matchTeamInQuestion(
       normTeam === normCanon || aliases.some((a) => normalize(a) === normTeam);
     if (!isTarget) continue;
 
-    if (wordBoundaryMatch(normCanon)) return [canonical, canonical];
+    for (const v of normalizedVariants(normCanon)) {
+      if (wordBoundaryMatch(v)) return [canonical, v];
+    }
     for (const alias of aliases) {
-      if (wordBoundaryMatch(normalize(alias))) return [canonical, alias];
+      for (const v of normalizedVariants(alias)) {
+        if (wordBoundaryMatch(v)) return [canonical, alias];
+      }
     }
   }
   return null;
@@ -1068,14 +1105,21 @@ function findCrossEdge(
   market: ProcessedMarket,
   bestBets: BestBet[],
   injuries: Record<string, InjuryRecord[]>,
+  misses?: CrossEdgeMiss[],
 ): CrossEdge | undefined {
   if (market.yesMid === null) return undefined;
 
   for (const bet of bestBets) {
     const pickMatch = matchTeamInQuestion(market.title, bet.pickTeam);
-    if (!pickMatch) continue;
+    if (!pickMatch) {
+      misses?.push({ marketTicker: market.ticker, marketTitle: market.title, pickTeam: bet.pickTeam, opponent: bet.opponent, reason: "pick_unmatched" });
+      continue;
+    }
     const oppMatch = matchTeamInQuestion(market.title, bet.opponent);
-    if (!oppMatch) continue;
+    if (!oppMatch) {
+      misses?.push({ marketTicker: market.ticker, marketTitle: market.title, pickTeam: bet.pickTeam, opponent: bet.opponent, reason: "opp_unmatched" });
+      continue;
+    }
 
     // Optional same-ET-day check
     if (market.closeTime && bet.gameDate) {
@@ -1083,7 +1127,10 @@ function findCrossEdge(
         const closeEtDate = toEtDateStr(new Date(market.closeTime));
         const betEtDate = toEtDateStr(new Date(bet.gameDate));
         // Kalshi markets close at or after game end, so close date >= game date is fine
-        if (closeEtDate < betEtDate) continue;
+        if (closeEtDate < betEtDate) {
+          misses?.push({ marketTicker: market.ticker, marketTitle: market.title, pickTeam: bet.pickTeam, opponent: bet.opponent, reason: "date_mismatch" });
+          continue;
+        }
       } catch {
         // skip date filter on parse failure
       }
@@ -1109,7 +1156,10 @@ function findCrossEdge(
     const modelYesProb = pickIsYes ? modelPickProb : 100 - modelPickProb;
 
     const gap = modelYesProb - kalshiImplied;
-    if (Math.abs(gap) < 5) continue;
+    if (Math.abs(gap) < 5) {
+      misses?.push({ marketTicker: market.ticker, marketTitle: market.title, pickTeam: bet.pickTeam, opponent: bet.opponent, reason: "below_threshold", gap: Math.round(gap * 10) / 10 });
+      continue;
+    }
 
     let tMinusMinutes: number | undefined;
     if (bet.gameDate) {
@@ -1487,6 +1537,7 @@ async function main() {
   const sportsMarkets: ProcessedMarket[] = [];
   const crossEdgeMarkets: ProcessedMarket[] = [];
   const tournamentEdgeMarkets: ProcessedMarket[] = [];
+  const crossEdgeMisses: CrossEdgeMiss[] = [];
 
   for (const m of processed) {
     if (m.isSports) sportsMarkets.push(m);
@@ -1504,7 +1555,7 @@ async function main() {
 
     // Game cross-edge
     if (!isMarmad && bestBets.length > 0 && m.isSports) {
-      const ce = findCrossEdge(m, bestBets, injuries);
+      const ce = findCrossEdge(m, bestBets, injuries, crossEdgeMisses);
       if (ce) {
         // Attach movement signal
         ce.movementSignal = computeMovement(m.ticker, ce.modelConfidence, priceHistory);
@@ -1548,6 +1599,22 @@ async function main() {
   fs.writeFileSync(jsonPath + ".tmp", JSON.stringify(output, null, 2), "utf-8");
   fs.renameSync(jsonPath + ".tmp", jsonPath);
   console.log(`[kalshi] Written: ${jsonPath}`);
+
+  const missSummary = crossEdgeMisses.reduce<Record<string, number>>((acc, m) => {
+    acc[m.reason] = (acc[m.reason] ?? 0) + 1;
+    return acc;
+  }, {});
+  const missOut = {
+    generatedAtIsoUtc: fetchedAtIsoUtc,
+    bestBetsChecked: bestBets.length,
+    sportsMarketsChecked: sportsMarkets.length,
+    missSummary,
+    sampleMisses: crossEdgeMisses.slice(0, 200),
+  };
+  const missPath = path.join(outDir, "kalshi-crossedge-misses.json");
+  fs.writeFileSync(missPath + ".tmp", JSON.stringify(missOut, null, 2), "utf-8");
+  fs.renameSync(missPath + ".tmp", missPath);
+  console.log(`[kalshi] Written: ${missPath}`);
 
   // 6. Write standalone latest-kalshi-agents.md (for betting agent compat)
   const standaloneMd = formatStandaloneAgentsMd(processed, fetchedAt);

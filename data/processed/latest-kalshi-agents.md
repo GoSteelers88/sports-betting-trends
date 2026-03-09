@@ -1,56 +1,56 @@
-# Kalshi Markets Snapshot — 3/4/2026, 6:14 AM ET
-_Last refreshed: 3/4/2026, 6:14 AM ET · 602 markets tracked_
+# Kalshi Markets Snapshot — 3/8/2026, 11:47 PM ET
+_Last refreshed: 3/8/2026, 11:47 PM ET · 500 markets tracked_
 
 ## Top 10 by Liquidity
 
-**1. Will Trump next nominate Judy Shelton as Fed Chair?**
-YES bid/ask: 3¢ / 4¢ → Implied: 3%
-Spread: incomplete¢ · Actionability: Low · Liq: 61,675,412
-Closes: 1/20/2029 · Status: active
+**1. Will the Federal Reserve Hike rates by 0bps at their March 2026 meeting?**
+YES bid/ask: 97¢ / 98¢ → Implied: 98%
+Spread: incomplete¢ · Actionability: Low · Liq: 5,564,304
+Closes: 3/18/2026 · Status: active
 
-**2. Will Trump next nominate Kevin Warsh as Fed Chair?**
-YES bid/ask: 93¢ / 94¢ → Implied: 93%
-Spread: incomplete¢ · Actionability: Low · Liq: 15,678,258
-Closes: 1/20/2029 · Status: active
-
-**3. Will Trump next nominate Rick Rieder as Fed Chair?**
-YES bid/ask: 0¢ / 1¢ → Implied: 1%
-Spread: incomplete¢ · Actionability: Low · Liq: 6,605,504
-Closes: 1/20/2029 · Status: active
-
-**4. Will Trump next nominate Kevin Hassett as Fed Chair?**
-YES bid/ask: 0¢ / 1¢ → Implied: 1%
-Spread: incomplete¢ · Actionability: Low · Liq: 5,812,486
-Closes: 1/20/2029 · Status: active
-
-**5. Will Trump next nominate Michelle Bowman as Fed Chair?**
-YES bid/ask: 0¢ / 1¢ → Implied: 1%
-Spread: incomplete¢ · Actionability: Low · Liq: 5,461,412
-Closes: 1/20/2029 · Status: active
-
-**6. Will the U.S. confirm that aliens exist before 2027?**
-YES bid/ask: 21¢ / 22¢ → Implied: 21%
-Spread: incomplete¢ · Actionability: Low · Liq: 5,438,918
+**2. Will the U.S. confirm that aliens exist before 2027?**
+YES bid/ask: 18¢ / 19¢ → Implied: 19%
+Spread: incomplete¢ · Actionability: Low · Liq: 5,542,169
 Closes: 1/1/2027 · Status: active
 
-**7. Will Jasmine Crockett be the Democratic nominee for the Senate in Texas?**
-YES bid/ask: 0¢ / 1¢ → Implied: 1%
-Spread: incomplete¢ · Actionability: Low · Liq: 5,416,508
-Closes: 11/3/2026 · Status: active
+**3. Will the Federal Reserve Cut rates by 25bps at their March 2026 meeting?**
+YES bid/ask: 2¢ / 3¢ → Implied: 3%
+Spread: incomplete¢ · Actionability: Low · Liq: 5,217,528
+Closes: 3/18/2026 · Status: active
 
-**8. Will Trump next nominate Christopher Waller as Fed Chair?**
-YES bid/ask: 0¢ / 1¢ → Implied: 1%
-Spread: incomplete¢ · Actionability: Low · Liq: 4,664,295
-Closes: 1/20/2029 · Status: active
+**4. Will the San Antonio win the 2026 Pro Basketball Finals?**
+YES bid/ask: 14¢ / 15¢ → Implied: 15%
+Spread: incomplete¢ · Actionability: Low · Liq: 3,764,934
+Closes: 6/29/2028 · Status: active
 
-**9. Will Trump next nominate Stephen Miran as Fed Chair?**
-YES bid/ask: 0¢ / 1¢ → Implied: 1%
-Spread: incomplete¢ · Actionability: Low · Liq: 4,437,443
-Closes: 1/20/2029 · Status: active
+**5. Will Democrats win the House in 2026?**
+YES bid/ask: 83¢ / 84¢ → Implied: 84%
+Spread: incomplete¢ · Actionability: Low · Liq: 2,192,136
+Closes: 2/1/2027 · Status: active
 
-**10. Will Trump next nominate Scott Bessent as Fed Chair?**
+**6. Will UConn win the College Basketball National Championship?**
+YES bid/ask: 5¢ / 7¢ → Implied: 7%
+Spread: incomplete¢ · Actionability: Low · Liq: 2,090,552
+Closes: 4/21/2026 · Status: active
+
+**7. Will James Talarico be the Democratic Presidential nominee in 2028?**
+YES bid/ask: 4¢ / 5¢ → Implied: 5%
+Spread: incomplete¢ · Actionability: Low · Liq: 2,082,004
+Closes: 11/7/2028 · Status: active
+
+**8. Will Florida win the College Basketball National Championship?**
+YES bid/ask: 14¢ / 15¢ → Implied: 15%
+Spread: incomplete¢ · Actionability: Low · Liq: 2,057,423
+Closes: 4/21/2026 · Status: active
+
+**9. Will Rahm Emanuel be the Democratic Presidential nominee in 2028?**
+YES bid/ask: 2¢ / 3¢ → Implied: 3%
+Spread: incomplete¢ · Actionability: Low · Liq: 2,050,929
+Closes: 11/7/2028 · Status: active
+
+**10. Will Michelle Obama be the Democratic Presidential nominee in 2028?**
 YES bid/ask: 0¢ / 1¢ → Implied: 1%
-Spread: incomplete¢ · Actionability: Low · Liq: 4,291,025
-Closes: 1/20/2029 · Status: active
+Spread: incomplete¢ · Actionability: Low · Liq: 2,031,852
+Closes: 11/7/2028 · Status: active
 
 _Run `npm run ingest:kalshi` to refresh._
