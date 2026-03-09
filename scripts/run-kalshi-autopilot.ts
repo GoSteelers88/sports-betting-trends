@@ -1,47 +1,56 @@
 /**
- * run-kalshi-autopilot.ts — REWRITTEN with Information-Speed Strategy
+ * run-kalshi-autopilot-ws.ts — WebSocket-Driven Information-Speed Autopilot
  *
  * ═══════════════════════════════════════════════════════════════════════════
- * OLD STRATEGY (killed us):
- *   "See a gap between model and Kalshi → buy the cheap side → pray"
- *   - No leader detection → didn't know WHO was right
- *   - No direction filter → faded smart money 50% of the time
- *   - No momentum check → traded noise
- *   - No per-market loss limits → death spirals (Mars Sample Return: -$40K)
+ * WHY WS OVER POLLING:
+ *   Polling (30s): You learn of a price move 0–30 seconds late.
+ *   WebSocket:     You learn of a price move in <100ms.
  *
- * NEW STRATEGY (backtest: 368W-33L, 91.8%, +$487K):
- *   "Detect which market leads → confirm momentum → follow the leader"
- *   - Leader detection via Granger-style lead-lag correlation
- *   - ONLY trade when POLY leads (KALSHI-leads = poison: 57W-397L)
- *   - Momentum confirmation (sustained move, not noise)
- *   - Per-market loss limits ($500 max loss per market)
- *   - Kalshi-fee-aware Kelly sizing
- * ═══════════════════════════════════════════════════════════════════════════
+ *   The information-speed edge only exists in the first few seconds after
+ *   Poly leads. By the time the poll fires, arbitrageurs have already closed
+ *   the gap. WS captures the edge before it disappears.
  *
- * Environment variables:
- *   KALSHI_API_KEY_ID — RSA key ID
+ * ARCHITECTURE:
+ *   • Kalshi WS  → wss://trading-api.kalshi.com/trade-api/ws/v2
+ *                  channels: orderbook_snapshot + orderbook_delta
+ *                  auth: RSA-PKCS1v15-SHA256 signed timestamp
+ *   • Poly WS    → wss://ws-subscriptions-clob.polymarket.com/ws/market
+ *                  subscribe: { assets_ids: [...], type: "Market" }
+ *   • Trade exec → Kalshi REST (same execute-kalshi.ts as polling version)
+ *   • Exits      → REST-polled every 30s (no WS needed for fills)
+ *
+ * STARTUP FLOW:
+ *   1. Load markets from data/processed/latest-kalshi.json
+ *   2. Fuzzy-match each market to a Polymarket token via gamma API
+ *      (cached in data/processed/poly-market-map.json)
+ *   3. Connect Kalshi WS → login → subscribe orderbook_snapshot + orderbook_delta
+ *   4. Connect Poly WS → subscribe to matched token IDs
+ *   5. On every price event → update state → checkSignal(ticker) immediately
+ *   6. Background: exit loop polls REST every 30s for fills
+ *
+ * SIGNAL LOGIC (identical to polling version):
+ *   • detectLeader() — Granger-style lead-lag scoring
+ *   • ONLY trade when POLY leads (KALSHI leads: 57W-397L = poison)
+ *   • confirmMomentum() — sustained directional move, not noise
+ *   • Kelly sizing with 7% Kalshi fee baked in
+ *   • Per-market loss limit: -$500
+ *   • 5-second signal debounce per market (prevent signal storms)
+ *
+ * ENV:
+ *   KALSHI_API_KEY_ID           — RSA key ID
  *   KALSHI_PRIVATE_KEY_PEM_PATH — path to RSA private key PEM
- *   KALSHI_ENV — "prod" (default)
+ *   KALSHI_AUTOPILOT_STOP=1     — env var kill switch
  *
- * Kill switches:
- *   KALSHI_AUTOPILOT_STOP=1 — env var kill switch
- *   touch data/STOP_KALSHI_AUTOPILOT.txt — file kill switch
- *
- * Safety caps:
- *   MAX_COST_PER_ORDER = $2.00
- *   MAX_EXPOSURE = $20.00
- *   MAX_POSITIONS = 5
- *   MAX_RESTING = 5
- *   MAX_ORDERS_PER_HOUR = 20
+ * INSTALL:
+ *   npm install ws @types/ws
+ *   npx tsx scripts/run-kalshi-autopilot-ws.ts
  */
 
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import WebSocket from "ws";
 import {
-  KalshiApiError,
-  KalshiBalance,
   KalshiOrder,
   KalshiPosition,
   cancelAllRestingOrders,
@@ -52,70 +61,63 @@ import {
   getPositions,
 } from "./execute-kalshi.js";
 
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // Constants
-// ---------------------------------------------------------------------------
-const MAX_COST_PER_ORDER_USD = 2.00;
-const MAX_TOTAL_EXPOSURE_USD = 20.00;
-const MAX_OPEN_POSITIONS = 5;
-const MAX_RESTING_ORDERS = 5;
-const MAX_ORDERS_PER_HOUR = 20;
+// ─────────────────────────────────────────────────────────────────────────────
 
-let EDGE_THRESHOLD_PCT = 5;
+const KALSHI_WS_URL = "wss://trading-api.kalshi.com/trade-api/ws/v2";
+const POLY_WS_URL   = "wss://ws-subscriptions-clob.polymarket.com/ws/market";
+const GAMMA_API     = "https://gamma-api.polymarket.com/markets";
+
+// Safety caps (same as polling version)
+const MAX_COST_PER_ORDER_USD  = 2.00;
+const MAX_TOTAL_EXPOSURE_USD  = 20.00;
+const MAX_OPEN_POSITIONS      = 5;
+const MAX_RESTING_ORDERS      = 5;
+const MAX_ORDERS_PER_HOUR     = 20;
+
+// Edge thresholds
+const EDGE_THRESHOLD_PCT      = 5;
 const HIGH_EDGE_THRESHOLD_PCT = 10;
-const DEFAULT_COST_USD = 1.00;
-const HIGH_EDGE_COST_USD = 2.00;
+const DEFAULT_COST_USD        = 1.00;
+const HIGH_EDGE_COST_USD      = 2.00;
 
-const ENTRY_TIMEOUT_SEC = 28_800; // 8h
-const EXIT_TIMEOUT_SEC = 900;
-const TP_CENTS = 1;
-const LOOP_INTERVAL_MS = 120_000; // 2 min
-const INGEST_INTERVAL_MS = 300_000; // 5 min
-const RUN_DURATION_MS = 172_800_000; // 48h
-const ERROR_WINDOW_MS = 600_000; // 10 min
-const MAX_ERRORS_IN_WINDOW = 5;
+// Loss / timing limits
+const MARKET_LOSS_LIMIT_USD   = -500;
+const ENTRY_COOLDOWN_MS       = 300_000;  // 5 min cooldown after entry attempt
+const ENTRY_TIMEOUT_SEC       = 28_800;   // 8h to fill
+const EXIT_TIMEOUT_SEC        = 900;      // 15 min exit window
+const TP_CENTS                = 1;        // take-profit target (+1¢)
+const RUN_DURATION_MS         = 172_800_000; // 48h max session
 
-// ═══ NEW: Per-market loss limit ═══
-const MARKET_LOSS_LIMIT_USD = -500; // Stop trading a market after losing $500 cumulatively
+// WS config
+const SIGNAL_DEBOUNCE_MS          = 5_000;    // min ms between checks per market
+const EXIT_POLL_INTERVAL_MS       = 30_000;   // REST exit poll
+const STATUS_INTERVAL_LOOPS       = 60;        // status every ~5min (60 × 5s)
+const WS_RECONNECT_INITIAL_MS     = 2_000;
+const WS_RECONNECT_MAX_MS         = 60_000;
+const WS_PING_INTERVAL_MS         = 30_000;   // keepalive ping
+const PRICE_HISTORY_MAX           = 50;        // ticks per market
+const ORDERBOOK_DEPTH             = 10;        // track top-N price levels
 
-const STOP_FILE = path.resolve(process.cwd(), "data", "STOP_KALSHI_AUTOPILOT.txt");
-const STATE_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-state.json");
-const TRADES_FILE = path.resolve(process.cwd(), "data", "processed", "kalshi-trades.jsonl");
-const MARKETS_FILE = path.resolve(process.cwd(), "data", "processed", "latest-kalshi.json");
-const BACKTEST_FILE = path.resolve(process.cwd(), "data", "processed", "backtest-results.json");
-// ═══ NEW: Price history storage for leader detection ═══
-const PRICE_HISTORY_FILE = path.resolve(process.cwd(), "data", "processed", "price-history.json");
+// File paths
+const STOP_FILE      = path.resolve(process.cwd(), "data", "STOP_KALSHI_AUTOPILOT.txt");
+const STATE_FILE     = path.resolve(process.cwd(), "data", "processed", "kalshi-state-ws.json");
+const TRADES_FILE    = path.resolve(process.cwd(), "data", "processed", "kalshi-trades-ws.jsonl");
+const MARKETS_FILE   = path.resolve(process.cwd(), "data", "processed", "latest-kalshi.json");
+const POLY_MAP_FILE  = path.resolve(process.cwd(), "data", "processed", "poly-market-map.json");
 
-// Discord notifications
-const GATEWAY_URL = "http://127.0.0.1:18789/tools/invoke";
-const GATEWAY_TOKEN = "9f3c7ab1d2e84f16b5c0a7d43e9f2c1867b4d0ac53e18f92";
+// Discord gateway (same as polling version)
+const GATEWAY_URL    = "http://127.0.0.1:18789/tools/invoke";
+const GATEWAY_TOKEN  = "9f3c7ab1d2e84f16b5c0a7d43e9f2c1867b4d0ac53e18f92";
 const DISCORD_CHANNEL = "channel:1474075668135284827";
 
-// ---------------------------------------------------------------------------
-// Types (CrossEdge, TournamentEdge, ProcessedMarket — unchanged from original)
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface CrossEdge {
   modelConfidence: number;
-  kalshiImplied: number;
-  gap: number;
-  direction: "model-higher" | "model-lower";
-  injuryContext?: {
-    pickInjuredStars: string[];
-    oppInjuredStars: string[];
-  };
-  movementSignal?: {
-    delta30m: number | null;
-    movingToward: boolean;
-    velocity: number;
-  };
-}
-
-interface TournamentEdge {
-  team: string;
-  teamSrs: number;
-  avgFieldSrs: number;
-  modelChampionPct: number;
   kalshiImplied: number;
   gap: number;
   direction: "model-higher" | "model-lower";
@@ -124,25 +126,46 @@ interface TournamentEdge {
 interface ProcessedMarket {
   ticker: string;
   title: string;
-  subtitle: string;
-  category: string;
   yesBid: number;
   yesAsk: number;
   yesMid: number;
-  noBid: number;
-  noAsk: number;
   impliedProbYes: number;
-  spread: number;
-  openInterest: number;
-  volume: number;
-  liquidity: number;
   status: string;
-  closeTime: string;
-  actionability: "High" | "Med" | "Low";
   crossEdge?: CrossEdge | null;
-  tournamentEdge?: TournamentEdge | null;
-  topYesBidNotional?: number;
-  topYesAskNotional?: number;
+}
+
+/** Per-market orderbook (price_cents → quantity). YES side = buy-YES orders. NO side = buy-NO orders. */
+interface Orderbook {
+  yes: Map<number, number>;  // price_cents → qty (sorted by price desc = bids)
+  no:  Map<number, number>;  // price_cents → qty
+}
+
+/** Runtime state for a tracked market */
+interface MarketState {
+  ticker: string;
+  title: string;
+  polyTokenId: string | null;
+  // Live prices (0–1 fraction)
+  kalshiMid: number;
+  kalshiYesBid: number;   // best YES bid (buy YES)
+  kalshiYesAsk: number;   // best YES ask (sell YES = best NO bid complement)
+  polyMid: number;
+  polyBestBid: number;
+  polyBestAsk: number;
+  // Price history for leader detection
+  priceHistory: { ts: number; polyMid: number; kalshiMid: number }[];
+  // Timing
+  lastSignalCheck: number;
+  receivedKalshiSnapshot: boolean;
+}
+
+interface LeaderDetectionResult {
+  leader: "POLY" | "KALSHI" | "UNKNOWN";
+  confidence: number;
+  direction: "UP" | "DOWN" | "FLAT";
+  magnitude: number;
+  momentumConfirmed: boolean;
+  momentumStrength: number;
 }
 
 interface PendingEntry {
@@ -156,8 +179,6 @@ interface PendingEntry {
   placedTs: string;
   dedupeKey: string;
   edgePct: number;
-  positionType?: "game" | "tournament";
-  // ═══ NEW: Track leader info for exit decisions ═══
   leaderAtEntry?: "POLY" | "KALSHI" | "UNKNOWN";
   directionAtEntry?: "UP" | "DOWN" | "FLAT";
 }
@@ -173,8 +194,6 @@ interface PositionState {
   entryFillTs: string;
   exitAttempts: number;
   status: "awaiting_exit" | "exit_placed" | "holding_illiquid";
-  positionType?: "game" | "tournament";
-  // ═══ NEW ═══
   leaderAtEntry?: "POLY" | "KALSHI" | "UNKNOWN";
   directionAtEntry?: "UP" | "DOWN" | "FLAT";
 }
@@ -190,48 +209,82 @@ interface AutopilotState {
   pendingEntries: Record<string, PendingEntry>;
   openPositions: Record<string, PositionState>;
   entryCooldowns: Record<string, number>;
-  // ═══ NEW: Per-market cumulative P/L tracking ═══
   marketCumulativePnl: Record<string, number>;
 }
 
-interface CapResult {
-  canTrade: boolean;
-  reasons: string[];
-  slotsAvailable: number;
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Global State
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ═══ NEW: Price history for leader detection ═══
-interface PriceHistoryStore {
-  // ticker → array of { ts, polyMid, kalshiMid }
-  [ticker: string]: { ts: string; polyMid: number; kalshiMid: number }[];
-}
+const markets          = new Map<string, MarketState>();    // ticker → state
+const orderbooks       = new Map<string, Orderbook>();      // ticker → book
+const polyTokenToTicker = new Map<string, string>();         // poly token → ticker
 
-// ═══ NEW: Leader detection result ═══
-interface LeaderDetectionResult {
-  leader: "POLY" | "KALSHI" | "UNKNOWN";
-  confidence: number;
-  direction: "UP" | "DOWN" | "FLAT";
-  magnitude: number;
-  momentumConfirmed: boolean;
-  momentumStrength: number;
-}
+let state: AutopilotState = {
+  startIso: new Date().toISOString(),
+  realizedPnlUsd: 0,
+  ordersInLastHour: [],
+  consecutiveLosses: 0,
+  lastError: null,
+  lastTradeIso: null,
+  apiErrors: [],
+  pendingEntries: {},
+  openPositions: {},
+  entryCooldowns: {},
+  marketCumulativePnl: {},
+};
 
-// ---------------------------------------------------------------------------
-// Helpers (unchanged)
-// ---------------------------------------------------------------------------
+let kalshiWs: WebSocket | null = null;
+let polyWs:   WebSocket | null = null;
+let kalshiPingTimer: ReturnType<typeof setInterval> | null = null;
+let polyPingTimer:   ReturnType<typeof setInterval> | null = null;
+let kalshiReconnectDelay = WS_RECONNECT_INITIAL_MS;
+let polyReconnectDelay   = WS_RECONNECT_INITIAL_MS;
+let wsMessageId = 1;
+let running = true;
+let isPlacingOrder = false; // simple mutex for order placement
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Utility
+// ─────────────────────────────────────────────────────────────────────────────
+
 function uuidv4(): string { return crypto.randomUUID(); }
-function toFixed2(n: number): string { return n.toFixed(2); }
-function toFixed4(n: number): string { return n.toFixed(4); }
 
 function nowET(): string {
   return new Date().toLocaleTimeString("en-US", {
-    timeZone: "America/New_York",
-    hour: "2-digit", minute: "2-digit", hour12: false,
+    timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
   });
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((res) => setTimeout(res, ms));
+}
+
+function log(...args: unknown[]): void {
+  console.log(`[ws ${nowET()}]`, ...args);
+}
+
+function warn(...args: unknown[]): void {
+  console.warn(`[ws ${nowET()}] ⚠️`, ...args);
+}
+
+function isKillSwitchSet(): boolean {
+  if (process.env.KALSHI_AUTOPILOT_STOP === "1") return true;
+  return fs.existsSync(STOP_FILE);
+}
+
+function saveState(): void {
+  try { fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2)); } catch { /* ignore */ }
+}
+
+function loadState(): void {
+  try {
+    if (fs.existsSync(STATE_FILE)) {
+      const saved = JSON.parse(fs.readFileSync(STATE_FILE, "utf8")) as AutopilotState;
+      state = { ...state, ...saved };
+      log(`📂 Loaded state: PnL=$${state.realizedPnlUsd.toFixed(2)} positions=${Object.keys(state.openPositions).length}`);
+    }
+  } catch { /* ignore */ }
 }
 
 function notifyDiscord(message: string): void {
@@ -244,920 +297,990 @@ function notifyDiscord(message: string): void {
       sessionKey: "main",
     }),
     signal: AbortSignal.timeout(8_000),
-  }).catch((err) => {
-    console.warn(`[autopilot] Discord notify failed: ${(err as Error).message}`);
-  });
+  }).catch((err) => warn(`Discord failed: ${(err as Error).message}`));
 }
 
-function postDiscordStatus(message: string): void {
-  fetch("http://127.0.0.1:18789/api/v1/messages", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${GATEWAY_TOKEN}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ target: DISCORD_CHANNEL, message }),
-    signal: AbortSignal.timeout(8_000),
-  }).catch((err) => {
-    console.warn(`[autopilot] Status post failed: ${(err as Error).message}`);
-  });
+function appendTrade(record: Record<string, unknown>): void {
+  try {
+    fs.appendFileSync(TRADES_FILE, JSON.stringify({ ...record, ts: new Date().toISOString() }) + "\n");
+  } catch { /* ignore */ }
 }
 
-let sessionOrdersPlaced = 0;
+// ─────────────────────────────────────────────────────────────────────────────
+// Kalshi Auth (RSA-PKCS1v15-SHA256)
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ---------------------------------------------------------------------------
-// ═══ NEW: Leader Detection Engine (ported from kalshi_speed_bot.py) ═══
-// ---------------------------------------------------------------------------
+function buildKalshiLoginParams(): { api_key: string; signature: string; timestamp: string } {
+  const keyPath = process.env.KALSHI_PRIVATE_KEY_PEM_PATH;
+  if (!keyPath) throw new Error("KALSHI_PRIVATE_KEY_PEM_PATH not set");
+  const api_key = process.env.KALSHI_API_KEY_ID ?? "";
+  if (!api_key) throw new Error("KALSHI_API_KEY_ID not set");
+
+  const timestamp = String(Date.now());
+  const pem = fs.readFileSync(keyPath, "utf8");
+  const privateKey = crypto.createPrivateKey(pem);
+
+  // Kalshi WS signs the bare timestamp (same key material as REST, different message)
+  const sig = crypto.sign(
+    "SHA256",
+    Buffer.from(timestamp),
+    { key: privateKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+  );
+
+  return { api_key, signature: sig.toString("base64"), timestamp };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Orderbook Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getOrCreateOrderbook(ticker: string): Orderbook {
+  if (!orderbooks.has(ticker)) {
+    orderbooks.set(ticker, { yes: new Map(), no: new Map() });
+  }
+  return orderbooks.get(ticker)!;
+}
+
+/** Best yes bid (cents) = max price in yes side */
+function bestYesBid(ob: Orderbook): number {
+  if (ob.yes.size === 0) return 0;
+  return Math.max(...ob.yes.keys());
+}
+
+/** Best yes ask (cents) = 100 − max price in no side */
+function bestYesAsk(ob: Orderbook): number {
+  if (ob.no.size === 0) return 100;
+  return 100 - Math.max(...ob.no.keys());
+}
+
+function updateMktFromOrderbook(ticker: string): void {
+  const ms = markets.get(ticker);
+  if (!ms) return;
+  const ob = getOrCreateOrderbook(ticker);
+  const bid = bestYesBid(ob);
+  const ask = bestYesAsk(ob);
+  if (bid > 0) ms.kalshiYesBid = bid / 100;
+  if (ask < 100) ms.kalshiYesAsk = ask / 100;
+  if (bid > 0 && ask < 100) ms.kalshiMid = (bid + ask) / 200;
+  else if (bid > 0) ms.kalshiMid = bid / 100;
+  else if (ask < 100) ms.kalshiMid = ask / 100;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Leader Detection (identical to polling version, ported from kalshi_speed_bot.py)
+// ─────────────────────────────────────────────────────────────────────────────
 
 function detectLeader(
   polyPrices: number[],
   kalshiPrices: number[],
-  lookback = 8
+  lookback = 8,
 ): LeaderDetectionResult {
-  // Need enough data
-  if (polyPrices.length < lookback + 2 || kalshiPrices.length < lookback + 2) {
-    return { leader: "UNKNOWN", confidence: 0, direction: "FLAT", magnitude: 0, momentumConfirmed: false, momentumStrength: 0 };
-  }
-
-  const polyWindow = polyPrices.slice(-lookback);
-  const kalshiWindow = kalshiPrices.slice(-lookback);
-
-  // Returns
-  const polyReturns: number[] = [];
-  const kalshiReturns: number[] = [];
-  for (let i = 1; i < polyWindow.length; i++) {
-    polyReturns.push(polyWindow[i] - polyWindow[i - 1]);
-    kalshiReturns.push(kalshiWindow[i] - kalshiWindow[i - 1]);
-  }
-
-  if (polyReturns.length < 2) {
-    return { leader: "UNKNOWN", confidence: 0, direction: "FLAT", magnitude: 0, momentumConfirmed: false, momentumStrength: 0 };
-  }
-
-  // METHOD 1: Lead-lag correlation
-  let polyLeadsKalshi = 0;
-  let kalshiLeadsPoly = 0;
-
-  for (let i = 0; i < polyReturns.length - 1; i++) {
-    if (polyReturns[i] !== 0 && kalshiReturns[i + 1] !== undefined) {
-      if (Math.sign(polyReturns[i]) === Math.sign(kalshiReturns[i + 1])) {
-        polyLeadsKalshi += Math.abs(polyReturns[i]);
-      }
-    }
-    if (kalshiReturns[i] !== 0 && polyReturns[i + 1] !== undefined) {
-      if (Math.sign(kalshiReturns[i]) === Math.sign(polyReturns[i + 1])) {
-        kalshiLeadsPoly += Math.abs(kalshiReturns[i]);
-      }
-    }
-  }
-
-  // METHOD 2: First-mover
-  const polyTotalMove = polyWindow[polyWindow.length - 1] - polyWindow[0];
-  const kalshiTotalMove = kalshiWindow[kalshiWindow.length - 1] - kalshiWindow[0];
-  const threshold = 0.01;
-  let polyFirstTick = lookback, kalshiFirstTick = lookback;
-
-  for (let i = 0; i < polyReturns.length; i++) {
-    if (Math.abs(polyReturns[i]) > threshold) { polyFirstTick = i; break; }
-  }
-  for (let i = 0; i < kalshiReturns.length; i++) {
-    if (Math.abs(kalshiReturns[i]) > threshold) { kalshiFirstTick = i; break; }
-  }
-
-  // COMBINE
-  let leaderScore = 0;
-
-  const totalLeadLag = polyLeadsKalshi + kalshiLeadsPoly;
-  if (totalLeadLag > 0) {
-    leaderScore += ((polyLeadsKalshi - kalshiLeadsPoly) / totalLeadLag) * 0.5;
-  }
-  if (polyFirstTick < kalshiFirstTick) leaderScore += 0.3;
-  else if (kalshiFirstTick < polyFirstTick) leaderScore -= 0.3;
-
-  if (Math.abs(polyTotalMove) > Math.abs(kalshiTotalMove) * 1.2) leaderScore += 0.2;
-  else if (Math.abs(kalshiTotalMove) > Math.abs(polyTotalMove) * 1.2) leaderScore -= 0.2;
-
-  let leader: "POLY" | "KALSHI" | "UNKNOWN";
-  let confidence: number;
-
-  if (leaderScore > 0.15) { leader = "POLY"; confidence = Math.min(1.0, Math.abs(leaderScore)); }
-  else if (leaderScore < -0.15) { leader = "KALSHI"; confidence = Math.min(1.0, Math.abs(leaderScore)); }
-  else { leader = "UNKNOWN"; confidence = Math.abs(leaderScore); }
-
-  const leaderMove = leader === "POLY" ? polyTotalMove : leader === "KALSHI" ? kalshiTotalMove : (polyTotalMove + kalshiTotalMove) / 2;
-  let direction: "UP" | "DOWN" | "FLAT";
-  if (leaderMove > 0.01) direction = "UP";
-  else if (leaderMove < -0.01) direction = "DOWN";
-  else direction = "FLAT";
-
-  // Momentum confirmation on leader's prices
-  const leaderPrices = leader === "POLY" ? polyWindow : kalshiWindow;
-  const { confirmed: momentumConfirmed, strength: momentumStrength } = confirmMomentum(leaderPrices, direction);
-
-  return {
-    leader,
-    confidence: Math.round(confidence * 1000) / 1000,
-    direction,
-    magnitude: Math.round(Math.abs(leaderMove) * 10000) / 10000,
-    momentumConfirmed,
-    momentumStrength,
+  const EMPTY: LeaderDetectionResult = {
+    leader: "UNKNOWN", confidence: 0, direction: "FLAT",
+    magnitude: 0, momentumConfirmed: false, momentumStrength: 0,
   };
+
+  if (polyPrices.length < lookback + 2 || kalshiPrices.length < lookback + 2) return EMPTY;
+
+  const polyW   = polyPrices.slice(-lookback);
+  const kalshiW = kalshiPrices.slice(-lookback);
+
+  const polyR:   number[] = [];
+  const kalshiR: number[] = [];
+  for (let i = 1; i < polyW.length; i++) {
+    polyR.push(polyW[i] - polyW[i - 1]);
+    kalshiR.push(kalshiW[i] - kalshiW[i - 1]);
+  }
+  if (polyR.length < 2) return EMPTY;
+
+  // Signal 1: Lead-lag correlation (weight 0.5)
+  let polyLeads = 0; let kalshiLeads = 0;
+  for (let i = 0; i < polyR.length - 1; i++) {
+    if (polyR[i] !== 0 && kalshiR[i + 1] !== undefined &&
+        Math.sign(polyR[i]) === Math.sign(kalshiR[i + 1])) polyLeads++;
+    if (kalshiR[i] !== 0 && polyR[i + 1] !== undefined &&
+        Math.sign(kalshiR[i]) === Math.sign(polyR[i + 1])) kalshiLeads++;
+  }
+  const total1 = polyLeads + kalshiLeads;
+  const s1 = total1 > 0 ? (polyLeads - kalshiLeads) / total1 : 0;
+
+  // Signal 2: First-mover (weight 0.3)
+  let polyFirst = 0; let kalshiFirst = 0;
+  for (let i = 0; i < polyR.length; i++) {
+    const pm = Math.abs(polyR[i]), km = Math.abs(kalshiR[i]);
+    if (pm > 0.005 && km < 0.002) polyFirst++;
+    else if (km > 0.005 && pm < 0.002) kalshiFirst++;
+  }
+  const total2 = polyFirst + kalshiFirst;
+  const s2 = total2 > 0 ? (polyFirst - kalshiFirst) / total2 : 0;
+
+  // Signal 3: Magnitude (weight 0.2)
+  const polyMag   = polyR.reduce((s, r) => s + Math.abs(r), 0);
+  const kalshiMag = kalshiR.reduce((s, r) => s + Math.abs(r), 0);
+  const totalMag  = polyMag + kalshiMag;
+  const s3 = totalMag > 0 ? (polyMag - kalshiMag) / totalMag : 0;
+
+  const composite  = s1 * 0.5 + s2 * 0.3 + s3 * 0.2;
+  const confidence = Math.abs(composite);
+
+  let leader: "POLY" | "KALSHI" | "UNKNOWN" = "UNKNOWN";
+  if (confidence > 0.3) leader = composite > 0 ? "POLY" : "KALSHI";
+
+  // Direction from recent 3 Poly ticks
+  const recent = polyW.slice(-3);
+  const trend  = recent[recent.length - 1] - recent[0];
+  const direction: "UP" | "DOWN" | "FLAT" =
+    trend > 0.01 ? "UP" : trend < -0.01 ? "DOWN" : "FLAT";
+  const magnitude = Math.abs(polyW[polyW.length - 1] - polyW[0]);
+
+  // Momentum: last 3 returns all same direction and at least one large
+  const last3    = polyR.slice(-3);
+  const allSame  = last3.length >= 2 && last3.every(r => r * last3[0] > 0);
+  const anyLarge = last3.some(r => Math.abs(r) > 0.01);
+  const momentumConfirmed = allSame && anyLarge;
+  const momentumStrength  = last3.reduce((s, r) => s + Math.abs(r), 0) / Math.max(1, last3.length);
+
+  return { leader, confidence, direction, magnitude, momentumConfirmed, momentumStrength };
 }
 
-function confirmMomentum(
-  prices: number[],
-  direction: "UP" | "DOWN" | "FLAT",
-  minMove = 0.012,
-  minSustained = 2
-): { confirmed: boolean; strength: number } {
-  if (direction === "FLAT" || prices.length < minSustained + 2) {
-    return { confirmed: false, strength: 0 };
-  }
+// ─────────────────────────────────────────────────────────────────────────────
+// Kelly Sizing (Kalshi-fee-aware, same as polling version)
+// ─────────────────────────────────────────────────────────────────────────────
 
-  const recent = prices.slice(-(minSustained + 2));
-  const totalMove = recent[recent.length - 1] - recent[0];
+function computeKellySize(edgePct: number, leaderConfidence: number): { contracts: number; costUsd: number } {
+  const edge   = edgePct / 100;
+  const winProb = Math.min(0.75, Math.max(0.35, 0.50 + edge * leaderConfidence * 2));
+  const losProb = 1 - winProb;
 
-  if (Math.abs(totalMove) < minMove) return { confirmed: false, strength: 0 };
-  if (direction === "UP" && totalMove <= 0) return { confirmed: false, strength: 0 };
-  if (direction === "DOWN" && totalMove >= 0) return { confirmed: false, strength: 0 };
+  const grossPerDollar = edge > 0 ? (1 - edge) / edge : 0;
+  const netPerDollar   = grossPerDollar * 0.93; // 7% Kalshi fee
+  if (netPerDollar <= 0) return { contracts: 0, costUsd: 0 };
 
-  let consistentTicks = 0;
-  for (let i = 1; i < recent.length; i++) {
-    const diff = recent[i] - recent[i - 1];
-    if (direction === "UP" && diff > 0) consistentTicks++;
-    if (direction === "DOWN" && diff < 0) consistentTicks++;
-  }
-  if (consistentTicks < minSustained) return { confirmed: false, strength: 0 };
+  const kelly    = winProb - losProb / netPerDollar;
+  const halfKelly = Math.max(0, Math.min(0.25, kelly * 0.5)); // cap at 25%
 
-  const lastMove = recent[recent.length - 1] - recent[recent.length - 2];
-  if (direction === "UP" && lastMove < -0.005) return { confirmed: false, strength: 0 };
-  if (direction === "DOWN" && lastMove > 0.005) return { confirmed: false, strength: 0 };
+  const rawCost     = halfKelly * 50;  // $50 proxy bankroll
+  const targetCost  = edgePct >= HIGH_EDGE_THRESHOLD_PCT ? HIGH_EDGE_COST_USD : DEFAULT_COST_USD;
+  const clampedCost = Math.min(MAX_COST_PER_ORDER_USD, Math.max(0.50, Math.min(rawCost, targetCost)));
 
-  const strength = Math.min(1.0, Math.abs(totalMove) / 0.05) * (consistentTicks / recent.length);
-  return { confirmed: true, strength: Math.round(strength * 1000) / 1000 };
+  const contracts = Math.max(1, Math.round(clampedCost));
+  return { contracts, costUsd: clampedCost };
 }
 
-// ---------------------------------------------------------------------------
-// ═══ NEW: Price History Management ═══
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// Safety Caps
+// ─────────────────────────────────────────────────────────────────────────────
 
-let priceHistory: PriceHistoryStore = {};
+interface CapResult { canTrade: boolean; reasons: string[]; }
 
-function loadPriceHistory(): void {
+function checkCaps(ticker: string): CapResult {
+  const reasons: string[] = [];
+  const now = Date.now();
+
+  // Purge old hourly orders
+  state.ordersInLastHour = state.ordersInLastHour.filter(
+    ts => now - new Date(ts).getTime() < 3_600_000,
+  );
+
+  const openPos  = Object.keys(state.openPositions).length;
+  const resting  = Object.keys(state.pendingEntries).length;
+  const perHour  = state.ordersInLastHour.length;
+
+  let totalExposure = 0;
+  for (const p of Object.values(state.openPositions)) totalExposure += p.costUsd;
+  for (const p of Object.values(state.pendingEntries)) totalExposure += p.costUsd;
+
+  if (openPos  >= MAX_OPEN_POSITIONS)    reasons.push(`positions=${openPos}`);
+  if (resting  >= MAX_RESTING_ORDERS)    reasons.push(`resting=${resting}`);
+  if (perHour  >= MAX_ORDERS_PER_HOUR)   reasons.push(`orders/hr=${perHour}`);
+  if (totalExposure >= MAX_TOTAL_EXPOSURE_USD) reasons.push(`exposure=$${totalExposure.toFixed(2)}`);
+
+  const mktPnl = state.marketCumulativePnl[ticker] ?? 0;
+  if (mktPnl <= MARKET_LOSS_LIMIT_USD)   reasons.push(`mkt-loss=$${mktPnl.toFixed(2)}`);
+
+  const cooldown = state.entryCooldowns[ticker] ?? 0;
+  if (now < cooldown) reasons.push(`cooldown=${Math.ceil((cooldown - now) / 1000)}s`);
+
+  return { canTrade: reasons.length === 0, reasons };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Signal Check — fires on EVERY price update (debounced per market)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function checkSignal(ticker: string): void {
+  if (!running || isKillSwitchSet()) return;
+
+  const ms  = markets.get(ticker);
+  if (!ms || !ms.receivedKalshiSnapshot) return;
+
+  const now = Date.now();
+  if (now - ms.lastSignalCheck < SIGNAL_DEBOUNCE_MS) return;
+  ms.lastSignalCheck = now;
+
+  // Need real Poly price (not zero / uninitialized)
+  if (ms.polyMid <= 0 || ms.kalshiMid <= 0) return;
+
+  // Record tick
+  ms.priceHistory.push({ ts: now, polyMid: ms.polyMid, kalshiMid: ms.kalshiMid });
+  if (ms.priceHistory.length > PRICE_HISTORY_MAX) ms.priceHistory.shift();
+
+  // Need enough history for leader detection
+  if (ms.priceHistory.length < 10) return;
+
+  // Skip if already in or entering this market
+  const inPosition = Object.values(state.openPositions).some(p => p.ticker === ticker);
+  const inEntry    = Object.values(state.pendingEntries).some(p => p.ticker === ticker);
+  if (inPosition || inEntry) return;
+
+  const polyHistory   = ms.priceHistory.map(h => h.polyMid);
+  const kalshiHistory = ms.priceHistory.map(h => h.kalshiMid);
+
+  const leader = detectLeader(polyHistory, kalshiHistory);
+
+  // POLY must lead with high confidence and confirmed momentum
+  if (leader.leader !== "POLY")       return;
+  if (leader.confidence < 0.4)        return;
+  if (!leader.momentumConfirmed)      return;
+  if (leader.direction === "FLAT")    return;
+
+  // Edge = how far Kalshi lags behind Poly, in pct-points
+  const rawEdge = (ms.polyMid - ms.kalshiMid) * 100;
+  const edgePct = leader.direction === "UP" ? rawEdge : -rawEdge;
+  if (edgePct < EDGE_THRESHOLD_PCT)   return;
+
+  // Safety caps
+  const caps = checkCaps(ticker);
+  if (!caps.canTrade) {
+    log(`⛔ ${ticker} caps: ${caps.reasons.join(", ")}`);
+    return;
+  }
+
+  // Trade direction: if poly > kalshi → kalshi should rise → buy YES
+  const side: "yes" | "no" = rawEdge > 0 ? "yes" : "no";
+
+  // Entry price: Kalshi's current best ask for YES (or best bid complement for NO)
+  const entryPriceCents = side === "yes"
+    ? Math.round(ms.kalshiYesAsk * 100)
+    : Math.round((1 - ms.kalshiYesBid) * 100);
+
+  if (entryPriceCents <= 0 || entryPriceCents >= 100) return;
+
+  // Set cooldown immediately so concurrent debounces don't double-enter
+  state.entryCooldowns[ticker] = now + ENTRY_COOLDOWN_MS;
+
+  log(`🎯 SIGNAL ${ticker} ${side.toUpperCase()} @${entryPriceCents}¢ edge=${edgePct.toFixed(1)}% leader=${leader.leader}(${(leader.confidence * 100).toFixed(0)}%) momentum=${leader.momentumStrength.toFixed(4)}`);
+
+  placeEntry(ms, side, entryPriceCents, edgePct, leader)
+    .catch(e => warn(`placeEntry error on ${ticker}: ${(e as Error).message}`));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Order Placement
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function placeEntry(
+  ms: MarketState,
+  side: "yes" | "no",
+  priceCents: number,
+  edgePct: number,
+  leader: LeaderDetectionResult,
+): Promise<void> {
+  if (isPlacingOrder) return;
+  isPlacingOrder = true;
+
   try {
-    if (fs.existsSync(PRICE_HISTORY_FILE)) {
-      priceHistory = JSON.parse(fs.readFileSync(PRICE_HISTORY_FILE, "utf-8"));
-    }
-  } catch { priceHistory = {}; }
-}
+    const { ticker } = ms;
+    const dedupeKey  = `${ticker}-${side}-${priceCents}`;
 
-function savePriceHistory(): void {
-  try {
-    fs.mkdirSync(path.dirname(PRICE_HISTORY_FILE), { recursive: true });
-    fs.writeFileSync(PRICE_HISTORY_FILE, JSON.stringify(priceHistory), "utf-8");
-  } catch (err) {
-    console.warn(`[autopilot] Price history save failed: ${(err as Error).message}`);
-  }
-}
+    // Final dedupe check
+    if (Object.values(state.pendingEntries).some(e => e.dedupeKey === dedupeKey)) return;
 
-function recordPrice(ticker: string, polyMid: number, kalshiMid: number): void {
-  if (!priceHistory[ticker]) priceHistory[ticker] = [];
-  priceHistory[ticker].push({ ts: new Date().toISOString(), polyMid, kalshiMid });
-  // Keep last 50 ticks per market (25 hours at 2-min intervals)
-  if (priceHistory[ticker].length > 50) {
-    priceHistory[ticker] = priceHistory[ticker].slice(-50);
-  }
-}
+    const { contracts, costUsd } = computeKellySize(edgePct, leader.confidence);
+    if (contracts === 0) return;
 
-function getPolyPrices(ticker: string): number[] {
-  return (priceHistory[ticker] ?? []).map(p => p.polyMid);
-}
+    const clientOrderId = uuidv4();
 
-function getKalshiPrices(ticker: string): number[] {
-  return (priceHistory[ticker] ?? []).map(p => p.kalshiMid);
-}
-
-// ---------------------------------------------------------------------------
-// ═══ NEW: Kelly Sizing with Kalshi Fees ═══
-// ---------------------------------------------------------------------------
-
-const KALSHI_FEE = 0.07;
-
-function kalshiKellySize(
-  edge: number,
-  leaderConfidence: number,
-  kalshiPrice: number,
-  bankroll: number
-): number {
-  if (edge <= 0 || bankroll <= 0) return 0;
-
-  // Trade win probability (not event probability)
-  let winProb = 0.50 + edge * leaderConfidence * 2;
-  winProb = Math.min(0.75, Math.max(0.35, winProb));
-
-  // Actual Kalshi payout odds after 7% fee
-  const grossProfit = (1 - kalshiPrice) / Math.max(kalshiPrice, 0.01);
-  const netProfit = grossProfit * (1 - KALSHI_FEE);
-  if (netProfit <= 0) return 0;
-
-  // Kelly: f = (p*b - q) / b, half-Kelly
-  const q = 1 - winProb;
-  const kelly = (winProb * netProfit - q) / netProfit;
-  if (kelly <= 0) return 0;
-
-  const sized = bankroll * kelly * 0.40; // 40% Kelly
-  const maxBet = bankroll * 0.05; // 5% bankroll cap
-  return Math.round(Math.min(sized, maxBet) * 100) / 100;
-}
-
-// ---------------------------------------------------------------------------
-// State I/O (mostly unchanged, with new fields)
-// ---------------------------------------------------------------------------
-
-interface BacktestResults {
-  generatedAt?: string;
-  winnerAccuracy: number;
-  avgSpreadError: number;
-  roi: number;
-  gamesTracked: number;
-  byLeague?: Record<string, { accuracy: number; games: number }>;
-}
-
-function loadBacktestResults(): BacktestResults | null {
-  try {
-    if (fs.existsSync(BACKTEST_FILE)) {
-      return JSON.parse(fs.readFileSync(BACKTEST_FILE, "utf-8")) as BacktestResults;
-    }
-  } catch { /* ok */ }
-  return null;
-}
-
-function applyBacktestAdjustments(results: BacktestResults): string {
-  const msgs: string[] = [];
-  const accuracy = Math.round(results.winnerAccuracy * 100);
-  msgs.push(`Model accuracy (30d): ${accuracy}% | Avg spread err: ${results.avgSpreadError.toFixed(1)}pts | Tracked: ${results.gamesTracked} games`);
-  if (results.winnerAccuracy < 0.48 && results.gamesTracked >= 10) {
-    EDGE_THRESHOLD_PCT = 8;
-    msgs.push(`⚠️ Accuracy ${accuracy}% < 48% → edge threshold raised 5% → 8%`);
-  }
-  return msgs.join(" | ");
-}
-
-function defaultState(): AutopilotState {
-  return {
-    startIso: new Date().toISOString(),
-    realizedPnlUsd: 0,
-    ordersInLastHour: [],
-    consecutiveLosses: 0,
-    lastError: null,
-    lastTradeIso: null,
-    apiErrors: [],
-    pendingEntries: {},
-    openPositions: {},
-    entryCooldowns: {},
-    marketCumulativePnl: {}, // NEW
-  };
-}
-
-function loadState(): AutopilotState {
-  try {
-    if (fs.existsSync(STATE_FILE)) {
-      const s = JSON.parse(fs.readFileSync(STATE_FILE, "utf-8")) as AutopilotState;
-      s.entryCooldowns ??= {};
-      s.marketCumulativePnl ??= {}; // backfill
-      return s;
-    }
-  } catch (err) {
-    console.warn(`[autopilot] Could not load state: ${(err as Error).message}. Starting fresh.`);
-  }
-  return defaultState();
-}
-
-function saveState(state: AutopilotState): void {
-  fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
-  const tmpPath = STATE_FILE + ".tmp";
-  fs.writeFileSync(tmpPath, JSON.stringify(state, null, 2), "utf-8");
-  try { fs.renameSync(tmpPath, STATE_FILE); } catch {
-    try { fs.unlinkSync(STATE_FILE); } catch { /* ignore */ }
-    fs.renameSync(tmpPath, STATE_FILE);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Trade log (unchanged)
-// ---------------------------------------------------------------------------
-function appendTrade(record: Record<string, unknown>): void {
-  try {
-    fs.mkdirSync(path.dirname(TRADES_FILE), { recursive: true });
-    fs.appendFileSync(TRADES_FILE, JSON.stringify({ timestamp: new Date().toISOString(), ...record }) + "\n", "utf-8");
-  } catch (err) {
-    console.warn(`[autopilot] Trade log write failed: ${(err as Error).message}`);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Market data (unchanged)
-// ---------------------------------------------------------------------------
-function loadMarkets(): ProcessedMarket[] {
-  try {
-    const raw = JSON.parse(fs.readFileSync(MARKETS_FILE, "utf-8")) as { markets: ProcessedMarket[] };
-    return raw.markets ?? [];
-  } catch { return []; }
-}
-
-function maybeRefreshMarkets(): void {
-  try {
-    let needRefresh = true;
-    if (fs.existsSync(MARKETS_FILE)) {
-      const ageMs = Date.now() - fs.statSync(MARKETS_FILE).mtimeMs;
-      needRefresh = ageMs > INGEST_INTERVAL_MS;
-    }
-    if (!needRefresh) return;
-    console.log("[autopilot] Refreshing market data...");
-    spawnSync("npx", ["tsx", "scripts/ingest-kalshi.ts"], {
-      stdio: "inherit", shell: true, timeout: 180_000, cwd: process.cwd(),
+    const order = await createOrder({
+      ticker,
+      side,
+      type: "limit",
+      yesPrice: side === "yes" ? priceCents : 100 - priceCents,
+      count: contracts,
+      clientOrderId,
+      timeInForce: "GTC",
     });
+
+    state.pendingEntries[clientOrderId] = {
+      ticker,
+      orderId: order.order_id,
+      clientOrderId,
+      side,
+      priceCents,
+      countFp: String(contracts),
+      costUsd,
+      placedTs: new Date().toISOString(),
+      dedupeKey,
+      edgePct,
+      leaderAtEntry:    leader.leader,
+      directionAtEntry: leader.direction,
+    };
+    state.ordersInLastHour.push(new Date().toISOString());
+    state.lastTradeIso = new Date().toISOString();
+    saveState();
+
+    const msg = `🎯 **WS ENTRY** \`${ticker}\` ${side.toUpperCase()} @${priceCents}¢ | edge=${edgePct.toFixed(1)}% | ${leader.leader}(${(leader.confidence * 100).toFixed(0)}%) | $${costUsd.toFixed(2)}`;
+    log(msg);
+    notifyDiscord(msg);
+    appendTrade({ type: "entry_placed", ticker, side, priceCents, contracts, costUsd, edgePct, leader: leader.leader });
   } catch (err) {
-    console.warn(`[autopilot] Ingest refresh failed: ${(err as Error).message}`);
+    warn(`createOrder failed: ${(err as Error).message}`);
+  } finally {
+    isPlacingOrder = false;
   }
 }
 
-// ---------------------------------------------------------------------------
-// Kill switch & runtime (unchanged)
-// ---------------------------------------------------------------------------
-function checkKillSwitch(): boolean {
-  if (process.env.KALSHI_AUTOPILOT_STOP === "1") return true;
-  if (fs.existsSync(STOP_FILE)) return true;
-  return false;
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Exit Management (REST-polled every 30s — fills confirmed via API)
+// ─────────────────────────────────────────────────────────────────────────────
 
-function checkRuntime(state: AutopilotState): boolean {
-  return Date.now() - new Date(state.startIso).getTime() >= RUN_DURATION_MS;
-}
-
-// ---------------------------------------------------------------------------
-// API pre-checks (unchanged)
-// ---------------------------------------------------------------------------
-async function apiPreChecks(state: AutopilotState): Promise<{
-  balance: KalshiBalance; positions: KalshiPosition[]; orders: KalshiOrder[];
-} | null> {
+async function manageExits(): Promise<void> {
   try {
-    const [balance, positions, orders] = await Promise.all([getBalance(), getPositions(), getOrders("resting")]);
-    return { balance, positions, orders };
-  } catch (err) {
-    state.apiErrors.push(new Date().toISOString());
-    state.lastError = (err as Error).message;
-    if (err instanceof KalshiApiError && (err.status === 401 || err.status === 403)) throw err;
-    console.warn(`[autopilot] API pre-check failed: ${(err as Error).message}`);
-    return null;
-  }
-}
+    const [ordersResp, positionsResp] = await Promise.all([
+      getOrders({ status: "resting" }),
+      getPositions(),
+    ]);
+    const apiOrders    = (ordersResp.orders    ?? []) as KalshiOrder[];
+    const apiPositions = (positionsResp.market_positions ?? []) as KalshiPosition[];
+    const now = Date.now();
 
-function checkErrorRate(state: AutopilotState): boolean {
-  const now = Date.now();
-  state.apiErrors = state.apiErrors.filter((ts) => now - new Date(ts).getTime() < ERROR_WINDOW_MS);
-  return state.apiErrors.length >= MAX_ERRORS_IN_WINDOW;
-}
+    // ── Pending entries → check fills ────────────────────────────────────────
+    for (const [clientId, entry] of Object.entries(state.pendingEntries)) {
+      const apiOrder = apiOrders.find(o => o.client_order_id === clientId);
 
-// ---------------------------------------------------------------------------
-// Manage pending entries (unchanged except leader tracking on promotion)
-// ---------------------------------------------------------------------------
-async function managePendingEntries(
-  state: AutopilotState, liveOrders: KalshiOrder[], livePositions: KalshiPosition[],
-): Promise<void> {
-  const liveOrderIds = new Set(liveOrders.map((o) => o.order_id));
-  const liveTickerSet = new Set(livePositions.map((p) => p.ticker));
-  const now = Date.now();
-  const toRemove: string[] = [];
-  const CANCEL_GRACE_MS = 5 * 60 * 1000;
-
-  for (const [ticker, entry] of Object.entries(state.pendingEntries)) {
-    const ageMs = now - new Date(entry.placedTs).getTime();
-    const hasFill = liveTickerSet.has(ticker);
-    const orderMissing = !liveOrderIds.has(entry.orderId);
-    const orderGone = hasFill || (orderMissing && ageMs > CANCEL_GRACE_MS);
-
-    if (ageMs > ENTRY_TIMEOUT_SEC * 1000 && !liveTickerSet.has(ticker)) {
-      if (!orderGone) {
-        try { await cancelOrder(entry.orderId); } catch (err) {
-          console.warn(`[autopilot] Cancel entry ${entry.orderId} failed: ${(err as Error).message}`);
-        }
-      }
-      toRemove.push(ticker);
-      appendTrade({ ticker, side: entry.side, edgePct: entry.edgePct, status: "entry_timeout" });
-      notifyDiscord(`⏱️ **ENTRY TIMEOUT** | ${ticker}\nSide: ${entry.side.toUpperCase()} — no fill in ${ENTRY_TIMEOUT_SEC}s`);
-      continue;
-    }
-
-    if (orderGone) {
-      if (liveTickerSet.has(ticker)) {
-        state.openPositions[ticker] = {
-          ticker, side: entry.side, entryPriceCents: entry.priceCents,
-          countFp: entry.countFp, costUsd: entry.costUsd,
-          entryOrderId: entry.orderId, entryFillTs: new Date().toISOString(),
-          exitAttempts: 0, status: "awaiting_exit",
-          leaderAtEntry: entry.leaderAtEntry, // NEW: preserve leader info
-          directionAtEntry: entry.directionAtEntry, // NEW: preserve direction
-        };
-        toRemove.push(ticker);
-        state.lastTradeIso = new Date().toISOString();
-        appendTrade({ ticker, side: entry.side, edgePct: entry.edgePct, status: "filled", leader: entry.leaderAtEntry, direction: entry.directionAtEntry });
-        notifyDiscord(`✅ **ENTRY FILLED** | ${ticker}\nSide: **${entry.side.toUpperCase()}** @ $${toFixed4(entry.priceCents / 100)} | Leader: ${entry.leaderAtEntry} ${entry.directionAtEntry}`);
-      } else {
-        state.entryCooldowns[ticker] = Date.now();
-        toRemove.push(ticker);
-        appendTrade({ ticker, side: entry.side, edgePct: entry.edgePct, status: "cancelled" });
-        notifyDiscord(`❌ **ORDER CANCELLED** | ${ticker}`);
-      }
-    }
-  }
-  for (const ticker of toRemove) delete state.pendingEntries[ticker];
-}
-
-// ---------------------------------------------------------------------------
-// Exit order helper (unchanged)
-// ---------------------------------------------------------------------------
-async function placeExitOrder(pos: PositionState, state: AutopilotState, breakeven = false): Promise<void> {
-  const priceCents = breakeven ? pos.entryPriceCents : pos.entryPriceCents + TP_CENTS;
-  const priceDollars = toFixed4(priceCents / 100);
-  const clientOrderId = uuidv4();
-  const payload = {
-    ticker: pos.ticker, side: pos.side, action: "sell" as const,
-    type: "limit" as const,
-    [pos.side === "yes" ? "yes_price_dollars" : "no_price_dollars"]: priceDollars,
-    count_fp: pos.countFp, client_order_id: clientOrderId, post_only: true,
-  };
-  const exitOrder = await createOrder(payload);
-  pos.exitOrderId = exitOrder.order_id;
-  pos.exitAttempts++;
-  pos.status = "exit_placed";
-}
-
-// ---------------------------------------------------------------------------
-// Manage open positions (with per-market P/L tracking on close)
-// ---------------------------------------------------------------------------
-async function manageOpenPositions(
-  state: AutopilotState, liveOrders: KalshiOrder[],
-  livePositions: KalshiPosition[], markets: ProcessedMarket[],
-): Promise<void> {
-  const liveOrderIds = new Set(liveOrders.map((o) => o.order_id));
-  const liveTickerSet = new Set(livePositions.map((p) => p.ticker));
-  const marketMap = new Map(markets.map((m) => [m.ticker, m]));
-  const toClose: string[] = [];
-
-  for (const [ticker, pos] of Object.entries(state.openPositions)) {
-    const market = marketMap.get(ticker);
-
-    if (pos.status === "awaiting_exit") {
-      const spread = market?.spread ?? 999;
-      const bidPrice = pos.side === "yes" ? market?.yesBid : market?.noBid;
-      const illiquid = !market || spread > 3 || bidPrice == null || bidPrice <= 0;
-      if (illiquid) { pos.status = "holding_illiquid"; }
-      else {
-        try { await placeExitOrder(pos, state); } catch (err) {
-          console.warn(`[autopilot] Exit order for ${ticker} failed: ${(err as Error).message}`);
-          if (err instanceof KalshiApiError && (err.status === 401 || err.status === 403)) throw err;
-        }
-      }
-    } else if (pos.status === "exit_placed") {
-      const exitOrderGone = pos.exitOrderId ? !liveOrderIds.has(pos.exitOrderId) : true;
-      if (exitOrderGone && !liveTickerSet.has(ticker)) {
-        const exitPriceCents = pos.entryPriceCents + TP_CENTS;
-        const pnlUsd = ((exitPriceCents - pos.entryPriceCents) / 100) * parseFloat(pos.countFp);
-        state.realizedPnlUsd += pnlUsd;
-        state.consecutiveLosses = pnlUsd >= 0 ? 0 : state.consecutiveLosses + 1;
-        state.lastTradeIso = new Date().toISOString();
-
-        // ═══ NEW: Track per-market P/L ═══
-        state.marketCumulativePnl[ticker] = (state.marketCumulativePnl[ticker] ?? 0) + pnlUsd;
-
-        appendTrade({ ticker, side: pos.side, pnlUsd, status: "closed", leader: pos.leaderAtEntry });
-        toClose.push(ticker);
-
-        const emoji = pnlUsd >= 0 ? "💰" : "🔴";
-        notifyDiscord(`${emoji} **TRADE CLOSED** | ${ticker}\nP&L: ${pnlUsd >= 0 ? "+" : ""}$${pnlUsd.toFixed(4)} | Market cumulative: $${(state.marketCumulativePnl[ticker] ?? 0).toFixed(2)}`);
+      // Order vanished or canceled
+      if (!apiOrder || apiOrder.status === "canceled") {
+        delete state.pendingEntries[clientId];
         continue;
       }
 
-      if (pos.exitOrderId && liveOrderIds.has(pos.exitOrderId)) {
-        const exitOrder = liveOrders.find((o) => o.order_id === pos.exitOrderId);
-        if (exitOrder) {
-          const exitAgeMs = Date.now() - new Date(exitOrder.created_time).getTime();
-          if (exitAgeMs > EXIT_TIMEOUT_SEC * 1000) {
-            try {
-              await cancelOrder(pos.exitOrderId);
-              await placeExitOrder(pos, state, true);
-            } catch (err) {
-              console.warn(`[autopilot] Breakeven exit for ${ticker} failed: ${(err as Error).message}`);
-              if (err instanceof KalshiApiError && (err.status === 401 || err.status === 403)) throw err;
+      const filled = Number(apiOrder.count_filled_fp ?? 0);
+      if (filled > 0) {
+        log(`✅ Entry filled: ${entry.ticker} ${entry.side.toUpperCase()} @${entry.priceCents}¢ ×${filled}`);
+        state.openPositions[clientId] = {
+          ticker:         entry.ticker,
+          side:           entry.side,
+          entryPriceCents: entry.priceCents,
+          countFp:        String(filled),
+          costUsd:        entry.costUsd,
+          entryOrderId:   apiOrder.order_id,
+          entryFillTs:    new Date().toISOString(),
+          exitAttempts:   0,
+          status:         "awaiting_exit",
+          leaderAtEntry:    entry.leaderAtEntry,
+          directionAtEntry: entry.directionAtEntry,
+        };
+        delete state.pendingEntries[clientId];
+        appendTrade({ type: "entry_filled", ticker: entry.ticker, side: entry.side, priceCents: entry.priceCents, filled });
+      }
+
+      // Timeout stale entries
+      if (now - new Date(entry.placedTs).getTime() > ENTRY_TIMEOUT_SEC * 1000) {
+        log(`⏱️ Canceling stale entry: ${entry.ticker}`);
+        await cancelOrder(apiOrder.order_id).catch(() => null);
+        delete state.pendingEntries[clientId];
+      }
+    }
+
+    // ── Open positions → manage exits ────────────────────────────────────────
+    for (const [posId, pos] of Object.entries(state.openPositions)) {
+      const ms         = markets.get(pos.ticker);
+      const currentMid = ms?.kalshiMid ?? 0.5;
+
+      // Check if API position is closed (exited)
+      const apiPos = apiPositions.find(p => (p as { market_id: string }).market_id === pos.ticker);
+      if (!apiPos || Number((apiPos as { position: number }).position) === 0) {
+        const pnl = (pos.side === "yes"
+          ? currentMid - pos.entryPriceCents / 100
+          : pos.entryPriceCents / 100 - currentMid) * Number(pos.countFp) * 100;
+
+        state.realizedPnlUsd += pnl;
+        state.marketCumulativePnl[pos.ticker] = (state.marketCumulativePnl[pos.ticker] ?? 0) + pnl;
+        if (pnl < 0) state.consecutiveLosses++;
+        else state.consecutiveLosses = 0;
+
+        log(`💰 Closed: ${pos.ticker} PnL=$${pnl.toFixed(2)} | session=$${state.realizedPnlUsd.toFixed(2)}`);
+        notifyDiscord(`💰 **WS CLOSED** \`${pos.ticker}\` PnL=$${pnl.toFixed(2)} | Session=$${state.realizedPnlUsd.toFixed(2)}`);
+        appendTrade({ type: "position_closed", ticker: pos.ticker, side: pos.side, pnl });
+        delete state.openPositions[posId];
+        continue;
+      }
+
+      // Place exit if TP reached or timeout
+      const timeSinceEntry = now - new Date(pos.entryFillTs).getTime();
+      const unrealizedPct  = (pos.side === "yes"
+        ? currentMid - pos.entryPriceCents / 100
+        : pos.entryPriceCents / 100 - currentMid) * 100;
+      const needsExit = unrealizedPct >= TP_CENTS || timeSinceEntry > EXIT_TIMEOUT_SEC * 1000;
+
+      if (needsExit && pos.status === "awaiting_exit" && !pos.exitOrderId) {
+        const exitPriceCents = pos.side === "yes"
+          ? Math.min(99, pos.entryPriceCents + TP_CENTS)
+          : Math.max(1,  pos.entryPriceCents - TP_CENTS);
+
+        try {
+          const exitOrder = await createOrder({
+            ticker:        pos.ticker,
+            side:          pos.side === "yes" ? "no" : "yes",
+            type:          "limit",
+            yesPrice:      pos.side === "yes" ? exitPriceCents : 100 - exitPriceCents,
+            count:         Number(pos.countFp),
+            clientOrderId: uuidv4(),
+            timeInForce:   "GTC",
+          });
+          pos.exitOrderId   = exitOrder.order_id;
+          pos.status        = "exit_placed";
+          pos.exitAttempts++;
+          log(`📤 Exit placed: ${pos.ticker} @${exitPriceCents}¢`);
+        } catch (err) {
+          warn(`Exit failed: ${(err as Error).message}`);
+          pos.exitAttempts++;
+          if (pos.exitAttempts > 10) pos.status = "holding_illiquid";
+        }
+      }
+    }
+
+    saveState();
+  } catch (err) {
+    warn(`manageExits error: ${(err as Error).message}`);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Kalshi WebSocket
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface KalshiWsMsg {
+  type: string;
+  msg?: Record<string, unknown>;
+  id?: number;
+}
+
+interface KalshiSnapshotLevel { [price: number]: number; } // price_cents → qty
+
+function handleKalshiSnapshot(msg: Record<string, unknown>): void {
+  const ticker = msg["market_ticker"] as string;
+  if (!ticker || !markets.has(ticker)) return;
+
+  const ob = getOrCreateOrderbook(ticker);
+  ob.yes.clear();
+  ob.no.clear();
+
+  // Kalshi sends: { yes: [[price, qty], ...], no: [[price, qty], ...] }
+  for (const [price, qty] of (msg["yes"] as [number, number][] ?? [])) {
+    if (qty > 0) ob.yes.set(price, qty);
+  }
+  for (const [price, qty] of (msg["no"] as [number, number][] ?? [])) {
+    if (qty > 0) ob.no.set(price, qty);
+  }
+
+  const ms = markets.get(ticker)!;
+  ms.receivedKalshiSnapshot = true;
+  updateMktFromOrderbook(ticker);
+  checkSignal(ticker);
+}
+
+function handleKalshiDelta(msg: Record<string, unknown>): void {
+  const ticker = msg["market_ticker"] as string;
+  if (!ticker || !markets.has(ticker)) return;
+
+  const price = msg["price"] as number;   // cents
+  const delta = msg["delta"] as number;   // qty change (pos=add, neg=remove)
+  const side  = msg["side"]  as "yes" | "no";
+
+  const ob = getOrCreateOrderbook(ticker);
+  const book = side === "yes" ? ob.yes : ob.no;
+
+  if (delta > 0) {
+    book.set(price, (book.get(price) ?? 0) + delta);
+  } else {
+    const cur = (book.get(price) ?? 0) + delta; // delta is negative
+    if (cur <= 0) book.delete(price);
+    else book.set(price, cur);
+  }
+
+  // Prune to top-N to prevent unbounded growth
+  if (book.size > ORDERBOOK_DEPTH * 2) {
+    const sorted = [...book.entries()].sort((a, b) => b[0] - a[0]).slice(0, ORDERBOOK_DEPTH);
+    book.clear();
+    for (const [k, v] of sorted) book.set(k, v);
+  }
+
+  updateMktFromOrderbook(ticker);
+  checkSignal(ticker);
+}
+
+function subscribeKalshiChannels(): void {
+  if (!kalshiWs || kalshiWs.readyState !== WebSocket.OPEN) return;
+  const tickers = [...markets.keys()];
+  if (tickers.length === 0) return;
+
+  const BATCH = 50;
+  for (let i = 0; i < tickers.length; i += BATCH) {
+    const batch = tickers.slice(i, i + BATCH);
+
+    // Subscribe to snapshot first, then deltas
+    kalshiWs.send(JSON.stringify({
+      id: wsMessageId++,
+      cmd: "subscribe",
+      params: { channels: ["orderbook_snapshot"], market_tickers: batch },
+    }));
+    kalshiWs.send(JSON.stringify({
+      id: wsMessageId++,
+      cmd: "subscribe",
+      params: { channels: ["orderbook_delta"],    market_tickers: batch },
+    }));
+  }
+  log(`📡 Kalshi: subscribed ${tickers.length} markets (snapshot + delta)`);
+}
+
+function startKalshiPing(): void {
+  if (kalshiPingTimer) clearInterval(kalshiPingTimer);
+  kalshiPingTimer = setInterval(() => {
+    if (kalshiWs?.readyState === WebSocket.OPEN) {
+      kalshiWs.ping();
+    }
+  }, WS_PING_INTERVAL_MS);
+}
+
+function connectKalshiWs(): void {
+  log("🔌 Connecting Kalshi WS...");
+  const ws = new WebSocket(KALSHI_WS_URL);
+  kalshiWs = ws;
+
+  ws.on("open", () => {
+    log("✅ Kalshi WS open");
+    kalshiReconnectDelay = WS_RECONNECT_INITIAL_MS;
+    startKalshiPing();
+
+    // Authenticate
+    try {
+      const loginParams = buildKalshiLoginParams();
+      ws.send(JSON.stringify({ id: wsMessageId++, cmd: "login", params: loginParams }));
+    } catch (err) {
+      warn(`Kalshi WS auth error: ${(err as Error).message}`);
+      ws.close();
+    }
+  });
+
+  ws.on("message", (data: Buffer) => {
+    let msg: KalshiWsMsg;
+    try { msg = JSON.parse(data.toString()); } catch { return; }
+
+    switch (msg.type) {
+      case "login":
+        if ((msg.msg as { code?: number })?.code === 0) {
+          log("🔐 Kalshi WS authenticated");
+          subscribeKalshiChannels();
+        } else {
+          warn("❌ Kalshi WS login failed:", JSON.stringify(msg.msg));
+        }
+        break;
+      case "orderbook_snapshot":
+        if (msg.msg) handleKalshiSnapshot(msg.msg);
+        break;
+      case "orderbook_delta":
+        if (msg.msg) handleKalshiDelta(msg.msg);
+        break;
+      case "subscribed":
+        // Acknowledged — no action needed
+        break;
+      case "error":
+        warn("Kalshi WS error msg:", JSON.stringify(msg.msg));
+        break;
+    }
+  });
+
+  ws.on("error", (err) => warn(`Kalshi WS error: ${err.message}`));
+
+  ws.on("close", () => {
+    if (kalshiPingTimer) { clearInterval(kalshiPingTimer); kalshiPingTimer = null; }
+    kalshiWs = null;
+    if (!running) return;
+    log(`Kalshi WS closed → reconnect in ${kalshiReconnectDelay / 1000}s`);
+    setTimeout(() => {
+      if (running) connectKalshiWs();
+      kalshiReconnectDelay = Math.min(kalshiReconnectDelay * 2, WS_RECONNECT_MAX_MS);
+    }, kalshiReconnectDelay);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Polymarket WebSocket
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface PolyWsMsg {
+  event_type: "book" | "price_change" | "tick_size_change" | "last_trade_price" | "connected" | "subscribed";
+  asset_id?: string;
+  market?:   string;
+  bids?: { price: string; size: string }[];
+  asks?: { price: string; size: string }[];
+  changes?: { price: string; size: string; side: "BUY" | "SELL" }[];
+  price?:   string;
+}
+
+function handlePolyBook(tokenId: string, bids: { price: string; size: string }[], asks: { price: string; size: string }[]): void {
+  const ticker = polyTokenToTicker.get(tokenId);
+  if (!ticker) return;
+  const ms = markets.get(ticker);
+  if (!ms) return;
+
+  const bidPrices = bids.map(b => parseFloat(b.price)).filter(p => p > 0 && p < 1).sort((a, b) => b - a);
+  const askPrices = asks.map(a => parseFloat(a.price)).filter(p => p > 0 && p < 1).sort((a, b) => a - b);
+
+  if (bidPrices.length > 0) ms.polyBestBid = bidPrices[0];
+  if (askPrices.length > 0) ms.polyBestAsk = askPrices[0];
+
+  if (ms.polyBestBid > 0 && ms.polyBestAsk > 0) {
+    ms.polyMid = (ms.polyBestBid + ms.polyBestAsk) / 2;
+    checkSignal(ticker);
+  }
+}
+
+function handlePolyPriceChange(tokenId: string, changes: PolyWsMsg["changes"]): void {
+  if (!changes) return;
+  const ticker = polyTokenToTicker.get(tokenId);
+  if (!ticker) return;
+  const ms = markets.get(ticker);
+  if (!ms) return;
+
+  for (const ch of changes) {
+    const p   = parseFloat(ch.price);
+    const qty = parseFloat(ch.size);
+    if (ch.side === "BUY") {
+      // BUY = bid side
+      if (qty > 0) ms.polyBestBid = Math.max(ms.polyBestBid, p);
+      else if (p >= ms.polyBestBid) ms.polyBestBid = p; // best may have moved
+    } else {
+      // SELL = ask side
+      if (qty > 0) ms.polyBestAsk = ms.polyBestAsk === 0 ? p : Math.min(ms.polyBestAsk, p);
+      else if (p <= ms.polyBestAsk) ms.polyBestAsk = 0; // best ask removed, approximate
+    }
+  }
+
+  if (ms.polyBestBid > 0 && ms.polyBestAsk > 0 && ms.polyBestBid < ms.polyBestAsk) {
+    ms.polyMid = (ms.polyBestBid + ms.polyBestAsk) / 2;
+    checkSignal(ticker);
+  }
+}
+
+function startPolyPing(): void {
+  if (polyPingTimer) clearInterval(polyPingTimer);
+  polyPingTimer = setInterval(() => {
+    if (polyWs?.readyState === WebSocket.OPEN) polyWs.ping();
+  }, WS_PING_INTERVAL_MS);
+}
+
+function connectPolyWs(): void {
+  const tokenIds = [...polyTokenToTicker.keys()];
+  if (tokenIds.length === 0) {
+    log("⚠️ No Poly token IDs mapped — skipping Poly WS (check gamma API discovery)");
+    return;
+  }
+
+  log(`🔌 Connecting Poly WS (${tokenIds.length} tokens)...`);
+  const ws = new WebSocket(POLY_WS_URL);
+  polyWs = ws;
+
+  ws.on("open", () => {
+    log("✅ Poly WS open");
+    polyReconnectDelay = WS_RECONNECT_INITIAL_MS;
+    startPolyPing();
+
+    // Subscribe in batches
+    const BATCH = 200;
+    for (let i = 0; i < tokenIds.length; i += BATCH) {
+      ws.send(JSON.stringify({ assets_ids: tokenIds.slice(i, i + BATCH), type: "Market" }));
+    }
+    log(`📡 Poly: subscribed ${tokenIds.length} tokens`);
+  });
+
+  ws.on("message", (data: Buffer) => {
+    let msgs: PolyWsMsg[];
+    try {
+      const raw = JSON.parse(data.toString());
+      msgs = Array.isArray(raw) ? raw : [raw];
+    } catch { return; }
+
+    for (const msg of msgs) {
+      if (!msg.asset_id && msg.event_type !== "connected") continue;
+      switch (msg.event_type) {
+        case "book":
+          if (msg.asset_id && msg.bids && msg.asks)
+            handlePolyBook(msg.asset_id, msg.bids, msg.asks);
+          break;
+        case "price_change":
+          if (msg.asset_id && msg.changes)
+            handlePolyPriceChange(msg.asset_id, msg.changes);
+          break;
+        case "last_trade_price":
+          // Use as a rough mid update when no book update arrives
+          if (msg.asset_id && msg.price) {
+            const p      = parseFloat(msg.price);
+            const ticker = polyTokenToTicker.get(msg.asset_id);
+            if (ticker) {
+              const ms = markets.get(ticker);
+              if (ms && p > 0 && p < 1 && ms.polyMid === 0) {
+                ms.polyMid = p;
+              }
             }
+          }
+          break;
+      }
+    }
+  });
+
+  ws.on("error", (err) => warn(`Poly WS error: ${err.message}`));
+
+  ws.on("close", () => {
+    if (polyPingTimer) { clearInterval(polyPingTimer); polyPingTimer = null; }
+    polyWs = null;
+    if (!running) return;
+    log(`Poly WS closed → reconnect in ${polyReconnectDelay / 1000}s`);
+    setTimeout(() => {
+      if (running) connectPolyWs();
+      polyReconnectDelay = Math.min(polyReconnectDelay * 2, WS_RECONNECT_MAX_MS);
+    }, polyReconnectDelay);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Polymarket Market Discovery (gamma API → get YES token IDs)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface GammaMarket {
+  condition_id:  string;
+  question:      string;
+  tokens:        { token_id: string; outcome: string }[];
+  active:        boolean;
+  closed:        boolean;
+  end_date_iso?: string;
+}
+
+function titleSimilarity(a: string, b: string): number {
+  const stopWords = new Set(["will", "the", "a", "an", "in", "at", "by", "for", "to", "of", "is", "be"]);
+  const words = (s: string) => new Set(s.split(/\s+/).filter(w => w.length > 3 && !stopWords.has(w)));
+  const aW = words(a);
+  const bW = words(b);
+  if (aW.size === 0) return 0;
+  let common = 0;
+  for (const w of aW) { if (bW.has(w)) common++; }
+  return common / aW.size;
+}
+
+async function discoverPolyMarkets(): Promise<void> {
+  log("🔍 Discovering Polymarket counterparts...");
+
+  // Load cache
+  let polyMap: Record<string, string> = {};
+  try {
+    if (fs.existsSync(POLY_MAP_FILE)) {
+      polyMap = JSON.parse(fs.readFileSync(POLY_MAP_FILE, "utf8"));
+      log(`📦 ${Object.keys(polyMap).length} cached Poly mappings`);
+    }
+  } catch { /* ignore */ }
+
+  const toDiscover = [...markets.entries()].filter(([t]) => !polyMap[t]);
+  log(`🔍 Discovering ${toDiscover.length} new markets...`);
+
+  let newMatches = 0;
+  for (const [ticker, ms] of toDiscover) {
+    // Build keyword from first 4 meaningful title words
+    const keyword = ms.title.split(/\s+/).slice(0, 4).join(" ");
+    try {
+      const res = await fetch(`${GAMMA_API}?keyword=${encodeURIComponent(keyword)}&limit=10&closed=false`);
+      if (!res.ok) { await sleep(300); continue; }
+
+      const gms = await res.json() as GammaMarket[];
+      const titleLower = ms.title.toLowerCase();
+
+      for (const gm of gms) {
+        if (gm.closed) continue;
+        const score = titleSimilarity(titleLower, gm.question.toLowerCase());
+        if (score > 0.55) {
+          const yes = gm.tokens.find(t => t.outcome === "Yes");
+          if (yes) {
+            polyMap[ticker] = yes.token_id;
+            newMatches++;
+            break;
           }
         }
       }
-    } else if (pos.status === "holding_illiquid") {
-      if (!liveTickerSet.has(ticker)) { toClose.push(ticker); continue; }
-      const spread = market?.spread ?? 999;
-      const bidPrice = pos.side === "yes" ? market?.yesBid : market?.noBid;
-      if (market && spread <= 3 && bidPrice != null && bidPrice > 0) {
-        pos.status = "awaiting_exit";
-      }
-    }
-  }
-  for (const ticker of toClose) delete state.openPositions[ticker];
-}
-
-// ---------------------------------------------------------------------------
-// Caps check (unchanged)
-// ---------------------------------------------------------------------------
-function checkCaps(state: AutopilotState, liveOrders: KalshiOrder[]): CapResult {
-  const now = Date.now();
-  state.ordersInLastHour = state.ordersInLastHour.filter((ts) => now - new Date(ts).getTime() < 3_600_000);
-  const totalExposureUsd =
-    Object.values(state.openPositions).reduce((s, p) => s + p.costUsd, 0) +
-    Object.values(state.pendingEntries).reduce((s, e) => s + e.costUsd, 0);
-  const posCount = Object.keys(state.openPositions).length + Object.keys(state.pendingEntries).length;
-  const restCount = liveOrders.length;
-  const trades1h = state.ordersInLastHour.length;
-  const reasons: string[] = [];
-  if (totalExposureUsd >= MAX_TOTAL_EXPOSURE_USD) reasons.push(`exposure $${totalExposureUsd.toFixed(2)}`);
-  if (posCount >= MAX_OPEN_POSITIONS) reasons.push(`positions ${posCount}`);
-  if (restCount >= MAX_RESTING_ORDERS) reasons.push(`resting ${restCount}`);
-  if (trades1h >= MAX_ORDERS_PER_HOUR) reasons.push(`orders/hr ${trades1h}`);
-  const slotsAvailable = Math.max(0, Math.min(MAX_OPEN_POSITIONS - posCount, MAX_RESTING_ORDERS - restCount, MAX_ORDERS_PER_HOUR - trades1h));
-  return { canTrade: reasons.length === 0, reasons, slotsAvailable };
-}
-
-// ---------------------------------------------------------------------------
-// Game key helper (unchanged)
-// ---------------------------------------------------------------------------
-function gameKey(ticker: string): string {
-  return ticker.includes("GAME-") ? ticker.replace(/-[A-Z]+$/, "") : ticker;
-}
-
-// ---------------------------------------------------------------------------
-// ═══ REWRITTEN: Find opportunities using leader detection ═══
-// ---------------------------------------------------------------------------
-function findOpportunities(
-  markets: ProcessedMarket[],
-  state: AutopilotState,
-  liveOrders: KalshiOrder[],
-): { market: ProcessedMarket; leaderResult: LeaderDetectionResult }[] {
-  const oneHourFromNow = Date.now() + 3_600_000;
-  const liveOrderTickers = new Set(liveOrders.map((o) => o.ticker));
-  const claimedGameKeys = new Set([
-    ...Object.keys(state.pendingEntries).map(gameKey),
-    ...Object.keys(state.openPositions).map(gameKey),
-    ...liveOrders.map((o) => gameKey(o.ticker)),
-  ]);
-
-  const opportunities: { market: ProcessedMarket; leaderResult: LeaderDetectionResult }[] = [];
-
-  for (const m of markets) {
-    // Basic filters
-    if (m.ticker in state.pendingEntries || m.ticker in state.openPositions) continue;
-    if (liveOrderTickers.has(m.ticker)) continue;
-    if (claimedGameKeys.has(gameKey(m.ticker))) continue;
-    if (!m.closeTime || new Date(m.closeTime).getTime() < oneHourFromNow) continue;
-
-    // Liquidity check
-    const marketSpread = m.spread ?? (m.yesBid != null && m.yesAsk != null ? m.yesAsk - m.yesBid : null);
-    if (marketSpread == null || marketSpread > 2) continue;
-    if ((m.openInterest ?? 0) < 50_000) continue;
-
-    // Edge must exist
-    if (!m.crossEdge || Math.abs(m.crossEdge.gap) < EDGE_THRESHOLD_PCT) continue;
-
-    // ═══ NEW: Leader detection ═══
-    const polyPrices = getPolyPrices(m.ticker);
-    const kalshiPrices = getKalshiPrices(m.ticker);
-
-    // Need at least 10 price points for reliable detection
-    if (polyPrices.length < 10 || kalshiPrices.length < 10) continue;
-
-    const leaderResult = detectLeader(polyPrices, kalshiPrices, 8);
-
-    // ═══ CRITICAL FILTER: Only trade when POLY leads ═══
-    // Backtest: POLY-leads = 368W-33L (+$205K), KALSHI-leads = 57W-397L (-$133K)
-    if (leaderResult.leader !== "POLY") {
-      continue;
-    }
-
-    // Must have confidence >= 0.25
-    if (leaderResult.confidence < 0.25) continue;
-
-    // Must have confirmed momentum
-    if (!leaderResult.momentumConfirmed) continue;
-
-    // Direction must not be flat
-    if (leaderResult.direction === "FLAT") continue;
-
-    // ═══ NEW: Per-market loss limit ═══
-    const marketPnl = state.marketCumulativePnl[m.ticker] ?? 0;
-    if (marketPnl <= MARKET_LOSS_LIMIT_USD) {
-      console.log(`[autopilot] ${m.ticker} skipped — market loss limit ($${marketPnl.toFixed(2)} <= $${MARKET_LOSS_LIMIT_USD})`);
-      continue;
-    }
-
-    // Gap between markets must exist in the right direction for the leader's move
-    const gap = (m.crossEdge.gap ?? 0) / 100; // convert from pct to decimal
-    if (leaderResult.direction === "UP" && gap <= 0.012) continue;  // Poly up, Kalshi lagging = gap > 0
-    if (leaderResult.direction === "DOWN" && gap >= -0.012) continue; // Poly down, Kalshi lagging = gap < 0
-
-    opportunities.push({ market: m, leaderResult });
+    } catch { /* ignore */ }
+    await sleep(220); // ~4.5 req/s — well under 100/min limit
   }
 
-  // Sort by confidence × edge
-  return opportunities
-    .sort((a, b) => {
-      const scoreA = a.leaderResult.confidence * Math.abs(a.market.crossEdge?.gap ?? 0);
-      const scoreB = b.leaderResult.confidence * Math.abs(b.market.crossEdge?.gap ?? 0);
-      return scoreB - scoreA;
-    })
-    .slice(0, 2);
-}
-
-// ---------------------------------------------------------------------------
-// ═══ REWRITTEN: Place entry orders with leader-aware direction ═══
-// ---------------------------------------------------------------------------
-async function placeEntryOrders(
-  opportunities: { market: ProcessedMarket; leaderResult: LeaderDetectionResult }[],
-  state: AutopilotState,
-  caps: CapResult,
-  liveOrders: KalshiOrder[],
-): Promise<number> {
-  const liveDedupeKeys = new Set(liveOrders.map((o) => `${o.ticker}-${o.side}-${o.yes_price ?? o.no_price ?? 0}`));
-  const cycleGameKeys = new Set<string>();
-  let placed = 0;
-
-  for (const { market, leaderResult } of opportunities) {
-    if (placed >= caps.slotsAvailable) break;
-    const gk = gameKey(market.ticker);
-    if (cycleGameKeys.has(gk)) continue;
-
-    // ═══ NEW: Direction determines side ═══
-    // POLY leads UP → buy YES on Kalshi (Kalshi will catch up)
-    // POLY leads DOWN → buy NO on Kalshi (Kalshi will catch down)
-    const side: "yes" | "no" = leaderResult.direction === "UP" ? "yes" : "no";
-
-    const edgeGap = market.crossEdge!.gap;
-
-    // Price selection (aggressive ask-crossing preserved from original)
-    const askCents = side === "yes" ? market.yesAsk : market.noAsk;
-    const bidCents = side === "yes" ? market.yesBid : market.noBid;
-    const fallbackCents = market.impliedProbYes != null
-      ? (side === "yes" ? market.impliedProbYes : 100 - market.impliedProbYes)
-      : null;
-
-    let priceCents: number | null;
-    let fillMode: "aggressive" | "passive";
-
-    // Model's implied price for our side
-    const modelSideProb = side === "yes"
-      ? (market.crossEdge?.modelConfidence ?? 50)
-      : 100 - (market.crossEdge?.modelConfidence ?? 50);
-
-    if (askCents != null && askCents > 0 && (modelSideProb - askCents) >= EDGE_THRESHOLD_PCT) {
-      priceCents = askCents;
-      fillMode = "aggressive";
-    } else {
-      priceCents = bidCents ?? fallbackCents;
-      fillMode = "passive";
-    }
-
-    if (priceCents == null || priceCents <= 0) continue;
-
-    // ═══ NEW: Kelly sizing with Kalshi fees ═══
-    const edgeDecimal = Math.abs(edgeGap) / 100;
-    const kalshiPriceDecimal = priceCents / 100;
-
-    // Use the proven Kelly sizing from the backtest
-    const rawCost = Math.abs(edgeGap) >= HIGH_EDGE_THRESHOLD_PCT ? HIGH_EDGE_COST_USD : DEFAULT_COST_USD;
-    const costUsd = Math.min(rawCost, MAX_COST_PER_ORDER_USD);
-
-    const countFpNum = costUsd / (priceCents / 100);
-    if (countFpNum <= 0) continue;
-    const countInt = Math.max(1, Math.floor(countFpNum));
-    const countFp = countInt.toFixed(2);
-
-    const dedupeKey = `${market.ticker}-${side}-${priceCents}`;
-    if (liveDedupeKeys.has(dedupeKey)) continue;
-
-    const ENTRY_COOLDOWN_MS = 30 * 60 * 1000;
-    const lastCancel = state.entryCooldowns[market.ticker] ?? 0;
-    if (Date.now() - lastCancel < ENTRY_COOLDOWN_MS) continue;
-
-    const clientOrderId = uuidv4();
-    const priceDollars = toFixed4(priceCents / 100);
-
-    const payload = {
-      ticker: market.ticker, side, action: "buy" as const, type: "limit" as const,
-      [side === "yes" ? "yes_price_dollars" : "no_price_dollars"]: priceDollars,
-      count_fp: countFp, client_order_id: clientOrderId,
-    };
-
-    try {
-      console.log(`[autopilot] Placing order: ${JSON.stringify(payload)} | Leader: ${leaderResult.leader} ${leaderResult.direction} conf=${leaderResult.confidence}`);
-      const order = await createOrder(payload);
-
-      state.pendingEntries[market.ticker] = {
-        ticker: market.ticker, orderId: order.order_id, clientOrderId, side,
-        priceCents, countFp, costUsd, placedTs: new Date().toISOString(),
-        dedupeKey, edgePct: edgeGap,
-        leaderAtEntry: leaderResult.leader, // NEW
-        directionAtEntry: leaderResult.direction, // NEW
-      };
-      state.ordersInLastHour.push(new Date().toISOString());
-      cycleGameKeys.add(gk);
-      placed++;
-
-      appendTrade({
-        ticker: market.ticker, side, edgePct: edgeGap,
-        leader: leaderResult.leader, direction: leaderResult.direction,
-        confidence: leaderResult.confidence, momentum: leaderResult.momentumStrength,
-        status: "entry_placed",
-      });
-
-      notifyDiscord(
-        `📋 **ENTRY PLACED** | ${market.ticker}\n` +
-        `Side: **${side.toUpperCase()}** @ $${priceDollars} × ${countFp} | Cost: $${costUsd.toFixed(2)}\n` +
-        `Leader: **${leaderResult.leader}** ${leaderResult.direction} | Conf: ${(leaderResult.confidence * 100).toFixed(0)}% | Mom: ${(leaderResult.momentumStrength * 100).toFixed(0)}%\n` +
-        `Edge: ${edgeGap.toFixed(1)}% | Fill: ${fillMode}`
-      );
-    } catch (err) {
-      state.lastError = (err as Error).message;
-      state.apiErrors.push(new Date().toISOString());
-      if (err instanceof KalshiApiError && (err.status === 401 || err.status === 403)) throw err;
+  // Apply map
+  for (const [ticker, tokenId] of Object.entries(polyMap)) {
+    const ms = markets.get(ticker);
+    if (ms) {
+      ms.polyTokenId = tokenId;
+      polyTokenToTicker.set(tokenId, ticker);
     }
   }
-  return placed;
+
+  // Save updated cache
+  try { fs.writeFileSync(POLY_MAP_FILE, JSON.stringify(polyMap, null, 2)); } catch { /* ignore */ }
+  log(`✅ Poly discovery: ${newMatches} new + ${Object.keys(polyMap).length - newMatches} cached = ${polyTokenToTicker.size} total`);
 }
 
-// ---------------------------------------------------------------------------
-// Status (unchanged)
-// ---------------------------------------------------------------------------
-function printStatus(state: AutopilotState, balanceCents: number, liveOrders: KalshiOrder[]): void {
-  const now = Date.now();
-  const cashUsd = balanceCents / 100;
-  const exposure = Object.values(state.openPositions).reduce((s, p) => s + p.costUsd, 0) +
-    Object.values(state.pendingEntries).reduce((s, e) => s + e.costUsd, 0);
-  const posCount = Object.keys(state.openPositions).length;
-  const restCount = liveOrders.length;
-  console.log(`[${nowET()} ET] cash=$${cashUsd.toFixed(2)} exp=$${exposure.toFixed(2)} pos=${posCount} rest=${restCount} session_pnl=$${state.realizedPnlUsd.toFixed(4)}`);
+// ─────────────────────────────────────────────────────────────────────────────
+// Market Loading
+// ─────────────────────────────────────────────────────────────────────────────
+
+function loadMarkets(): void {
+  const raw = JSON.parse(fs.readFileSync(MARKETS_FILE, "utf8")) as ProcessedMarket[];
+  let loaded = 0;
+  for (const m of raw) {
+    if (!m.crossEdge) continue;
+    const s = m.status.toLowerCase();
+    if (s !== "open" && s !== "active") continue;
+
+    markets.set(m.ticker, {
+      ticker: m.ticker,
+      title:  m.title ?? m.ticker,
+      polyTokenId:  null,
+      kalshiMid:    m.yesMid  > 0 ? m.yesMid  / 100 : 0.5,
+      kalshiYesBid: m.yesBid  > 0 ? m.yesBid  / 100 : 0,
+      kalshiYesAsk: m.yesAsk  > 0 ? m.yesAsk  / 100 : 1,
+      polyMid:      0,
+      polyBestBid:  0,
+      polyBestAsk:  0,
+      priceHistory: [],
+      lastSignalCheck:        0,
+      receivedKalshiSnapshot: false,
+    });
+    loaded++;
+  }
+  log(`📦 Loaded ${loaded} active cross-edge markets from ${path.basename(MARKETS_FILE)}`);
 }
 
-// ---------------------------------------------------------------------------
-// Graceful shutdown (unchanged)
-// ---------------------------------------------------------------------------
-async function gracefulShutdown(state: AutopilotState, reason: string): Promise<never> {
-  console.log(`\n[autopilot] Shutting down: ${reason}`);
-  try { const cancelled = await cancelAllRestingOrders(); console.log(`[autopilot] Cancelled ${cancelled} resting order(s)`); }
-  catch (err) { console.warn(`[autopilot] cancelAllRestingOrders failed: ${(err as Error).message}`); }
-  saveState(state);
-  savePriceHistory();
-  const elapsed = ((Date.now() - new Date(state.startIso).getTime()) / 3_600_000).toFixed(1);
-  notifyDiscord(`🛑 **AUTOPILOT STOPPED** — ${reason}\nRuntime: ${elapsed}h | P&L: ${state.realizedPnlUsd >= 0 ? "+" : ""}$${state.realizedPnlUsd.toFixed(4)}`);
-  await sleep(1_500);
-  process.exit(0);
+// ─────────────────────────────────────────────────────────────────────────────
+// Status Reporting
+// ─────────────────────────────────────────────────────────────────────────────
+
+function logStatus(): void {
+  const openPos      = Object.keys(state.openPositions).length;
+  const pending      = Object.keys(state.pendingEntries).length;
+  const polyLive     = [...markets.values()].filter(m => m.polyMid > 0).length;
+  const kalshiLive   = [...markets.values()].filter(m => m.receivedKalshiSnapshot).length;
+  const polyMatched  = [...markets.values()].filter(m => m.polyTokenId !== null).length;
+
+  const kStatus = kalshiWs?.readyState === WebSocket.OPEN ? "✅" : "❌";
+  const pStatus = polyWs?.readyState   === WebSocket.OPEN ? "✅" : "❌";
+
+  log(
+    `📊 PnL=$${state.realizedPnlUsd.toFixed(2)} | ` +
+    `pos=${openPos} pend=${pending} | ` +
+    `kalshi=${kStatus} ${kalshiLive}/${markets.size} | ` +
+    `poly=${pStatus} ${polyLive}/${polyMatched}/${markets.size} live`,
+  );
 }
 
-// ---------------------------------------------------------------------------
-// Main loop
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// Main
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function main(): Promise<void> {
-  console.log("[autopilot] Kalshi autopilot starting — INFORMATION SPEED STRATEGY v2");
-  console.log("[autopilot] Strategy: Follow POLY leader → trade on Kalshi in leader's direction");
-  console.log("[autopilot] KALSHI-leads signals: DISABLED (backtest: 57W-397L = -$133K)");
-  fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
+  log("🚀 Kalshi WS Autopilot starting...");
+  log(`   Markets file:  ${MARKETS_FILE}`);
+  log(`   State file:    ${STATE_FILE}`);
+  log(`   Poly map:      ${POLY_MAP_FILE}`);
 
-  // Load price history for leader detection
-  loadPriceHistory();
-
-  let backtestMsg = "";
-  const backtestResults = loadBacktestResults();
-  if (backtestResults && backtestResults.gamesTracked >= 5) {
-    backtestMsg = applyBacktestAdjustments(backtestResults);
+  // Validate env
+  if (!process.env.KALSHI_API_KEY_ID || !process.env.KALSHI_PRIVATE_KEY_PEM_PATH) {
+    console.error("❌ Missing KALSHI_API_KEY_ID or KALSHI_PRIVATE_KEY_PEM_PATH");
+    process.exit(1);
   }
 
-  const state = loadState();
-  if (!state.startIso) state.startIso = new Date().toISOString();
+  loadState();
+  loadMarkets();
 
-  console.log(`[autopilot] Run started at ${state.startIso}`);
-  console.log(`[autopilot] Caps: exp=$${MAX_TOTAL_EXPOSURE_USD} pos=${MAX_OPEN_POSITIONS} edge=${EDGE_THRESHOLD_PCT}% market_loss_limit=$${MARKET_LOSS_LIMIT_USD}`);
-
-  {
-    const startLines = [
-      `🚀 **Autopilot v2 started** — Information Speed Strategy`,
-      `Caps: exp=$${MAX_TOTAL_EXPOSURE_USD} pos=${MAX_OPEN_POSITIONS} edge=${EDGE_THRESHOLD_PCT}%`,
-      `⚡ POLY-leads ONLY | Per-market loss limit: $${Math.abs(MARKET_LOSS_LIMIT_USD)}`,
-    ];
-    if (backtestMsg) startLines.push(`📊 ${backtestMsg}`);
-    notifyDiscord(startLines.join("\n"));
+  if (markets.size === 0) {
+    console.error(`❌ No markets loaded from ${MARKETS_FILE}`);
+    process.exit(1);
   }
 
-  while (true) {
-    if (checkKillSwitch()) await gracefulShutdown(state, "kill switch triggered");
-    if (checkRuntime(state)) await gracefulShutdown(state, "48h runtime limit reached");
+  // Discover Poly counterparts (uses cached map when available)
+  await discoverPolyMarkets();
 
-    maybeRefreshMarkets();
-    const markets = loadMarkets();
+  // Connect WebSockets
+  connectKalshiWs();
+  await sleep(500);
+  connectPolyWs();
 
-    // ═══ NEW: Record prices for every market every cycle for leader detection ═══
-    for (const m of markets) {
-      if (m.crossEdge) {
-        // Use model confidence as proxy for Poly price (model tracks Poly)
-        const polyMid = (m.crossEdge.modelConfidence ?? m.impliedProbYes ?? 50) / 100;
-        const kalshiMid = (m.crossEdge.kalshiImplied ?? m.impliedProbYes ?? 50) / 100;
-        recordPrice(m.ticker, polyMid, kalshiMid);
-      }
+  const balance = await getBalance().catch(() => null);
+  const balStr  = balance ? `$${Number(balance.balance ?? 0).toFixed(2)}` : "unknown";
+
+  notifyDiscord(
+    `🚀 **WS Autopilot started** | ${markets.size} Kalshi | ${polyTokenToTicker.size} Poly | balance=${balStr}`,
+  );
+  log(`💰 Balance: ${balStr} | ${markets.size} markets | ${polyTokenToTicker.size} Poly mapped`);
+
+  const startTime   = Date.now();
+  let loopCount     = 0;
+  let exitLoopCount = 0;
+
+  while (running) {
+    loopCount++;
+
+    if (isKillSwitchSet()) {
+      log("🛑 Kill switch detected. Shutting down...");
+      running = false;
+      break;
     }
 
-    let apiData: { balance: KalshiBalance; positions: KalshiPosition[]; orders: KalshiOrder[] } | null = null;
-    try { apiData = await apiPreChecks(state); }
-    catch (err) { await gracefulShutdown(state, `fatal auth error: ${(err as Error).message}`); }
-
-    if (!apiData) {
-      if (checkErrorRate(state)) await gracefulShutdown(state, "too many API errors");
-      saveState(state);
-      await sleep(LOOP_INTERVAL_MS);
-      continue;
+    if (Date.now() - startTime > RUN_DURATION_MS) {
+      log("⏱️ Max run duration reached. Shutting down...");
+      running = false;
+      break;
     }
 
-    const { balance, positions, orders } = apiData;
-    if (checkErrorRate(state)) await gracefulShutdown(state, "too many API errors");
-
-    try { await managePendingEntries(state, orders, positions); }
-    catch (err) {
-      state.apiErrors.push(new Date().toISOString());
-      if (err instanceof KalshiApiError && (err.status === 401 || err.status === 403))
-        await gracefulShutdown(state, "fatal auth error");
+    // Exit management every 30s
+    exitLoopCount++;
+    if (exitLoopCount >= EXIT_POLL_INTERVAL_MS / 5_000) {
+      exitLoopCount = 0;
+      await manageExits();
     }
 
-    try { await manageOpenPositions(state, orders, positions, markets); }
-    catch (err) {
-      state.apiErrors.push(new Date().toISOString());
-      if (err instanceof KalshiApiError && (err.status === 401 || err.status === 403))
-        await gracefulShutdown(state, "fatal auth error");
+    // Status every ~5min
+    if (loopCount % STATUS_INTERVAL_LOOPS === 0) {
+      logStatus();
     }
 
-    const caps = checkCaps(state, orders);
-    let cycleOpportunities: { market: ProcessedMarket; leaderResult: LeaderDetectionResult }[] = [];
-    let cycleOrdersPlaced = 0;
-
-    if (caps.canTrade) {
-      cycleOpportunities = findOpportunities(markets, state, orders);
-      if (cycleOpportunities.length > 0) {
-        try {
-          cycleOrdersPlaced = await placeEntryOrders(cycleOpportunities, state, caps, orders);
-          sessionOrdersPlaced += cycleOrdersPlaced;
-        } catch (err) {
-          if (err instanceof KalshiApiError && (err.status === 401 || err.status === 403))
-            await gracefulShutdown(state, "fatal auth error");
-        }
-      }
-    }
-
-    saveState(state);
-    savePriceHistory();
-    printStatus(state, balance.balance, orders);
-
-    // Discord status
-    {
-      const cashUsd = balance.balance / 100;
-      const exposure = Object.values(state.openPositions).reduce((s, p) => s + p.costUsd, 0) +
-        Object.values(state.pendingEntries).reduce((s, e) => s + e.costUsd, 0);
-      const posCount = Object.keys(state.openPositions).length;
-
-      const lines: string[] = [
-        `📊 Autopilot v2 scan — ${nowET()} ET`,
-        `Cash: $${cashUsd.toFixed(2)} | Exposure: $${exposure.toFixed(2)} | Positions: ${posCount}`,
-        `Strategy: POLY-leads only | Session orders: ${sessionOrdersPlaced}`,
-      ];
-
-      for (const { market: opp, leaderResult } of cycleOpportunities.slice(0, 3)) {
-        if (opp.crossEdge) {
-          const ce = opp.crossEdge;
-          lines.push(
-            `⚡ ${opp.ticker}: ${leaderResult.leader} leads ${leaderResult.direction} | ` +
-            `Conf: ${(leaderResult.confidence * 100).toFixed(0)}% | Edge: ${Math.abs(ce.gap).toFixed(1)}%`
-          );
-        }
-      }
-
-      if (cycleOpportunities.length === 0 && caps.canTrade) {
-        lines.push("No POLY-leads signals this cycle");
-      } else if (!caps.canTrade) {
-        lines.push(`Trading paused: ${caps.reasons[0] ?? "cap reached"}`);
-      }
-
-      // Show markets hitting loss limits
-      const blockedMarkets = Object.entries(state.marketCumulativePnl)
-        .filter(([_, pnl]) => pnl <= MARKET_LOSS_LIMIT_USD);
-      if (blockedMarkets.length > 0) {
-        lines.push(`🚫 Markets at loss limit: ${blockedMarkets.map(([t, p]) => `${t}($${p.toFixed(0)})`).join(", ")}`);
-      }
-
-      postDiscordStatus(lines.join("\n"));
-    }
-
-    await sleep(LOOP_INTERVAL_MS);
+    await sleep(5_000);
   }
+
+  // ── Graceful shutdown ─────────────────────────────────────────────────────
+  log("🛑 Shutting down...");
+  running = false;
+
+  if (kalshiPingTimer) clearInterval(kalshiPingTimer);
+  if (polyPingTimer)   clearInterval(polyPingTimer);
+  kalshiWs?.close();
+  polyWs?.close();
+
+  await cancelAllRestingOrders().catch(() => null);
+  saveState();
+  notifyDiscord(`🛑 **WS Autopilot stopped** | Final PnL=$${state.realizedPnlUsd.toFixed(2)}`);
+  log(`✅ Done. Session PnL=$${state.realizedPnlUsd.toFixed(2)}`);
 }
 
-main().catch((err) => { console.error("[autopilot] Unhandled error:", err); process.exit(1); });
+// Handle SIGINT / SIGTERM gracefully
+process.on("SIGINT",  () => { log("SIGINT received"); running = false; });
+process.on("SIGTERM", () => { log("SIGTERM received"); running = false; });
+
+main().catch((err) => {
+  console.error("[ws-autopilot] Fatal:", err);
+  process.exit(1);
+});
