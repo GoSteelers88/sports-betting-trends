@@ -329,6 +329,17 @@ function onDislocation(d: Dislocation): void {
 
 let msgId = 1;
 let reconnectAttempt = 0;
+const reconnectReasonCounts = new Map<string, number>();
+
+function classifyCloseReason(code: number): string {
+  if (code === 1000) return "normal_close";
+  if (code === 1006) return "abnormal_close";
+  if (code === 1008) return "policy_violation";
+  if (code === 1011) return "server_error";
+  if (code === 1012 || code === 1013) return "service_restart_or_overload";
+  if (code === 4001 || code === 4003) return "auth_fail";
+  return "network_reset_or_unknown";
+}
 
 function nextReconnectDelayMs(): number {
   const expDelay = Math.min(
@@ -405,9 +416,13 @@ function connect(tickers: Array<{ ticker: string; title: string }>): void {
     if (pingTimer) clearInterval(pingTimer);
     if (stableTimer) clearTimeout(stableTimer);
 
+    const reason = classifyCloseReason(event.code);
+    const nextCount = (reconnectReasonCounts.get(reason) ?? 0) + 1;
+    reconnectReasonCounts.set(reason, nextCount);
+
     const delayMs = nextReconnectDelayMs();
     console.warn(
-      `[watch] Disconnected (code=${event.code}) — reconnecting in ${(delayMs / 1000).toFixed(1)}s (attempt ${reconnectAttempt})...`,
+      `[watch] Disconnected (code=${event.code}, reason=${reason}, count=${nextCount}) — reconnecting in ${(delayMs / 1000).toFixed(1)}s (attempt ${reconnectAttempt})...`,
     );
     setTimeout(() => connect(tickers), delayMs);
   };
