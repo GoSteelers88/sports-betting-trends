@@ -51,6 +51,8 @@ const MAX_RECONNECT_DELAY_MS = 60_000;
 const RECONNECT_JITTER_MS = 1_500;
 const STABLE_CONNECTION_RESET_MS = 60_000;
 const PING_INTERVAL_MS = 9_000; // server sends ping every 10s; we send pong proactively
+const STALE_WATCHDOG_THRESHOLD_MS = 30_000;
+const STALE_WATCHDOG_INTERVAL_MS = 5_000;
 
 // ---------------------------------------------------------------------------
 // Native WebSocket type shim (Node.js 22+)
@@ -363,7 +365,10 @@ function connect(tickers: Array<{ ticker: string; title: string }>): void {
   console.log(`[watch] Connecting to ${WS_URL}...`);
   const ws = new NativeWS(WS_URL);
   let pingTimer: ReturnType<typeof setInterval> | null = null;
+  let staleWatchdogTimer: ReturnType<typeof setInterval> | null = null;
   let stableTimer: ReturnType<typeof setTimeout> | null = null;
+  let lastMessageAt = Date.now();
+  let forcedCloseReason: string | null = null;
 
   ws.onopen = () => {
     console.log("[watch] Connected.");
@@ -401,9 +406,21 @@ function connect(tickers: Array<{ ticker: string; title: string }>): void {
     stableTimer = setTimeout(() => {
       reconnectAttempt = 0;
     }, STABLE_CONNECTION_RESET_MS);
+
+    // Stale connection watchdog: force reconnect if no frames arrive
+    staleWatchdogTimer = setInterval(() => {
+      if (ws.readyState !== ws.OPEN) return;
+      if (Date.now() - lastMessageAt <= STALE_WATCHDOG_THRESHOLD_MS) return;
+      forcedCloseReason = "stale_watchdog";
+      console.warn(
+        `[watch] Stale connection detected (no messages for ${STALE_WATCHDOG_THRESHOLD_MS / 1000}s) — forcing reconnect...`,
+      );
+      ws.close();
+    }, STALE_WATCHDOG_INTERVAL_MS);
   };
 
   ws.onmessage = (event: MessageEvent) => {
+    lastMessageAt = Date.now();
     try {
       const raw = JSON.parse(event.data as string) as WsSubscribeMsg | WsOrderbookDelta;
       handleMessage(raw as WsOrderbookDelta);
@@ -414,9 +431,11 @@ function connect(tickers: Array<{ ticker: string; title: string }>): void {
 
   ws.onclose = (event: CloseEvent) => {
     if (pingTimer) clearInterval(pingTimer);
+    if (staleWatchdogTimer) clearInterval(staleWatchdogTimer);
     if (stableTimer) clearTimeout(stableTimer);
 
-    const reason = classifyCloseReason(event.code);
+    const reason = forcedCloseReason ?? classifyCloseReason(event.code);
+    forcedCloseReason = null;
     const nextCount = (reconnectReasonCounts.get(reason) ?? 0) + 1;
     reconnectReasonCounts.set(reason, nextCount);
 
