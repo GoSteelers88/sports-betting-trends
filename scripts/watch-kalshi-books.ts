@@ -47,6 +47,9 @@ const MAX_TICKERS = parseInt(process.env.KALSHI_WATCH_MAX_TICKERS ?? "20", 10);
 const DISLOCATION_CENTS = parseFloat(process.env.KALSHI_DISLOCATION_CENTS ?? "3");
 const WINDOW_MS = parseInt(process.env.KALSHI_WINDOW_MS ?? "30000", 10);
 const RECONNECT_DELAY_MS = 5_000;
+const MAX_RECONNECT_DELAY_MS = 60_000;
+const RECONNECT_JITTER_MS = 1_500;
+const STABLE_CONNECTION_RESET_MS = 60_000;
 const PING_INTERVAL_MS = 9_000; // server sends ping every 10s; we send pong proactively
 
 // ---------------------------------------------------------------------------
@@ -325,6 +328,17 @@ function onDislocation(d: Dislocation): void {
 // ---------------------------------------------------------------------------
 
 let msgId = 1;
+let reconnectAttempt = 0;
+
+function nextReconnectDelayMs(): number {
+  const expDelay = Math.min(
+    RECONNECT_DELAY_MS * 2 ** reconnectAttempt,
+    MAX_RECONNECT_DELAY_MS,
+  );
+  const jitter = Math.floor(Math.random() * RECONNECT_JITTER_MS);
+  reconnectAttempt += 1;
+  return expDelay + jitter;
+}
 
 function connect(tickers: Array<{ ticker: string; title: string }>): void {
   if (tickers.length === 0) {
@@ -338,6 +352,7 @@ function connect(tickers: Array<{ ticker: string; title: string }>): void {
   console.log(`[watch] Connecting to ${WS_URL}...`);
   const ws = new NativeWS(WS_URL);
   let pingTimer: ReturnType<typeof setInterval> | null = null;
+  let stableTimer: ReturnType<typeof setTimeout> | null = null;
 
   ws.onopen = () => {
     console.log("[watch] Connected.");
@@ -370,6 +385,11 @@ function connect(tickers: Array<{ ticker: string; title: string }>): void {
         ws.send(JSON.stringify({ id: msgId++, cmd: "ping" }));
       }
     }, PING_INTERVAL_MS);
+
+    // Reset reconnect backoff after a stable connection period
+    stableTimer = setTimeout(() => {
+      reconnectAttempt = 0;
+    }, STABLE_CONNECTION_RESET_MS);
   };
 
   ws.onmessage = (event: MessageEvent) => {
@@ -383,10 +403,13 @@ function connect(tickers: Array<{ ticker: string; title: string }>): void {
 
   ws.onclose = (event: CloseEvent) => {
     if (pingTimer) clearInterval(pingTimer);
+    if (stableTimer) clearTimeout(stableTimer);
+
+    const delayMs = nextReconnectDelayMs();
     console.warn(
-      `[watch] Disconnected (code=${event.code}) — reconnecting in ${RECONNECT_DELAY_MS / 1000}s...`,
+      `[watch] Disconnected (code=${event.code}) — reconnecting in ${(delayMs / 1000).toFixed(1)}s (attempt ${reconnectAttempt})...`,
     );
-    setTimeout(() => connect(tickers), RECONNECT_DELAY_MS);
+    setTimeout(() => connect(tickers), delayMs);
   };
 
   ws.onerror = (event: Event) => {
