@@ -407,13 +407,13 @@ function handleMessage(msg: WsOrderbookDelta): void {
 
   // YES bids update (sorted desc by price: best bid = max price)
   const yesBids = (data as { yes?: Array<[number, number]> }).yes ?? [];
-  if (yesBids.length > 0) {
+  if (isSnapshot || yesBids.length > 0) {
     updateOrderbookSide(bestBidTracker, ticker, yesBids, isSnapshot);
   }
 
   // NO bids update
   const noBids = (data as { no?: Array<[number, number]> }).no ?? [];
-  if (noBids.length > 0) {
+  if (isSnapshot || noBids.length > 0) {
     updateOrderbookSide(bestNoBidTracker, ticker, noBids, isSnapshot);
   }
 
