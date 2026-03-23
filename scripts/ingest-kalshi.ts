@@ -45,6 +45,9 @@ const TICKER_PREFIXES: string[] = process.env.KALSHI_TICKER_PREFIXES
   ? process.env.KALSHI_TICKER_PREFIXES.split(",").map((s) => s.trim().toUpperCase())
   : [];
 
+// Ticker prefixes to always exclude (no Pinnacle coverage, not tradeable).
+const TICKER_EXCLUDE_PREFIXES: string[] = ["KXCOD"];
+
 // Max markets to keep after initial discovery sort (before orderbook fetch).
 // Keeps memory and API calls manageable when Kalshi returns 10k+ combo markets.
 const MAX_MARKETS = parseInt(process.env.KALSHI_MAX_MARKETS ?? "500", 10);
@@ -81,12 +84,18 @@ interface KalshiMarket {
   volume?: number;              // total contracts traded
   volume_24h?: number;
   open_interest?: number;
+  open_interest_fp?: string;    // string dollars (new API format)
   liquidity?: number;
   last_price?: number;          // last traded price in cents
+  last_price_dollars?: string;  // string dollars (new API format)
   yes_ask?: number;             // cents (from market list — less reliable)
   yes_bid?: number;
   no_ask?: number;
   no_bid?: number;
+  yes_ask_dollars?: string;     // string dollars (new API format)
+  yes_bid_dollars?: string;
+  no_ask_dollars?: string;
+  no_bid_dollars?: string;
 }
 
 interface KalshiEvent {
@@ -98,19 +107,23 @@ interface KalshiEvent {
   markets?: KalshiMarket[];
 }
 
-interface KalshiOrderbookLevel {
-  price: number;   // cents (0–100)
-  size: number;    // number of contracts
-  order_count?: number;
-}
+// API returns tuples: [price_cents, size_contracts] (legacy) or [price_dollars_str, size_fp_str] (new)
+type KalshiOrderbookLevel = [number, number];
+type KalshiOrderbookLevelFp = [string, string];
 
 interface KalshiOrderbook {
-  yes_bids?: KalshiOrderbookLevel[];
-  no_bids?: KalshiOrderbookLevel[];
+  yes?: KalshiOrderbookLevel[];
+  no?: KalshiOrderbookLevel[];
+}
+
+interface KalshiOrderbookFp {
+  yes_dollars?: KalshiOrderbookLevelFp[];
+  no_dollars?: KalshiOrderbookLevelFp[];
 }
 
 interface KalshiOrderbookResponse {
   orderbook?: KalshiOrderbook;
+  orderbook_fp?: KalshiOrderbookFp;
 }
 
 interface CrossEdge {
@@ -202,6 +215,8 @@ interface BestBet {
   spread?: number;
   modelSpread?: number;
   line?: string;
+  subtitle?: string;        // For soccer: outcome label matching Kalshi market subtitle
+  soccerSide?: "home" | "away" | "draw"; // Soccer outcome type
 }
 
 interface CrossEdgeMiss {
@@ -209,7 +224,7 @@ interface CrossEdgeMiss {
   marketTitle: string;
   pickTeam: string;
   opponent: string;
-  reason: "pick_unmatched" | "opp_unmatched" | "date_mismatch" | "below_threshold";
+  reason: "pick_unmatched" | "opp_unmatched" | "date_mismatch" | "below_threshold" | "subtitle_unmatched";
   gap?: number;
 }
 
@@ -412,7 +427,8 @@ async function fetchAllMarkets(): Promise<{
         if (isComboCMarket(m.ticker)) continue;
         // Skip fully dead markets unless they are explicit game markets
         // (live/in-game books can momentarily show low/zero OI/vol but are still tradable)
-        if ((m.open_interest ?? 0) === 0 && (m.volume ?? 0) === 0 && !isLikelyGameTicker(m.ticker)) continue;
+        const oi = (m.open_interest ?? 0) || parseFloat(m.open_interest_fp ?? "0");
+        if (oi === 0 && (m.volume ?? 0) === 0 && !isLikelyGameTicker(m.ticker)) continue;
 
         seen.add(m.ticker);
         if (!m.category && event.category) m.category = event.category;
@@ -428,10 +444,23 @@ async function fetchAllMarkets(): Promise<{
     `  [kalshi] Events: ${eventsScanned} scanned (${page} pages), ${markets.length} non-combo markets`,
   );
 
+  // Exclude tickers with no Pinnacle coverage (e.g. esports).
+  const excluded = markets.filter((m) =>
+    TICKER_EXCLUDE_PREFIXES.some((p) => m.ticker.toUpperCase().startsWith(p)),
+  );
+  const afterExclude = markets.filter((m) =>
+    !TICKER_EXCLUDE_PREFIXES.some((p) => m.ticker.toUpperCase().startsWith(p)),
+  );
+  if (excluded.length > 0) {
+    console.log(
+      `  [kalshi] Excluded ${excluded.length} markets (${TICKER_EXCLUDE_PREFIXES.join(",")}): ${markets.length} → ${afterExclude.length}`,
+    );
+  }
+
   // Apply ticker prefix filter if configured
   if (TICKER_PREFIXES.length > 0) {
-    const before = markets.length;
-    const filtered = markets.filter((m) =>
+    const before = afterExclude.length;
+    const filtered = afterExclude.filter((m) =>
       TICKER_PREFIXES.some((p) => m.ticker.toUpperCase().startsWith(p)),
     );
     console.log(
@@ -440,7 +469,7 @@ async function fetchAllMarkets(): Promise<{
     return { markets: filtered, eventsScanned };
   }
 
-  return { markets, eventsScanned };
+  return { markets: afterExclude, eventsScanned };
 }
 
 // ---------------------------------------------------------------------------
@@ -451,7 +480,18 @@ async function fetchOrderbook(ticker: string): Promise<KalshiOrderbook | null> {
   try {
     const res = await fetchKalshi(`/markets/${encodeURIComponent(ticker)}/orderbook`);
     const data = (await res.json()) as KalshiOrderbookResponse;
-    return data.orderbook ?? null;
+    // Prefer legacy cents format; fall back to new dollar-string format
+    if (data.orderbook) return data.orderbook;
+    if (data.orderbook_fp) {
+      // Convert [price_dollars_str, size_fp_str][] → [price_cents, size_contracts][]
+      const fpToLevels = (levels: KalshiOrderbookLevelFp[]): KalshiOrderbookLevel[] =>
+        levels.map(([p, s]) => [Math.round(parseFloat(p) * 100), Math.round(parseFloat(s))]);
+      return {
+        yes: data.orderbook_fp.yes_dollars ? fpToLevels(data.orderbook_fp.yes_dollars) : undefined,
+        no:  data.orderbook_fp.no_dollars  ? fpToLevels(data.orderbook_fp.no_dollars)  : undefined,
+      };
+    }
+    return null;
   } catch (err) {
     console.warn(`  [ob] ${ticker}: ${(err as Error).message}`);
     return null;
@@ -518,15 +558,15 @@ function synthesizeBook(ob: KalshiOrderbook | null): SynthesizedBook {
 
   if (!ob) return EMPTY;
 
-  // YES bids sorted desc by price (best bid = highest price = first element)
-  const yesBids = (ob.yes_bids ?? []).slice().sort((a, b) => b.price - a.price);
-  const noBids = (ob.no_bids ?? []).slice().sort((a, b) => b.price - a.price);
+  // API returns tuples [price_cents, size]. Sort desc by price (best bid first).
+  const yesBids = (ob.yes ?? []).slice().sort((a, b) => b[0] - a[0]);
+  const noBids = (ob.no ?? []).slice().sort((a, b) => b[0] - a[0]);
 
   const bestYesBid = yesBids[0] ?? null;
   const bestNoBid = noBids[0] ?? null;
 
-  const yesBid = bestYesBid ? bestYesBid.price : null;
-  const noBid = bestNoBid ? bestNoBid.price : null;
+  const yesBid = bestYesBid ? bestYesBid[0] : null;
+  const noBid = bestNoBid ? bestNoBid[0] : null;
 
   // Synthesize asks from the opposite side's best bid
   //   YES ask = 100 - best NO bid (someone willing to sell YES)
@@ -550,11 +590,11 @@ function synthesizeBook(ob: KalshiOrderbook | null): SynthesizedBook {
   //   Top YES bid notional = (price/100) * size  (buyer is paying this much per contract)
   //   Top YES ask notional = (yesAsk/100) * noBidQty  (opposite side qty sets the fill size)
   const topYesBidNotional = bestYesBid
-    ? (bestYesBid.price / 100) * bestYesBid.size
+    ? (bestYesBid[0] / 100) * bestYesBid[1]
     : 0;
   const topYesAskNotional =
     bestNoBid && yesAsk !== null
-      ? (yesAsk / 100) * bestNoBid.size
+      ? (yesAsk / 100) * bestNoBid[1]
       : 0;
 
   return {
@@ -782,6 +822,397 @@ const SPREAD_STD_DEV: Record<string, number> = {
   NFL: 13.5,
   NCAAF: 13.0,
 };
+
+// ---------------------------------------------------------------------------
+// TheRundown.io — Pinnacle moneyline snapshot for cross-edge detection
+// ---------------------------------------------------------------------------
+
+const TR_API_BASE_INGEST = "https://therundown.io/api/v2";
+const TR_SPORT_IDS_INGEST = [1, 2, 3, 4, 5, 6, 10, 11, 14, 15, 16, 33];
+// 1=NCAAF, 2=NFL, 3=MLB, 4=NBA, 5=NCAAB, 6=NHL, 10=MLS, 11=EPL, 14=La Liga, 15=Serie A, 16=UCL, 33=Europa
+
+interface TRIngestParticipant {
+  id: number;
+  name: string;
+  lines: { value: string; prices: Record<string, { price: number }> }[];
+}
+interface TRIngestMarket {
+  market_id: number;
+  participants: TRIngestParticipant[];
+}
+interface TRIngestEvent {
+  event_id: string;
+  sport_id: number;
+  event_date?: string;
+  teams?: { is_home?: boolean; name?: string }[];
+  markets: TRIngestMarket[];
+}
+
+interface TRGameOdds {
+  homeTeam: string;
+  awayTeam: string;
+  homeProb: number;   // 0–100, devigged Pinnacle probability
+  awayProb: number;
+  commenceTime: string;
+  sportId: number;
+}
+
+interface PinnacleEntry {
+  game: TRGameOdds;
+  isHomeTeam: boolean;
+}
+
+function trAmericanToImplied(n: number): number {
+  if (!Number.isFinite(n) || n === 0) return 0;
+  if (n > 0) return 100 / (n + 100);
+  return Math.abs(n) / (Math.abs(n) + 100);
+}
+
+const TR_TEAM_ALIAS_MAP: Record<string, string> = {
+  "borussia dortmund": "dortmund",
+  "rb leipzig": "leipzig",
+  "paris saint-germain": "psg",
+  "paris saint germain": "psg",
+  "internazionale": "inter milan",
+  "fc internazionale": "inter milan",
+  "ac milan": "milan",
+  "atalanta bc": "atalanta",
+  "newcastle united fc": "newcastle",
+  "arsenal fc": "arsenal",
+  "chelsea fc": "chelsea",
+};
+
+function trNormalize(raw: string): string {
+  let s = raw.toLowerCase().trim().replace(/\s+(fc|sc|cf|ac|afc|fk|nk|bk|rfc)\s*$/i, "");
+  s = s.replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
+  return TR_TEAM_ALIAS_MAP[s] ?? s;
+}
+
+// Kalshi uses short abbreviations for some teams that don't match TR's full names.
+// Map Kalshi subtitle (lowercased) → TR normalized school name.
+const KALSHI_SUBTITLE_ALIAS: Record<string, string> = {
+  // MAC / Mid-American
+  "moh": "miami oh",       // Miami (OH) Redhawks
+  "ohiou": "ohio",         // Ohio Bobcats (avoid collision with Ohio State)
+  // Sun Belt / CUSA
+  "unt": "north texas",
+  "utsa": "utsa",
+  "ltu": "louisiana tech",
+  "mtsu": "middle tennessee",
+  // Big West
+  "ucsb": "uc santa barbara",
+  "ucsd": "uc san diego",
+  "ucr": "uc riverside",
+  "ucd": "uc davis",
+  // Southern / SWAC
+  "sou": "southern",
+  "scst": "south carolina state",
+  "norf": "norfolk state",
+  // Others
+  "vill": "villanova",
+  "conn": "uconn",
+  "sju": "st johns",
+  "xav": "xavier",
+  "crei": "creighton",
+  "hall": "seton hall",
+  "prov": "providence",
+  "gtwn": "georgetown",
+  "gtwn": "georgetown",
+  "rutg": "rutgers",
+  "nw": "northwestern",
+  "pur": "purdue",
+  "uk": "kentucky",
+  "mizz": "missouri",
+  "uga": "georgia",
+  "miss": "ole miss",
+  "uk": "kentucky",
+  "isu": "iowa state",
+  "ttu": "texas tech",
+  "byu": "byu",
+  "hou": "houston",
+  "unlv": "unlv",
+  "usu": "utah state",
+  "gmu": "george mason",
+  "sbon": "st bonaventure",
+  "lchi": "loyola chicago",
+  "dav": "davidson",
+  "uri": "rhode island",
+  "duq": "duquesne",
+  "aamu": "alabama am",
+  "txso": "texas southern",
+  "buff": "buffalo",
+  "akr": "akron",
+  "bgsu": "bowling green",
+  "tol": "toledo",
+  "sjsu": "san jose state",
+  "bsu": "boise state",
+  "csu": "colorado state",
+  "sdsu": "san diego state",
+  "fsu": "florida state",
+  "lsu": "lsu",
+  "unm": "new mexico",
+  "unlv": "unlv",
+  "uvu": "utah valley",
+  "neu": "northeastern",
+  "gccu": "grand canyon",
+  "gc": "grand canyon",
+  "nev": "nevada",
+  "lchi": "loyola chicago",
+  "for": "fordham",
+  "gw": "george washington",
+  "char": "charlotte",
+  "tuln": "tulane",
+  "umesnccu": "umes",
+  "umes": "maryland eastern shore",
+  "nccu": "north carolina central",
+  "arpb": "arkansas pine bluff",
+  "txam": "texas am",
+};
+
+function expandKalshiSubtitle(subtitle: string): string {
+  const key = subtitle.toLowerCase().trim();
+  return KALSHI_SUBTITLE_ALIAS[key] ?? subtitle;
+}
+
+async function loadPinnacleOdds(): Promise<Map<string, PinnacleEntry>> {
+  const pinnacleMap = new Map<string, PinnacleEntry>();
+  const apiKey = process.env.THERUNDOWN_API_KEY;
+  if (!apiKey) {
+    console.log("  [TR] No THERUNDOWN_API_KEY — skipping Pinnacle odds");
+    return pinnacleMap;
+  }
+
+  const today = toEtDateStr(new Date());
+  let totalGames = 0;
+
+  for (const sportId of TR_SPORT_IDS_INGEST) {
+    try {
+      const url = `${TR_API_BASE_INGEST}/sports/${sportId}/events/${today}?market_ids=1&affiliate_ids=3`;
+      const res = await fetch(url, {
+        headers: { "X-Therundown-Key": apiKey },
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) {
+        console.warn(`  [TR] sport=${sportId} HTTP ${res.status}`);
+        continue;
+      }
+
+      const body = await res.json() as { events?: TRIngestEvent[] };
+      const events = body.events ?? [];
+      let sportGames = 0;
+
+      for (const ev of events) {
+        const ml = ev.markets?.find((m) => m.market_id === 1);
+        if (!ml || ml.participants.length < 2) continue;
+
+        const parts = ml.participants;
+        const teamsArr = ev.teams ?? [];
+        const homeEntry = teamsArr.find((t) => t.is_home === true);
+        const awayEntry = teamsArr.find((t) => t.is_home === false);
+
+        let homeP: TRIngestParticipant;
+        let awayP: TRIngestParticipant;
+        if (homeEntry?.name && awayEntry?.name) {
+          homeP = parts.find((p) => p.name === homeEntry.name) ?? parts[0];
+          awayP = parts.find((p) => p.name === awayEntry.name) ?? parts[1];
+        } else {
+          [homeP, awayP] = parts;
+        }
+
+        const homeML = homeP.lines?.[0]?.prices?.["3"]?.price;
+        const awayML = awayP.lines?.[0]?.prices?.["3"]?.price;
+        if (homeML == null || awayML == null) continue;
+
+        const homeImpl = trAmericanToImplied(homeML);
+        const awayImpl = trAmericanToImplied(awayML);
+        const total = homeImpl + awayImpl;
+        if (total <= 0) continue;
+
+        const game: TRGameOdds = {
+          homeTeam: homeP.name,
+          awayTeam: awayP.name,
+          homeProb: (homeImpl / total) * 100,
+          awayProb: (awayImpl / total) * 100,
+          commenceTime: ev.event_date ?? "",
+          sportId,
+        };
+
+        const indexTeam = (teamName: string, isHome: boolean): void => {
+          const norm = trNormalize(teamName);
+          const words = norm.split(" ");
+          const last = words.at(-1) ?? "";
+          const first2 = words.slice(0, 2).join(" ");
+          // School name without mascot (e.g. "Massachusetts Minutemen" → "massachusetts")
+          const schoolName = words.length > 1 ? words.slice(0, -1).join(" ") : norm;
+          const rawKeys = new Set<string>([norm, last, first2, schoolName, teamName.toLowerCase()]);
+          // Also index "State" variants as "St" (Kalshi abbreviates e.g. "Ohio St." → "ohio st")
+          if (norm.includes("state")) {
+            rawKeys.add(norm.replace(/\bstate\b/g, "st"));
+            rawKeys.add(schoolName.replace(/\bstate\b/g, "st"));
+          }
+          // Key as "name:sportId" to prevent cross-sport collisions (e.g. Minnesota NBA vs NCAAB)
+          for (const key of rawKeys) {
+            if (key.length > 2) pinnacleMap.set(`${key}:${sportId}`, { game, isHomeTeam: isHome });
+          }
+        };
+        indexTeam(homeP.name, true);
+        indexTeam(awayP.name, false);
+        sportGames++;
+      }
+
+      if (sportGames > 0) {
+        console.log(`  [TR] sport=${sportId}: ${sportGames} games`);
+        totalGames += sportGames;
+      }
+    } catch (err) {
+      console.warn(`  [TR] sport=${sportId} error: ${(err as Error).message}`);
+    }
+  }
+
+  console.log(`  [TR] Pinnacle loaded: ${totalGames} games | ${pinnacleMap.size} team variants`);
+  return pinnacleMap;
+}
+
+function findCrossEdgeFromPinnacle(
+  market: ProcessedMarket,
+  pinnacleMap: Map<string, PinnacleEntry>,
+  injuries: Record<string, InjuryRecord[]>,
+  misses?: CrossEdgeMiss[],
+): CrossEdge | undefined {
+  if (market.yesMid === null || pinnacleMap.size === 0) return undefined;
+
+  // Identify YES team from subtitle (yes_sub_title) first, then parse title
+  let yesTeamRaw = market.subtitle?.trim() ?? "";
+  if (!yesTeamRaw || yesTeamRaw.length > 50) {
+    const m = market.title.match(/will (.+?) (?:beat|defeat|win)/i)
+           ?? market.title.match(/^(.+?) (?:at|vs\.?|@) /i);
+    yesTeamRaw = m?.[1]?.trim() ?? "";
+  }
+  // Expand known Kalshi subtitle abbreviations (e.g. "MOH" → "miami oh")
+  yesTeamRaw = expandKalshiSubtitle(yesTeamRaw);
+  if (!yesTeamRaw) return undefined;
+
+  // Determine expected TR sport ID from Kalshi ticker prefix — prevents cross-sport name collisions
+  const KALSHI_PREFIX_TO_SPORT: Record<string, number> = {
+    KXNCAAMBGAME: 5, KXNCAAWBGAME: 5,
+    KXNBAGAME: 4,
+    KXNHLGAME: 6,
+    KXMLBGAME: 3, KXMLBSTGAME: 3,  // regular + spring training
+    KXNFLGAME: 2,
+    KXMLSSTGAME: 10,
+  };
+  const tickerUpper = market.ticker.toUpperCase();
+  const expectedSportId = Object.entries(KALSHI_PREFIX_TO_SPORT)
+    .find(([pfx]) => tickerUpper.startsWith(pfx))?.[1];
+
+  // Try normalized variants against pinnacleMap (keyed as "name:sportId")
+  const norm = trNormalize(yesTeamRaw);
+  const words = norm.split(" ");
+  const last = words.at(-1) ?? "";
+  const first2 = words.slice(0, 2).join(" ");
+  const schoolName = words.length > 1 ? words.slice(0, -1).join(" ") : norm;
+  const rawCandidates = [norm, last, first2, schoolName, yesTeamRaw.toLowerCase()];
+  // Handle Kalshi abbreviation "St." → pinnacle uses "State" (we index both; try expanded form too)
+  if (norm.includes(" st") && !norm.includes("state")) {
+    rawCandidates.push(norm.replace(/\bst\b/g, "state"));
+    rawCandidates.push(schoolName.replace(/\bst\b/g, "state"));
+  }
+
+  // Build keyed candidates — prefer sport-specific key, fall back to any sport
+  const sportIds = expectedSportId !== undefined
+    ? [expectedSportId]
+    : [4, 5, 6, 3, 2, 10, 11, 14, 15];
+  const candidates: string[] = [];
+  for (const sid of sportIds) {
+    for (const raw of rawCandidates) {
+      if (raw.length > 2) candidates.push(`${raw}:${sid}`);
+    }
+  }
+
+  let entry: PinnacleEntry | undefined;
+  for (const key of candidates) {
+    entry = pinnacleMap.get(key);
+    if (entry) break;
+  }
+
+  if (!entry) {
+    misses?.push({
+      marketTicker: market.ticker,
+      marketTitle: market.title,
+      pickTeam: yesTeamRaw,
+      opponent: "",
+      reason: "pick_unmatched",
+    });
+    return undefined;
+  }
+
+  const { game, isHomeTeam } = entry;
+
+  // Verify opponent also appears in the Kalshi market title — prevents bracket mismatches
+  // (e.g. Pinnacle prices "South Carolina at Oklahoma" but Kalshi has "Oklahoma at Texas A&M")
+  const opponent = isHomeTeam ? game.awayTeam : game.homeTeam;
+  const opponentNorm = trNormalize(opponent);
+  const opponentWords = opponentNorm.split(" ");
+  const opponentSchool = opponentWords.length > 1 ? opponentWords.slice(0, -1).join(" ") : opponentNorm;
+  const titleNorm = trNormalize(market.title);
+  const opponentInTitle = [opponentNorm, opponentSchool, opponentWords.at(-1) ?? ""]
+    .some(w => w.length > 2 && titleNorm.includes(w));
+  if (!opponentInTitle) {
+    misses?.push({
+      marketTicker: market.ticker,
+      marketTitle: market.title,
+      pickTeam: yesTeamRaw,
+      opponent,
+      reason: "bracket_mismatch",
+    });
+    return undefined;
+  }
+
+  const pinnacleProb = isHomeTeam ? game.homeProb : game.awayProb;
+  const kalshiImplied = market.yesMid;
+  const gap = pinnacleProb - kalshiImplied;
+
+  if (Math.abs(gap) < 5) {
+    misses?.push({
+      marketTicker: market.ticker,
+      marketTitle: market.title,
+      pickTeam: yesTeamRaw,
+      opponent,
+      reason: "below_threshold",
+      gap: Math.round(gap * 10) / 10,
+    });
+    return undefined;
+  }
+
+  // T-minus until game start
+  let tMinusMinutes: number | undefined;
+  if (game.commenceTime) {
+    const diffMin = (new Date(game.commenceTime).getTime() - Date.now()) / 60_000;
+    if (diffMin > 0 && diffMin < 1440) tMinusMinutes = Math.round(diffMin);
+  }
+
+  // League for injury context
+  const sportLeague: Record<number, string> = { 2: "NFL", 3: "MLB", 4: "NBA", 6: "NHL" };
+  const league = sportLeague[game.sportId] ?? "";
+
+  console.log(
+    `  [TR cross-edge] "${market.title.slice(0, 50)}" ` +
+    `yes="${yesTeamRaw}" pinnacle=${pinnacleProb.toFixed(1)}% kalshi=${kalshiImplied.toFixed(1)}% gap=${gap.toFixed(1)}%`,
+  );
+
+  return {
+    pickTeam: yesTeamRaw,
+    opponent,
+    modelConfidence: Math.round(pinnacleProb * 10) / 10,
+    kalshiImplied: Math.round(kalshiImplied * 10) / 10,
+    gap: Math.round(gap * 10) / 10,
+    direction: gap > 0 ? "model-higher" : "model-lower",
+    matchedVia: `Pinnacle (devigged) sport=${game.sportId} ${isHomeTeam ? "home" : "away"}="${norm}"`,
+    gameDate: game.commenceTime,
+    tMinusMinutes,
+    injuryContext: league ? injuryContext(yesTeamRaw, opponent, injuries, league) : undefined,
+  };
+}
 
 function loadBestBets(root: string): BestBet[] {
   const p = path.join(root, "data", "processed", "latest-summary.json");
@@ -1152,6 +1583,54 @@ function findCrossEdge(
 
     const kalshiImplied = market.yesMid;
 
+    // -----------------------------------------------------------------------
+    // Soccer 3-way market: use subtitle matching and confidence directly.
+    // Soccer markets have 3 possible outcomes (home / draw / away), each as
+    // its own Kalshi market with a distinct subtitle (e.g. "Barcelona", "Tie").
+    // The standard pickIsFavorite / pickIsYes logic breaks for these markets,
+    // so we bypass it entirely when a subtitle is present.
+    // -----------------------------------------------------------------------
+    if (bet.subtitle !== undefined) {
+      const subMatch = matchTeamInQuestion(market.subtitle ?? "", bet.subtitle);
+      if (!subMatch) {
+        misses?.push({ marketTicker: market.ticker, marketTitle: market.title, pickTeam: bet.pickTeam, opponent: bet.opponent, reason: "subtitle_unmatched" });
+        continue;
+      }
+
+      // Soccer: confidence IS the fair probability for this specific outcome
+      const modelYesProb = bet.confidence;
+      const gap = modelYesProb - kalshiImplied;
+      if (Math.abs(gap) < 5) {
+        misses?.push({ marketTicker: market.ticker, marketTitle: market.title, pickTeam: bet.pickTeam, opponent: bet.opponent, reason: "below_threshold", gap: Math.round(gap * 10) / 10 });
+        continue;
+      }
+
+      let tMinusMinutes: number | undefined;
+      if (bet.gameDate) {
+        const diffMin = (new Date(bet.gameDate).getTime() - Date.now()) / 60_000;
+        if (diffMin > 0 && diffMin < 1440) tMinusMinutes = Math.round(diffMin);
+      }
+
+      console.log(
+        `  [cross-edge/soccer] "${market.title.slice(0, 50)}…" ` +
+          `subtitle="${subMatch[1]}" pick="${bet.pickTeam}" gap=${gap.toFixed(1)}%`,
+      );
+
+      return {
+        pickTeam: bet.pickTeam,
+        opponent: bet.opponent,
+        modelConfidence: Math.round(modelYesProb * 10) / 10,
+        kalshiImplied: Math.round(kalshiImplied * 10) / 10,
+        gap: Math.round(gap * 10) / 10,
+        direction: gap > 0 ? "model-higher" : "model-lower",
+        matchedVia: `soccer subtitle="${subMatch[1]}" pick="${pickMatch[1]}" opp="${oppMatch[1]}"`,
+        gameDate: bet.gameDate,
+        tMinusMinutes,
+        injuryContext: injuryContext(bet.pickTeam, bet.opponent, injuries, bet.league),
+        // movementSignal is set after findCrossEdge returns (needs price history)
+      };
+    }
+
     // Compute model's pick-team win probability from the spread.
     // ATS confidence is NOT a moneyline probability — a team at -8.5 implies ~79%
     // win probability, not the 55-60% confidence the ATS model might express.
@@ -1219,14 +1698,18 @@ function processMarket(
   );
 
   // Fall back to market-list bid/ask when no orderbook (less accurate)
-  const yesBid = book.yesBid ?? (raw.yes_bid !== undefined ? raw.yes_bid : null);
-  const yesAsk = book.yesAsk ?? (raw.yes_ask !== undefined ? raw.yes_ask : null);
-  const noBid = book.noBid ?? (raw.no_bid !== undefined ? raw.no_bid : null);
-  const noAsk = book.noAsk ?? (raw.no_ask !== undefined ? raw.no_ask : null);
+  // API returns either cents (yes_bid) or dollar strings (yes_bid_dollars) depending on endpoint
+  const parseDollars = (v: string | undefined): number | null =>
+    v !== undefined ? Math.round(parseFloat(v) * 100) : null;
+  const yesBid = book.yesBid ?? (raw.yes_bid !== undefined ? raw.yes_bid : parseDollars(raw.yes_bid_dollars));
+  const yesAsk = book.yesAsk ?? (raw.yes_ask !== undefined ? raw.yes_ask : parseDollars(raw.yes_ask_dollars));
+  const noBid = book.noBid ?? (raw.no_bid !== undefined ? raw.no_bid : parseDollars(raw.no_bid_dollars));
+  const noAsk = book.noAsk ?? (raw.no_ask !== undefined ? raw.no_ask : parseDollars(raw.no_ask_dollars));
   const spread = book.spread;
 
   let yesMid = book.yesMid;
   if (yesMid === null && raw.last_price !== undefined) yesMid = raw.last_price;
+  if (yesMid === null && raw.last_price_dollars !== undefined) yesMid = parseDollars(raw.last_price_dollars);
 
   const closeTime = raw.close_time ?? raw.expiration_time ?? "";
 
@@ -1246,8 +1729,8 @@ function processMarket(
     topYesAskNotional: book.topYesAskNotional,
     impliedProbYes: yesMid !== null ? Math.round(yesMid * 10) / 10 : null,
     volume: raw.volume ?? raw.volume_24h ?? 0,
-    openInterest: raw.open_interest ?? 0,
-    liquidity: raw.liquidity ?? raw.open_interest ?? 0,
+    openInterest: (raw.open_interest ?? 0) || parseFloat(raw.open_interest_fp ?? "0"),
+    liquidity: raw.liquidity ?? ((raw.open_interest ?? 0) || parseFloat(raw.open_interest_fp ?? "0")),
     status: raw.status,
     closeTime,
     actionability,
@@ -1368,7 +1851,7 @@ function formatAgentsMdBlock(
 
   const lines: string[] = [
     `# Kalshi Markets Snapshot — ${timeStr} ET`,
-    `_Last refreshed: ${timeStr} ET · data_age_minutes: ${dataAgeMinutes} · ${markets.length} markets · ${sportsCount} sports · ${crossEdgeMarkets.length} cross-edge alerts_`,
+    `_Last refreshed: ${timeStr} ET | data_age_minutes: ${dataAgeMinutes} | ${markets.length} markets | ${sportsCount} sports | ${crossEdgeMarkets.length} cross-edge alerts_`,
     "",
     "## Top 10 by Liquidity / Open Interest",
     "",
@@ -1389,10 +1872,10 @@ function formatAgentsMdBlock(
     lines.push(`**${i + 1}. ${m.title || m.ticker}**`);
     lines.push(`YES bid/ask: ${fmtCents(m.yesBid)} / ${fmtCents(m.yesAsk)} → Implied: ${implStr}`);
     lines.push(
-      `Spread: ${spreadStr} · Depth: ${depthStr} · Actionability: ${m.actionability}`,
+      `Spread: ${spreadStr} | Depth: ${depthStr} | Actionability: ${m.actionability}`,
     );
     lines.push(
-      `OI: ${m.openInterest.toLocaleString()} · Vol: ${m.volume.toLocaleString()} · Closes: ${closeStr}`,
+      `OI: ${m.openInterest.toLocaleString()} | Vol: ${m.volume.toLocaleString()} | Closes: ${closeStr}`,
     );
     lines.push("");
   }
@@ -1403,7 +1886,7 @@ function formatAgentsMdBlock(
     for (const m of sportsNotInTop10) {
       const implStr = m.impliedProbYes !== null ? `${m.impliedProbYes}%` : "—";
       lines.push(
-        `- **${m.ticker}** ${m.title} — YES bid ${fmtCents(m.yesBid)} / ask ${fmtCents(m.yesAsk)} · Implied ${implStr} · ${m.actionability}`,
+        `- **${m.ticker}** ${m.title} — YES bid ${fmtCents(m.yesBid)} / ask ${fmtCents(m.yesAsk)} | Implied ${implStr} | ${m.actionability}`,
       );
     }
     lines.push("");
@@ -1450,14 +1933,14 @@ function formatAgentsMdBlock(
             return hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
           })()
         : (m.closeTime ? fmtTMinus(m.closeTime, now) : "—");
-      lines.push(`- **${m.ticker}** ${m.title} — ${when} · T-minus ${tMinus} · ${m.actionability}`);
+      lines.push(`- **${m.ticker}** ${m.title} — ${when} | T-minus ${tMinus} | ${m.actionability}`);
     }
     lines.push("");
   }
 
   lines.push("## Cross-Book Edge Alerts");
   lines.push(
-    "_Markets where Kalshi implied probability diverges ≥5% from NateStacks model_",
+    "_Markets where Kalshi implied probability diverges ≥5% from Pinnacle (devigged) or NateStacks model_",
   );
   lines.push("");
 
@@ -1473,9 +1956,10 @@ function formatAgentsMdBlock(
           ? `model HIGHER — Kalshi may be underpricing ${ce.pickTeam}`
           : `model LOWER — Kalshi may be overpricing ${ce.pickTeam}`;
 
+      const isPinnacle = ce.matchedVia?.startsWith("Pinnacle");
       lines.push(`**${m.title}** [${m.ticker}]`);
       lines.push(`- Kalshi: YES mid ${fmtCents(m.yesMid)} → Implied ${m.impliedProbYes}%`);
-      lines.push(`- NateStacks model: ${ce.modelConfidence}% confidence`);
+      lines.push(`- ${isPinnacle ? "Pinnacle (devigged)" : "NateStacks model"}: ${ce.modelConfidence}% ${isPinnacle ? "fair probability" : "confidence"}`);
       lines.push(`- Gap: ${gapStr} (${dirNote})`);
       lines.push(`- Matched via: ${ce.matchedVia}`);
       if (ce.tMinusMinutes !== undefined) {
@@ -1506,7 +1990,7 @@ function formatStandaloneAgentsMd(
   const top10 = markets.slice(0, 10);
   const lines: string[] = [
     `# Kalshi Markets Snapshot — ${timeStr} ET`,
-    `_Last refreshed: ${timeStr} ET · ${markets.length} markets tracked_`,
+    `_Last refreshed: ${timeStr} ET | ${markets.length} markets tracked_`,
     "",
     "## Top 10 by Liquidity",
     "",
@@ -1525,9 +2009,9 @@ function formatStandaloneAgentsMd(
       `YES bid/ask: ${fmtCents(m.yesBid)} / ${fmtCents(m.yesAsk)} → Implied: ${implStr}`,
     );
     lines.push(
-      `Spread: ${spreadStr}¢ · Actionability: ${m.actionability} · Liq: ${m.openInterest.toLocaleString()}`,
+      `Spread: ${spreadStr} | Actionability: ${m.actionability} | Liq: ${m.openInterest.toLocaleString()}`,
     );
-    lines.push(`Closes: ${closeStr} · Status: ${m.status}`);
+    lines.push(`Closes: ${closeStr} | Status: ${m.status}`);
     lines.push("");
   }
 
@@ -1635,9 +2119,15 @@ async function main() {
   }
 
   // 5. Cross-edge analysis + movement signals + tournament edges
-  const bestBets = loadBestBets(root);
-  if (bestBets.length > 0) {
-    console.log(`  [cross-edge] Checking ${bestBets.length} best bets against ${processed.length} markets...`);
+  // Load both Pinnacle odds (primary) and NateStacks picks (fallback)
+  const [pinnacleMap, bestBets] = await Promise.all([
+    loadPinnacleOdds(),
+    Promise.resolve(loadBestBets(root)),
+  ]);
+  if (pinnacleMap.size > 0) {
+    console.log(`  [cross-edge] Pinnacle map ready (${pinnacleMap.size} variants) against ${processed.length} markets...`);
+  } else if (bestBets.length > 0) {
+    console.log(`  [cross-edge] Checking ${bestBets.length} NateStacks bets against ${processed.length} markets (no TR)...`);
   }
 
   const sportsMarkets: ProcessedMarket[] = [];
@@ -1659,11 +2149,18 @@ async function main() {
       }
     }
 
-    // Game cross-edge
-    if (!isMarmad && bestBets.length > 0 && m.isSports && isGameWinnerMarket(m)) {
-      const ce = findCrossEdge(m, bestBets, injuries, crossEdgeMisses);
+    // Game cross-edge: TR Pinnacle (primary) → NateStacks (fallback)
+    if (!isMarmad && m.isSports && isGameWinnerMarket(m)) {
+      let ce: CrossEdge | undefined;
+      // Primary: TheRundown Pinnacle devigged odds
+      if (pinnacleMap.size > 0) {
+        ce = findCrossEdgeFromPinnacle(m, pinnacleMap, injuries, crossEdgeMisses);
+      }
+      // Fallback: NateStacks model picks
+      if (!ce && bestBets.length > 0) {
+        ce = findCrossEdge(m, bestBets, injuries, crossEdgeMisses);
+      }
       if (ce) {
-        // Attach movement signal
         ce.movementSignal = computeMovement(m.ticker, ce.modelConfidence, priceHistory);
         m.crossEdge = ce;
         crossEdgeMarkets.push(m);
@@ -1708,6 +2205,48 @@ async function main() {
       excludedClosed: rawMarkets.length - tickers.length,
     },
   };
+
+  // Persist machine-readable ingest/cross-edge telemetry for nightly outcome analysis.
+  const telemetryRows: string[] = [];
+  telemetryRows.push(
+    JSON.stringify({
+      type: "ingest_summary",
+      ts: fetchedAtIsoUtc,
+      env: KALSHI_ENV,
+      totalFetched: processed.length,
+      sportsCount: sportsMarkets.length,
+      crossEdgeCount: crossEdgeMarkets.length,
+      tournamentEdgeCount: tournamentEdgeMarkets.length,
+      apiCallsMade: apiCallCount,
+    }),
+  );
+
+  for (const m of crossEdgeMarkets) {
+    const ce = m.crossEdge;
+    if (!ce) continue;
+    telemetryRows.push(
+      JSON.stringify({
+        type: "cross_edge_snapshot",
+        ts: fetchedAtIsoUtc,
+        marketId: m.ticker,
+        ticker: m.ticker,
+        title: m.title,
+        direction: ce.direction,
+        gapPct: ce.gap,
+        kalshiImpliedPct: ce.kalshiImplied,
+        modelConfidencePct: ce.modelConfidence,
+        actionability: m.actionability,
+        yesBid: m.yesBid,
+        yesAsk: m.yesAsk,
+        spread: m.spread,
+        tMinusMinutes: ce.tMinusMinutes ?? null,
+        closeTime: m.closeTime,
+        matchedVia: ce.matchedVia,
+      }),
+    );
+  }
+
+  fs.appendFileSync(alertsJsonlPath, telemetryRows.join("\n") + "\n", "utf-8");
 
   const jsonPath = path.join(outDir, "latest-kalshi.json");
   fs.writeFileSync(jsonPath + ".tmp", JSON.stringify(output, null, 2), "utf-8");
