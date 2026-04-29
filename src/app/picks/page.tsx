@@ -1,6 +1,7 @@
-"use client";
+import fs from "node:fs";
+import path from "node:path";
 
-import { useEffect, useState } from "react";
+export const dynamic = "force-dynamic";
 
 type Pick = {
   rank: number;
@@ -19,40 +20,26 @@ type Pick = {
   calibrated?: boolean;
 };
 
-type EnvData<T> = {
-  status?: string;
-  data?: {
-    dateEt?: string;
-    totalGames?: number;
-    picks?: Pick[];
-    rankedBy?: string;
-    threshold?: number;
-    minEdge?: number;
-    modelType?: string;
-    ingestStatus?: string;
-  };
-  error?: string;
-};
-
 type Health = {
-  data?: {
-    status: "ok" | "degraded" | "error";
-    checkedAt: string;
-    sources: Array<{ source: string; status: string; freshnessMins: number; recordCount: number; errors: string[] }>;
-    staleSources: string[];
-    criticalErrors: string[];
-  };
-  error?: string;
+  status: "ok" | "degraded" | "error";
+  checkedAt: string;
+  staleSources: string[];
+  criticalErrors: string[];
 };
 
-type Payload = {
-  generatedAt: string;
-  mlb: EnvData<Pick>;
-  nba: EnvData<Pick>;
-  health: Health;
-};
+const PROCESSED_DIR = path.join(process.cwd(), "data", "processed");
 
-function fmtML(n: number | null): string {
+function readJson<T>(file: string): T | null {
+  const p = path.join(PROCESSED_DIR, file);
+  if (!fs.existsSync(p)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf-8")) as T;
+  } catch {
+    return null;
+  }
+}
+
+function fmtML(n: number | null | undefined): string {
   if (n === null || n === undefined) return "—";
   return n > 0 ? `+${n}` : String(n);
 }
@@ -76,22 +63,14 @@ function statusColor(s: string | undefined): string {
 }
 
 export default function PicksPage() {
-  const [data, setData] = useState<Payload | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const mlbEnv = readJson<{ data?: { picks?: Pick[]; dateEt?: string } }>("picks-today.json");
+  const nbaEnv = readJson<{ data?: { picks?: Pick[]; dateEt?: string } }>("picks-nba-today.json");
+  const healthEnv = readJson<{ data?: Health }>("sports-ingest-health.json");
 
-  useEffect(() => {
-    fetch("/api/picks/today")
-      .then((r) => r.json())
-      .then(setData)
-      .catch((e) => setErr(e.message));
-  }, []);
-
-  if (err) return <main className="p-8 text-rose-400">Error: {err}</main>;
-  if (!data) return <main className="p-8 text-slate-400">Loading today&apos;s picks…</main>;
-
-  const mlbPicks = data.mlb?.data?.picks ?? [];
-  const nbaPicks = data.nba?.data?.picks ?? [];
-  const health = data.health?.data;
+  const mlbPicks = mlbEnv?.data?.picks ?? [];
+  const nbaPicks = nbaEnv?.data?.picks ?? [];
+  const health = healthEnv?.data;
+  const dateEt = mlbEnv?.data?.dateEt ?? new Date().toISOString().slice(0, 10);
 
   return (
     <main className="min-h-screen p-6 md:p-10 max-w-5xl mx-auto">
@@ -99,14 +78,14 @@ export default function PicksPage() {
         <div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">🎯 Today&apos;s Picks</h1>
           <p className="text-sm text-slate-400 mt-1">
-            {data.mlb?.data?.dateEt ?? new Date().toISOString().slice(0, 10)} · ranked by edge over devigged market
+            {dateEt} · ranked by edge over devigged market
           </p>
         </div>
         {health && (
           <div className={`text-xs uppercase tracking-wide ${statusColor(health.status)}`}>
             ingest: {health.status}
-            {health.staleSources.length > 0 && ` · stale: ${health.staleSources.join(", ")}`}
-            {health.criticalErrors.length > 0 && ` · critical: ${health.criticalErrors.join(", ")}`}
+            {health.staleSources?.length > 0 && ` · stale: ${health.staleSources.join(", ")}`}
+            {health.criticalErrors?.length > 0 && ` · critical: ${health.criticalErrors.join(", ")}`}
           </div>
         )}
       </header>
@@ -118,7 +97,7 @@ export default function PicksPage() {
           <span className="text-xs text-slate-500 font-normal">calibrated · isotonic CV · LightGBM</span>
         </h2>
         {mlbPicks.length === 0 ? (
-          <p className="text-slate-500 italic">No MLB picks today — model edge below threshold for all games.</p>
+          <p className="text-slate-500 italic mt-3">No MLB picks today — model edge below threshold for all games.</p>
         ) : (
           <ol className="space-y-3 mt-4">
             {mlbPicks.map((p) => (
@@ -151,7 +130,7 @@ export default function PicksPage() {
           <span className="text-xs text-amber-400 font-normal">heuristic · uncalibrated · net-rating</span>
         </h2>
         {nbaPicks.length === 0 ? (
-          <p className="text-slate-500 italic">No NBA picks today — model edge below threshold for all games.</p>
+          <p className="text-slate-500 italic mt-3">No NBA picks today — model edge below threshold for all games.</p>
         ) : (
           <ol className="space-y-3 mt-4">
             {nbaPicks.map((p) => (
@@ -181,9 +160,6 @@ export default function PicksPage() {
           (training pipeline in progress). Picks shown only when model edge clears threshold (MLB +2%, NBA +5%).
           Bankroll discipline applies.
         </p>
-        {data.generatedAt && (
-          <p className="mt-1">Generated {new Date(data.generatedAt).toLocaleString("en-US", { timeZone: "America/New_York" })} ET</p>
-        )}
       </footer>
     </main>
   );
