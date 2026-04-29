@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
     "/api/assistant/query": ["./data/processed/**/*"],
     "/api/cron/refresh": [],
     "/api/cron/ingest": [],
+    "/api/picks/today": ["./data/processed/**/*"],
+    "/api/props/today": ["./data/processed/**/*"],
+    "/api/moneyline": ["./data/processed/**/*"],
+    "/api/health": ["./data/processed/**/*"],
   },
 };
 

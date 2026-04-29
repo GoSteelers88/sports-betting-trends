@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2026-04-29T18:25:16.141Z",
+  "source": "picks-today",
+  "status": "ok",
+  "freshnessMins": 0,
+  "recordCount": 1,
+  "errors": [],
+  "data": {
+    "dateEt": "2026-04-29",
+    "totalGames": 15,
+    "picks": [
+      {
+        "league": "MLB",
+        "eventId": "823471",
+        "matchup": "San Francisco Giants @ Philadelphia Phillies",
+        "homeTeam": "Philadelphia Phillies",
+        "awayTeam": "San Francisco Giants",
+        "side": "away",
+        "pickTeam": "San Francisco Giants",
+        "rawModelProb": 0.597,
+        "modelProb": 0.597,
+        "marketImpliedProb": 0.439,
+        "marketML": 120,
+        "edge": 0.158,
+        "rank": 1,
+        "calibrated": true,
+        "calibrationSource": "model-isotonic-cv",
+        "homePitcher": "Cristopher Sánchez",
+        "awayPitcher": "Logan Webb"
+      },
+      {
+        "league": "MLB",
+        "eventId": "824525",
+        "matchup": "Colorado Rockies @ Cincinnati Reds",
+        "homeTeam": "Cincinnati Reds",
+        "awayTeam": "Colorado Rockies",
+        "side": "home",
+        "pickTeam": "Cincinnati Reds",
+        "rawModelProb": 0.688,
+        "modelProb": 0.688,
+        "marketImpliedProb": 0.575,
+        "marketML": -150,
+        "edge": 0.113,
+        "rank": 2,
+        "calibrated": true,
+        "calibrationSource": "model-isotonic-cv",
+        "homePitcher": "Brandon Williamson",
+        "awayPitcher": "Tomoyuki Sugano"
+      }
+    ],
+    "ingestStatus": "ok",
+    "degradedReasons": [],
+    "threshold": 0.55,
+    "top": 8,
+    "minEdge": 0.02,
+    "rankedBy": "edge"
+  }
+}
