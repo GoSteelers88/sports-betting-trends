@@ -2,8 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-static";
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 const PROCESSED_DIR = path.join(process.cwd(), "data", "processed");
 
