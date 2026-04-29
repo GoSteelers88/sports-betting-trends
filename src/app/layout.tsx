@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sports Betting Trends",
-  description: "Free-data betting trends across NBA, NFL, NCAAB, and MLB.",
+  title: "NateStacks — Sports Betting Trends",
+  description: "Live sports betting trends and picks across MLB, NBA, and NHL.",
 };
 
 export default function RootLayout({
@@ -24,9 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0a] text-slate-100`}>
         {children}
       </body>
     </html>

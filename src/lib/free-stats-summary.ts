@@ -309,6 +309,10 @@ type BestBetGame = {
   rationaleSignals: string[];
   momentumEdge: number;
   atsEdge: number | null;
+  // MLB model fields (optional)
+  mlbModelProb?: number | null;
+  mlbEdge?: number | null;
+  mlbCalibrated?: boolean;
 };
 
 type OddsEventLike = {
@@ -728,7 +732,7 @@ function resolveHistoryForOddsTeam(oddsTeam: string, historyByTeam: Record<strin
   return [best.team, best.rows] as const;
 }
 
-function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey: string, completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[], scrapedAts?: ScrapedAtsLeague, consensusGames?: ScrapedConsensusGame[], nbaEfficiency?: NbaEfficiencyData) {
+function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey: string, completedRows: FreeStatLike[], oddsEvents: OddsEventLike[], standings?: Record<string, StandingsEntry[]>, injuries?: InjuryEntry[], scrapedAts?: ScrapedAtsLeague, consensusGames?: ScrapedConsensusGame[], nbaEfficiency?: NbaEfficiencyData, mlbModel?: MlbModelData) {
   const leagueCompleted = completedRows.filter((r) => r.league === league);
   if (!leagueCompleted.length || !oddsEvents.length) return [] as BestBetGame[];
 
@@ -780,6 +784,10 @@ function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey:
       const awayEdge =
         awayForm.momentum * 22 + ((awayBlendedAtsForm ?? 0.5) - 0.5) * 26 + (awayForm.upsetProxy - homeForm.upsetProxy) * 0.3
         + netRatingBonus(awayForm, homeForm) + sosBonus(awayForm, homeForm);
+
+      // Bug 2: require minimum edge delta before picking — skip true pick'em games
+      const MIN_EDGE_DELTA = 3.0;
+      if (Math.abs(homeEdge - awayEdge) < MIN_EDGE_DELTA) return null;
 
       const pickHome = homeEdge >= awayEdge;
       const pickTeam = pickHome ? home : away;
@@ -843,8 +851,11 @@ function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey:
       // 5. Large-favorite penalty
       const largeFavPenalty = spread != null && spread < -10 ? (Math.abs(spread) - 10) * 1.0 : 0;
 
+      // Bug 6: pick'em penalty — low variance but spread near 0 means line is uncertain
+      const pickemPenalty = (consensus.variance < 0.1 && spread != null && spread >= -1.5 && spread <= 1.5) ? 3 : 0;
+
       const rawScore = 52 + modelEdge * 0.32;
-      const score = Math.round(clamp(rawScore + homeAdjustment + restAdjustment + injuryAdjustment - largeFavPenalty - consensusPenalty, 1, 99));
+      const score = Math.round(clamp(rawScore + homeAdjustment + restAdjustment + injuryAdjustment - largeFavPenalty - consensusPenalty - pickemPenalty, 1, 99));
       const confidence = Number((clamp(0.45 + Math.abs(score - 50) / 95, 0.35, 0.9) * 100).toFixed(0));
       // ────────────────────────────────────────────────────────────────────
 
@@ -921,6 +932,84 @@ function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey:
         }
       }
 
+      // ── MLB model blending ──────────────────────────────────────────────
+      let finalScore = score;
+      let mlbModelProb: number | null = null;
+      let mlbEdge: number | null = null;
+      let mlbCalibrated: boolean | undefined;
+
+      if (league === "MLB" && mlbModel?.results?.length) {
+        // Match by team name (home/away)
+        const modelResult = mlbModel.results.find((r) => {
+          const normHome = r.homeTeam.toLowerCase();
+          const normAway = r.awayTeam.toLowerCase();
+          const normH = home.toLowerCase();
+          const normA = away.toLowerCase();
+          return (normHome.includes(normH.split(" ").pop()!) || normH.includes(normHome.split(" ").pop()!)) &&
+                 (normAway.includes(normA.split(" ").pop()!) || normA.includes(normAway.split(" ").pop()!));
+        });
+
+        if (modelResult) {
+          // Determine model prob for the pick team
+          const pickIsHome = pickHome;
+          const rawProb = pickIsHome ? modelResult.homeWinProb : modelResult.awayWinProb;
+          mlbModelProb = parseFloat(rawProb.toFixed(4));
+
+          // Market implied prob for pick team
+          const h2hOutcomes = (event.bookmakers ?? [])
+            .flatMap((b) => b.markets ?? [])
+            .filter((m) => m.key === "h2h")
+            .flatMap((m) => m.outcomes ?? [])
+            .filter((o) => o.name === pickTeam)
+            .map((o) => (o as Record<string, unknown>).price)
+            .filter((p): p is number => typeof p === "number" && Number.isFinite(p));
+          // Bug 1 fix: convert American odds to raw implied probability, then average
+          // American odds → raw prob: price > 0 → 100/(price+100), price <= 0 → |price|/(|price|+100)
+          const americanToRawProb = (price: number): number =>
+            price > 0 ? 100 / (price + 100) : Math.abs(price) / (Math.abs(price) + 100);
+          const marketProb = h2hOutcomes.length
+            ? h2hOutcomes.reduce((s, p) => s + americanToRawProb(p), 0) / h2hOutcomes.length
+            : 0.5;
+          mlbEdge = parseFloat((mlbModelProb - marketProb).toFixed(4));
+          mlbCalibrated = modelResult.calibrated;
+
+          // Bug 4 fix: use lower model blend weight when not calibrated (heuristic prior)
+          const blendModelWeight = mlbCalibrated ? 0.6 : 0.3;
+          const blendScoreWeight = mlbCalibrated ? 0.4 : 0.7;
+          finalScore = Math.round(clamp(
+            blendScoreWeight * score + blendModelWeight * (mlbModelProb * 100),
+            1, 99,
+          ));
+
+          // Bug 5 fix: apply score penalty/bonus based on whether model agrees with pick direction
+          if (mlbEdge < -0.05) {
+            finalScore = Math.round(clamp(finalScore - 5, 1, 99));
+          } else if (mlbEdge >= 0.05) {
+            finalScore = Math.round(clamp(finalScore + 3, 1, 99));
+          }
+
+          // Add pitcher intel signals
+          const hp = modelResult.homePitcherName;
+          const ap = modelResult.awayPitcherName;
+          if (hp) rationaleSignals.push(`Home SP: ${hp}`);
+          if (ap) rationaleSignals.push(`Away SP: ${ap}`);
+          // Bug 4/5 fix: only add mlbEdge signal if edge is meaningful (>5%)
+          const mlbEdgeLabel = Math.abs(mlbEdge) > 0.05
+            ? ` | Edge vs market: ${mlbEdge >= 0 ? "+" : ""}${(mlbEdge * 100).toFixed(1)}%`
+            : "";
+          rationaleSignals.push(
+            `MLB model: ${(mlbModelProb * 100).toFixed(1)}% win prob (${mlbCalibrated ? "calibrated" : "prior"})${mlbEdgeLabel}`,
+          );
+        }
+      }
+      // ────────────────────────────────────────────────────────────────────
+
+      // Bug 3: skip low-quality picks below the minimum score threshold
+      if (finalScore < 57) return null;
+
+      // Recompute confidence from finalScore (not pre-blend score)
+      const finalConfidence = Number((clamp(0.45 + Math.abs(finalScore - 50) / 95, 0.35, 0.9) * 100).toFixed(0));
+
       return {
         league,
         conference: null,
@@ -931,15 +1020,19 @@ function buildLeagueOddsBestBets(league: string, sportKey: string, standingsKey:
         spread,
         modelSpread,
         line,
-        score,
-        confidence,
+        score: finalScore,
+        confidence: finalConfidence,
         rationaleSignals,
         momentumEdge,
         atsEdge,
+        mlbModelProb: mlbModelProb ?? null,
+        mlbEdge: mlbEdge ?? null,
+        mlbCalibrated,
       } as BestBetGame;
     })
+    .filter((g): g is BestBetGame => Boolean(g))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 20);
+    .slice(0, 10);
 }
 
 function calibrateBestBetModel(rows: FreeStatLike[]) {
@@ -1044,6 +1137,26 @@ export type ScrapedConsensus = {
 // NBA efficiency model types and helpers
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// MLB model output types
+// ---------------------------------------------------------------------------
+
+export type MlbModelGameResult = {
+  eventId: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeWinProb: number;
+  awayWinProb: number;
+  calibrated: boolean;
+  homePitcherName: string | null;
+  awayPitcherName: string | null;
+};
+
+export type MlbModelData = {
+  generatedAt: string;
+  results: MlbModelGameResult[];
+};
+
 export type NbaTeamEfficiency = {
   netRtg: number | null;
   offRtg: number | null;
@@ -1126,6 +1239,7 @@ export type BuildOptions = {
   nbaEfficiency?: NbaEfficiencyData;
   scrapedAts?: Record<string, ScrapedAtsLeague>;
   scrapedConsensus?: ScrapedConsensus;
+  mlbModel?: MlbModelData;
 };
 
 export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptions) {
@@ -1206,9 +1320,11 @@ export function buildFreeStatsSummary(rows: FreeStatLike[], options?: BuildOptio
   const nbaEfficiency = options?.nbaEfficiency;
   const scrapedAtsMap = options?.scrapedAts ?? {};
   const consensusGames = options?.scrapedConsensus?.games ?? [];
+  const mlbModel = options?.mlbModel;
   const ncaabBets = buildLeagueOddsBestBets("NCAAB", "basketball_ncaab", "ncaab", completed, oddsEvents, standingsMap, injuriesMap?.ncaab, scrapedAtsMap["ncaab"], consensusGames.filter((g) => g.league === "NCAAB"));
   const nbaBets   = buildLeagueOddsBestBets("NBA",   "basketball_nba",   "nba",   completed, oddsEvents, standingsMap, injuriesMap?.nba,   scrapedAtsMap["nba"],   consensusGames.filter((g) => g.league === "NBA"), nbaEfficiency);
-  const oddsBasedBets = [...ncaabBets, ...nbaBets].sort((a, b) => b.score - a.score);
+  const mlbBets   = buildLeagueOddsBestBets("MLB",   "baseball_mlb",     "mlb",   completed, oddsEvents, standingsMap, undefined,           scrapedAtsMap["mlb"],   consensusGames.filter((g) => g.league === "MLB"), undefined, mlbModel);
+  const oddsBasedBets = [...ncaabBets, ...nbaBets, ...mlbBets].sort((a, b) => b.score - a.score);
   const bestBets = oddsBasedBets.length ? oddsBasedBets : buildGameLevelBestBets(sorted, completed, standingsMap, injuriesMap, nbaEfficiency);
   const topTarget = 5;
   const todayEt = dayKeyInEt(new Date());

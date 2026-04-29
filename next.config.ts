@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     "/api/debug-odds": ["./data/processed/**/*"],
     "/api/assistant/query": ["./data/processed/**/*"],
     "/api/cron/refresh": [],
+    "/api/cron/ingest": [],
   },
 };
 
