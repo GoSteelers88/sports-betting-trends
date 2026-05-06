@@ -110,3 +110,29 @@ export interface SystemHealth {
   liquidityCollapsed: boolean;
   killSwitch: boolean;
 }
+
+// Phase 1: Net executable edge components
+// net_edge = raw_edge − fee_drag − slippage_est − latency_risk − cancel_risk
+export interface NetEdgeComponents {
+  /** |gap| in decimal (e.g. 0.08 = 8%) */
+  rawEdge: number;
+  /** KALSHI_FEE_RATE × (1 − kalshiPrice): fee cost as edge fraction */
+  feeDrag: number;
+  /** spread/2 + market-impact: estimated fill slippage */
+  slippageEst: number;
+  /** latency_ms × LATENCY_RISK_PER_MS: detection-to-execution latency penalty */
+  latencyRisk: number;
+  /** cancel_rate × CANCEL_RISK_BASE: adverse-selection cost on resting orders */
+  cancelRisk: number;
+  /** rawEdge − feeDrag − slippageEst − latencyRisk − cancelRisk */
+  netEdge: number;
+}
+
+/** Structured trade-rejection codes (Phase 1). */
+export type RejectionReason =
+  | "fee_fail"           // fee_drag alone wipes out raw_edge
+  | "depth_fail"         // insufficient open interest / book depth
+  | "net_edge_fail"      // net_edge < configured threshold
+  | "actionability_fail" // market actionability below minimum (e.g. Low)
+  | "stale_data_fail"    // model summary data is stale
+  | "kill_switch_fail";  // kill switch engaged

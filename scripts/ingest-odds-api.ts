@@ -30,6 +30,7 @@ const DEFAULT_LEAGUES = [
   "soccer_germany_bundesliga",
   "soccer_france_ligue_one",
   "soccer_usa_mls",
+  "soccer_uefa_champs_league",
 ];
 
 async function fetchOddsForLeague(
@@ -84,6 +85,7 @@ async function main() {
   let lastUsed = "unknown";
 
   for (const league of leagues) {
+    await new Promise((r) => setTimeout(r, 1000));
     const result = await fetchOddsForLeague(apiKey, league, regions, markets, oddsFormat);
     lastRemaining = result.remaining;
     lastUsed = result.used;

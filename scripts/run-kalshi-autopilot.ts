@@ -70,6 +70,7 @@ const MAX_TOTAL_EXPOSURE_USD = 20.00;
 const MAX_OPEN_POSITIONS = 5;
 const MAX_RESTING_ORDERS = 5;
 const MAX_ORDERS_PER_HOUR = 20;
+const MAX_EVENT_EXPOSURE_USD = 2.00;
 
 let EDGE_THRESHOLD_PCT = 5;
 const HIGH_EDGE_THRESHOLD_PCT = 10;
@@ -118,7 +119,9 @@ const LOOP_INTERVAL_MS = 10_000; // 10 sec
 const INGEST_INTERVAL_MS = 300_000; // 5 min
 const SUMMARY_REFRESH_INTERVAL_MS = 600_000; // 10 min
 const SUMMARY_STALE_MS = 30 * 60 * 1000; // 30 min
-const RUN_DURATION_MS = 172_800_000; // 48h
+const RUN_DURATION_MS = process.env.AUTOPILOT_RUN_DURATION_MS
+  ? parseInt(process.env.AUTOPILOT_RUN_DURATION_MS, 10)
+  : 172_800_000; // 48h default
 const ERROR_WINDOW_MS = 600_000; // 10 min
 const MAX_ERRORS_IN_WINDOW = 5;
 const RATE_LIMIT_MAX_RETRIES = 3;
@@ -154,6 +157,7 @@ const PHASE4_DISABLE_ON_FAILED_HEDGES = parseInt(process.env.AUTOPILOT_PHASE4_DI
 const PHASE4_DISABLE_WINDOW_MIN = parseInt(process.env.AUTOPILOT_PHASE4_DISABLE_WINDOW_MIN ?? "30", 10);
 // ═══ NEW: Price history storage for leader detection ═══
 const PRICE_HISTORY_FILE = path.resolve(process.cwd(), "data", "processed", "price-history.json");
+const LIVE_ODDS_FILE     = path.resolve(process.cwd(), "data", "processed", "latest-odds-api.json");
 
 // Discord notifications
 const GATEWAY_URL = "http://127.0.0.1:18789/tools/invoke";
@@ -165,6 +169,8 @@ const DISCORD_CHANNEL = "channel:1474075668135284827";
 // ---------------------------------------------------------------------------
 
 interface CrossEdge {
+  pickTeam?: string;
+  opponent?: string;
   modelConfidence: number;
   kalshiImplied: number;
   gap: number;
@@ -229,7 +235,7 @@ interface PendingEntry {
   decisionRefCents?: number;
   positionType?: "game" | "tournament";
   // ═══ NEW: Track leader info for exit decisions ═══
-  leaderAtEntry?: "POLY" | "KALSHI" | "UNKNOWN";
+  leaderAtEntry?: "BOOKS" | "POLY" | "KALSHI" | "UNKNOWN";
   directionAtEntry?: "UP" | "DOWN" | "FLAT";
 }
 
@@ -246,7 +252,7 @@ interface PositionState {
   status: "awaiting_exit" | "exit_placed" | "holding_illiquid";
   positionType?: "game" | "tournament";
   // ═══ NEW ═══
-  leaderAtEntry?: "POLY" | "KALSHI" | "UNKNOWN";
+  leaderAtEntry?: "BOOKS" | "POLY" | "KALSHI" | "UNKNOWN";
   directionAtEntry?: "UP" | "DOWN" | "FLAT";
 }
 
@@ -352,7 +358,7 @@ interface PriceHistoryStore {
 
 // ═══ NEW: Leader detection result ═══
 interface LeaderDetectionResult {
-  leader: "POLY" | "KALSHI" | "UNKNOWN";
+  leader: "BOOKS" | "POLY" | "KALSHI" | "UNKNOWN";
   confidence: number;
   direction: "UP" | "DOWN" | "FLAT";
   magnitude: number;
@@ -513,21 +519,21 @@ function detectLeader(
   if (Math.abs(polyTotalMove) > Math.abs(kalshiTotalMove) * 1.2) leaderScore += 0.2;
   else if (Math.abs(kalshiTotalMove) > Math.abs(polyTotalMove) * 1.2) leaderScore -= 0.2;
 
-  let leader: "POLY" | "KALSHI" | "UNKNOWN";
+  let leader: "BOOKS" | "POLY" | "KALSHI" | "UNKNOWN";
   let confidence: number;
 
-  if (leaderScore > 0.15) { leader = "POLY"; confidence = Math.min(1.0, Math.abs(leaderScore)); }
+  if (leaderScore > 0.15) { leader = "BOOKS"; confidence = Math.min(1.0, Math.abs(leaderScore)); }
   else if (leaderScore < -0.15) { leader = "KALSHI"; confidence = Math.min(1.0, Math.abs(leaderScore)); }
   else { leader = "UNKNOWN"; confidence = Math.abs(leaderScore); }
 
-  const leaderMove = leader === "POLY" ? polyTotalMove : leader === "KALSHI" ? kalshiTotalMove : (polyTotalMove + kalshiTotalMove) / 2;
+  const leaderMove = leader === "BOOKS" ? polyTotalMove : leader === "KALSHI" ? kalshiTotalMove : (polyTotalMove + kalshiTotalMove) / 2;
   let direction: "UP" | "DOWN" | "FLAT";
   if (leaderMove > 0.01) direction = "UP";
   else if (leaderMove < -0.01) direction = "DOWN";
   else direction = "FLAT";
 
   // Momentum confirmation on leader's prices
-  const leaderPrices = leader === "POLY" ? polyWindow : kalshiWindow;
+  const leaderPrices = leader === "BOOKS" ? polyWindow : kalshiWindow;
   const { confirmed: momentumConfirmed, strength: momentumStrength } = confirmMomentum(leaderPrices, direction);
 
   return {
@@ -611,6 +617,251 @@ function getPolyPrices(ticker: string): number[] {
 
 function getKalshiPrices(ticker: string): number[] {
   return (priceHistory[ticker] ?? []).map(p => p.kalshiMid);
+}
+
+// ---------------------------------------------------------------------------
+// ═══ Live Sportsbook Odds (polyMid proxy via latest-odds-api.json) ═══
+// ---------------------------------------------------------------------------
+
+let liveOddsMap: Map<string, number> = new Map(); // team name (lower) → fair win prob (0-1)
+let lastOddsRefreshTs = 0;
+const ODDS_REFRESH_INTERVAL_MS = 120_000; // re-read odds file at most every 2 min
+
+function refreshLiveOddsMap(): void {
+  const now = Date.now();
+  if (now - lastOddsRefreshTs < ODDS_REFRESH_INTERVAL_MS) return;
+  lastOddsRefreshTs = now;
+  try {
+    if (!fs.existsSync(LIVE_ODDS_FILE)) return;
+    const raw = JSON.parse(fs.readFileSync(LIVE_ODDS_FILE, "utf-8")) as {
+      events?: Array<{
+        home_team: string;
+        away_team: string;
+        bookmakers?: Array<{
+          markets?: Array<{
+            key: string;
+            outcomes?: Array<{ name: string; price?: number }>;
+          }>;
+        }>;
+      }>;
+    };
+    const newMap = new Map<string, number>();
+    for (const ev of raw.events ?? []) {
+      // Collect h2h raw probs across all bookmakers, average them
+      // Supports both American odds (e.g. -150, +120) and decimal odds (e.g. 1.67)
+      const h2hProbs = new Map<string, number[]>();
+      for (const bk of ev.bookmakers ?? []) {
+        const h2h = (bk.markets ?? []).find((mk) => mk.key === "h2h");
+        if (!h2h) continue;
+        for (const o of h2h.outcomes ?? []) {
+          if (!o.name || o.price == null) continue;
+          const k = o.name.toLowerCase();
+          let rawProb: number;
+          if (Math.abs(o.price) >= 100) {
+            // American odds
+            rawProb = o.price < 0
+              ? Math.abs(o.price) / (Math.abs(o.price) + 100)
+              : 100 / (o.price + 100);
+          } else {
+            // Decimal odds
+            rawProb = o.price > 0 ? 1 / o.price : 0;
+          }
+          if (rawProb <= 0) continue;
+          if (!h2hProbs.has(k)) h2hProbs.set(k, []);
+          h2hProbs.get(k)!.push(rawProb);
+        }
+      }
+      if (h2hProbs.size < 2) continue;
+      // Average raw probs across bookmakers, then normalize to remove vig
+      const entries = Array.from(h2hProbs.entries()).map(([name, probs]) => {
+        const avg = probs.reduce((a, b) => a + b, 0) / probs.length;
+        return { name, rawProb: avg };
+      });
+      const total = entries.reduce((s, e) => s + e.rawProb, 0);
+      if (total <= 0) continue;
+      for (const { name, rawProb } of entries) {
+        newMap.set(name, rawProb / total);
+      }
+    }
+    liveOddsMap = newMap;
+    console.log(`[autopilot] Live odds refreshed — ${newMap.size} teams`);
+  } catch (err) {
+    console.warn(`[autopilot] Live odds refresh failed: ${(err as Error).message}`);
+  }
+}
+
+/**
+ * Returns the sportsbook fair probability for the YES outcome of market m.
+ * Uses pickTeam from crossEdge + the live odds map. Returns null if no match.
+ *
+ * Because modelConfidence is P(YES), we pick whichever interpretation
+ * (pickProb vs 1-pickProb) is closer to modelConfidence — this resolves
+ * whether the pick team is the YES or NO side without storing pickIsYes.
+ */
+function getLivePolyMid(m: ProcessedMarket): number | null {
+  if (!m.crossEdge?.pickTeam) return null;
+  const pickKey = m.crossEdge.pickTeam.toLowerCase();
+  const pickProb = liveOddsMap.get(pickKey);
+  if (pickProb == null) return null;
+  const modelPct = (m.crossEdge.modelConfidence ?? 50) / 100;
+  // Determine if pickTeam = YES side by which interpretation is closer to modelConfidence
+  const diffDirect = Math.abs(modelPct - pickProb);
+  const diffInverse = Math.abs(modelPct - (1 - pickProb));
+  return diffDirect <= diffInverse ? pickProb : 1 - pickProb;
+}
+
+// ---------------------------------------------------------------------------
+// ═══ Books-signal infrastructure (replaces Polymarket) ═══
+// ---------------------------------------------------------------------------
+
+interface OddsApiGameRest {
+  id?: string;
+  sport_key?: string;
+  home_team: string;
+  away_team: string;
+  commence_time?: string;
+  bookmakers?: {
+    key?: string;
+    markets?: {
+      key: string;
+      outcomes?: { name: string; price: number }[];
+    }[];
+  }[];
+}
+
+const TEAM_ALIAS: Record<string, string> = {
+  "manchester united": "man united", "manchester city": "man city",
+  "wolverhampton wanderers": "wolves", "nottingham forest": "nottingham",
+  "brighton & hove albion": "brighton", "west bromwich albion": "west brom",
+  "tottenham hotspur": "tottenham", "newcastle united": "newcastle",
+  "galatasaray sk": "galatasaray", "galatasaray a.s.": "galatasaray",
+  "liverpool fc": "liverpool", "real madrid cf": "real madrid",
+  "fc barcelona": "barcelona", "atletico de madrid": "atletico madrid",
+  "atletico madrid": "atletico", "club atletico de madrid": "atletico",
+  "borussia dortmund": "dortmund", "rb leipzig": "leipzig",
+  "paris saint-germain": "psg", "paris saint germain": "psg",
+  "internazionale": "inter milan", "fc internazionale": "inter milan",
+  "ac milan": "milan", "atalanta bc": "atalanta",
+  "newcastle united fc": "newcastle", "arsenal fc": "arsenal",
+  "chelsea fc": "chelsea", "aston villa": "aston villa",
+};
+
+function normalizeTeamName(raw: string): string {
+  const s = raw.toLowerCase().trim().replace(/\s+(fc|sc|cf|ac|afc|fk|nk|bk|rfc)\s*$/i, "");
+  return TEAM_ALIAS[s] ?? s;
+}
+
+function buildBooksMapRest(): { map: Map<string, number>; startTimes: Map<string, number> } {
+  const map = new Map<string, number>();
+  const startTimes = new Map<string, number>();
+  const oddsDataDir = path.resolve(process.cwd(), "data", "processed");
+  let files: string[];
+  try {
+    files = fs.readdirSync(oddsDataDir)
+      .filter(f => f.startsWith("latest-odds-api") && f.endsWith(".json"));
+  } catch { return { map, startTimes }; }
+
+  for (const file of files) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(path.join(oddsDataDir, file), "utf8")) as
+        { events?: OddsApiGameRest[] } | OddsApiGameRest[];
+      const games = Array.isArray(raw) ? raw : (raw as { events?: OddsApiGameRest[] }).events ?? [];
+
+      for (const game of games) {
+        const homeRaws: number[] = [];
+        const awayRaws: number[] = [];
+
+        for (const bm of game.bookmakers ?? []) {
+          const h2h = bm.markets?.find(m => m.key === "h2h");
+          if (!h2h) continue;
+          for (const outcome of h2h.outcomes ?? []) {
+            if (outcome.price <= 0) continue;
+            const raw = 1 / outcome.price;
+            if (outcome.name === game.home_team) homeRaws.push(raw);
+            else if (outcome.name === game.away_team) awayRaws.push(raw);
+          }
+        }
+
+        if (homeRaws.length === 0 && awayRaws.length === 0) continue;
+        const avg = (arr: number[]) => arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+        const homeAvg = avg(homeRaws);
+        const awayAvg = avg(awayRaws);
+        const total = homeAvg + awayAvg;
+        if (total <= 0) continue;
+
+        const hA = homeAvg / total;
+        const aA = awayAvg / total;
+        map.set(game.home_team.toLowerCase(), hA);
+        map.set(normalizeTeamName(game.home_team), hA);
+        map.set(game.away_team.toLowerCase(), aA);
+        map.set(normalizeTeamName(game.away_team), aA);
+
+        if (game.commence_time) {
+          const startMs = new Date(game.commence_time).getTime();
+          if (Number.isFinite(startMs)) {
+            for (const key of [
+              game.home_team.toLowerCase(), normalizeTeamName(game.home_team),
+              game.away_team.toLowerCase(), normalizeTeamName(game.away_team),
+            ]) {
+              startTimes.set(key, startMs);
+            }
+          }
+        }
+      }
+    } catch { /* bad file */ }
+  }
+  return { map, startTimes };
+}
+
+function fuzzyLookupProbRest(team: string, map: Map<string, number>): number | null {
+  const t = team.toLowerCase();
+  const tNorm = normalizeTeamName(team);
+
+  if (map.has(t)) return map.get(t)!;
+  if (map.has(tNorm)) return map.get(tNorm)!;
+
+  const teamWords = t.split(" ");
+  const lastWord = teamWords[teamWords.length - 1];
+
+  for (const [key, val] of map) {
+    if (key === tNorm || key.includes(tNorm) || tNorm.includes(key)) return val;
+    if (key.includes(t) || t.includes(key)) return val;
+    const keyWords = key.split(" ");
+    if (keyWords[keyWords.length - 1] === lastWord) return val;
+  }
+  return null;
+}
+
+function parseYesTeamRest(title: string, subtitle?: string): string | null {
+  if (subtitle?.trim()) return subtitle.trim();
+  const m1 = title.match(/will\s+(?:the\s+)?(.+?)\s+win/i);
+  if (m1) return m1[1].trim();
+  const m2 = title.match(/^(?:the\s+)?(.+?)\s+(?:at|vs\.?)\s+/i);
+  if (m2) return m2[1].trim();
+  return null;
+}
+
+let booksMapRest = new Map<string, number>();
+let booksStartTimeRest = new Map<string, number>();
+let lastBooksRefreshRest = 0;
+const BOOKS_REFRESH_INTERVAL_REST_MS = 60_000; // 60s rate limit
+
+function refreshBooksMapRest(): void {
+  const now = Date.now();
+  if (now - lastBooksRefreshRest < BOOKS_REFRESH_INTERVAL_REST_MS) return;
+  lastBooksRefreshRest = now;
+  const { map, startTimes } = buildBooksMapRest();
+  if (map.size > 0) {
+    booksMapRest = map;
+    booksStartTimeRest = startTimes;
+    console.log(`[autopilot] Books map refreshed — ${map.size} teams`);
+  }
+}
+
+function getLiveBooksProb(market: ProcessedMarket): number | null {
+  const yesTeam = parseYesTeamRest(market.title ?? "", (market as ProcessedMarket & { subtitle?: string }).subtitle ?? "");
+  if (!yesTeam) return null;
+  return fuzzyLookupProbRest(yesTeam, booksMapRest);
 }
 
 // ---------------------------------------------------------------------------
@@ -810,7 +1061,14 @@ function maybeRefreshModelData(): void {
       return;
     }
 
-    notifyDiscord("♻️ **MODEL REFRESHED** | latest-summary.json rebuilt (odds + free stats)");
+    const soccer = spawnSync("npm", ["run", "ingest:soccer"], {
+      stdio: "inherit", shell: true, timeout: 60_000, cwd: process.cwd(),
+    });
+    if (soccer.status !== 0) {
+      console.warn(`[autopilot] ingest:soccer exited ${soccer.status} (non-fatal)`);
+    }
+
+    notifyDiscord("♻️ **MODEL REFRESHED** | latest-summary.json rebuilt (odds + free stats + soccer)");
   } catch (err) {
     console.warn(`[autopilot] Model refresh failed: ${(err as Error).message}`);
   }
@@ -935,7 +1193,7 @@ async function managePendingEntries(
         });
         notifyDiscord(`✅ **ENTRY FILLED** | ${ticker}\nSide: **${entry.side.toUpperCase()}** @ $${toFixed4(entry.priceCents / 100)} | Leader: ${entry.leaderAtEntry} ${entry.directionAtEntry} | Slip EMA: ${(state.slippageEma * 100).toFixed(2)}%`);
       } else {
-        state.entryCooldowns[ticker] = Date.now();
+        state.entryCooldowns[gameKey(ticker)] = Date.now();
         toRemove.push(ticker);
         appendTrade({ ticker, side: entry.side, edgePct: entry.edgePct, status: "cancelled" });
         notifyDiscord(`❌ **ORDER CANCELLED** | ${ticker}`);
@@ -1040,7 +1298,7 @@ async function manageOpenPositions(
 // ---------------------------------------------------------------------------
 // Caps check (unchanged)
 // ---------------------------------------------------------------------------
-function checkCaps(state: AutopilotState, liveOrders: KalshiOrder[]): CapResult {
+function checkCaps(state: AutopilotState, liveOrders: KalshiOrder[], ticker?: string): CapResult {
   const now = Date.now();
   state.ordersInLastHour = state.ordersInLastHour.filter((ts) => now - new Date(ts).getTime() < 3_600_000);
   const totalExposureUsd =
@@ -1054,6 +1312,15 @@ function checkCaps(state: AutopilotState, liveOrders: KalshiOrder[]): CapResult 
   if (posCount >= MAX_OPEN_POSITIONS) reasons.push(`positions ${posCount}`);
   if (restCount >= MAX_RESTING_ORDERS) reasons.push(`resting ${restCount}`);
   if (trades1h >= MAX_ORDERS_PER_HOUR) reasons.push(`orders/hr ${trades1h}`);
+
+  if (ticker) {
+    const evKey = gameKey(ticker);
+    const eventExposure =
+      Object.values(state.openPositions).filter(p => gameKey(p.ticker) === evKey).reduce((s, p) => s + p.costUsd, 0) +
+      Object.values(state.pendingEntries).filter(p => gameKey(p.ticker) === evKey).reduce((s, p) => s + p.costUsd, 0);
+    if (eventExposure >= MAX_EVENT_EXPOSURE_USD) reasons.push(`event-exposure $${eventExposure.toFixed(2)}`);
+  }
+
   const slotsAvailable = Math.max(0, Math.min(MAX_OPEN_POSITIONS - posCount, MAX_RESTING_ORDERS - restCount, MAX_ORDERS_PER_HOUR - trades1h));
   return { canTrade: reasons.length === 0, reasons, slotsAvailable };
 }
@@ -1133,8 +1400,8 @@ function findOpportunities(
     const marketSpread = m.spread ?? (m.yesBid != null && m.yesAsk != null ? m.yesAsk - m.yesBid : null);
     const openInterest = m.openInterest ?? 0;
     const relaxedLiquidity = isRelaxedLiquidityTicker(m.ticker);
-    const maxSpread = relaxedLiquidity ? RELAXED_MAX_SPREAD_CENTS : 2;
-    const minOpenInterest = relaxedLiquidity ? RELAXED_MIN_OPEN_INTEREST : 50_000;
+    const maxSpread = relaxedLiquidity ? RELAXED_MAX_SPREAD_CENTS : parseInt(process.env.AUTOPILOT_MAX_SPREAD_CENTS ?? "12", 10);
+    const minOpenInterest = relaxedLiquidity ? RELAXED_MIN_OPEN_INTEREST : parseInt(process.env.AUTOPILOT_MIN_OPEN_INTEREST ?? "10000", 10);
     if (marketSpread == null || marketSpread > maxSpread || openInterest < minOpenInterest) {
       logRejection("depth_fail", {
         ticker: m.ticker,
@@ -1158,8 +1425,9 @@ function findOpportunities(
     const rawEdge      = Math.abs(m.crossEdge.gap) / 100;
     const kalshiPDec   = (priceCents ?? 50) / 100;
     const spreadDec    = (marketSpread) / 100;
-    const baseDepthUsd = m.liquidity ?? (m.openInterest ?? 0) * 0.001;
+    const baseDepthUsd = m.liquidity || (m.openInterest ?? 0) * 0.001;
     const depthUsd     = relaxedLiquidity ? Math.max(baseDepthUsd, RELAXED_DEPTH_USD_FLOOR) : baseDepthUsd;
+    if (m.ticker.includes("ALCN") || m.ticker.includes("ALST")) console.log(`[depth-dbg] ${m.ticker} liq=${m.liquidity} OI=${m.openInterest} base=${baseDepthUsd.toFixed(2)} depth=${depthUsd.toFixed(2)} relax=${relaxedLiquidity}`);
     const orderSizeUsd = rawEdge * 100 >= HIGH_EDGE_THRESHOLD_PCT ? HIGH_EDGE_COST_USD : DEFAULT_COST_USD;
 
     const netEdge = computeNetEdge(
@@ -1187,41 +1455,41 @@ function findOpportunities(
       continue;
     }
 
-    // ═══ NEW: Leader detection ═══
-    const polyPrices = getPolyPrices(m.ticker);
-    const kalshiPrices = getKalshiPrices(m.ticker);
+    // ═══ Gap-based entry: trade directly on model vs Kalshi divergence ═══
+    // Static sportsbook pre-game lines don't move in real-time, so leader
+    // detection never fires. The gap (modelConfidence - kalshiImplied) is
+    // already the signal — no poly movement required.
+    const gap = (m.crossEdge.gap ?? 0) / 100;
+    const gapDirection: "UP" | "DOWN" = gap > 0 ? "UP" : "DOWN";
 
-    // Need at least 10 price points for reliable detection
-    if (polyPrices.length < 10 || kalshiPrices.length < 10) continue;
-
-    const leaderResult = detectLeader(polyPrices, kalshiPrices, 8);
-
-    // ═══ CRITICAL FILTER: Only trade when POLY leads ═══
-    // Backtest: POLY-leads = 368W-33L (+$205K), KALSHI-leads = 57W-397L (-$133K)
-    if (leaderResult.leader !== "POLY") {
-      continue;
-    }
-
-    // Must have confidence >= 0.25
-    if (leaderResult.confidence < 0.25) continue;
-
-    // Must have confirmed momentum
-    if (!leaderResult.momentumConfirmed) continue;
-
-    // Direction must not be flat
-    if (leaderResult.direction === "FLAT") continue;
-
-    // ═══ NEW: Per-market loss limit ═══
+    // ═══ Per-market loss limit ═══
     const marketPnl = state.marketCumulativePnl[m.ticker] ?? 0;
     if (marketPnl <= MARKET_LOSS_LIMIT_USD) {
       console.log(`[autopilot] ${m.ticker} skipped — market loss limit ($${marketPnl.toFixed(2)} <= $${MARKET_LOSS_LIMIT_USD})`);
       continue;
     }
 
-    // Gap between markets must exist in the right direction for the leader's move
-    const gap = (m.crossEdge.gap ?? 0) / 100; // convert from pct to decimal
-    if (leaderResult.direction === "UP" && gap <= 0.012) continue;  // Poly up, Kalshi lagging = gap > 0
-    if (leaderResult.direction === "DOWN" && gap >= -0.012) continue; // Poly down, Kalshi lagging = gap < 0
+    // ═══ Event-level exposure cap ═══
+    const evKey = gameKey(m.ticker);
+    const eventExposure =
+      Object.values(state.openPositions).filter(p => gameKey(p.ticker) === evKey).reduce((s, p) => s + p.costUsd, 0) +
+      Object.values(state.pendingEntries).filter(p => gameKey(p.ticker) === evKey).reduce((s, p) => s + p.costUsd, 0);
+    if (eventExposure >= MAX_EVENT_EXPOSURE_USD) {
+      console.log(`[autopilot] ${m.ticker} skipped — event exposure $${eventExposure.toFixed(2)} >= $${MAX_EVENT_EXPOSURE_USD}`);
+      continue;
+    }
+
+    // Pre-game cutoff disabled — live betting mode
+
+    // Synthesise a LeaderDetectionResult so downstream (Kelly, logging) still works
+    const leaderResult: LeaderDetectionResult = {
+      leader: "BOOKS",
+      confidence: Math.min(1.0, Math.abs(gap) * 5),   // 10% gap → 0.50, 20% → 1.0
+      direction: gapDirection,
+      magnitude: Math.abs(gap),
+      momentumConfirmed: true,
+      momentumStrength: Math.min(1.0, Math.abs(gap) * 4),
+    };
 
     opportunities.push({ market: m, leaderResult, netEdge });
   }
@@ -1320,7 +1588,7 @@ async function placeEntryOrders(
     if (liveDedupeKeys.has(dedupeKey)) continue;
 
     const ENTRY_COOLDOWN_MS = 30 * 60 * 1000;
-    const lastCancel = state.entryCooldowns[market.ticker] ?? 0;
+    const lastCancel = state.entryCooldowns[gameKey(market.ticker)] ?? 0;
     if (Date.now() - lastCancel < ENTRY_COOLDOWN_MS) continue;
 
     const clientOrderId = uuidv4();
@@ -1466,10 +1734,13 @@ async function main(): Promise<void> {
     const markets = loadMarkets();
 
     // ═══ NEW: Record prices for every market every cycle for leader detection ═══
+    refreshBooksMapRest();
     for (const m of markets) {
       if (m.crossEdge) {
-        // Use model confidence as proxy for Poly price (model tracks Poly)
-        const polyMid = (m.crossEdge.modelConfidence ?? m.impliedProbYes ?? 50) / 100;
+        // Prefer live sportsbook odds as booksMid; fall back to static modelConfidence
+        const liveMid = getLiveBooksProb(m);
+        if (liveMid === null) continue; // skip if no books match
+        const polyMid = liveMid;
         const kalshiMid = (m.crossEdge.kalshiImplied ?? m.impliedProbYes ?? 50) / 100;
         recordPrice(m.ticker, polyMid, kalshiMid);
       }

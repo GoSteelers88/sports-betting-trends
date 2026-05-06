@@ -57,14 +57,15 @@ type PropRow = {
   minutesMean: number | null;
   minutesStd: number | null;
   minutesPDNP: number | null;
+  sport: "NBA" | "MLB";
 };
 
 type Output = {
   generatedAt: string;
-  sport: "NBA";
+  sport: string;
   available: boolean;
   note: string | null;
-  marketsAttempted: MarketKey[];
+  marketsAttempted: string[];
   marketsAvailable: string[];
   eventsConsidered: number;
   eventsWithProps: number;
@@ -172,6 +173,53 @@ type PrizePicksProp = {
   teamAbbrev: string | null;
   line: number;
 };
+
+// ---------- MLB ----------
+
+const MLB_MARKET_KEYS = [
+  "batter_hits",
+  "batter_total_bases",
+  "batter_home_runs",
+  "batter_rbis",
+  "pitcher_strikeouts",
+] as const;
+type MlbMarketKey = (typeof MLB_MARKET_KEYS)[number];
+
+type MlbPlayerGame = {
+  date: string;
+  team: string;
+  opponent: string;
+  homeAway: "home" | "away" | "unknown";
+  role: "batter" | "pitcher";
+  hits: number | null;
+  homeRuns: number | null;
+  rbis: number | null;
+  totalBases: number | null;
+  atBats: number | null;
+  pitcherStrikeouts: number | null;
+  inningsPitched: number | null;
+};
+
+function mlbMarketLabel(key: MlbMarketKey) {
+  const map: Record<MlbMarketKey, string> = {
+    batter_hits: "Hits",
+    batter_total_bases: "Total Bases",
+    batter_home_runs: "Home Runs",
+    batter_rbis: "RBIs",
+    pitcher_strikeouts: "Pitcher Strikeouts",
+  };
+  return map[key];
+}
+
+function pickMlbStat(game: MlbPlayerGame, market: MlbMarketKey): number | null {
+  switch (market) {
+    case "batter_hits": return game.hits;
+    case "batter_total_bases": return game.totalBases;
+    case "batter_home_runs": return game.homeRuns;
+    case "batter_rbis": return game.rbis;
+    case "pitcher_strikeouts": return game.pitcherStrikeouts;
+  }
+}
 
 async function fetchPrizePicksProps(): Promise<PrizePicksProp[]> {
   try {
@@ -332,6 +380,185 @@ async function fetchEventProps(apiKey: string, eventId: string) {
   if (res.status === 401 || res.status === 403 || res.status === 422 || res.status === 404) return { data: null as OddsEvent | null, status: res.status };
   if (!res.ok) return { data: null as OddsEvent | null, status: res.status };
   return { data: (await res.json()) as OddsEvent, status: res.status };
+}
+
+async function fetchMlbScoreboard(dateYmd: string) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?limit=500&dates=${dateYmd}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+  if (!res.ok) return [] as EspnScoreboardEvent[];
+  const data = (await res.json()) as { events?: EspnScoreboardEvent[] };
+  return data.events ?? [];
+}
+
+async function fetchMlbSummary(eventId: string) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=${eventId}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+  if (!res.ok) return null;
+  return (await res.json()) as EspnSummary;
+}
+
+async function fetchMlbEventProps(apiKey: string, eventId: string) {
+  const url = new URL(`https://api.the-odds-api.com/v4/sports/baseball_mlb/events/${eventId}/odds`);
+  url.searchParams.set("apiKey", apiKey);
+  url.searchParams.set("regions", "us");
+  url.searchParams.set("oddsFormat", "american");
+  url.searchParams.set("markets", MLB_MARKET_KEYS.join(","));
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch(url.toString(), { signal: AbortSignal.timeout(20000) });
+    if (res.status === 429) {
+      const wait = (attempt + 1) * 3000;
+      console.warn(`[props] MLB event ${eventId} rate limited — retrying in ${wait / 1000}s`);
+      await new Promise((r) => setTimeout(r, wait));
+      continue;
+    }
+    if (res.status === 401 || res.status === 403 || res.status === 422 || res.status === 404) return { data: null as OddsEvent | null, status: res.status };
+    if (!res.ok) return { data: null as OddsEvent | null, status: res.status };
+    return { data: (await res.json()) as OddsEvent, status: res.status };
+  }
+  return { data: null as OddsEvent | null, status: 429 };
+}
+
+// MLB regular season start — spring training data is not representative
+const MLB_REGULAR_SEASON_START = new Date("2026-03-26");
+
+async function buildMlbPlayerHistory(daysBack = 40) {
+  const map = new Map<string, MlbPlayerGame[]>();
+  const today = new Date();
+
+  for (let i = 1; i <= daysBack; i += 1) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+    if (d < MLB_REGULAR_SEASON_START) continue; // skip spring training
+    const events = await fetchMlbScoreboard(ymd);
+    const completed = events.filter((e) => e.competitions?.[0]?.status?.type?.completed);
+
+    const summaries = await Promise.allSettled(completed.map((e) => fetchMlbSummary(e.id)));
+    for (let idx = 0; idx < completed.length; idx += 1) {
+      const event = completed[idx];
+      const summary = summaries[idx];
+      if (summary.status !== "fulfilled" || !summary.value) continue;
+
+      const comp = event.competitions?.[0];
+      const home = comp?.competitors?.find((c) => c.homeAway === "home")?.team?.displayName ?? "";
+      const away = comp?.competitors?.find((c) => c.homeAway === "away")?.team?.displayName ?? "";
+
+      const teams = summary.value.boxscore?.players ?? [];
+      for (const t of teams) {
+        const teamName = t.team?.displayName ?? "";
+        const homeAway: "home" | "away" | "unknown" =
+          teamName && home && normalizeName(teamName) === normalizeName(home) ? "home"
+          : teamName && away && normalizeName(teamName) === normalizeName(away) ? "away"
+          : "unknown";
+        const opponent = homeAway === "home" ? away : homeAway === "away" ? home : "";
+
+        for (const statGroup of t.statistics ?? []) {
+          const keys = statGroup.keys ?? [];
+          // ESPN MLB boxscore uses "fullInnings.partInnings" for IP, not "ip"/"inningsPitched"
+          const isPitching = keys.includes("ip") || keys.includes("inningsPitched") || keys.includes("fullInnings.partInnings");
+
+          const idxOf = (name: string, alt?: string) => {
+            const i1 = keys.indexOf(name);
+            if (i1 >= 0) return i1;
+            return alt ? keys.indexOf(alt) : -1;
+          };
+
+          if (isPitching) {
+            const ipIdx = keys.includes("fullInnings.partInnings")
+              ? keys.indexOf("fullInnings.partInnings")
+              : idxOf("ip", "inningsPitched");
+            const soIdx = idxOf("strikeouts", "k") >= 0 ? idxOf("strikeouts", "k") : keys.indexOf("so");
+            const erIdx = idxOf("er", "earnedRuns");
+            for (const a of statGroup.athletes ?? []) {
+              const player = a.athlete?.displayName;
+              if (!player) continue;
+              const stats = a.stats ?? [];
+              const ip = ipIdx >= 0 ? toNumber(stats[ipIdx]) : null;
+              const ks = soIdx >= 0 ? toNumber(stats[soIdx]) : null;
+              if (ip == null && ks == null) continue;
+              const key = normalizeName(player);
+              const row: MlbPlayerGame = {
+                date: event.date,
+                team: teamName,
+                opponent,
+                homeAway,
+                role: "pitcher",
+                hits: null,
+                homeRuns: null,
+                rbis: null,
+                totalBases: null,
+                atBats: null,
+                pitcherStrikeouts: ks,
+                inningsPitched: ip,
+              };
+              if (!map.has(key)) map.set(key, []);
+              map.get(key)!.push(row);
+            }
+          } else {
+            const abIdx = idxOf("ab", "atBats");
+            const hIdx = idxOf("h", "hits");
+            const hrIdx = idxOf("hr", "homeRuns");
+            const rbiIdx = idxOf("rbi", "rbis");
+            const tbIdx = idxOf("tb", "totalBases");
+            for (const a of statGroup.athletes ?? []) {
+              const player = a.athlete?.displayName;
+              if (!player) continue;
+              const stats = a.stats ?? [];
+              const ab = abIdx >= 0 ? toNumber(stats[abIdx]) : null;
+              const h = hIdx >= 0 ? toNumber(stats[hIdx]) : null;
+              const hr = hrIdx >= 0 ? toNumber(stats[hrIdx]) : null;
+              const rbi = rbiIdx >= 0 ? toNumber(stats[rbiIdx]) : null;
+              const tb = tbIdx >= 0 ? toNumber(stats[tbIdx]) : null;
+              // Compute total bases if not directly available: H + HR (rough: singles=1, HRs=4, assume no extra)
+              const computedTb = tb ?? (h != null && hr != null ? h + hr * 3 : null);
+              if (ab == null && h == null) continue;
+              const key = normalizeName(player);
+              const row: MlbPlayerGame = {
+                date: event.date,
+                team: teamName,
+                opponent,
+                homeAway,
+                role: "batter",
+                hits: h,
+                homeRuns: hr,
+                rbis: rbi,
+                totalBases: computedTb,
+                atBats: ab,
+                pitcherStrikeouts: null,
+                inningsPitched: null,
+              };
+              if (!map.has(key)) map.set(key, []);
+              map.get(key)!.push(row);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (const rows of map.values()) rows.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return map;
+}
+
+function buildMlbProjection(rows: MlbPlayerGame[], market: MlbMarketKey) {
+  const values = rows
+    .map((r) => pickMlbStat(r, market))
+    .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+  const l5 = values.slice(0, 5);
+  const l10 = values.slice(0, 10);
+  const season = values;
+  const l5Avg = avg(l5);
+  const l10Avg = avg(l10);
+  const seasonAvg = avg(season);
+  const blendedBase = (l5Avg ?? seasonAvg ?? 0) * 0.55 + (l10Avg ?? seasonAvg ?? 0) * 0.25 + (seasonAvg ?? 0) * 0.20;
+  return {
+    projection: blendedBase,
+    l5Avg,
+    l10Avg,
+    seasonAvg,
+    sample: season.length,
+    stdDev: std(season),
+  };
 }
 
 function pickStat(game: PlayerGame, market: MarketKey) {
@@ -872,6 +1099,7 @@ async function main() {
       market: item.market,
       marketLabel: marketLabel(item.market),
       category: marketCategory(item.market),
+      sport: "NBA" as const,
       line: Number(consensusLine.toFixed(1)),
       overPrice: item.overPrices.length ? Math.round(Math.max(...item.overPrices)) : null,
       underPrice: item.underPrices.length ? Math.round(Math.max(...item.underPrices)) : null,
@@ -897,6 +1125,127 @@ async function main() {
     });
   }
 
+  // ---- MLB Props ----
+  const mlbOddsPath = path.join(outDir, "latest-odds-api-baseball_mlb.json");
+  if (fs.existsSync(mlbOddsPath)) {
+    const mlbStored = JSON.parse(fs.readFileSync(mlbOddsPath, "utf-8")) as StoredOdds;
+    const mlbEvents = (mlbStored.events ?? []).filter((e) => isTodayEt(e.commence_time));
+    if (mlbEvents.length > 0) {
+      console.log(`[props] MLB: ${mlbEvents.length} games today — building player history...`);
+      const mlbHistory = await buildMlbPlayerHistory(40);
+      console.log(`[props] MLB history: ${mlbHistory.size} players`);
+
+      for (const event of mlbEvents) {
+        const { data, status } = await fetchMlbEventProps(apiKey, event.id);
+        if (!data) {
+          console.warn(`[props] MLB event ${event.id} props returned status ${status}`);
+          continue;
+        }
+
+        const byProp = new Map<string, {
+          player: string;
+          market: MlbMarketKey;
+          gameDate: string;
+          lines: number[];
+          overPrices: number[];
+          underPrices: number[];
+        }>();
+
+        for (const book of data.bookmakers ?? []) {
+          for (const market of book.markets ?? []) {
+            if (!market.key || !(MLB_MARKET_KEYS as readonly string[]).includes(market.key)) continue;
+            const mk = market.key as MlbMarketKey;
+            for (const outcome of market.outcomes ?? []) {
+              const player = outcome.description?.trim();
+              if (!player || outcome.point == null) continue;
+              const key = `${normalizeName(player)}|${mk}`;
+              if (!byProp.has(key)) {
+                byProp.set(key, { player, market: mk, gameDate: event.commence_time, lines: [], overPrices: [], underPrices: [] });
+              }
+              const p = byProp.get(key)!;
+              p.lines.push(outcome.point);
+              if (outcome.name === "Over" && outcome.price != null) p.overPrices.push(outcome.price);
+              if (outcome.name === "Under" && outcome.price != null) p.underPrices.push(outcome.price);
+            }
+          }
+        }
+
+        for (const item of byProp.values()) {
+          const playerKey = normalizeName(item.player);
+          const playerGames = mlbHistory.get(playerKey) ?? [];
+          const proj = buildMlbProjection(playerGames, item.market);
+          const consensusLine = avg(item.lines) ?? item.lines[0] ?? 0;
+          const edge = proj.projection - consensusLine;
+
+          const overProbRaw = americanToProb(avg(item.overPrices) ?? null);
+          const underProbRaw = americanToProb(avg(item.underPrices) ?? null);
+          const vigDenom = (overProbRaw ?? 0) + (underProbRaw ?? 0);
+          const overNoVig = vigDenom > 0 ? (overProbRaw ?? 0) / vigDenom : null;
+          const underNoVig = vigDenom > 0 ? (underProbRaw ?? 0) / vigDenom : null;
+
+          const stdev = proj.stdDev ?? 1.5;
+          const zEdge = Math.abs(edge) / Math.max(0.5, stdev);
+          const sampleBoost = Math.log10(Math.max(1, proj.sample + 1)) * 10;
+          const sparsePenalty = proj.sample < 5 ? 18 : proj.sample < 10 ? 10 : 0;
+          const confidence = Math.round(clamp(38 + zEdge * 14 + sampleBoost - sparsePenalty, 28, 80));
+          const dataQuality: "high" | "medium" | "low" = proj.sample >= 15 ? "high" : proj.sample >= 8 ? "medium" : "low";
+          const cappedConfidence = dataQuality === "low" ? Math.min(confidence, 58) : dataQuality === "medium" ? Math.min(confidence, 72) : confidence;
+
+          const modelPOver = edge >= 0 ? 0.54 : 0.46;
+          const modelPUnder = 1 - modelPOver;
+          const pickSide: PickSide = modelPOver >= modelPUnder ? "over" : "under";
+
+          const rationale: string[] = [
+            `Form windows: L5 ${proj.l5Avg?.toFixed(2) ?? "n/a"}, L10 ${proj.l10Avg?.toFixed(2) ?? "n/a"}, season ${proj.seasonAvg?.toFixed(2) ?? "n/a"}`,
+            `Consensus line ${consensusLine.toFixed(1)} across ${item.lines.length} books; projection ${proj.projection.toFixed(2)} (${edge >= 0 ? "+" : ""}${edge.toFixed(2)} edge)`,
+            overNoVig != null && underNoVig != null
+              ? `No-vig implied probs: Over ${(overNoVig * 100).toFixed(1)}% / Under ${(underNoVig * 100).toFixed(1)}%`
+              : "No-vig probabilities unavailable",
+            `Sample: ${proj.sample} games. Model: heuristic (MLB — no distribution fit)`,
+          ];
+          if (dataQuality !== "high") rationale.push(`Guardrail: ${dataQuality} sample quality → confidence capped.`);
+
+          rows.push({
+            player: item.player,
+            team: playerGames[0]?.team ?? null,
+            opponent: event.away_team === playerGames[0]?.team ? event.home_team : event.home_team === playerGames[0]?.team ? event.away_team : null,
+            market: item.market as unknown as MarketKey,
+            marketLabel: mlbMarketLabel(item.market),
+            category: "core",
+            sport: "MLB" as const,
+            line: Number(consensusLine.toFixed(1)),
+            overPrice: item.overPrices.length ? Math.round(Math.max(...item.overPrices)) : null,
+            underPrice: item.underPrices.length ? Math.round(Math.max(...item.underPrices)) : null,
+            consensusLine: Number(consensusLine.toFixed(2)),
+            impliedOverProbNoVig: overNoVig != null ? Number(overNoVig.toFixed(4)) : null,
+            impliedUnderProbNoVig: underNoVig != null ? Number(underNoVig.toFixed(4)) : null,
+            pickSide,
+            confidence: cappedConfidence,
+            rationaleSignals: rationale,
+            modelProjection: Number(proj.projection.toFixed(2)),
+            edgeVsLine: Number(edge.toFixed(2)),
+            dataQuality,
+            modelMean: Number(proj.projection.toFixed(3)),
+            modelStd: Number((proj.stdDev ?? 1.5).toFixed(3)),
+            modelPOver: Number(modelPOver.toFixed(4)),
+            modelPUnder: Number(modelPUnder.toFixed(4)),
+            expectedValueOver: overNoVig != null && overNoVig > 0 && item.overPrices.length > 0 ? Number((modelPOver - overNoVig).toFixed(4)) : 0,
+            expectedValueUnder: underNoVig != null && underNoVig > 0 && item.underPrices.length > 0 ? Number((modelPUnder - underNoVig).toFixed(4)) : 0,
+            distributionFamily: "heuristic-mlb",
+            minutesMean: null,
+            minutesStd: null,
+            minutesPDNP: null,
+          });
+        }
+      }
+      console.log(`[props] MLB: added ${rows.filter(r => r.sport === "MLB").length} prop rows`);
+    } else {
+      console.log("[props] MLB: no games today in odds feed");
+    }
+  } else {
+    console.log("[props] MLB: no odds file found — skipping");
+  }
+
   // Rank by EV (primary) → data quality (secondary) → confidence (tertiary)
   const ranked = rows.sort((a, b) => {
     const evA = Math.max(a.expectedValueOver, a.expectedValueUnder);
@@ -910,10 +1259,10 @@ async function main() {
     return `${a.player}-${a.market}`.localeCompare(`${b.player}-${b.market}`);
   });
 
-  // Deduplicate: one prop per player (best rank wins)
+  // Deduplicate: one prop per player per sport (best rank wins)
   const seenPlayers = new Set<string>();
   const deduped = ranked.filter((r) => {
-    const key = normalizeName(r.player);
+    const key = `${r.sport}|${normalizeName(r.player)}`;
     if (seenPlayers.has(key)) return false;
     seenPlayers.add(key);
     return true;
@@ -945,17 +1294,20 @@ async function main() {
 
   const available = ranked.length > 0;
   const prizePicksUsed = accessDenied > 0 && ranked.length > 0;
+  const hasNba = ranked.some((r) => r.sport === "NBA");
+  const hasMlb = ranked.some((r) => r.sport === "MLB");
+  const sportLabel = hasNba && hasMlb ? "MULTI" : hasMlb ? "MLB" : "NBA";
   const note = !available
     ? accessDenied > 0
       ? "Player prop markets unavailable — The Odds API plan restriction and PrizePicks fallback returned no data."
-      : "No NBA player props returned for today."
+      : "No player props returned for today."
     : prizePicksUsed
-      ? "Lines sourced from PrizePicks (Odds API plan does not include prop markets). No vig prices — model edge only."
+      ? "NBA lines sourced from PrizePicks (Odds API plan does not include prop markets). No vig prices — model edge only."
       : null;
 
   const output: Output = {
     generatedAt: new Date().toISOString(),
-    sport: "NBA",
+    sport: sportLabel,
     available,
     note,
     marketsAttempted: [...MARKET_KEYS],

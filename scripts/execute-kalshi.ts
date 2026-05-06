@@ -227,9 +227,10 @@ export async function getBalance(): Promise<KalshiBalance> {
 
 export async function getPositions(): Promise<KalshiPosition[]> {
   const data = (await kalshiFetch("GET", "/portfolio/positions")) as {
-    positions: KalshiPosition[];
+    positions?: KalshiPosition[];
+    market_positions?: KalshiPosition[];
   };
-  return data.positions ?? [];
+  return data.market_positions ?? data.positions ?? [];
 }
 
 export async function getOrders(status = "resting"): Promise<KalshiOrder[]> {

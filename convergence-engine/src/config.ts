@@ -59,4 +59,21 @@ export const config = {
     wVolume: 0.20,
     minConfidence: 0.4,
   },
+
+  // Phase 1: Net executable edge scoring
+  // Override minNetEdge at runtime via AUTOPILOT_NET_EDGE_THRESHOLD env var (autopilot only).
+  netEdge: {
+    /** Minimum net_edge required to open a trade (default 0.03 = 3%) */
+    minNetEdge: 0.03,
+    /** Kalshi profit fee rate applied to winning trades */
+    feeDragRate: 0.07,
+    /** Edge reduction per ms of execution latency (0.2 bp/ms) */
+    latencyRiskPerMs: 0.000002,
+    /** Base adverse-selection cost for resting orders (0.2%) */
+    cancelRiskBase: 0.002,
+    /** Assumed API round-trip latency in ms */
+    defaultLatencyMs: 200,
+    /** Historical resting-order cancel rate (0–1) */
+    defaultCancelRate: 0.15,
+  },
 };

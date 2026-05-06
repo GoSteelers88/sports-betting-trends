@@ -8,7 +8,7 @@ Sources:
 Outputs:
   data/processed/scraped-consensus.json
 
-Run: python scripts/python/scrape_consensus.py [--league nba|ncaab|nhl|epl|all] [--dry-run]
+Run: python scripts/python/scrape_consensus.py [--league nba|ncaab|nhl|epl|mlb|all] [--dry-run]
 """
 
 import json
@@ -28,6 +28,7 @@ LEAGUES = {
     "ncaab": {"label": "NCAAB", "slug": "ncaab"},
     "nhl":   {"label": "NHL",   "slug": "nhl"},
     "epl":   {"label": "EPL",   "slug": "soccer", "optional": True},
+    "mlb":   {"label": "MLB",   "slug": "mlb", "optional": True},
 }
 
 SPREAD_URL = "https://contests.covers.com/consensus/topconsensus/{slug}/overall"
@@ -264,7 +265,7 @@ def scrape_league(slug: str, label: str, dry_run: bool = False, optional: bool =
 
 def main():
     parser = argparse.ArgumentParser(description="Scrape public betting consensus from covers.com")
-    parser.add_argument("--league", choices=["nba", "ncaab", "nhl", "epl", "all"], default="all")
+    parser.add_argument("--league", choices=["nba", "ncaab", "nhl", "epl", "mlb", "all"], default="all")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 

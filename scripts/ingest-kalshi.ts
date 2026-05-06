@@ -831,6 +831,21 @@ const TR_API_BASE_INGEST = "https://therundown.io/api/v2";
 const TR_SPORT_IDS_INGEST = [1, 2, 3, 4, 5, 6, 10, 11, 14, 15, 16, 33];
 // 1=NCAAF, 2=NFL, 3=MLB, 4=NBA, 5=NCAAB, 6=NHL, 10=MLS, 11=EPL, 14=La Liga, 15=Serie A, 16=UCL, 33=Europa
 
+const ODDS_API_SPORT_TO_TR: Record<string, number> = {
+  americanfootball_ncaaf: 1,
+  americanfootball_nfl: 2,
+  baseball_mlb: 3,
+  basketball_nba: 4,
+  basketball_ncaab: 5,
+  icehockey_nhl: 6,
+  soccer_usa_mls: 10,
+  soccer_epl: 11,
+  soccer_spain_la_liga: 14,
+  soccer_italy_serie_a: 15,
+  soccer_uefa_champs_league: 16,
+  soccer_uefa_europa_league: 33,
+};
+
 interface TRIngestParticipant {
   id: number;
   name: string;
@@ -846,6 +861,31 @@ interface TRIngestEvent {
   event_date?: string;
   teams?: { is_home?: boolean; name?: string }[];
   markets: TRIngestMarket[];
+}
+
+interface OddsApiOutcome {
+  name: string;
+  price: number;
+}
+
+interface OddsApiMarket {
+  key: string;
+  outcomes: OddsApiOutcome[];
+}
+
+interface OddsApiBookmaker {
+  key: string;
+  title: string;
+  markets: OddsApiMarket[];
+}
+
+interface OddsApiEvent {
+  id: string;
+  sport_key: string;
+  commence_time: string;
+  home_team: string;
+  away_team: string;
+  bookmakers?: OddsApiBookmaker[];
 }
 
 interface TRGameOdds {
@@ -886,6 +926,28 @@ function trNormalize(raw: string): string {
   let s = raw.toLowerCase().trim().replace(/\s+(fc|sc|cf|ac|afc|fk|nk|bk|rfc)\s*$/i, "");
   s = s.replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
   return TR_TEAM_ALIAS_MAP[s] ?? s;
+}
+
+function indexTeamVariants(
+  map: Map<string, PinnacleEntry>,
+  teamName: string,
+  sportId: number,
+  game: TRGameOdds,
+  isHome: boolean,
+): void {
+  const norm = trNormalize(teamName);
+  const words = norm.split(" ");
+  const last = words.at(-1) ?? "";
+  const first2 = words.slice(0, 2).join(" ");
+  const schoolName = words.length > 1 ? words.slice(0, -1).join(" ") : norm;
+  const rawKeys = new Set<string>([norm, last, first2, schoolName, teamName.toLowerCase()]);
+  if (norm.includes("state")) {
+    rawKeys.add(norm.replace(/\bstate\b/g, "st"));
+    rawKeys.add(schoolName.replace(/\bstate\b/g, "st"));
+  }
+  for (const key of rawKeys) {
+    if (key.length > 2) map.set(`${key}:${sportId}`, { game, isHomeTeam: isHome });
+  }
 }
 
 // Kalshi uses short abbreviations for some teams that don't match TR's full names.
@@ -1037,26 +1099,8 @@ async function loadPinnacleOdds(): Promise<Map<string, PinnacleEntry>> {
           sportId,
         };
 
-        const indexTeam = (teamName: string, isHome: boolean): void => {
-          const norm = trNormalize(teamName);
-          const words = norm.split(" ");
-          const last = words.at(-1) ?? "";
-          const first2 = words.slice(0, 2).join(" ");
-          // School name without mascot (e.g. "Massachusetts Minutemen" → "massachusetts")
-          const schoolName = words.length > 1 ? words.slice(0, -1).join(" ") : norm;
-          const rawKeys = new Set<string>([norm, last, first2, schoolName, teamName.toLowerCase()]);
-          // Also index "State" variants as "St" (Kalshi abbreviates e.g. "Ohio St." → "ohio st")
-          if (norm.includes("state")) {
-            rawKeys.add(norm.replace(/\bstate\b/g, "st"));
-            rawKeys.add(schoolName.replace(/\bstate\b/g, "st"));
-          }
-          // Key as "name:sportId" to prevent cross-sport collisions (e.g. Minnesota NBA vs NCAAB)
-          for (const key of rawKeys) {
-            if (key.length > 2) pinnacleMap.set(`${key}:${sportId}`, { game, isHomeTeam: isHome });
-          }
-        };
-        indexTeam(homeP.name, true);
-        indexTeam(awayP.name, false);
+        indexTeamVariants(pinnacleMap, homeP.name, sportId, game, true);
+        indexTeamVariants(pinnacleMap, awayP.name, sportId, game, false);
         sportGames++;
       }
 
@@ -1070,7 +1114,82 @@ async function loadPinnacleOdds(): Promise<Map<string, PinnacleEntry>> {
   }
 
   console.log(`  [TR] Pinnacle loaded: ${totalGames} games | ${pinnacleMap.size} team variants`);
+  if (totalGames === 0 || pinnacleMap.size === 0) {
+    const fallback = loadOddsApiFallback();
+    if (fallback.size > 0) {
+      console.log(`  [odds-api] Using fallback odds: ${fallback.size} team variants`);
+      return fallback;
+    }
+  }
   return pinnacleMap;
+}
+
+function loadOddsApiFallback(): Map<string, PinnacleEntry> {
+  const map = new Map<string, PinnacleEntry>();
+  const oddsPath = path.join(process.cwd(), "data", "processed", "latest-odds-api.json");
+  if (!fs.existsSync(oddsPath)) return map;
+
+  try {
+    const raw = JSON.parse(fs.readFileSync(oddsPath, "utf-8")) as { events?: OddsApiEvent[] };
+    const events = raw.events ?? [];
+    let usedEvents = 0;
+
+    for (const ev of events) {
+      const sportId = ODDS_API_SPORT_TO_TR[ev.sport_key];
+      if (!sportId) continue;
+      if (!ev.home_team || !ev.away_team) continue;
+
+      const homeNorm = trNormalize(ev.home_team);
+      const awayNorm = trNormalize(ev.away_team);
+      const probPairs: { home: number; away: number }[] = [];
+
+      for (const book of ev.bookmakers ?? []) {
+        const h2h = book.markets?.find((m) => m.key === "h2h");
+        if (!h2h) continue;
+        const findOutcome = (team: string) =>
+          h2h.outcomes.find((o) => trNormalize(o.name) === trNormalize(team)) ??
+          h2h.outcomes.find((o) => o.name.toLowerCase() === team.toLowerCase());
+        const homeOutcome = findOutcome(ev.home_team) ?? h2h.outcomes.at(0);
+        const awayOutcome = findOutcome(ev.away_team) ?? h2h.outcomes.at(1);
+        if (!homeOutcome || !awayOutcome) continue;
+
+        const homeImp = trAmericanToImplied(homeOutcome.price);
+        const awayImp = trAmericanToImplied(awayOutcome.price);
+        const total = homeImp + awayImp;
+        if (total <= 0) continue;
+
+        probPairs.push({
+          home: (homeImp / total) * 100,
+          away: (awayImp / total) * 100,
+        });
+      }
+
+      if (!probPairs.length) continue;
+
+      const homeProb = probPairs.reduce((s, v) => s + v.home, 0) / probPairs.length;
+      const awayProb = probPairs.reduce((s, v) => s + v.away, 0) / probPairs.length;
+      const game: TRGameOdds = {
+        homeTeam: ev.home_team,
+        awayTeam: ev.away_team,
+        homeProb,
+        awayProb,
+        commenceTime: ev.commence_time,
+        sportId,
+      };
+
+      indexTeamVariants(map, ev.home_team, sportId, game, true);
+      indexTeamVariants(map, ev.away_team, sportId, game, false);
+      usedEvents++;
+    }
+
+    if (usedEvents > 0) {
+      console.log(`  [odds-api] Fallback parsed ${usedEvents} events`);
+    }
+  } catch (err) {
+    console.warn(`  [odds-api] Fallback error: ${(err as Error).message}`);
+  }
+
+  return map;
 }
 
 function findCrossEdgeFromPinnacle(
@@ -2052,40 +2171,48 @@ async function main() {
     console.log(`  [kalshi] Capped to top ${MAX_MARKETS} markets by open interest (${rawMarkets.length} total)`);
   }
 
-  // 2. Today's game markets — inject any that didn't make the OI cap, then boost all
-  //    to front of the orderbook fetch queue so they always get real bid/ask data.
-  const _etToday = toEtIso(new Date()).slice(0, 10); // "YYYY-MM-DD"
+  // 2. Game markets in a rolling ET window — inject any that didn't make the OI cap,
+  //    then boost them to the front of the orderbook fetch queue so they always get quotes.
+  const GAME_WINDOW_DAYS = Math.max(1, parseInt(process.env.KALSHI_GAME_WINDOW_DAYS ?? "2", 10));
+  const DAY_MS = 24 * 60 * 60 * 1000;
   const _MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
-  const [_yyyy, _mm, _dd] = _etToday.split("-");
-  const todayKalshiStr = `${_yyyy.slice(-2)}${_MONTHS[parseInt(_mm, 10) - 1]}${_dd}`;
-  const gameBoostStr = `GAME-${todayKalshiStr}`;
+
+  const gameBoostTokens: string[] = [];
+  for (let offset = 0; offset < GAME_WINDOW_DAYS; offset++) {
+    const etDate = toEtIso(new Date(Date.now() - offset * DAY_MS)).slice(0, 10);
+    const [yyyy = "0000", mm = "01", dd = "01"] = etDate.split("-");
+    const monthIdx = Math.max(0, Math.min(_MONTHS.length - 1, parseInt(mm, 10) - 1));
+    const token = `GAME-${yyyy.slice(-2)}${_MONTHS[monthIdx]}${dd}`.toUpperCase();
+    if (!gameBoostTokens.includes(token)) gameBoostTokens.push(token);
+  }
+
+  const isWindowedGame = (ticker: string): boolean => {
+    const upper = ticker.toUpperCase();
+    return gameBoostTokens.some((token) => upper.includes(token));
+  };
 
   // Inject game markets from the full rawMarkets list that fell outside the OI cap
   const topTickerSet = new Set(topMarkets.map((m) => m.ticker));
-  const injectedGameMarkets = rawMarkets.filter(
-    (m) => m.ticker.toUpperCase().includes(gameBoostStr) && !topTickerSet.has(m.ticker),
-  );
+  const injectedGameMarkets = rawMarkets.filter((m) => isWindowedGame(m.ticker) && !topTickerSet.has(m.ticker));
   if (injectedGameMarkets.length > 0) {
     console.log(
-      `  [kalshi] Injected ${injectedGameMarkets.length} today-game markets outside top ${MAX_MARKETS} OI`,
+      `  [kalshi] Injected ${injectedGameMarkets.length} game markets outside top ${MAX_MARKETS} OI ` +
+        `(window tokens: ${gameBoostTokens.join(", ")})`,
     );
   }
 
   // Combined pool: original top-N + injected game markets
   const allMarkets = [...topMarkets, ...injectedGameMarkets];
-  const gameMarketsToday = allMarkets.filter(
-    (m) => m.ticker.toUpperCase().includes(gameBoostStr),
-  );
-  const remainingMarkets = allMarkets.filter(
-    (m) => !m.ticker.toUpperCase().includes(gameBoostStr),
-  );
-  if (gameMarketsToday.length > 0) {
+  const gameMarketsWindow = allMarkets.filter((m) => isWindowedGame(m.ticker));
+  const remainingMarkets = allMarkets.filter((m) => !isWindowedGame(m.ticker));
+  if (gameMarketsWindow.length > 0) {
     console.log(
-      `  [kalshi] Game boost: ${gameMarketsToday.length} today-game markets (${todayKalshiStr}) at front of OB list`,
+      `  [kalshi] Game boost: ${gameMarketsWindow.length} markets matching ${gameBoostTokens.join(", ")}` +
+        " at front of OB list",
     );
   }
   // Game markets first, then remaining by OI, capped at MAX_OB_FETCH
-  const obCandidates = [...gameMarketsToday, ...remainingMarkets].slice(0, MAX_OB_FETCH);
+  const obCandidates = [...gameMarketsWindow, ...remainingMarkets].slice(0, MAX_OB_FETCH);
   const tickers = obCandidates.map((m) => m.ticker);
   console.log(`  [kalshi] Fetching orderbooks for top ${tickers.length} markets (KALSHI_MAX_OB=${MAX_OB_FETCH})...`);
   const obMap = await batchFetchOrderbooks(tickers);
