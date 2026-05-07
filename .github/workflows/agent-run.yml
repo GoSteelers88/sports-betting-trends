@@ -59,7 +59,10 @@ jobs:
         env:
           DATABASE_URL: "file:./prisma/dev.db"
 
-      - name: Refresh summary + injuries (so dashboard stays current)
+      - name: Install Playwright Chromium (for prop scraper)
+        run: npx playwright install --with-deps chromium
+
+      - name: Refresh summary + injuries + NBA props (so dashboard stays current)
         env:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
           THE_ODDS_LEAGUE: basketball_nba
@@ -72,6 +75,7 @@ jobs:
         run: |
           npm run ingest:injuries || echo "injuries refresh failed (non-fatal)"
           npm run ingest:free || echo "summary refresh failed (non-fatal)"
+          npm run scrape:nba-props || echo "props scrape failed (non-fatal)"
 
       - name: Run orchestrator
         env:
