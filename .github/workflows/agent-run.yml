@@ -1,0 +1,77 @@
+name: Agent — analyze slate
+
+# Runs the orchestrator (data health → ingest if needed → analyst → critic → bankroll guard).
+# Picks are posted to Discord. Twice daily by default (morning + pre-game).
+
+on:
+  workflow_dispatch:
+    inputs:
+      league:
+        description: League to analyze (NBA | MLB | BOTH)
+        required: true
+        default: BOTH
+        type: choice
+        options:
+          - NBA
+          - MLB
+          - BOTH
+  schedule:
+    # 14:00 UTC = 10:00 ET (morning slate scan)
+    - cron: "0 14 * * *"
+    # 22:30 UTC = 18:30 ET (pre-game slate scan, after lineups)
+    - cron: "30 22 * * *"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Set up Python (for ingest scripts)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r scripts/python/requirements.txt
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Apply Prisma migrations (creates ephemeral SQLite)
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: "file:./prisma/dev.db"
+
+      - name: Run orchestrator
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+          THE_ODDS_LEAGUE: basketball_nba
+          THE_ODDS_REGIONS: us
+          THE_ODDS_MARKETS: h2h,spreads,totals
+          THE_ODDS_ODDS_FORMAT: american
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DATABASE_URL: "file:./prisma/dev.db"
+        run: |
+          LEAGUE="${{ github.event.inputs.league || 'BOTH' }}"
+          npm run agent:run -- "$LEAGUE"
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-run-${{ github.run_id }}
+          path: |
+            data/processed/*.json
+            prisma/dev.db
+          retention-days: 14

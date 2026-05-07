@@ -1,0 +1,71 @@
+name: Agent — grade yesterday
+
+# Auto-grades yesterday's pending picks against ESPN final scores.
+# Posts grader report to Discord.
+
+on:
+  workflow_dispatch:
+    inputs:
+      daysBack:
+        description: How many days back to grade
+        required: false
+        default: "1"
+  schedule:
+    # 13:00 UTC = 09:00 ET (after late games finalize)
+    - cron: "0 13 * * *"
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Apply Prisma migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: "file:./prisma/dev.db"
+
+      # Pull last successful agent-run artifact so we have prior picks to grade
+      - name: Download latest agent-run artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: agent-run.yml
+          name_is_regexp: true
+          name: ^agent-run-
+          path: ./_artifact
+          if_no_artifact_found: warn
+
+      - name: Restore picks DB from artifact (best effort)
+        run: |
+          if [ -f ./_artifact/prisma/dev.db ]; then
+            cp ./_artifact/prisma/dev.db ./prisma/dev.db
+            echo "restored dev.db from artifact"
+          else
+            echo "no artifact dev.db found; running against fresh DB"
+          fi
+
+      - name: Run auto-grader
+        env:
+          DATABASE_URL: "file:./prisma/dev.db"
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: npm run agent:grade -- ${{ github.event.inputs.daysBack || '1' }}
+
+      - name: Upload graded DB
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-grade-${{ github.run_id }}
+          path: prisma/dev.db
+          retention-days: 30
