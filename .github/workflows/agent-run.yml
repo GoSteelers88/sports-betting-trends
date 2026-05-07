@@ -21,12 +21,19 @@ on:
     # 22:30 UTC = 18:30 ET (pre-game slate scan, after lineups)
     - cron: "30 22 * * *"
 
+permissions:
+  contents: write   # needed to push refreshed data files back to the repo
+
 jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          # full history so we can push back; default is shallow
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -65,6 +72,26 @@ jobs:
         run: |
           LEAGUE="${{ github.event.inputs.league || 'BOTH' }}"
           npm run agent:run -- "$LEAGUE"
+
+      - name: Commit refreshed data back to repo
+        if: success()
+        run: |
+          git config user.name "agent-bot"
+          git config user.email "agent-bot@users.noreply.github.com"
+          # Only commit if data files actually changed
+          if git diff --quiet -- data/processed/; then
+            echo "no data changes to commit"
+            exit 0
+          fi
+          git add data/processed/*.json
+          DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
+          git commit -m "auto-publish: agent run ${DATE_TAG} (refreshed odds + model snapshots)"
+          # Push with rebase to handle concurrent commits
+          for i in 1 2 3; do
+            git pull --rebase origin master && git push origin master && break
+            echo "push attempt $i failed, retrying..."
+            sleep 5
+          done
 
       - name: Upload run artifacts
         if: always()
