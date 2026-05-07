@@ -1,0 +1,17 @@
+# Bot-only Railway build. We don't need Next.js compiled here — only the bot.
+# Forces Node 20 (Next 16 requires it) and skips the build phase entirely.
+
+providers = ["node"]
+
+[variables]
+NIXPACKS_NODE_VERSION = "20"
+NPM_CONFIG_PRODUCTION = "false"
+
+[phases.install]
+cmds = ["npm ci --no-audit --no-fund"]
+
+[phases.build]
+cmds = ["npx prisma generate"]
+
+[start]
+cmd = "npx prisma migrate deploy && npm run bot:start"
