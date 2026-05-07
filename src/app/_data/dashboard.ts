@@ -4,6 +4,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+
+type PickWithOutcome = Prisma.AgentPickGetPayload<{ include: { outcome: true } }>;
+type OutcomeWithPick = Prisma.AgentOutcomeGetPayload<{ include: { pick: true } }>;
 
 const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 
@@ -242,7 +246,7 @@ function loadInjuries(): Injury[] {
 async function loadTodaysPicks(): Promise<SlatePick[]> {
   const since = new Date();
   since.setHours(0, 0, 0, 0);
-  let picks: Awaited<ReturnType<typeof prisma.agentPick.findMany>>;
+  let picks: PickWithOutcome[];
   try {
     picks = await prisma.agentPick.findMany({
       where: {
@@ -279,7 +283,7 @@ async function loadTodaysPicks(): Promise<SlatePick[]> {
 
 async function loadTrackRecord(days: number): Promise<TrackRecord> {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-  let outcomes: Awaited<ReturnType<typeof prisma.agentOutcome.findMany>>;
+  let outcomes: OutcomeWithPick[];
   try {
     outcomes = await prisma.agentOutcome.findMany({
       where: {
