@@ -16,10 +16,11 @@ on:
           - MLB
           - BOTH
   schedule:
-    # 14:00 UTC = 10:00 ET (morning slate scan)
-    - cron: "0 14 * * *"
-    # 22:30 UTC = 18:30 ET (pre-game slate scan, after lineups)
-    - cron: "30 22 * * *"
+    # Off-the-hour offsets to dodge GH Actions cron congestion at :00/:30 boundaries.
+    # 14:07 UTC = 10:07 ET (morning slate scan)
+    - cron: "7 14 * * *"
+    # 22:37 UTC = 18:37 ET (pre-game slate scan, after lineups)
+    - cron: "37 22 * * *"
 
 permissions:
   contents: write   # needed to push refreshed data files back to the repo
