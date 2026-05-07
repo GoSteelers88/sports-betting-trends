@@ -23,10 +23,9 @@ function validDiscordWebhook(u: string | undefined): u is string {
   return /^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(u);
 }
 
-async function postWebhook(content: string): Promise<void> {
-  const url = process.env.DISCORD_WEBHOOK_URL?.trim();
+async function postToWebhook(url: string | undefined, content: string): Promise<void> {
   if (!validDiscordWebhook(url)) {
-    if (url) console.warn("discord notify skipped: DISCORD_WEBHOOK_URL is not a Discord webhook");
+    if (url) console.warn("discord notify skipped: not a Discord webhook URL");
     return;
   }
   try {
@@ -38,6 +37,25 @@ async function postWebhook(content: string): Promise<void> {
     });
   } catch (err) {
     console.warn("discord notify failed:", err);
+  }
+}
+
+async function postWebhook(content: string): Promise<void> {
+  return postToWebhook(process.env.DISCORD_WEBHOOK_URL?.trim(), content);
+}
+
+// Posts to a separate "alerts" channel for failures. Falls back to the main
+// webhook if DISCORD_ERROR_WEBHOOK_URL is not set so errors aren't lost.
+export async function notifyError(component: string, err: unknown, context?: Record<string, unknown>): Promise<void> {
+  const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+  const ctxStr = context ? `\n\`\`\`json\n${JSON.stringify(context, null, 2).slice(0, 800)}\n\`\`\`` : "";
+  const content = `🚨 **${component}** failed\n${msg}${ctxStr}`;
+  const errUrl = process.env.DISCORD_ERROR_WEBHOOK_URL?.trim();
+  if (validDiscordWebhook(errUrl)) {
+    await postToWebhook(errUrl, content);
+  } else {
+    // Fall back to the regular pick-notify webhook so the failure isn't silent.
+    await postToWebhook(process.env.DISCORD_WEBHOOK_URL?.trim(), content);
   }
 }
 

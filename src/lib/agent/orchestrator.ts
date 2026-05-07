@@ -17,7 +17,7 @@ import { runIngest, ALLOWED_SCRIPTS, type IngestScript, type IngestResult } from
 import { analyze, persistFinalPicks } from "./analyst";
 import { critique, applyCritiqueToPicks, type CritiqueResult } from "./critic";
 import { applyBankrollGuard, type BankrollGuardResult } from "./bankroll";
-import { notifyPicks } from "./notify";
+import { notifyPicks, notifyError } from "./notify";
 import type { GradedPick } from "./grader";
 import type { AgentLeague } from "./tools";
 import { prisma } from "@/lib/prisma";
@@ -241,6 +241,12 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
       });
       killed = analystPicks.map(p => ({ pick: p, reason: "critic JSON parse failure (fail-closed)" }));
       finalPicks = [];
+      await notifyError("critic.parseFailed", "JSON parse failure", {
+        runId,
+        league,
+        droppedPicks: analystPicks.length,
+        rawText: critique_.rawText.slice(0, 400),
+      });
     } else {
       const afterCritique = applyCritiqueToPicks(analystPicks, critique_.decisions);
       killed = afterCritique.killed;
@@ -283,6 +289,7 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
         detail: err instanceof Error ? err.message : String(err),
         at: new Date().toISOString(),
       });
+      await notifyError("persistFinalPicks", err, { runId, league, count: finalPicks.length });
     }
   } else {
     persistOk = true; // nothing to persist — proceed to notify "no picks"

@@ -4,6 +4,7 @@
 import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
 import { COMMANDS } from "./commands";
 import { handleReaction } from "./handlers/reactions";
+import { handleParlayMessage } from "./handlers/parlay";
 
 const TOKEN = process.env.DISCORD_BOT_TOKEN;
 if (!TOKEN) {
@@ -47,6 +48,14 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     await handleReaction(reaction, user);
   } catch (err) {
     console.error("reaction handler error:", err);
+  }
+});
+
+client.on(Events.MessageCreate, async message => {
+  try {
+    await handleParlayMessage(message);
+  } catch (err) {
+    console.error("parlay handler error:", err);
   }
 });
 

@@ -67,9 +67,13 @@ export const picksTodayCommand: Command = {
           ? " · ❌ LOSS"
           : ` · ${p.outcome.result.toUpperCase()}`
         : "";
+      const clvTag =
+        p.clvCents !== null
+          ? ` · CLV ${p.clvCents > 0 ? "+" : ""}${p.clvCents}¢`
+          : "";
       embed.addFields({
         name: `#${p.id} ${p.matchup}${outcomeTag}`,
-        value: `${p.market} · ${p.selection} @ \`${odds}\` · edge **${edge}%** · stake **${stake}u**\n*${p.thesis.slice(0, 220)}*`,
+        value: `${p.market} · ${p.selection} @ \`${odds}\` · edge **${edge}%** · stake **${stake}u**${clvTag}\n*${p.thesis.slice(0, 220)}*`,
       });
     }
 

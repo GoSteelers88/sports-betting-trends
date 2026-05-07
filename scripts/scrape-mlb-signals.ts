@@ -165,13 +165,49 @@ async function main() {
       .sort((a, b) => (b.fbVelocity ?? 0) - (a.fbVelocity ?? 0))
       .slice(0, 20);
 
+    // Closer changes — RotoWire's MLB closers page lists each team's current
+    // closer plus recent role changes. We scrape it as a side trip on the
+    // already-warm browser context.
+    const closerChanges: Array<{ team: string; newCloser: string; tier: string }> = [];
+    try {
+      console.log("Fetching MLB closer chart...");
+      const cpage = await ctx.newPage();
+      await cpage.goto("https://www.rotowire.com/baseball/closer-grid.php", {
+        waitUntil: "domcontentloaded",
+        timeout: 30_000,
+      });
+      await cpage.waitForTimeout(2500);
+      // Each team row has the closer-tier hierarchy. We pull the top tier (1)
+      // closer + flag teams where the role has changed in the last 7 days.
+      const rows = await cpage.$$eval("table tr", trs =>
+        trs.slice(1, 35).map(tr => {
+          const cells = Array.from(tr.querySelectorAll("td")).map(td => (td.textContent ?? "").trim());
+          return cells;
+        })
+      );
+      for (const c of rows) {
+        if (c.length < 3) continue;
+        const team = c[0];
+        const tier1 = c[1];
+        if (!team || !tier1) continue;
+        // Heuristic: a name marked with * or the page's "(new)" indicator suggests recent change
+        const isNew = /\*|\(new\)|recent/i.test(c.join(" "));
+        if (isNew) {
+          closerChanges.push({ team, newCloser: tier1.replace(/[*†‡]/g, "").trim(), tier: "1" });
+        }
+      }
+      await cpage.close();
+      console.log(`  ${closerChanges.length} recent closer changes`);
+    } catch (err) {
+      console.warn("Closer chart scrape failed:", err);
+    }
+
     const out = {
       generatedAt: new Date().toISOString(),
-      source: "fangraphs",
+      source: "fangraphs+rotowire",
       regressionCandidates,
       velocityGainers,
-      // Closer changes deferred — would need MLBTradeRumors / RotoBaller scrape
-      closerChanges: [] as Array<{ team: string; newCloser: string; effectiveDate: string }>,
+      closerChanges,
     };
 
     fs.mkdirSync(path.dirname(OUT), { recursive: true });

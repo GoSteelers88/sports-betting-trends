@@ -1,0 +1,55 @@
+name: Agent — nightly Turso backup
+
+# Dumps Turso state to data/backups/turso-YYYY-MM-DD.json each night and
+# commits it back. Protects against accidental schema migrations or Turso
+# outages. Keeps last 30 days locally.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 04:00 UTC (00:00 ET) — quiet hour
+    - cron: "0 4 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+      TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prisma:generate
+
+      - name: Dump Turso to JSON
+        run: npm run db:backup
+
+      - name: Commit backup file
+        run: |
+          git config user.name "agent-bot"
+          git config user.email "agent-bot@users.noreply.github.com"
+          git add data/backups/
+          if git diff --cached --quiet; then
+            echo "no backup changes"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%d")
+          git commit -m "backup: turso snapshot ${DATE_TAG}"
+          for i in 1 2 3; do
+            git pull --rebase origin master && git push origin master && break
+            echo "push attempt $i failed, retrying..."
+            sleep 5
+          done

@@ -24,9 +24,9 @@ export function gradePicks(picks: AnalystPick[]): GradedPick[] {
     if (!p.market) notes.push("HARD: missing market");
     if (!p.selection) notes.push("HARD: missing selection");
     if (typeof p.oddsAmerican !== "number") notes.push("HARD: oddsAmerican not numeric");
-    if (typeof p.modelProb !== "number" || p.modelProb < 0.01 || p.modelProb > 0.99)
+    if (typeof p.modelProb !== "number" || !Number.isFinite(p.modelProb) || p.modelProb < 0.01 || p.modelProb > 0.99)
       notes.push("HARD: modelProb out of range");
-    if (typeof p.marketProb !== "number" || p.marketProb < 0.01 || p.marketProb > 0.99)
+    if (typeof p.marketProb !== "number" || !Number.isFinite(p.marketProb) || p.marketProb < 0.01 || p.marketProb > 0.99)
       notes.push("HARD: marketProb out of range");
 
     // Recompute edge ourselves to catch math errors

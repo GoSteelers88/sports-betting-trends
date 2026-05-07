@@ -49,7 +49,10 @@
     "scrape:mlb-signals": "tsx scripts/scrape-mlb-signals.ts",
     "picks:log": "tsx scripts/log-picks.ts",
     "picks:grade": "tsx scripts/run-snapshot-grader.ts",
-    "picks:clv": "tsx scripts/run-clv-tracker.ts"
+    "picks:clv": "tsx scripts/run-clv-tracker.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:backup": "tsx scripts/turso-backup.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",
@@ -72,6 +75,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/ws": "^8.18.1",
+    "@vitest/ui": "^4.1.5",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
@@ -79,6 +83,7 @@
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   }
 }

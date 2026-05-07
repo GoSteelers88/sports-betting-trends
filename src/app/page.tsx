@@ -1,6 +1,7 @@
 import { getDashboardData } from "./_data/dashboard";
 import { Hero } from "./_components/Hero";
 import { PaperTrial } from "./_components/PaperTrial";
+import { PipelineStatus } from "./_components/PipelineStatus";
 import { HotPicks } from "./_components/HotPicks";
 import { MarketPicks } from "./_components/MarketPicks";
 import { PlayerProps } from "./_components/PlayerProps";
@@ -20,11 +21,12 @@ export default async function Home() {
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10 space-y-6">
         <Reveal delay={0}><Hero data={data} /></Reveal>
         <Reveal delay={0.04}><PaperTrial data={data.paperTrial} /></Reveal>
-        <Reveal delay={0.10}><MarketPicks picks={data.marketPicks} /></Reveal>
-        <Reveal delay={0.16}><HotPicks picks={data.picks} /></Reveal>
-        <Reveal delay={0.22}><PlayerProps props={data.playerProps} /></Reveal>
-        <Reveal delay={0.28}><Slate games={data.slate} /></Reveal>
-        <Reveal delay={0.34}><Injuries injuries={data.injuries} /></Reveal>
+        <Reveal delay={0.08}><PipelineStatus data={data.pipelineStatus} /></Reveal>
+        <Reveal delay={0.12}><MarketPicks picks={data.marketPicks} /></Reveal>
+        <Reveal delay={0.18}><HotPicks picks={data.picks} /></Reveal>
+        <Reveal delay={0.24}><PlayerProps props={data.playerProps} /></Reveal>
+        <Reveal delay={0.30}><Slate games={data.slate} /></Reveal>
+        <Reveal delay={0.36}><Injuries injuries={data.injuries} /></Reveal>
         <Footer generatedAt={data.generatedAt} />
       </div>
     </main>

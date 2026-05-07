@@ -80,6 +80,13 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
                 <Field label="Stake" value={`${p.kellyStakeUnits.toFixed(2)}u`} />
                 <Field label="Conf" value={`${p.confidence}`} />
                 <Field label="Edge" value={`${(p.edge * 100).toFixed(1)}%`} accent />
+                {p.clvCents !== null && (
+                  <Field
+                    label="CLV"
+                    value={`${p.clvCents > 0 ? "+" : ""}${p.clvCents}¢`}
+                    customColor={p.clvCents > 0 ? "text-[#22ff88]" : p.clvCents < 0 ? "text-[#ff3b3b]" : "text-slate-300"}
+                  />
+                )}
               </div>
 
               <p className="mt-3 text-xs text-slate-400 line-clamp-3 leading-relaxed">
@@ -93,11 +100,22 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
   );
 }
 
-function Field({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Field({
+  label,
+  value,
+  accent,
+  customColor,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+  customColor?: string;
+}) {
+  const color = customColor ?? (accent ? "text-[#22ff88] font-semibold" : "text-white");
   return (
     <div className="text-center">
       <p className="display-eyebrow text-slate-500 text-[0.6rem]">{label}</p>
-      <p className={`mono text-sm mt-0.5 ${accent ? "text-[#22ff88] font-semibold" : "text-white"}`}>{value}</p>
+      <p className={`mono text-sm mt-0.5 ${color}`}>{value}</p>
     </div>
   );
 }

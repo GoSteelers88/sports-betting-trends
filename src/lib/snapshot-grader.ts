@@ -320,13 +320,13 @@ async function gradeMarketPicks(daysBack: number): Promise<{ graded: number; unm
   const since = new Date(target);
   since.setUTCDate(since.getUTCDate() - 2);
 
-  // For now we only auto-grade moneyline picks. Spread/total grading needs the
-  // line at-bet-time and the actual final score deltas — added in a follow-up.
+  // Grade moneyline, spread, and total market picks. Each uses a different
+  // calculation against the same final-score lookup.
   const pending = await prisma.modelPickSnapshot.findMany({
     where: {
       source: "market",
       result: null,
-      market: "moneyline",
+      market: { in: ["moneyline", "spread", "total"] },
       createdAt: { gte: since },
     },
   });
@@ -401,22 +401,60 @@ async function gradeMarketPicks(daysBack: number): Promise<{ graded: number; unm
 
     const homeName = home?.team?.displayName ?? "";
     const awayName = away?.team?.displayName ?? "";
-    const pickedHome = teamMatches(homeName, p.selection);
-    const pickedAway = teamMatches(awayName, p.selection);
-    if (!pickedHome && !pickedAway) {
+
+    let result: "win" | "loss" | "push" | null = null;
+    let actualValue: number | null = null;
+    let note = "";
+
+    if (p.market === "moneyline") {
+      const pickedHome = teamMatches(homeName, p.selection);
+      const pickedAway = teamMatches(awayName, p.selection);
+      if (!pickedHome && !pickedAway) {
+        unmatched++;
+        continue;
+      }
+      const homeWon = homeScore > awayScore;
+      result =
+        homeScore === awayScore ? "push" : pickedHome ? (homeWon ? "win" : "loss") : homeWon ? "loss" : "win";
+      actualValue = pickedHome ? homeScore - awayScore : awayScore - homeScore;
+      note = `auto-graded ML vs ESPN final: ${awayName} ${awayScore} @ ${homeName} ${homeScore}`;
+    } else if (p.market === "spread" && p.line !== null) {
+      // Spread interpretation: selection contains team name + line number.
+      // pickedHome takes (homeScore + p.line) > awayScore. Spread sign convention:
+      // p.line is the spread the picked team is "taking" (favorites get -X, dogs get +X).
+      const pickedHome = teamMatches(homeName, p.selection);
+      const pickedAway = teamMatches(awayName, p.selection);
+      if (!pickedHome && !pickedAway) {
+        unmatched++;
+        continue;
+      }
+      const adjustedScoreDiff = pickedHome ? homeScore + p.line - awayScore : awayScore + p.line - homeScore;
+      result = adjustedScoreDiff === 0 ? "push" : adjustedScoreDiff > 0 ? "win" : "loss";
+      actualValue = adjustedScoreDiff;
+      note = `auto-graded spread (${p.line}) vs ESPN final: ${awayName} ${awayScore} @ ${homeName} ${homeScore} = ${adjustedScoreDiff > 0 ? "+" : ""}${adjustedScoreDiff.toFixed(1)}`;
+    } else if (p.market === "total" && p.line !== null) {
+      // Total: selection contains "Over X" or "Under X". Compare to home + away.
+      const total = homeScore + awayScore;
+      const isOver = /^over\b/i.test(p.selection.trim());
+      const isUnder = /^under\b/i.test(p.selection.trim());
+      if (!isOver && !isUnder) {
+        unmatched++;
+        continue;
+      }
+      result = total === p.line ? "push" : isOver ? (total > p.line ? "win" : "loss") : total < p.line ? "win" : "loss";
+      actualValue = total;
+      note = `auto-graded total (${p.line}) vs ESPN final: ${awayName} ${awayScore} @ ${homeName} ${homeScore} = ${total}`;
+    } else {
       unmatched++;
       continue;
     }
-    const homeWon = homeScore > awayScore;
-    const result: "win" | "loss" | "push" =
-      homeScore === awayScore ? "push" : (pickedHome ? (homeWon ? "win" : "loss") : (homeWon ? "loss" : "win"));
 
     await prisma.modelPickSnapshot.update({
       where: { id: p.id },
       data: {
         result,
-        actualValue: pickedHome ? homeScore - awayScore : awayScore - homeScore,
-        notes: `auto-graded vs ESPN final: ${awayName} ${awayScore} @ ${homeName} ${homeScore}`,
+        actualValue,
+        notes: note,
         gradedAt: new Date(),
       },
     });

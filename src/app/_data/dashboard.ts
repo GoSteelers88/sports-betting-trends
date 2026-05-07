@@ -46,7 +46,22 @@ export type SlatePick = {
   thesis: string;
   invalidation: string;
   outcome: { result: string; unitsPnl: number | null } | null;
+  closingOddsAmerican: number | null;
+  clvCents: number | null;
   createdAt: string;
+};
+
+export type PipelineStatus = {
+  totalRunsLast14d: number;
+  rawAnalystPicks14d: number;
+  graderKept14d: number;
+  criticKilled14d: number;
+  bankrollDropped14d: number;
+  finalShipped14d: number;
+  parseFailedRuns14d: number;
+  killRatePct: number | null;
+  avgClvCents: number | null;
+  clvSampleSize: number;
 };
 
 export type TrackRecord = {
@@ -124,6 +139,7 @@ export type DashboardData = {
   trackRecord7: TrackRecord;
   trackRecord30: TrackRecord;
   paperTrial: PaperTrial;
+  pipelineStatus: PipelineStatus;
   injuries: Injury[];
   status: {
     lastAgentRunAt: string | null;
@@ -356,8 +372,55 @@ async function loadTodaysPicks(): Promise<SlatePick[]> {
     outcome: p.outcome
       ? { result: p.outcome.result, unitsPnl: p.outcome.unitsPnl ?? null }
       : null,
+    closingOddsAmerican: p.closingOddsAmerican ?? null,
+    clvCents: p.clvCents ?? null,
     createdAt: p.createdAt.toISOString(),
   }));
+}
+
+async function loadPipelineStatus(): Promise<PipelineStatus> {
+  const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+  const status: PipelineStatus = {
+    totalRunsLast14d: 0,
+    rawAnalystPicks14d: 0,
+    graderKept14d: 0,
+    criticKilled14d: 0,
+    bankrollDropped14d: 0,
+    finalShipped14d: 0,
+    parseFailedRuns14d: 0,
+    killRatePct: null,
+    avgClvCents: null,
+    clvSampleSize: 0,
+  };
+  try {
+    const runs = await prisma.agentRun.findMany({
+      where: { createdAt: { gte: since } },
+    });
+    for (const r of runs) {
+      status.totalRunsLast14d++;
+      status.rawAnalystPicks14d += r.rawAnalystPicks;
+      status.graderKept14d += r.graderKept;
+      status.criticKilled14d += r.criticKilled;
+      status.bankrollDropped14d += r.bankrollDropped;
+      status.finalShipped14d += r.finalPickCount;
+      if (r.parseFailed) status.parseFailedRuns14d++;
+    }
+    if (status.rawAnalystPicks14d > 0) {
+      status.killRatePct = +((status.criticKilled14d / status.rawAnalystPicks14d) * 100).toFixed(1);
+    }
+    const clvPicks = await prisma.agentPick.findMany({
+      where: { createdAt: { gte: since }, clvCents: { not: null } },
+      select: { clvCents: true },
+    });
+    if (clvPicks.length > 0) {
+      const sum = clvPicks.reduce((s, p) => s + (p.clvCents ?? 0), 0);
+      status.avgClvCents = +(sum / clvPicks.length).toFixed(2);
+      status.clvSampleSize = clvPicks.length;
+    }
+  } catch (err) {
+    console.error("loadPipelineStatus failed:", err);
+  }
+  return status;
 }
 
 async function loadTrackRecord(days: number): Promise<TrackRecord> {
@@ -583,11 +646,12 @@ export async function getDashboardData(): Promise<DashboardData> {
     }))
     .sort((a, b) => new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime());
 
-  const [trackRecord7, trackRecord30, lastAgentRunAt, paperTrial] = await Promise.all([
+  const [trackRecord7, trackRecord30, lastAgentRunAt, paperTrial, pipelineStatus] = await Promise.all([
     loadTrackRecord(7),
     loadTrackRecord(30),
     loadLastAgentRunAt(),
     loadPaperTrial(),
+    loadPipelineStatus(),
   ]);
 
   const injuries = loadInjuries();
@@ -615,6 +679,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     trackRecord7,
     trackRecord30,
     paperTrial,
+    pipelineStatus,
     injuries,
     status: {
       lastAgentRunAt,
