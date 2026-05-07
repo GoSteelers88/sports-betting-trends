@@ -3,6 +3,7 @@
 import type { GradedPick } from "./grader";
 import type { AgentLeague } from "./tools";
 import type { AutoGradeReport } from "./autograder";
+import { formatPicksForX } from "./x-formatter";
 
 function fmtAmerican(n: number): string {
   return n > 0 ? `+${n}` : `${n}`;
@@ -23,16 +24,34 @@ function validDiscordWebhook(u: string | undefined): u is string {
   return /^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(u);
 }
 
-async function postToWebhook(url: string | undefined, content: string): Promise<void> {
+type DiscordEmbed = {
+  title?: string;
+  description?: string;
+  color?: number;
+  image?: { url: string };
+  footer?: { text: string };
+};
+
+type WebhookPayload = {
+  content?: string;
+  embeds?: DiscordEmbed[];
+};
+
+async function postToWebhook(url: string | undefined, payload: string | WebhookPayload): Promise<void> {
   if (!validDiscordWebhook(url)) {
     if (url) console.warn("discord notify skipped: not a Discord webhook URL");
     return;
   }
+  const body: WebhookPayload =
+    typeof payload === "string" ? { content: payload.slice(0, 1900) } : {
+      ...payload,
+      content: payload.content ? payload.content.slice(0, 1900) : undefined,
+    };
   try {
     await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: content.slice(0, 1900) }),
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(10_000),
     });
   } catch (err) {
@@ -40,8 +59,25 @@ async function postToWebhook(url: string | undefined, content: string): Promise<
   }
 }
 
-async function postWebhook(content: string): Promise<void> {
-  return postToWebhook(process.env.DISCORD_WEBHOOK_URL?.trim(), content);
+async function postWebhook(payload: string | WebhookPayload): Promise<void> {
+  return postToWebhook(process.env.DISCORD_WEBHOOK_URL?.trim(), payload);
+}
+
+// Days since the paper trial start (2026-05-06 UTC), clamped to [1, 30].
+function paperTrialDay(): number {
+  const start = Date.UTC(2026, 4, 6);
+  const day = Math.floor((Date.now() - start) / 86_400_000) + 1;
+  return Math.max(1, Math.min(30, day));
+}
+
+// Public base URL for Discord image embeds. Vercel sets VERCEL_URL on every
+// deploy; PUBLIC_BASE_URL overrides for production aliases.
+function publicBaseUrl(): string | null {
+  const explicit = process.env.PUBLIC_BASE_URL?.trim();
+  if (explicit) return explicit.replace(/\/$/, "");
+  const vercel = process.env.VERCEL_URL?.trim();
+  if (vercel) return `https://${vercel.replace(/\/$/, "")}`;
+  return null;
 }
 
 // Posts to a separate "alerts" channel for failures. Falls back to the main
@@ -69,6 +105,57 @@ export async function notifyPicks(league: AgentLeague, picks: GradedPick[], runI
     .toFixed(2)}u total`;
   const body = picks.map(pickLine).join("\n\n");
   await postWebhook(`${header}\n\n${body}`);
+
+  // X-ready post block: triple-backtick code fence so Discord shows a
+  // one-click copy button. Embed the OG card so the user can right-click →
+  // save image → upload to X. Both are guarded — if the X formatter or base
+  // URL fail, we still ship the picks message above.
+  try {
+    await notifyXReady(league, picks, runId);
+  } catch (err) {
+    console.warn("notifyXReady failed:", err);
+  }
+}
+
+// Posts a separate Discord message containing:
+//   1. The X-ready text in a code block (one-click copy in Discord UI)
+//   2. An embed with the OG image (right-click save → upload to X)
+//
+// Exported so the orchestrator or bot can also call it directly if needed.
+export async function notifyXReady(
+  league: AgentLeague | "BOTH",
+  picks: GradedPick[],
+  runId: string
+): Promise<void> {
+  const day = paperTrialDay();
+  const x = formatPicksForX({
+    league,
+    picks,
+    paperTrialDay: day,
+    paperTrialTotal: 30,
+  });
+
+  const base = publicBaseUrl();
+  const imageUrl = base ? `${base}/api/og/picks?runId=${encodeURIComponent(runId)}` : null;
+
+  const truncatedNote = x.truncated ? ` _(truncated to fit 280)_` : "";
+  const charNote = `_${x.charCount}/280 chars${truncatedNote}_`;
+
+  const content = `📋 **X-ready post** — copy below or save the image\n${charNote}\n\`\`\`\n${x.text}\n\`\`\``;
+
+  const payload: WebhookPayload = { content };
+  if (imageUrl) {
+    payload.embeds = [
+      {
+        title: "🎰 Pick card",
+        description: "Right-click → Save image → upload to X",
+        color: 0xa855f7, // violet — matches dashboard accent
+        image: { url: imageUrl },
+        footer: { text: `runId ${runId} · ${x.picksIncluded} picks · day ${day}/30` },
+      },
+    ];
+  }
+  await postWebhook(payload);
 }
 
 export async function notifyGraderReport(report: AutoGradeReport): Promise<void> {

@@ -10,6 +10,7 @@ import { agentRunCommand } from "./agent-run";
 import { gradeCommand } from "./grade";
 import { bankrollCommand } from "./bankroll";
 import { dreamCommand } from "./dream";
+import { xReadyCommand } from "./x-ready";
 
 export type CommandHandler = (
   interaction: ChatInputCommandInteraction
@@ -28,4 +29,5 @@ export const COMMANDS: Command[] = [
   gradeCommand,
   bankrollCommand,
   dreamCommand,
+  xReadyCommand,
 ];
