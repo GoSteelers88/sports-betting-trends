@@ -69,10 +69,40 @@ export type Injury = {
   injuryType?: string;
 };
 
+export type MarketPick = {
+  league: string;
+  matchup: string;
+  pickTeam: string;
+  line: string | null;
+  confidence: number;
+  score: number;
+  rationaleSignals: string[];
+  gameDate: string | null;
+  spread: number | null;
+  modelSpread: number | null;
+};
+
+export type PlayerProp = {
+  player: string;
+  team: string | null;
+  opponent: string | null;
+  market: string;
+  marketLabel?: string;
+  category?: string;
+  line: number;
+  overPrice: number | null;
+  underPrice: number | null;
+  pickSide: "over" | "under";
+  confidence: number;
+  rationaleSignals: string[];
+};
+
 export type DashboardData = {
   generatedAt: string;
   slate: SlateGame[];
   picks: SlatePick[];
+  marketPicks: MarketPick[];
+  playerProps: PlayerProp[];
   trackRecord7: TrackRecord;
   trackRecord30: TrackRecord;
   injuries: Injury[];
@@ -226,6 +256,34 @@ function attachModel(games: SlateGame[]): SlateGame[] {
   });
 }
 
+// ─── market picks (heuristic best bets) ────────────────────────────────────
+
+type SummaryFile = {
+  bestBets?: MarketPick[];
+};
+
+function loadMarketPicks(): MarketPick[] {
+  const file = readJson<SummaryFile>("latest-summary.json", { bestBets: [] });
+  const picks = file.bestBets ?? [];
+  // Restrict to NBA + MLB and take the top 5
+  return picks
+    .filter(p => p.league === "NBA" || p.league === "MLB")
+    .slice(0, 5);
+}
+
+// ─── player props ──────────────────────────────────────────────────────────
+
+type PropsFile = {
+  available?: boolean;
+  topProps?: PlayerProp[];
+};
+
+function loadPlayerProps(): PlayerProp[] {
+  const file = readJson<PropsFile>("latest-player-props.json", {});
+  if (!file.available) return [];
+  return (file.topProps ?? []).slice(0, 5);
+}
+
 // ─── injuries ──────────────────────────────────────────────────────────────
 
 type InjuryFile = { players?: Array<{ player: string; team: string; position?: string; status: string; injuryType?: string }> };
@@ -367,6 +425,8 @@ export async function getDashboardData(): Promise<DashboardData> {
   ]);
 
   const injuries = loadInjuries();
+  const marketPicks = loadMarketPicks();
+  const playerProps = loadPlayerProps();
 
   const todayPnl = picks.reduce((s, p) => s + (p.outcome?.unitsPnl ?? 0), 0);
 
@@ -384,6 +444,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     generatedAt: new Date().toISOString(),
     slate,
     picks,
+    marketPicks,
+    playerProps,
     trackRecord7,
     trackRecord30,
     injuries,

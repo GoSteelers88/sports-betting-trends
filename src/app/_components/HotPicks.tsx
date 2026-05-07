@@ -31,7 +31,7 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
     return (
       <section>
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="display-eyebrow text-pink-300">🔥 Hot Picks</h2>
+          <h2 className="display-eyebrow text-pink-300">🤖 Bot Picks</h2>
         </div>
         <div className="glass rounded-2xl p-8 text-center">
           <p className="display text-2xl text-slate-300 mb-2">No edge tonight</p>
