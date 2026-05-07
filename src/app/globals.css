@@ -1,26 +1,112 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #05060f;
+  --color-foreground: #f5f7ff;
+
+  /* Brand accents */
+  --color-cyan: #00d9ff;
+  --color-lime: #22ff88;
+  --color-pink: #ff007a;
+  --color-amber: #ff8c42;
+  --color-redx: #ff3b3b;
+  --color-violet: #a855f7;
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #05060f;
+  --foreground: #f5f7ff;
+}
+
+html, body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  min-height: 100vh;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Layered radial gradients for nightclub depth */
+  background-image:
+    radial-gradient(900px 600px at 15% -10%, rgba(168, 85, 247, 0.18), transparent 60%),
+    radial-gradient(800px 600px at 95% 10%, rgba(0, 217, 255, 0.12), transparent 60%),
+    radial-gradient(900px 700px at 50% 100%, rgba(255, 0, 122, 0.10), transparent 65%);
+  background-attachment: fixed;
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.glass-strong {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(22px) saturate(160%);
+}
+
+/* Glow accents */
+.glow-cyan { box-shadow: 0 0 24px rgba(0, 217, 255, 0.18), inset 0 0 0 1px rgba(0, 217, 255, 0.25); }
+.glow-lime { box-shadow: 0 0 24px rgba(34, 255, 136, 0.20), inset 0 0 0 1px rgba(34, 255, 136, 0.30); }
+.glow-pink { box-shadow: 0 0 28px rgba(255, 0, 122, 0.22), inset 0 0 0 1px rgba(255, 0, 122, 0.30); }
+.glow-amber { box-shadow: 0 0 22px rgba(255, 140, 66, 0.20), inset 0 0 0 1px rgba(255, 140, 66, 0.30); }
+
+/* Pulsing live dot */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 255, 136, 0.6); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(34, 255, 136, 0); }
+}
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #22ff88;
+  animation: pulse-glow 2s infinite;
+}
+
+/* Edge meter fill animation */
+@keyframes meter-fill {
+  from { width: 0%; }
+}
+.meter-fill {
+  animation: meter-fill 800ms ease-out;
+}
+
+/* Display headers */
+.display {
+  font-family: var(--font-display), "Space Grotesk", system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+.display-eyebrow {
+  font-family: var(--font-display), "Space Grotesk", system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+/* Mono numbers */
+.mono { font-family: var(--font-mono), "Geist Mono", "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
+
+/* Subtle scroll on horizontal rails */
+.h-rail::-webkit-scrollbar { height: 6px; }
+.h-rail::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 9999px; }
+.h-rail::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); }
+
+/* Noise texture overlay (optional, very subtle) */
+.noise::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
 }
