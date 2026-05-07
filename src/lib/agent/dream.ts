@@ -13,13 +13,21 @@ export type DreamResult = {
   notes: string;
 };
 
-const DREAM_LOOKBACK_DAYS = 14;
+const DREAM_LOOKBACK_DAYS = 30; // matches the paper-trial window so dream sees the full record
 
 const DREAM_SYSTEM = `You are an analytical reviewer consolidating an agent's memory store.
 
 You will receive:
 - The agent's currently active learnings (with weights and reasoning)
 - A list of recent picks the agent made, each with its graded outcome (win/loss/push/pending)
+- A "pipelineRecord" summary of how the orchestrator has performed across all runs:
+  total runs, raw analyst picks, grader-kept, critic-killed, bankroll-dropped,
+  final picks shipped, parse-failure runs. Use this to calibrate confidence in
+  any rule you propose — small samples (e.g. <30 graded outcomes) deserve
+  weight ≤0.5, never higher.
+- A "marketModelComparison" of how the model-derived picks (ModelPickSnapshot)
+  performed alongside the bot picks. If model picks consistently beat bot
+  picks, surface that as a rule for the analyst to lean on those signals.
 
 Your job: produce an updated memory store. Specifically:
 1. Identify recurring failure patterns (e.g. "underperforms on road favorites in MLB" if multiple losses fit)
@@ -65,6 +73,41 @@ export async function dream(): Promise<DreamResult> {
       orderBy: { weight: "desc" },
     });
 
+    // Pipeline-record snapshot: tells the dream agent how its decisions have
+    // shaped output volume, so it can calibrate rule confidence and refuse to
+    // make claims on small samples.
+    const runs = await prisma.agentRun.findMany({
+      where: { createdAt: { gte: since } },
+      orderBy: { createdAt: "asc" },
+    });
+    const runStats = runs.reduce(
+      (acc, r) => ({
+        runs: acc.runs + 1,
+        rawAnalystPicks: acc.rawAnalystPicks + r.rawAnalystPicks,
+        graderKept: acc.graderKept + r.graderKept,
+        criticKilled: acc.criticKilled + r.criticKilled,
+        criticWeakened: acc.criticWeakened + r.criticWeakened,
+        bankrollDropped: acc.bankrollDropped + r.bankrollDropped,
+        finalShipped: acc.finalShipped + r.finalPickCount,
+        parseFailedRuns: acc.parseFailedRuns + (r.parseFailed ? 1 : 0),
+      }),
+      { runs: 0, rawAnalystPicks: 0, graderKept: 0, criticKilled: 0, criticWeakened: 0, bankrollDropped: 0, finalShipped: 0, parseFailedRuns: 0 }
+    );
+
+    // Model snapshot performance across the same window
+    const modelSnapshots = await prisma.modelPickSnapshot.findMany({
+      where: { createdAt: { gte: since }, result: { not: null } },
+    });
+    const modelStats = modelSnapshots.reduce(
+      (acc, s) => ({
+        total: acc.total + 1,
+        wins: acc.wins + (s.result === "win" ? 1 : 0),
+        losses: acc.losses + (s.result === "loss" ? 1 : 0),
+        bySource: { ...acc.bySource, [s.source]: (acc.bySource[s.source] ?? 0) + (s.result === "win" ? 1 : 0) },
+      }),
+      { total: 0, wins: 0, losses: 0, bySource: {} as Record<string, number> }
+    );
+
     const userPayload = JSON.stringify(
       {
         currentMemories: memories.map(m => ({
@@ -76,6 +119,8 @@ export async function dream(): Promise<DreamResult> {
           weight: m.weight,
           createdAt: m.createdAt.toISOString(),
         })),
+        pipelineRecord: runStats,
+        marketModelComparison: modelStats,
         recentPicks: picks.map(p => ({
           id: p.id,
           league: p.league,

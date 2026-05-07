@@ -16,7 +16,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "VERCEL_DEPLOY_HOOK_URL invalid" }, { status: 500 });
   }
 
-  const hookResponse = await fetch(hookUrl, { method: "POST" });
+  const hookResponse = await fetch(hookUrl, {
+    method: "POST",
+    signal: AbortSignal.timeout(15_000),
+  });
 
   return NextResponse.json(
     { triggered: true, hookStatus: hookResponse.status },

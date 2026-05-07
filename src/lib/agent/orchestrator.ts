@@ -112,6 +112,7 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
   let analystPicks: GradedPick[] | null = null;
   let analystRunId: string | null = null;
   let analystToolsUsed: string[] = [];
+  let rawAnalystPickCount = 0; // pre-grader count for accurate kill-rate denominator
 
   const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [
     {
@@ -168,9 +169,16 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
               analystPicks = out.picks;
               analystRunId = out.runId;
               analystToolsUsed = out.toolsUsed;
+              rawAnalystPickCount = out.rawAnalystPickCount;
               trace.push({
                 step: "delegate_to_analyst",
-                detail: { runId: out.runId, picks: out.picks.length, tools: out.toolsUsed, iterations: out.iterations },
+                detail: {
+                  runId: out.runId,
+                  rawAnalystPicks: out.rawAnalystPickCount,
+                  graderKept: out.picks.length,
+                  tools: out.toolsUsed,
+                  iterations: out.iterations,
+                },
                 at,
               });
               result = {
@@ -297,13 +305,17 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
   // landed; this is just observability.
   try {
     const weakened = critique_.decisions.filter(d => d.verdict === "weaken").length;
+    // When critic JSON parse fails we drop ALL picks defensively, but those
+    // aren't real critic kills — track them separately so the kill-rate
+    // metric reflects actual critic decisions.
+    const realCriticKills = critique_.parseFailed ? 0 : killed.length;
     await prisma.agentRun.create({
       data: {
         runId: analystRunId ?? runId,
         league,
-        rawAnalystPicks: analystPicks?.length ?? 0,
+        rawAnalystPicks: rawAnalystPickCount, // pre-grader count
         graderKept: analystPicks?.length ?? 0,
-        criticKilled: killed.length,
+        criticKilled: realCriticKills,
         criticWeakened: weakened,
         bankrollDropped: dropped.length,
         finalPickCount: finalPicks.length,

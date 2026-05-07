@@ -321,8 +321,10 @@ function loadInjuries(): Injury[] {
 // ─── DB queries ────────────────────────────────────────────────────────────
 
 async function loadTodaysPicks(): Promise<SlatePick[]> {
+  // UTC midnight (matches the persistence convention) — previously used local
+  // tz which slipped on non-UTC hosts and on Vercel during DST transitions.
   const since = new Date();
-  since.setHours(0, 0, 0, 0);
+  since.setUTCHours(0, 0, 0, 0);
   let picks: PickWithOutcome[];
   try {
     picks = await prisma.agentPick.findMany({
@@ -401,13 +403,25 @@ async function loadTrackRecord(days: number): Promise<TrackRecord> {
   return acc;
 }
 
+// Reads from AgentRun first (every orchestrator invocation, even ones that
+// produced 0 final picks) and falls back to AgentPick.createdAt for runs
+// before AgentRun existed.
 async function loadLastAgentRunAt(): Promise<string | null> {
   try {
-    const last = await prisma.agentPick.findFirst({
+    const lastRun = await prisma.agentRun.findFirst({
       orderBy: { createdAt: "desc" },
       select: { createdAt: true },
     });
-    return last?.createdAt.toISOString() ?? null;
+    if (lastRun) return lastRun.createdAt.toISOString();
+  } catch {
+    // fall through to AgentPick lookup
+  }
+  try {
+    const lastPick = await prisma.agentPick.findFirst({
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    return lastPick?.createdAt.toISOString() ?? null;
   } catch {
     return null;
   }
@@ -537,14 +551,28 @@ export async function getDashboardData(): Promise<DashboardData> {
   const allGames = attachModel([...loadOdds("NBA"), ...loadOdds("MLB")]);
   const picks = await loadTodaysPicks();
 
-  // Mark games that have picks
+  // Mark games that have picks. Token-aware match — bidirectional substring
+  // would attach a NYY pick to a NYM card via the shared "New York" prefix.
+  const norm = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[.'-]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  const teamInMatchup = (matchup: string, team: string): boolean => {
+    const m = norm(matchup);
+    const t = norm(team);
+    if (!m || !t) return false;
+    const teamTokens = t.split(/\s+/).filter(x => x.length >= 4);
+    if (teamTokens.length === 0) return m.includes(t);
+    const matchupTokens = new Set(m.split(/\s+/));
+    return teamTokens.every(x => matchupTokens.has(x));
+  };
   const picksByGame = new Map<string, SlatePick>();
   for (const p of picks) {
-    // Heuristic: match pick.matchup substring against game home or away team
-    const game = allGames.find(g =>
-      p.matchup.toLowerCase().includes(g.homeTeam.toLowerCase()) ||
-      p.matchup.toLowerCase().includes(g.awayTeam.toLowerCase())
-    );
+    const game = allGames.find(g => teamInMatchup(p.matchup, g.homeTeam) || teamInMatchup(p.matchup, g.awayTeam));
     if (game) picksByGame.set(game.eventId, p);
   }
   const slate = allGames

@@ -38,10 +38,12 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-        run: npm run agent:grade -- ${{ github.event.inputs.daysBack || '1' }}
+          DAYS_BACK: ${{ github.event.inputs.daysBack || '1' }}
+        run: npm run agent:grade -- "$DAYS_BACK"
 
       - name: Run snapshot grader (market picks + player props)
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-        run: npm run picks:grade -- ${{ github.event.inputs.daysBack || '1' }}
+          DAYS_BACK: ${{ github.event.inputs.daysBack || '1' }}
+        run: npm run picks:grade -- "$DAYS_BACK"

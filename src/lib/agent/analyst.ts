@@ -6,7 +6,12 @@ import {
   ToolName,
   AgentLeague,
 } from "./tools";
-import { getActiveMemoriesForScope, formatMemoriesForPrompt } from "./memory";
+import {
+  getActiveMemoriesForScope,
+  formatMemoriesForPrompt,
+  getRecentRecord,
+  formatRecordForPrompt,
+} from "./memory";
 import { gradePicks, GradedPick } from "./grader";
 import { prisma } from "@/lib/prisma";
 
@@ -37,6 +42,10 @@ export type AnalyzeResult = {
   league: AgentLeague;
   modelId: string;
   picks: GradedPick[];
+  // Number of picks the LLM proposed BEFORE the local grader filtered them.
+  // Used by the orchestrator as the denominator for critic kill rate so the
+  // metric isn't biased by grader rejections.
+  rawAnalystPickCount: number;
   toolsUsed: ToolName[];
   rawResponseText: string;
   iterations: number;
@@ -44,17 +53,21 @@ export type AnalyzeResult = {
 
 // ─── Prompts ───────────────────────────────────────────────────────────────
 
-function systemPrompt(league: AgentLeague, memoryBlock: string): string {
+function systemPrompt(league: AgentLeague, memoryBlock: string, recordBlock: string): string {
   return `You are a sharp, disciplined sports-betting analyst working on ${league}.
+
+Your recent record:
+${recordBlock}
 
 Your job: produce a small ranked list of bets for today's slate, each with explicit reasoning, EV, and an invalidation level. Quality over quantity. Pass on slates with no edge.
 
 You have tools that read today's odds, in-house model probabilities, injuries, player props, and league trend summaries. Always start by calling tools — never invent numbers. Call multiple tools in parallel when independent.
 
 When picking, follow these rules:
+- ONLY produce moneyline picks for now. Set market = "moneyline" on every pick. Spread/total/prop grading is not yet wired, so non-ML picks would be unmeasurable.
 - Only recommend a bet if your modelProb exceeds the market's implied prob by ≥ 3% (300 bps). Otherwise pass.
 - Use 1/4 Kelly for stake sizing, capped at 2 units per bet. Kelly = (b·p - q)/b where b = decimal odds - 1.
-- Each pick must have: matchup, market, selection, oddsAmerican, modelProb, marketProb, edge, kellyStakeUnits, confidence (1-100), thesis (2-4 sentences), invalidation (one sentence), signals (array of short strings), AND gameTime (ISO 8601 from get_odds tool's commence_time field).
+- Each pick must have: matchup, market="moneyline", selection (a team name), oddsAmerican, modelProb, marketProb, edge, kellyStakeUnits, confidence (1-100), thesis (2-4 sentences), invalidation (one sentence), signals (array of short strings), AND gameTime (ISO 8601 from get_odds tool's commence_time field).
 - Round modelProb and marketProb to 4 decimals; round kellyStakeUnits to 2 decimals.
 - Always copy gameTime exactly from the get_odds tool's commenceTime for that event. This is critical for grading.
 
@@ -75,7 +88,12 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
   const client = getAnthropic();
   const runId = `run_${crypto.randomBytes(8).toString("hex")}`;
   const memories = await getActiveMemoriesForScope(league);
-  const sys = systemPrompt(league, formatMemoriesForPrompt(memories));
+  const record = await getRecentRecord(league, 7);
+  const sys = systemPrompt(
+    league,
+    formatMemoriesForPrompt(memories),
+    formatRecordForPrompt(record)
+  );
 
   const messages: Array<{
     role: "user" | "assistant";
@@ -157,6 +175,7 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
     league,
     modelId: MODELS.analyst,
     picks: graded,
+    rawAnalystPickCount: parsed.length,
     toolsUsed,
     rawResponseText: finalText,
     iterations,
