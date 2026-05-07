@@ -97,6 +97,24 @@ export type PlayerProp = {
   rationaleSignals: string[];
 };
 
+export type PaperTrial = {
+  startDate: string;       // ISO
+  dayNumber: number;       // 1..30
+  daysRemaining: number;   // 0..29
+  totalGraded: number;
+  wins: number;
+  losses: number;
+  pushes: number;
+  pnl: number;
+  totalStake: number;
+  roi: number | null;
+  maxLossStreak: number;
+  criticKillRate: number | null;
+  // Decision criteria (computed live)
+  ready: boolean;          // all 5 criteria met
+  criteria: Array<{ label: string; met: boolean; current: string; target: string }>;
+};
+
 export type DashboardData = {
   generatedAt: string;
   slate: SlateGame[];
@@ -105,6 +123,7 @@ export type DashboardData = {
   playerProps: PlayerProp[];
   trackRecord7: TrackRecord;
   trackRecord30: TrackRecord;
+  paperTrial: PaperTrial;
   injuries: Injury[];
   status: {
     lastAgentRunAt: string | null;
@@ -394,6 +413,125 @@ async function loadLastAgentRunAt(): Promise<string | null> {
   }
 }
 
+const PAPER_TRIAL_START = new Date("2026-05-06T00:00:00Z");
+const PAPER_TRIAL_DAYS = 30;
+
+async function loadPaperTrial(): Promise<PaperTrial> {
+  const now = new Date();
+  const elapsedMs = Math.max(0, now.getTime() - PAPER_TRIAL_START.getTime());
+  const dayNumber = Math.min(PAPER_TRIAL_DAYS, Math.floor(elapsedMs / (24 * 60 * 60 * 1000)) + 1);
+  const daysRemaining = Math.max(0, PAPER_TRIAL_DAYS - dayNumber);
+
+  let totalGraded = 0;
+  let wins = 0;
+  let losses = 0;
+  let pushes = 0;
+  let pnl = 0;
+  let totalStake = 0;
+  let maxLossStreak = 0;
+  let criticKillRate: number | null = null;
+  let totalPicks = 0;
+  let killedByCriticEstimate = 0;
+
+  try {
+    const outcomes = await prisma.agentOutcome.findMany({
+      where: {
+        gradedAt: { gte: PAPER_TRIAL_START },
+        result: { in: ["win", "loss", "push"] },
+      },
+      include: { pick: true },
+      orderBy: { gradedAt: "asc" },
+    });
+    totalGraded = outcomes.length;
+    let curStreak = 0;
+    for (const o of outcomes) {
+      if (o.result === "win") {
+        wins++;
+        curStreak = 0;
+      } else if (o.result === "loss") {
+        losses++;
+        curStreak++;
+        maxLossStreak = Math.max(maxLossStreak, curStreak);
+      } else if (o.result === "push") {
+        pushes++;
+      }
+      pnl += o.unitsPnl ?? 0;
+      totalStake += o.pick.kellyStakeUnits;
+    }
+
+    // Critic kill rate proxy: count picks the orchestrator generated vs critic-kept.
+    // We don't currently log raw analyst pick count separately, so we approximate
+    // using the run's `toolsUsed` length and pick count delta. For now we count
+    // killed picks as 0 (placeholder until run-level metadata is persisted).
+    const allPicks = await prisma.agentPick.findMany({
+      where: { createdAt: { gte: PAPER_TRIAL_START } },
+      select: { id: true, runId: true },
+    });
+    totalPicks = allPicks.length;
+    // TODO: persist runId-level critic stats for true kill rate
+    killedByCriticEstimate = 0;
+    if (totalPicks > 0) {
+      criticKillRate = killedByCriticEstimate / Math.max(totalPicks + killedByCriticEstimate, 1);
+    }
+  } catch (err) {
+    console.error("paperTrial DB read failed:", err);
+  }
+
+  const decided = wins + losses;
+  const winRate = decided > 0 ? wins / decided : 0;
+  const roi = totalStake > 0 ? pnl / totalStake : null;
+
+  const criteria = [
+    {
+      label: "Sample size ≥ 30",
+      met: totalGraded >= 30,
+      current: `${totalGraded}`,
+      target: "30",
+    },
+    {
+      label: "ROI ≥ +3%",
+      met: roi !== null && roi >= 0.03,
+      current: roi !== null ? `${(roi * 100).toFixed(1)}%` : "—",
+      target: "+3%",
+    },
+    {
+      label: "Win rate > 50%",
+      met: decided >= 10 && winRate > 0.5,
+      current: decided > 0 ? `${(winRate * 100).toFixed(1)}%` : "—",
+      target: "≥ 50%",
+    },
+    {
+      label: "Max loss streak < 8",
+      met: maxLossStreak < 8,
+      current: `${maxLossStreak}`,
+      target: "< 8",
+    },
+    {
+      label: "Critic kill rate ≥ 25%",
+      met: criticKillRate !== null && criticKillRate >= 0.25,
+      current: criticKillRate !== null ? `${(criticKillRate * 100).toFixed(1)}%` : "—",
+      target: "≥ 25%",
+    },
+  ];
+
+  return {
+    startDate: PAPER_TRIAL_START.toISOString(),
+    dayNumber,
+    daysRemaining,
+    totalGraded,
+    wins,
+    losses,
+    pushes,
+    pnl: +pnl.toFixed(2),
+    totalStake: +totalStake.toFixed(2),
+    roi,
+    maxLossStreak,
+    criticKillRate,
+    ready: criteria.every(c => c.met),
+    criteria,
+  };
+}
+
 // ─── orchestrator ──────────────────────────────────────────────────────────
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -418,10 +556,11 @@ export async function getDashboardData(): Promise<DashboardData> {
     }))
     .sort((a, b) => new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime());
 
-  const [trackRecord7, trackRecord30, lastAgentRunAt] = await Promise.all([
+  const [trackRecord7, trackRecord30, lastAgentRunAt, paperTrial] = await Promise.all([
     loadTrackRecord(7),
     loadTrackRecord(30),
     loadLastAgentRunAt(),
+    loadPaperTrial(),
   ]);
 
   const injuries = loadInjuries();
@@ -448,6 +587,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     playerProps,
     trackRecord7,
     trackRecord30,
+    paperTrial,
     injuries,
     status: {
       lastAgentRunAt,

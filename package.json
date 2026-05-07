@@ -44,7 +44,8 @@
     "agent:grade": "tsx scripts/run-autograder.ts",
     "bot:start": "tsx src/bot/index.ts",
     "bot:register": "tsx scripts/register-discord-commands.ts",
-    "scrape:nba-props": "tsx scripts/scrape-nba-props.ts"
+    "scrape:nba-props": "tsx scripts/scrape-nba-props.ts",
+    "picks:log": "tsx scripts/log-picks.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",

@@ -76,6 +76,7 @@ jobs:
           npm run ingest:injuries || echo "injuries refresh failed (non-fatal)"
           npm run ingest:free || echo "summary refresh failed (non-fatal)"
           npm run scrape:nba-props || echo "props scrape failed (non-fatal)"
+          npm run picks:log || echo "picks logger failed (non-fatal)"
 
       - name: Run orchestrator
         env:

@@ -159,6 +159,42 @@ model AgentMemory {
   @@index([type, active])
 }
 
+// Snapshot of model-derived picks (market heuristic, scraped player props)
+// captured at the moment they were displayed on the dashboard. Lets us track
+// historical performance per source AND give the dream agent more data to
+// learn from beyond just the bot's own picks.
+model ModelPickSnapshot {
+  id             Int       @id @default(autoincrement())
+  source         String    // market | prop_nba | prop_mlb
+  league         String    // NBA | MLB
+  snapshotDate   String    // YYYY-MM-DD (UTC), used for dedup
+  // Common
+  matchup        String?   // game-level picks
+  market         String    // moneyline | spread | total | player_points | ...
+  selection      String    // canonical pick string (team or player+side)
+  line           Float?
+  oddsAmerican   Int?
+  confidence     Int?
+  edge           Float?
+  rationaleSignals String  // JSON array of strings
+  // Prop-specific
+  player         String?
+  team           String?
+  opponent       String?
+  propType       String?   // copy of market for clarity (player_points, etc)
+  // Outcome (filled by grader, nullable until then)
+  result         String?   // win | loss | push | void | pending
+  actualValue    Float?    // actual final value (e.g., player's pts scored)
+  notes          String?
+  gradedAt       DateTime?
+
+  createdAt      DateTime  @default(now())
+
+  @@unique([source, snapshotDate, market, selection, player])
+  @@index([source, snapshotDate])
+  @@index([league, result])
+}
+
 model AgentDreamRun {
   id            Int       @id @default(autoincrement())
   startedAt     DateTime  @default(now())
