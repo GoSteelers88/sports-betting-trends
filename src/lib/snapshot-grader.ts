@@ -302,18 +302,31 @@ async function gradeMarketPicks(daysBack: number): Promise<{ graded: number; unm
   let graded = 0;
   let unmatched = 0;
 
+  // 36-hour proximity window to prevent repeat-matchups (MLB series, NBA b2b)
+  // from being graded against the wrong day's score.
+  const PROXIMITY_MS = 36 * 60 * 60 * 1000;
+
   for (const p of pending) {
     const events = byLeague[p.league] ?? [];
+    // Anchor to snapshotDate (logged when the pick was generated) for the
+    // proximity check; fall back to createdAt if snapshotDate is missing.
+    const anchor = p.snapshotDate
+      ? new Date(`${p.snapshotDate}T12:00:00Z`).getTime()
+      : p.createdAt.getTime();
     const match = events.find(ev => {
       const competitors = ev.competitions?.[0]?.competitors ?? [];
       const home = competitors.find(c => c.homeAway === "home")?.team?.displayName ?? "";
       const away = competitors.find(c => c.homeAway === "away")?.team?.displayName ?? "";
-      return (
+      const teamOk =
         teamMatches(home, p.selection) ||
         teamMatches(away, p.selection) ||
         (p.matchup &&
-          (teamMatches(home, p.matchup) || teamMatches(away, p.matchup)))
-      );
+          (teamMatches(home, p.matchup) || teamMatches(away, p.matchup)));
+      if (!teamOk) return false;
+      if (!ev.date) return true;
+      const ft = new Date(ev.date).getTime();
+      if (!Number.isFinite(ft)) return true;
+      return Math.abs(ft - anchor) < PROXIMITY_MS;
     });
     if (!match) {
       unmatched++;

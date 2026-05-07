@@ -127,6 +127,10 @@ model AgentPick {
 
   @@index([league, gameDate])
   @@index([runId])
+  // Idempotency: if cron retries fire two orchestrator runs that both produce
+  // the same pick on the same day, only the first lands. Bankroll guard's
+  // same-game dedup is per-run; this is the cross-run defense.
+  @@unique([league, gameDate, market, selection], name: "uniq_pick_per_game_market")
 }
 
 model AgentOutcome {

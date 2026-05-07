@@ -47,7 +47,7 @@ Return ONLY a JSON object, no prose, no markdown:
 }`;
 
 export async function critique(league: AgentLeague, picks: GradedPick[]): Promise<CritiqueResult> {
-  if (picks.length === 0) return { decisions: [], rawText: "" };
+  if (picks.length === 0) return { decisions: [], rawText: "", parseFailed: false };
 
   const client = getAnthropic();
 

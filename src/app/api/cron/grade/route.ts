@@ -4,14 +4,11 @@ export const maxDuration = 120;
 import { NextRequest, NextResponse } from "next/server";
 import { autoGradeYesterday } from "@/lib/agent/autograder";
 import { notifyGraderReport } from "@/lib/agent/notify";
+import { assertCronAuth } from "@/lib/assertCronAuth";
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return new NextResponse("Server misconfigured", { status: 500 });
-  const auth = req.headers.get("authorization") ?? "";
-  if (auth !== `Bearer ${secret}`) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const authError = assertCronAuth(req);
+  if (authError) return authError;
 
   try {
     const report = await autoGradeYesterday();

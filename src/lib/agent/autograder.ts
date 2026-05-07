@@ -182,14 +182,25 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
     byLeague: {},
   };
 
+  // 36-hour proximity window: a pick from day N can only grade against a game
+  // whose ESPN date is within 36h. Stops repeat-matchups (MLB series, NBA b2b)
+  // from being mis-graded against the wrong day's score.
+  const PROXIMITY_MS = 36 * 60 * 60 * 1000;
+
   for (const pick of pendingPicks) {
     const finals = finalsByLeague.get(pick.league) ?? [];
-    // Try to match by both teams in the pick.matchup
-    const match = finals.find(
-      f =>
+    const pickTime = pick.gameDate.getTime();
+    // Try to match by both teams in the pick.matchup AND by date proximity
+    const match = finals.find(f => {
+      const teamOk =
         (teamMatches(f.homeTeam, pick.matchup) || teamMatches(f.awayTeam, pick.matchup)) &&
-        (teamMatches(f.homeTeam, pick.selection) || teamMatches(f.awayTeam, pick.selection))
-    );
+        (teamMatches(f.homeTeam, pick.selection) || teamMatches(f.awayTeam, pick.selection));
+      if (!teamOk) return false;
+      if (!f.date) return true; // no date info — fall back to team-only match
+      const ft = new Date(f.date).getTime();
+      if (!Number.isFinite(ft)) return true;
+      return Math.abs(ft - pickTime) < PROXIMITY_MS;
+    });
     if (!match) {
       report.unmatched++;
       continue;

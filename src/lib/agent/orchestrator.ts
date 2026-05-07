@@ -251,17 +251,21 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
 
   // Persist ONLY the post-pipeline survivors. Killed/dropped picks never reach
   // the DB, so they don't pollute dream training data or the dashboard count.
+  // If persistence fails, we DO NOT send the Discord notification — picks
+  // shown in Discord but missing from the DB would break grading.
+  let persistOk = false;
   if (finalPicks.length > 0) {
     try {
-      await persistFinalPicks({
+      const persistResult = await persistFinalPicks({
         runId: analystRunId ?? runId,
         league,
         finalPicks,
         toolsUsed: analystToolsUsed as Parameters<typeof persistFinalPicks>[0]["toolsUsed"],
       });
+      persistOk = true;
       trace.push({
         step: "persist_picks",
-        detail: { count: finalPicks.length },
+        detail: { inserted: persistResult.ids.length, skipped_idempotent: persistResult.skipped },
         at: new Date().toISOString(),
       });
     } catch (err) {
@@ -271,10 +275,21 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
         at: new Date().toISOString(),
       });
     }
+  } else {
+    persistOk = true; // nothing to persist — proceed to notify "no picks"
   }
 
-  // Discord notification (no-op if webhook not set)
-  await notifyPicks(league, finalPicks, runId);
+  // Discord notification: only send if persistence worked. A failed persist
+  // means picks shown in chat but missing from DB → grading divergence.
+  if (persistOk) {
+    await notifyPicks(league, finalPicks, runId);
+  } else {
+    trace.push({
+      step: "discord_skipped",
+      detail: "persistence failed — refusing to broadcast unpersisted picks",
+      at: new Date().toISOString(),
+    });
+  }
 
   return {
     runId,

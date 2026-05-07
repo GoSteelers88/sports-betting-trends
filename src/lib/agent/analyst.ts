@@ -157,24 +157,30 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
   };
 }
 
-// Persist the final picks (post-critic, post-bankroll) in a single transaction.
-// Idempotent within a runId: if you call this twice for the same run, you'll
-// get duplicate AgentPick rows. Caller is responsible for not double-calling.
+// Persist the final picks (post-critic, post-bankroll). Idempotent across
+// retries via @@unique([league, gameDate, market, selection]) — duplicate
+// inserts are silently skipped. Counts of inserted vs skipped returned for
+// observability.
 export async function persistFinalPicks(args: {
   runId: string;
   league: string;
   finalPicks: GradedPick[];
   toolsUsed: ToolName[];
-}): Promise<number[]> {
+}): Promise<{ ids: number[]; skipped: number }> {
+  // Anchor gameDate to today's UTC midnight so the unique key works across
+  // multiple runs in the same day (otherwise a millisecond difference would
+  // bypass the constraint).
   const today = new Date();
+  const gameDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
   const ids: number[] = [];
-  await prisma.$transaction(async tx => {
-    for (const p of args.finalPicks) {
-      const created = await tx.agentPick.create({
+  let skipped = 0;
+  for (const p of args.finalPicks) {
+    try {
+      const created = await prisma.agentPick.create({
         data: {
           runId: args.runId,
           league: args.league,
-          gameDate: today,
+          gameDate,
           matchup: p.matchup,
           market: p.market,
           selection: p.selection,
@@ -192,9 +198,18 @@ export async function persistFinalPicks(args: {
         },
       });
       ids.push(created.id);
+    } catch (err) {
+      // Prisma throws P2002 on unique-constraint violation — that's our
+      // idempotency working as intended. Other errors propagate.
+      const code = (err as { code?: string })?.code;
+      if (code === "P2002") {
+        skipped++;
+        continue;
+      }
+      throw err;
     }
-  });
-  return ids;
+  }
+  return { ids, skipped };
 }
 
 // Strip optional ```json fences and parse

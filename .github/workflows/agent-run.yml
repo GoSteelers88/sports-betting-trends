@@ -111,11 +111,12 @@ jobs:
             "data/processed/mlb-batting.json"
           )
           # Pre-commit secret scan — refuse to commit if any allowlisted file
-          # contains a recognizable secret pattern.
+          # contains a recognizable secret pattern. Defense in depth.
+          SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|api\.vercel\.com/v1/integrations/deploy/|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|"(THE_ODDS_API_KEY|DISCORD_BOT_TOKEN|ANTHROPIC_API_KEY|TURSO_AUTH_TOKEN|KALSHI_API_KEY|CRON_SECRET|ASSISTANT_SECRET)"|[Aa]uthorization":\s*"Bearer'
           for f in "${ALLOWED[@]}"; do
             [ -f "$f" ] || continue
-            if grep -qE 'sk-ant-(api|oat)|tursodatabase\.com|libsql://|"THE_ODDS_API_KEY"|"DISCORD_BOT_TOKEN"|-----BEGIN' "$f"; then
-              echo "ABORT: $f contains a secret-looking pattern; refusing to commit."
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
               exit 1
             fi
           done

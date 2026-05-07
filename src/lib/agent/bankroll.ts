@@ -18,7 +18,31 @@ export type BankrollGuardResult = {
 // Detect if a pick is a road dog (away team taking plus-money). Robust to
 // either "Away @ Home" or "Home vs Away" matchup strings: `@` reliably means
 // "away @ home", but `vs` does NOT — convention is "home vs away". We use
-// the separator to determine which side of the split is the away team.
+// the separator to determine which side of the split is the away team, then
+// token-aware matching to avoid substring false-positives (e.g., "St. John's"
+// vs "St. John's Red Storm").
+function normalizeForMatch(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[.'-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function selectionMentionsTeam(selection: string, team: string): boolean {
+  const sel = normalizeForMatch(selection);
+  const t = normalizeForMatch(team);
+  if (!sel || !t) return false;
+  if (sel === t) return true;
+  // Token-aware: every token of the team name (length >= 4) must appear in selection
+  const teamTokens = t.split(/\s+/).filter(x => x.length >= 4);
+  if (teamTokens.length === 0) return sel.includes(t);
+  const selTokens = new Set(sel.split(/\s+/));
+  return teamTokens.every(x => selTokens.has(x));
+}
+
 function pickIsRoadDog(p: GradedPick): boolean {
   if (p.market !== "moneyline") return false;
   if (p.oddsAmerican <= 0) return false;
@@ -35,19 +59,18 @@ function pickIsRoadDog(p: GradedPick): boolean {
     return false;
   }
 
-  const sel = p.selection.toLowerCase();
-  return sel.includes(awayTeam.toLowerCase().trim());
+  return selectionMentionsTeam(p.selection, awayTeam);
 }
 
 function gameKey(p: GradedPick): string {
-  // Normalize separator: treat "vs" and "@" as the same key by sorting tokens
-  // alphabetically so "Lakers vs Celtics" and "Celtics @ Lakers" collapse.
-  const norm = p.matchup
-    .toLowerCase()
-    .replace(/\s+vs\.?\s+/i, " | ")
-    .replace(/\s+@\s+/i, " | ")
-    .replace(/\s+/g, " ")
-    .trim();
+  // Normalize separator + diacritics + punctuation so "Lakers vs Celtics",
+  // "Celtics @ Lakers", and "lakers vs celtics" all collapse. Also strips
+  // accents/apostrophes so "St. John's" matches "St Johns".
+  const norm = normalizeForMatch(
+    p.matchup
+      .replace(/\s+vs\.?\s+/i, " | ")
+      .replace(/\s+@\s+/i, " | ")
+  );
   const parts = norm.split(" | ");
   if (parts.length === 2) return parts.sort().join(" | ");
   return norm;

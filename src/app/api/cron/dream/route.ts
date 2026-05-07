@@ -3,15 +3,11 @@ export const maxDuration = 300;
 
 import { NextRequest, NextResponse } from "next/server";
 import { dream } from "@/lib/agent/dream";
+import { assertCronAuth } from "@/lib/assertCronAuth";
 
-// Cron-protected. Vercel sends Bearer ${CRON_SECRET}.
 export async function POST(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return new NextResponse("Server misconfigured", { status: 500 });
-  const auth = req.headers.get("authorization") ?? "";
-  if (auth !== `Bearer ${secret}`) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const authError = assertCronAuth(req);
+  if (authError) return authError;
 
   try {
     const result = await dream();
@@ -24,5 +20,5 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Allow GET for Vercel Cron triggers
+// Vercel Cron only sends POST; we allow GET as a fallback for manual testing.
 export const GET = POST;

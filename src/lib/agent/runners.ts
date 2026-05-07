@@ -107,9 +107,10 @@ export function runIngest(script: IngestScript): IngestResult {
   });
 
   // Only update cooldown on successful runs to avoid locking out retries
-  // after transient failures (network blips, ESPN 5xx, etc.).
+  // after transient failures. Cooldown is anchored to startedAt (not now),
+  // so a 5-min ingest doesn't push the next-allowed time 5 minutes further out.
   if (proc.status === 0) {
-    cooldowns[script] = Date.now();
+    cooldowns[script] = startedAt;
     saveCooldowns(cooldowns);
   }
 
