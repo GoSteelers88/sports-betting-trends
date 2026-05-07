@@ -75,21 +75,41 @@ function yyyymmdd(d: Date): string {
   return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
 }
 
+// Common name suffixes to strip so "Jr." / "II" / "III" don't break matches.
+const NAME_SUFFIX_RE = /\b(jr|sr|ii|iii|iv|v)\b/g;
+
 function normalizeName(s: string): string {
   return s
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // strip accents
+    .replace(/[̀-ͯ]/g, "") // strip combining diacritics (was a literal-char bug)
     .replace(/[.'-]/g, "")
+    .replace(NAME_SUFFIX_RE, "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
+// Token-aware team matcher. Avoids the "New York" → both Yankees AND Mets
+// false-positive that bidirectional `includes` produces. Requires every
+// non-trivial token from the shorter side to be present in the longer side.
 function teamMatches(needle: string, hay: string): boolean {
   const a = normalizeName(needle);
   const b = normalizeName(hay);
   if (!a || !b) return false;
-  return a.includes(b) || b.includes(a);
+  if (a === b) return true;
+
+  const tokensA = a.split(/\s+/).filter(t => t.length >= 4);
+  const tokensB = b.split(/\s+/).filter(t => t.length >= 4);
+  if (tokensA.length === 0 || tokensB.length === 0) {
+    // Falls back to substring only when we have nothing to tokenize on
+    return a.includes(b) || b.includes(a);
+  }
+
+  // Use the shorter token set as the "must match" — every one of those tokens
+  // must appear (whole-word) in the other side.
+  const [need, have] = tokensA.length <= tokensB.length ? [tokensA, tokensB] : [tokensB, tokensA];
+  const haveSet = new Set(have);
+  return need.every(t => haveSet.has(t));
 }
 
 async function fetchJson<T>(url: string, ms = 12_000): Promise<T | null> {
@@ -129,10 +149,26 @@ async function buildPlayerStatLookup(
   yyyymmddDate: string
 ): Promise<PlayerStatLookup> {
   const lookup: PlayerStatLookup = { byPlayer: new Map() };
-  const board = await fetchJson<Espn>(`${SCOREBOARD[league]}?dates=${yyyymmddDate}`);
-  if (!board?.events) return lookup;
+  // Query ±1 day to cover ET/UTC boundary slip on late-night games.
+  const base = new Date(
+    `${yyyymmddDate.slice(0, 4)}-${yyyymmddDate.slice(4, 6)}-${yyyymmddDate.slice(6, 8)}T00:00:00Z`
+  );
+  const dates = [-1, 0, 1].map(offset => {
+    const d = new Date(base.getTime() + offset * 24 * 60 * 60 * 1000);
+    return yyyymmdd(d);
+  });
+  const seenEvents = new Set<string>();
+  const events: EspnEvent[] = [];
+  for (const d of dates) {
+    const board = await fetchJson<Espn>(`${SCOREBOARD[league]}?dates=${d}`);
+    for (const ev of board?.events ?? []) {
+      if (seenEvents.has(ev.id)) continue;
+      seenEvents.add(ev.id);
+      events.push(ev);
+    }
+  }
 
-  for (const ev of board.events) {
+  for (const ev of events) {
     if (!ev.status?.type?.completed) continue;
     const summary = await fetchJson<EspnSummary>(`${SUMMARY[league]}?event=${ev.id}`);
     if (!summary?.boxscore?.players) continue;
@@ -239,12 +275,28 @@ async function gradeMarketPicks(daysBack: number): Promise<{ graded: number; unm
   });
   if (pending.length === 0) return { graded: 0, unmatched: 0 };
 
-  // Determine final scores by league
+  // Determine final scores by league. Query ±1 day to cover ET/UTC boundary slip.
+  const base = new Date(
+    `${yyyymmddDate.slice(0, 4)}-${yyyymmddDate.slice(4, 6)}-${yyyymmddDate.slice(6, 8)}T00:00:00Z`
+  );
+  const dates = [-1, 0, 1].map(offset => {
+    const d = new Date(base.getTime() + offset * 24 * 60 * 60 * 1000);
+    return yyyymmdd(d);
+  });
   const byLeague: Record<string, EspnEvent[]> = {};
   for (const lg of new Set(pending.map(p => p.league))) {
     if (lg !== "NBA" && lg !== "MLB") continue;
-    const board = await fetchJson<Espn>(`${SCOREBOARD[lg as "NBA" | "MLB"]}?dates=${yyyymmddDate}`);
-    byLeague[lg] = (board?.events ?? []).filter(e => e.status?.type?.completed);
+    const seen = new Set<string>();
+    const events: EspnEvent[] = [];
+    for (const d of dates) {
+      const board = await fetchJson<Espn>(`${SCOREBOARD[lg as "NBA" | "MLB"]}?dates=${d}`);
+      for (const ev of board?.events ?? []) {
+        if (seen.has(ev.id)) continue;
+        seen.add(ev.id);
+        if (ev.status?.type?.completed) events.push(ev);
+      }
+    }
+    byLeague[lg] = events;
   }
 
   let graded = 0;

@@ -16,9 +16,19 @@ function pickLine(p: GradedPick): string {
   );
 }
 
+// Validate webhook URL points at Discord (defense against env-poisoning
+// pivoting our pick details to an attacker-controlled URL).
+function validDiscordWebhook(u: string | undefined): u is string {
+  if (!u) return false;
+  return /^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(u);
+}
+
 async function postWebhook(content: string): Promise<void> {
   const url = process.env.DISCORD_WEBHOOK_URL?.trim();
-  if (!url) return;
+  if (!validDiscordWebhook(url)) {
+    if (url) console.warn("discord notify skipped: DISCORD_WEBHOOK_URL is not a Discord webhook");
+    return;
+  }
   try {
     await fetch(url, {
       method: "POST",

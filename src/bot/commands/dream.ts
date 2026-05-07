@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 import type { Command } from "./index";
+import { requireOperator } from "../authz";
 
 // Dream is too long to run inside a Discord interaction (3-second initial reply,
 // 15-min defer ceiling, plus dream() can take 10+ minutes on Opus). Trigger
@@ -14,6 +15,7 @@ const data = new SlashCommandBuilder()
 export const dreamCommand: Command = {
   data,
   async handler(interaction) {
+    if (!(await requireOperator(interaction))) return;
     const token = process.env.GH_PAT?.trim();
     if (!token) {
       await interaction.reply({

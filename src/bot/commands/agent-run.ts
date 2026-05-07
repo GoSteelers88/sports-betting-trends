@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 import type { Command } from "./index";
+import { requireOperator } from "../authz";
 
 // Triggers the GitHub Actions agent-run workflow via REST API.
 // The bot itself doesn't run the orchestrator — too heavy for Railway and
@@ -32,6 +33,7 @@ const data = new SlashCommandBuilder()
 export const agentRunCommand: Command = {
   data,
   async handler(interaction) {
+    if (!(await requireOperator(interaction))) return;
     const sub = interaction.options.getSubcommand();
     const token = process.env.GH_PAT?.trim();
     if (!token) {

@@ -14,7 +14,7 @@ import crypto from "node:crypto";
 import { getAnthropic, MODELS } from "./client";
 import { checkHealth, type DataHealth } from "./health";
 import { runIngest, ALLOWED_SCRIPTS, type IngestScript, type IngestResult } from "./runners";
-import { analyze } from "./analyst";
+import { analyze, persistFinalPicks } from "./analyst";
 import { critique, applyCritiqueToPicks, type CritiqueResult } from "./critic";
 import { applyBankrollGuard, type BankrollGuardResult } from "./bankroll";
 import { notifyPicks } from "./notify";
@@ -120,8 +120,9 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
   ];
 
   let iterations = 0;
+  let analystDone = false;
 
-  while (iterations < MAX_ITERATIONS) {
+  while (iterations < MAX_ITERATIONS && !analystDone) {
     iterations++;
     const response = await client.messages.create({
       model: MODELS.analyst,
@@ -176,6 +177,10 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
                 pickCount: out.picks.length,
                 picks: out.picks,
               };
+              // Hard-stop the orchestrator loop after a successful analyst
+              // delegation. The system prompt asks for this, but we don't
+              // rely on LLM compliance for safety-critical control flow.
+              analystDone = true;
             }
           } else {
             result = { error: `unknown tool: ${name}` };
@@ -214,15 +219,58 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
   if (analystPicks && analystPicks.length > 0) {
     critique_ = await critique(league, analystPicks);
     trace.push({ step: "critic", detail: critique_, at: new Date().toISOString() });
-    const afterCritique = applyCritiqueToPicks(analystPicks, critique_.decisions);
-    killed = afterCritique.killed;
-    const guard = applyBankrollGuard(afterCritique.kept);
-    trace.push({ step: "bankroll_guard", detail: { kept: guard.kept.length, dropped: guard.dropped.length, flags: guard.flags, totalUnits: guard.totalUnits }, at: new Date().toISOString() });
-    dropped = guard.dropped;
-    flags = guard.flags;
-    finalPicks = guard.kept;
+
+    // Fail-closed: if critic JSON failed to parse (parseFailed flag set, or
+    // empty decisions when there were picks to review), drop ALL picks rather
+    // than auto-approving them. The critic is a safety layer; silent failure
+    // = system disabled, not "everyone passes".
+    if (critique_.parseFailed) {
+      trace.push({
+        step: "critic_failed_closed",
+        detail: "critic JSON parse failed — dropping all picks (fail-closed)",
+        at: new Date().toISOString(),
+      });
+      killed = analystPicks.map(p => ({ pick: p, reason: "critic JSON parse failure (fail-closed)" }));
+      finalPicks = [];
+    } else {
+      const afterCritique = applyCritiqueToPicks(analystPicks, critique_.decisions);
+      killed = afterCritique.killed;
+      const guard = applyBankrollGuard(afterCritique.kept);
+      trace.push({
+        step: "bankroll_guard",
+        detail: { kept: guard.kept.length, dropped: guard.dropped.length, flags: guard.flags, totalUnits: guard.totalUnits },
+        at: new Date().toISOString(),
+      });
+      dropped = guard.dropped;
+      flags = guard.flags;
+      finalPicks = guard.kept;
+    }
   } else {
     finalPicks = analystPicks ?? [];
+  }
+
+  // Persist ONLY the post-pipeline survivors. Killed/dropped picks never reach
+  // the DB, so they don't pollute dream training data or the dashboard count.
+  if (finalPicks.length > 0) {
+    try {
+      await persistFinalPicks({
+        runId: analystRunId ?? runId,
+        league,
+        finalPicks,
+        toolsUsed: analystToolsUsed as Parameters<typeof persistFinalPicks>[0]["toolsUsed"],
+      });
+      trace.push({
+        step: "persist_picks",
+        detail: { count: finalPicks.length },
+        at: new Date().toISOString(),
+      });
+    } catch (err) {
+      trace.push({
+        step: "persist_picks_failed",
+        detail: err instanceof Error ? err.message : String(err),
+        at: new Date().toISOString(),
+      });
+    }
   }
 
   // Discord notification (no-op if webhook not set)

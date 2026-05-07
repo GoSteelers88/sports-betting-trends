@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from "discord.js";
 import { prisma } from "@/lib/prisma";
 import type { Command } from "./index";
+import { requireOperator } from "../authz";
 
 function unitsPnl(american: number, stake: number, result: string): number | null {
   if (result === "win") {
@@ -33,6 +34,7 @@ const data = new SlashCommandBuilder()
 export const gradeCommand: Command = {
   data,
   async handler(interaction) {
+    if (!(await requireOperator(interaction))) return;
     await interaction.deferReply({ ephemeral: true });
 
     const pickId = interaction.options.getInteger("pickid", true);

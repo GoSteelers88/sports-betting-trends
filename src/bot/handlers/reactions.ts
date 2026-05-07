@@ -25,6 +25,17 @@ export async function handleReaction(
     try { await reaction.message.fetch(); } catch { return; }
   }
 
+  // Security gate: only honor reactions on messages authored by THIS bot.
+  // Otherwise any user could post "#42 placed" in any channel and trigger
+  // an outcome write, polluting our grading data.
+  const botId = reaction.client.user?.id;
+  const messageAuthorId = reaction.message.author?.id;
+  if (!botId || messageAuthorId !== botId) return;
+
+  // Optional: also restrict to the picks channel if env is set.
+  const allowedChannel = process.env.DISCORD_PICKS_CHANNEL_ID?.trim();
+  if (allowedChannel && reaction.message.channelId !== allowedChannel) return;
+
   const content = reaction.message.content ?? "";
   // Try embed fields too — picks-today posts as embeds
   const embedText = (reaction.message.embeds ?? [])

@@ -1,7 +1,8 @@
 name: Agent — weekly dream
 
 # Consolidates the agent's memory store: merges duplicates, retires stale rules,
-# surfaces patterns from graded outcomes. Uses Opus for higher-quality reflection.
+# surfaces patterns from graded outcomes. Reads/writes Turso directly.
+# Uses Opus for higher-quality reflection.
 
 on:
   workflow_dispatch:
@@ -27,41 +28,9 @@ jobs:
       - name: Generate Prisma client
         run: npm run prisma:generate
 
-      - name: Apply Prisma migrations
-        run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: "file:./prisma/dev.db"
-
-      - name: Pull latest graded DB artifact
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          workflow: agent-grade.yml
-          name_is_regexp: true
-          name: ^agent-grade-
-          path: ./_artifact
-          if_no_artifact_found: warn
-
-      - name: Restore graded DB
-        run: |
-          if [ -f ./_artifact/dev.db ]; then
-            cp ./_artifact/dev.db ./prisma/dev.db
-            echo "restored graded dev.db from artifact"
-          else
-            echo "no graded artifact found; dream will have no outcomes to learn from"
-          fi
-
       - name: Run dream
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          DATABASE_URL: "file:./prisma/dev.db"
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: npm run agent:dream
-
-      - name: Upload dreamed DB
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: agent-dream-${{ github.run_id }}
-          path: prisma/dev.db
-          retention-days: 90

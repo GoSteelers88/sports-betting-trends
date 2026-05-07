@@ -67,10 +67,28 @@ async function fetchFinalsForDay(league: "NBA" | "MLB" | "NCAAB", yyyymmdd: stri
   return out;
 }
 
+// Token-aware matcher: avoids "New York" matching both Yankees and Mets.
 function teamMatches(needle: string, haystack: string): boolean {
-  const n = needle.toLowerCase().replace(/\s+/g, " ").trim();
-  const h = haystack.toLowerCase().replace(/\s+/g, " ").trim();
-  return h.includes(n) || n.includes(h);
+  const norm = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[.'-]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  const a = norm(needle);
+  const b = norm(haystack);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const tokensA = a.split(/\s+/).filter(t => t.length >= 4);
+  const tokensB = b.split(/\s+/).filter(t => t.length >= 4);
+  if (tokensA.length === 0 || tokensB.length === 0) {
+    return a.includes(b) || b.includes(a);
+  }
+  const [need, have] = tokensA.length <= tokensB.length ? [tokensA, tokensB] : [tokensB, tokensA];
+  const haveSet = new Set(have);
+  return need.every(t => haveSet.has(t));
 }
 
 type GradeResult = "win" | "loss" | "push" | "void";
@@ -81,7 +99,8 @@ function gradeMoneyline(selection: string, finals: GameFinal): GradeResult | nul
   const pickedHome = teamMatches(home, selection);
   const pickedAway = teamMatches(away, selection);
   if (!pickedHome && !pickedAway) return null;
-  if (finals.homeScore === finals.awayScore) return "push"; // rare in baseball/basketball
+  // NBA/MLB don't allow ties; a tied "final" is bad data → mark void, not push.
+  if (finals.homeScore === finals.awayScore) return "void";
   const homeWon = finals.homeScore > finals.awayScore;
   if (pickedHome) return homeWon ? "win" : "loss";
   return homeWon ? "loss" : "win";
@@ -115,7 +134,7 @@ function yyyymmddUtc(d: Date): string {
 export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport> {
   const target = new Date();
   target.setUTCDate(target.getUTCDate() - daysBack);
-  const yyyymmdd = yyyymmddUtc(target);
+  const yyyymmddDate = yyyymmddUtc(target);
 
   // Pull pending picks from the target date (loose window — anything with no outcome
   // from the last 3 days, since cron may have missed runs)
@@ -129,15 +148,34 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
     },
   });
 
+  // Query ±1 day to cover the ET/UTC boundary slip on late-night games.
+  const dates: string[] = [];
+  for (const offset of [-1, 0, 1]) {
+    const d = new Date(target);
+    d.setUTCDate(d.getUTCDate() + offset);
+    dates.push(yyyymmddUtc(d));
+  }
+
   const leagues = Array.from(new Set(pendingPicks.map(p => p.league))) as Array<"NBA" | "MLB" | "NCAAB">;
   const finalsByLeague = new Map<string, GameFinal[]>();
   for (const lg of leagues) {
-    finalsByLeague.set(lg, await fetchFinalsForDay(lg, yyyymmdd));
+    const seenIds = new Set<string>();
+    const all: GameFinal[] = [];
+    for (const d of dates) {
+      const finals = await fetchFinalsForDay(lg, d);
+      for (const f of finals) {
+        const key = `${f.homeTeam}::${f.awayTeam}::${f.date}`;
+        if (seenIds.has(key)) continue;
+        seenIds.add(key);
+        all.push(f);
+      }
+    }
+    finalsByLeague.set(lg, all);
   }
 
   const report: AutoGradeReport = {
     ranAt: new Date().toISOString(),
-    date: yyyymmdd,
+    date: yyyymmddDate,
     picksChecked: pendingPicks.length,
     graded: 0,
     unmatched: 0,
@@ -167,15 +205,31 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
     }
 
     const pnl = unitsPnl(pick.oddsAmerican, pick.kellyStakeUnits, result);
-    await prisma.agentOutcome.create({
-      data: {
-        pickId: pick.id,
-        result,
-        actualOutcome: `${match.awayTeam} ${match.awayScore} @ ${match.homeTeam} ${match.homeScore}`,
-        unitsPnl: pnl,
-        notes: "auto-graded from ESPN scoreboard",
-      },
-    });
+    // Use upsert so concurrent runs (cron + manual trigger) don't crash on
+    // unique-pickId constraint.
+    try {
+      await prisma.agentOutcome.upsert({
+        where: { pickId: pick.id },
+        create: {
+          pickId: pick.id,
+          result,
+          actualOutcome: `${match.awayTeam} ${match.awayScore} @ ${match.homeTeam} ${match.homeScore}`,
+          unitsPnl: pnl,
+          notes: "auto-graded from ESPN scoreboard",
+        },
+        update: {
+          result,
+          actualOutcome: `${match.awayTeam} ${match.awayScore} @ ${match.homeTeam} ${match.homeScore}`,
+          unitsPnl: pnl,
+          notes: "auto-graded from ESPN scoreboard (regraded)",
+          gradedAt: new Date(),
+        },
+      });
+    } catch (err) {
+      console.error(`failed to grade pick #${pick.id}:`, err);
+      report.unmatched++;
+      continue;
+    }
 
     report.graded++;
     const lg = (report.byLeague[pick.league] ??= {

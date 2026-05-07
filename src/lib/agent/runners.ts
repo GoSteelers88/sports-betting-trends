@@ -1,6 +1,17 @@
 // Wraps `npm run ingest:*` scripts so the orchestrator can refresh stale data.
-// Quota-aware: enforces a per-script cooldown so the agent can't burn through
-// 500 monthly Odds API requests in a tight loop.
+//
+// Quota protection has TWO layers:
+//   1. The cron schedule itself (twice daily) is the primary throttle —
+//      workflow runs are capped, so per-script invocations are capped.
+//   2. The FS-based cooldown below prevents in-process duplicate calls within
+//      one workflow run (e.g., orchestrator calls run_ingest twice for the
+//      same script).
+//
+// The COOLDOWN_FILE does NOT persist across workflow runs (ephemeral CI
+// filesystem). That's intentional — we don't need cross-run cooldowns
+// because the cron schedule already throttles invocations. If you ever
+// remove the schedule and call ingest more aggressively, migrate this state
+// to Turso (add an IngestCooldown model).
 
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -95,8 +106,12 @@ export function runIngest(script: IngestScript): IngestResult {
     env: { ...process.env, NO_COLOR: "1" },
   });
 
-  cooldowns[script] = Date.now();
-  saveCooldowns(cooldowns);
+  // Only update cooldown on successful runs to avoid locking out retries
+  // after transient failures (network blips, ESPN 5xx, etc.).
+  if (proc.status === 0) {
+    cooldowns[script] = Date.now();
+    saveCooldowns(cooldowns);
+  }
 
   return {
     script,

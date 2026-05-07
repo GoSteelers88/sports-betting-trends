@@ -142,32 +142,10 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
   const parsed = parsePicks(finalText);
   const graded = gradePicks(parsed);
 
-  // Persist picks
-  const today = new Date();
-  for (const p of graded) {
-    await prisma.agentPick.create({
-      data: {
-        runId,
-        league,
-        gameDate: today,
-        matchup: p.matchup,
-        market: p.market,
-        selection: p.selection,
-        oddsAmerican: p.oddsAmerican,
-        modelProb: p.modelProb,
-        marketProb: p.marketProb,
-        edge: p.edge,
-        kellyStakeUnits: p.kellyStakeUnits,
-        confidence: p.confidence,
-        thesis: p.thesis,
-        invalidation: p.invalidation,
-        signals: JSON.stringify(p.signals),
-        toolsUsed: JSON.stringify(toolsUsed),
-        modelId: MODELS.analyst,
-      },
-    });
-  }
-
+  // NOTE: persistence intentionally moved to the orchestrator's persistFinalPicks()
+  // call, which runs AFTER the critic + bankroll guard. This prevents picks the
+  // critic killed (or bankroll dropped) from polluting the dream agent's
+  // training data and the dashboard's pick count.
   return {
     runId,
     league,
@@ -177,6 +155,46 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
     rawResponseText: finalText,
     iterations,
   };
+}
+
+// Persist the final picks (post-critic, post-bankroll) in a single transaction.
+// Idempotent within a runId: if you call this twice for the same run, you'll
+// get duplicate AgentPick rows. Caller is responsible for not double-calling.
+export async function persistFinalPicks(args: {
+  runId: string;
+  league: string;
+  finalPicks: GradedPick[];
+  toolsUsed: ToolName[];
+}): Promise<number[]> {
+  const today = new Date();
+  const ids: number[] = [];
+  await prisma.$transaction(async tx => {
+    for (const p of args.finalPicks) {
+      const created = await tx.agentPick.create({
+        data: {
+          runId: args.runId,
+          league: args.league,
+          gameDate: today,
+          matchup: p.matchup,
+          market: p.market,
+          selection: p.selection,
+          oddsAmerican: p.oddsAmerican,
+          modelProb: p.modelProb,
+          marketProb: p.marketProb,
+          edge: p.edge,
+          kellyStakeUnits: p.kellyStakeUnits,
+          confidence: p.confidence,
+          thesis: p.thesis,
+          invalidation: p.invalidation,
+          signals: JSON.stringify(p.signals),
+          toolsUsed: JSON.stringify(args.toolsUsed),
+          modelId: MODELS.analyst,
+        },
+      });
+      ids.push(created.id);
+    }
+  });
+  return ids;
 }
 
 // Strip optional ```json fences and parse

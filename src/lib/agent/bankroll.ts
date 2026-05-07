@@ -6,6 +6,7 @@ import type { GradedPick } from "./grader";
 const MAX_DAILY_UNITS = 5.0;
 const MAX_PICKS_PER_GAME = 1;
 const ROAD_DOG_CLUSTER_LIMIT = 3; // flag if 3+ road dogs same day
+const FLOAT_EPSILON = 1e-9;
 
 export type BankrollGuardResult = {
   kept: GradedPick[];
@@ -14,20 +15,42 @@ export type BankrollGuardResult = {
   totalUnits: number;
 };
 
+// Detect if a pick is a road dog (away team taking plus-money). Robust to
+// either "Away @ Home" or "Home vs Away" matchup strings: `@` reliably means
+// "away @ home", but `vs` does NOT — convention is "home vs away". We use
+// the separator to determine which side of the split is the away team.
 function pickIsRoadDog(p: GradedPick): boolean {
-  // `selection` typically reads "Team @ Odds" or "Team -spread". Heuristic:
-  // away team in matchup AND positive moneyline odds.
   if (p.market !== "moneyline") return false;
   if (p.oddsAmerican <= 0) return false;
-  const matchupParts = p.matchup.split(/\s+vs\.?\s+|\s+@\s+/i);
-  if (matchupParts.length !== 2) return false;
-  const [first] = matchupParts;
-  // Selection must mention the away (first) team for it to be the road dog
-  return p.selection.toLowerCase().includes(first.toLowerCase().trim());
+
+  const atSplit = p.matchup.split(/\s+@\s+/);
+  const vsSplit = p.matchup.split(/\s+vs\.?\s+/i);
+
+  let awayTeam: string | null = null;
+  if (atSplit.length === 2) {
+    awayTeam = atSplit[0]; // "Away @ Home" — first is away
+  } else if (vsSplit.length === 2) {
+    awayTeam = vsSplit[1]; // "Home vs Away" — second is away (sport convention)
+  } else {
+    return false;
+  }
+
+  const sel = p.selection.toLowerCase();
+  return sel.includes(awayTeam.toLowerCase().trim());
 }
 
 function gameKey(p: GradedPick): string {
-  return p.matchup.toLowerCase().replace(/\s+/g, " ").trim();
+  // Normalize separator: treat "vs" and "@" as the same key by sorting tokens
+  // alphabetically so "Lakers vs Celtics" and "Celtics @ Lakers" collapse.
+  const norm = p.matchup
+    .toLowerCase()
+    .replace(/\s+vs\.?\s+/i, " | ")
+    .replace(/\s+@\s+/i, " | ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const parts = norm.split(" | ");
+  if (parts.length === 2) return parts.sort().join(" | ");
+  return norm;
 }
 
 export function applyBankrollGuard(picks: GradedPick[]): BankrollGuardResult {
@@ -49,16 +72,29 @@ export function applyBankrollGuard(picks: GradedPick[]): BankrollGuardResult {
     sameGamePass.push(p);
   }
 
-  // Pass 2: enforce daily unit cap by trimming smallest-edge picks
+  // Pass 2: enforce daily unit cap. Algorithm: drop the pick with the WORST
+  // edge-per-stake-unit ratio first (i.e., paying the most stake for the
+  // least edge). This frees the most cap headroom per drop. Iterate until
+  // total <= cap (with float-epsilon tolerance to avoid spurious trims when
+  // the slate sums to exactly 5.0u).
   let total = sameGamePass.reduce((s, p) => s + p.kellyStakeUnits, 0);
   const kept: GradedPick[] = [...sameGamePass];
-  if (total > MAX_DAILY_UNITS) {
-    flags.push(`total stake ${total.toFixed(2)}u exceeded ${MAX_DAILY_UNITS}u cap — trimming weakest picks`);
-    kept.sort((a, b) => b.edge - a.edge);
-    while (total > MAX_DAILY_UNITS && kept.length > 0) {
-      const weakest = kept.pop()!;
-      total -= weakest.kellyStakeUnits;
-      dropped.push({ pick: weakest, reason: "trimmed to fit daily unit cap" });
+  if (total > MAX_DAILY_UNITS + FLOAT_EPSILON) {
+    flags.push(`total stake ${total.toFixed(2)}u exceeded ${MAX_DAILY_UNITS}u cap — trimming weakest by edge/stake`);
+    while (total > MAX_DAILY_UNITS + FLOAT_EPSILON && kept.length > 0) {
+      // Pick the worst edge-per-unit-of-stake (i.e., spending stake for low edge).
+      let worstIdx = 0;
+      let worstScore = Infinity;
+      for (let i = 0; i < kept.length; i++) {
+        const score = kept[i].edge / Math.max(kept[i].kellyStakeUnits, 1e-6);
+        if (score < worstScore) {
+          worstScore = score;
+          worstIdx = i;
+        }
+      }
+      const [trimmed] = kept.splice(worstIdx, 1);
+      total -= trimmed.kellyStakeUnits;
+      dropped.push({ pick: trimmed, reason: "trimmed to fit daily unit cap (worst edge/stake ratio)" });
     }
   }
 

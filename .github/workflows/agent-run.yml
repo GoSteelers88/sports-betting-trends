@@ -1,7 +1,7 @@
 name: Agent — analyze slate
 
 # Runs the orchestrator (data health → ingest if needed → analyst → critic → bankroll guard).
-# Picks are posted to Discord. Twice daily by default (morning + pre-game).
+# Reads/writes Turso directly. Picks are posted to Discord. Twice daily by default.
 
 on:
   workflow_dispatch:
@@ -28,6 +28,18 @@ jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # Single source of truth: Turso. The DATABASE_URL fallback never triggers
+      # in CI because TURSO_DATABASE_URL is always set.
+      TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+      TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+      THE_ODDS_LEAGUE: basketball_nba
+      THE_ODDS_REGIONS: us
+      THE_ODDS_MARKETS: h2h,spreads,totals
+      THE_ODDS_ODDS_FORMAT: american
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,59 +66,67 @@ jobs:
       - name: Generate Prisma client
         run: npm run prisma:generate
 
-      - name: Apply Prisma migrations (creates ephemeral SQLite)
-        run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: "file:./prisma/dev.db"
-
       - name: Install Playwright Chromium (for prop scraper)
         run: npx playwright install --with-deps chromium
 
-      - name: Refresh summary + injuries + NBA props (so dashboard stays current)
-        env:
-          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
-          THE_ODDS_LEAGUE: basketball_nba
-          THE_ODDS_REGIONS: us
-          THE_ODDS_MARKETS: h2h,spreads,totals
-          THE_ODDS_ODDS_FORMAT: american
-          DATABASE_URL: "file:./prisma/dev.db"
-          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
-          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+      - name: Refresh data (odds, summary, injuries, NBA props) and log snapshots
         run: |
+          npm run ingest:odds || echo "odds refresh failed (non-fatal)"
           npm run ingest:injuries || echo "injuries refresh failed (non-fatal)"
           npm run ingest:free || echo "summary refresh failed (non-fatal)"
           npm run scrape:nba-props || echo "props scrape failed (non-fatal)"
           npm run picks:log || echo "picks logger failed (non-fatal)"
 
       - name: Run orchestrator
+        # Pass LEAGUE via env, never interpolate ${{ }} into shell bodies.
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
-          THE_ODDS_LEAGUE: basketball_nba
-          THE_ODDS_REGIONS: us
-          THE_ODDS_MARKETS: h2h,spreads,totals
-          THE_ODDS_ODDS_FORMAT: american
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          DATABASE_URL: "file:./prisma/dev.db"
-          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
-          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-        run: |
-          LEAGUE="${{ github.event.inputs.league || 'BOTH' }}"
-          npm run agent:run -- "$LEAGUE"
+          LEAGUE: ${{ github.event.inputs.league || 'BOTH' }}
+        run: npm run agent:run -- "$LEAGUE"
 
-      - name: Commit refreshed data back to repo
+      - name: Commit refreshed data back to repo (allowlisted files only)
         if: success()
         run: |
           git config user.name "agent-bot"
           git config user.email "agent-bot@users.noreply.github.com"
-          # Only commit if data files actually changed
-          if git diff --quiet -- data/processed/; then
+          # Allowlist of files the workflow is permitted to commit. Anything else
+          # in data/processed/ is ignored — protects against accidental leakage
+          # if a script ever writes a credential into a snapshot.
+          ALLOWED=(
+            "data/processed/latest-odds-api.json"
+            "data/processed/latest-odds-api-baseball_mlb.json"
+            "data/processed/latest-odds-api-basketball_nba.json"
+            "data/processed/latest-odds-api-basketball_ncaab.json"
+            "data/processed/latest-odds-api-icehockey_nhl.json"
+            "data/processed/latest-summary.json"
+            "data/processed/latest-player-props.json"
+            "data/processed/injuries-nba.json"
+            "data/processed/injuries-nfl.json"
+            "data/processed/injuries-nhl.json"
+            "data/processed/mlb-model-output.json"
+            "data/processed/mlb-model-input.json"
+            "data/processed/nba-model.json"
+            "data/processed/nba-efficiency.json"
+            "data/processed/mlb-pitchers-today.json"
+            "data/processed/mlb-bullpen.json"
+            "data/processed/mlb-batting.json"
+          )
+          # Pre-commit secret scan — refuse to commit if any allowlisted file
+          # contains a recognizable secret pattern.
+          for f in "${ALLOWED[@]}"; do
+            [ -f "$f" ] || continue
+            if grep -qE 'sk-ant-(api|oat)|tursodatabase\.com|libsql://|"THE_ODDS_API_KEY"|"DISCORD_BOT_TOKEN"|-----BEGIN' "$f"; then
+              echo "ABORT: $f contains a secret-looking pattern; refusing to commit."
+              exit 1
+            fi
+          done
+          # Stage only allowlisted files
+          git add "${ALLOWED[@]}" 2>/dev/null || true
+          if git diff --cached --quiet; then
             echo "no data changes to commit"
             exit 0
           fi
-          git add data/processed/*.json
           DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
-          git commit -m "auto-publish: agent run ${DATE_TAG} (refreshed odds + model snapshots)"
+          git commit -m "auto-publish: agent run ${DATE_TAG} (refreshed snapshots)"
           # Push with rebase to handle concurrent commits
           for i in 1 2 3; do
             git pull --rebase origin master && git push origin master && break
@@ -114,12 +134,10 @@ jobs:
             sleep 5
           done
 
-      - name: Upload run artifacts
+      - name: Upload run artifacts (data only — no DB)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: agent-run-${{ github.run_id }}
-          path: |
-            data/processed/*.json
-            prisma/dev.db
+          path: data/processed/*.json
           retention-days: 14

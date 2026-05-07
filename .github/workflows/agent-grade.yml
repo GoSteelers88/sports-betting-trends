@@ -1,6 +1,7 @@
 name: Agent — grade yesterday
 
 # Auto-grades yesterday's pending picks against ESPN final scores.
+# Reads/writes Turso directly — no SQLite artifact dance.
 # Posts grader report to Discord.
 
 on:
@@ -32,33 +33,8 @@ jobs:
       - name: Generate Prisma client
         run: npm run prisma:generate
 
-      - name: Apply Prisma migrations
-        run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: "file:./prisma/dev.db"
-
-      # Pull last successful agent-run artifact so we have prior picks to grade
-      - name: Download latest agent-run artifact
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          workflow: agent-run.yml
-          name_is_regexp: true
-          name: ^agent-run-
-          path: ./_artifact
-          if_no_artifact_found: warn
-
-      - name: Restore picks DB from artifact (best effort)
-        run: |
-          if [ -f ./_artifact/prisma/dev.db ]; then
-            cp ./_artifact/prisma/dev.db ./prisma/dev.db
-            echo "restored dev.db from artifact"
-          else
-            echo "no artifact dev.db found; running against fresh DB"
-          fi
-
       - name: Run auto-grader (bot picks via AgentOutcome)
         env:
-          DATABASE_URL: "file:./prisma/dev.db"
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
@@ -66,15 +42,6 @@ jobs:
 
       - name: Run snapshot grader (market picks + player props)
         env:
-          DATABASE_URL: "file:./prisma/dev.db"
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: npm run picks:grade -- ${{ github.event.inputs.daysBack || '1' }}
-
-      - name: Upload graded DB
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: agent-grade-${{ github.run_id }}
-          path: prisma/dev.db
-          retention-days: 30

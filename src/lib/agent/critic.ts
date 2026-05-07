@@ -16,6 +16,10 @@ export type CritiqueDecision = {
 export type CritiqueResult = {
   decisions: CritiqueDecision[];
   rawText: string;
+  // True when the LLM response could not be parsed into a valid decisions
+  // array. The orchestrator treats this as fail-closed: drop ALL picks rather
+  // than auto-approve them.
+  parseFailed?: boolean;
 };
 
 const CRITIC_SYSTEM = `You are a sharp, contrarian sports-betting analyst whose job is to KILL bad picks before they ship.
@@ -82,8 +86,15 @@ export async function critique(league: AgentLeague, picks: GradedPick[]): Promis
     if (block.type === "text") text += block.text;
   }
 
-  const decisions = parseDecisions(text, picks.length);
-  return { decisions, rawText: text };
+  const { decisions, parseFailed } = parseDecisions(text, picks.length);
+  // Sanity check: if the critic returned fewer decisions than picks, that's
+  // also a fail-closed scenario — we can't trust auto-keep on missing indexes.
+  const undercount = decisions.length < picks.length;
+  return {
+    decisions,
+    rawText: text,
+    parseFailed: parseFailed || undercount,
+  };
 }
 
 export function applyCritiqueToPicks(
@@ -104,7 +115,9 @@ export function applyCritiqueToPicks(
       continue;
     }
     if (decision.verdict === "weaken") {
-      const mult = clamp(decision.suggestedStakeMultiplier ?? 0.5, 0.1, 1.0);
+      // Clamp to system-prompt range (0.25-0.75). A returned 1.0 should be
+      // treated as no-op weaken rather than silently kept at full stake.
+      const mult = clamp(decision.suggestedStakeMultiplier ?? 0.5, 0.25, 0.75);
       kept.push({
         ...picks[i],
         kellyStakeUnits: +(picks[i].kellyStakeUnits * mult).toFixed(2),
@@ -117,7 +130,10 @@ export function applyCritiqueToPicks(
   return { kept, killed };
 }
 
-function parseDecisions(text: string, expectedCount: number): CritiqueDecision[] {
+function parseDecisions(
+  text: string,
+  expectedCount: number
+): { decisions: CritiqueDecision[]; parseFailed: boolean } {
   let cleaned = text.trim();
   const fence = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fence) cleaned = fence[1].trim();
@@ -126,9 +142,10 @@ function parseDecisions(text: string, expectedCount: number): CritiqueDecision[]
   if (first >= 0 && last > first) cleaned = cleaned.slice(first, last + 1);
   try {
     const parsed = JSON.parse(cleaned) as { decisions?: CritiqueDecision[] };
-    return Array.isArray(parsed.decisions) ? parsed.decisions.slice(0, expectedCount) : [];
+    const arr = Array.isArray(parsed.decisions) ? parsed.decisions.slice(0, expectedCount) : [];
+    return { decisions: arr, parseFailed: !Array.isArray(parsed.decisions) };
   } catch {
-    return [];
+    return { decisions: [], parseFailed: true };
   }
 }
 
