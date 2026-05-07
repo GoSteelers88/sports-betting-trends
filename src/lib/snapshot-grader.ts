@@ -1,0 +1,328 @@
+// Grades ModelPickSnapshot rows by fetching final scores + box scores from
+// ESPN's public scoreboard/summary endpoints. Idempotent — only grades rows
+// where `result` is null and the game is completed.
+
+import { prisma } from "./prisma";
+
+type Espn = {
+  events?: EspnEvent[];
+};
+
+type EspnEvent = {
+  id: string;
+  date?: string;
+  status?: { type?: { completed?: boolean } };
+  competitions?: Array<{
+    competitors?: Array<{
+      homeAway?: "home" | "away";
+      score?: string;
+      team?: { displayName?: string; shortDisplayName?: string; abbreviation?: string };
+    }>;
+  }>;
+};
+
+type EspnAthleteStat = {
+  athletes?: Array<{
+    athlete?: { displayName?: string };
+    stats?: string[]; // values aligned with parent.labels
+  }>;
+  labels?: string[];
+  names?: string[];
+  keys?: string[];
+};
+
+type EspnSummary = {
+  boxscore?: {
+    players?: Array<{
+      team?: { displayName?: string; abbreviation?: string };
+      statistics?: EspnAthleteStat[];
+    }>;
+  };
+};
+
+const SCOREBOARD: Record<"NBA" | "MLB", string> = {
+  NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
+  MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
+};
+
+const SUMMARY: Record<"NBA" | "MLB", string> = {
+  NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary",
+  MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary",
+};
+
+// Map our prop market keys to ESPN box-score stat labels (or sum-of)
+const PROP_STAT_MAP: Record<string, (stats: Map<string, number>) => number | null> = {
+  player_points:           s => s.get("PTS") ?? null,
+  player_rebounds:         s => s.get("REB") ?? null,
+  player_assists:          s => s.get("AST") ?? null,
+  player_threes:           s => s.get("3PM") ?? s.get("3FG") ?? null,
+  player_blocks:           s => s.get("BLK") ?? null,
+  player_steals:           s => s.get("STL") ?? null,
+  player_turnovers:        s => s.get("TO") ?? null,
+  player_points_rebounds_assists: s => sumOrNull([s.get("PTS"), s.get("REB"), s.get("AST")]),
+  player_points_rebounds:  s => sumOrNull([s.get("PTS"), s.get("REB")]),
+  player_points_assists:   s => sumOrNull([s.get("PTS"), s.get("AST")]),
+  player_rebounds_assists: s => sumOrNull([s.get("REB"), s.get("AST")]),
+  player_blocks_steals:    s => sumOrNull([s.get("BLK"), s.get("STL")]),
+};
+
+function sumOrNull(parts: Array<number | undefined>): number | null {
+  if (parts.some(p => p === undefined)) return null;
+  return (parts as number[]).reduce((a, b) => a + b, 0);
+}
+
+function yyyymmdd(d: Date): string {
+  return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
+}
+
+function normalizeName(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // strip accents
+    .replace(/[.'-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function teamMatches(needle: string, hay: string): boolean {
+  const a = normalizeName(needle);
+  const b = normalizeName(hay);
+  if (!a || !b) return false;
+  return a.includes(b) || b.includes(a);
+}
+
+async function fetchJson<T>(url: string, ms = 12_000): Promise<T | null> {
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "sports-betting-trends-grader/1.0" },
+      signal: AbortSignal.timeout(ms),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+// ─── unit P&L ──────────────────────────────────────────────────────────────
+
+function unitsPnl(american: number | null, stake: number, result: string): number | null {
+  if (american === null) return null;
+  if (result === "win") {
+    const decimal = american > 0 ? american / 100 : 100 / -american;
+    return +(stake * decimal).toFixed(4);
+  }
+  if (result === "loss") return -stake;
+  if (result === "push" || result === "void") return 0;
+  return null;
+}
+
+// ─── prop grading ──────────────────────────────────────────────────────────
+
+type PlayerStatLookup = {
+  byPlayer: Map<string, Map<string, number>>; // normalized name → stat label → value
+};
+
+async function buildPlayerStatLookup(
+  league: "NBA" | "MLB",
+  yyyymmddDate: string
+): Promise<PlayerStatLookup> {
+  const lookup: PlayerStatLookup = { byPlayer: new Map() };
+  const board = await fetchJson<Espn>(`${SCOREBOARD[league]}?dates=${yyyymmddDate}`);
+  if (!board?.events) return lookup;
+
+  for (const ev of board.events) {
+    if (!ev.status?.type?.completed) continue;
+    const summary = await fetchJson<EspnSummary>(`${SUMMARY[league]}?event=${ev.id}`);
+    if (!summary?.boxscore?.players) continue;
+
+    for (const teamBlock of summary.boxscore.players) {
+      for (const stat of teamBlock.statistics ?? []) {
+        const labels = stat.labels ?? [];
+        for (const ath of stat.athletes ?? []) {
+          const name = ath.athlete?.displayName;
+          const stats = ath.stats ?? [];
+          if (!name || stats.length === 0) continue;
+          const norm = normalizeName(name);
+          const map = lookup.byPlayer.get(norm) ?? new Map<string, number>();
+          for (let i = 0; i < Math.min(labels.length, stats.length); i++) {
+            const label = labels[i];
+            const raw = stats[i];
+            const num = parseFloat(raw);
+            if (Number.isFinite(num)) map.set(label, num);
+          }
+          lookup.byPlayer.set(norm, map);
+        }
+      }
+    }
+  }
+  return lookup;
+}
+
+async function gradeProps(daysBack: number): Promise<{ graded: number; unmatched: number }> {
+  const target = new Date();
+  target.setUTCDate(target.getUTCDate() - daysBack);
+  const yyyymmddDate = yyyymmdd(target);
+  const since = new Date(target);
+  since.setUTCDate(since.getUTCDate() - 2);
+
+  const pending = await prisma.modelPickSnapshot.findMany({
+    where: {
+      source: "prop_nba",
+      result: null,
+      createdAt: { gte: since },
+    },
+  });
+  if (pending.length === 0) return { graded: 0, unmatched: 0 };
+
+  const lookup = await buildPlayerStatLookup("NBA", yyyymmddDate);
+  let graded = 0;
+  let unmatched = 0;
+
+  for (const p of pending) {
+    if (!p.player || p.line === null || !p.market) {
+      unmatched++;
+      continue;
+    }
+    const stats = lookup.byPlayer.get(normalizeName(p.player));
+    if (!stats) {
+      unmatched++;
+      continue;
+    }
+    const compute = PROP_STAT_MAP[p.market];
+    if (!compute) {
+      unmatched++;
+      continue;
+    }
+    const actual = compute(stats);
+    if (actual === null) {
+      unmatched++;
+      continue;
+    }
+
+    const side = p.selection.startsWith("OVER") ? "over" : "under";
+    let result: "win" | "loss" | "push";
+    if (actual === p.line) result = "push";
+    else if (side === "over") result = actual > p.line ? "win" : "loss";
+    else result = actual < p.line ? "win" : "loss";
+
+    const stake = 1; // 1 unit per prop snapshot for tracking purposes
+    const pnl = unitsPnl(p.oddsAmerican, stake, result);
+
+    await prisma.modelPickSnapshot.update({
+      where: { id: p.id },
+      data: {
+        result,
+        actualValue: actual,
+        notes: `auto-graded vs ESPN box: ${p.player} ${actual} ${side === "over" ? ">" : "<"} ${p.line}`,
+        gradedAt: new Date(),
+      },
+    });
+    void pnl; // P&L stored on AgentOutcome only; ModelPickSnapshot tracks per-pick result
+    graded++;
+  }
+  return { graded, unmatched };
+}
+
+// ─── market grading (team-level, like moneylines) ──────────────────────────
+
+async function gradeMarketPicks(daysBack: number): Promise<{ graded: number; unmatched: number }> {
+  const target = new Date();
+  target.setUTCDate(target.getUTCDate() - daysBack);
+  const yyyymmddDate = yyyymmdd(target);
+  const since = new Date(target);
+  since.setUTCDate(since.getUTCDate() - 2);
+
+  const pending = await prisma.modelPickSnapshot.findMany({
+    where: { source: "market", result: null, createdAt: { gte: since } },
+  });
+  if (pending.length === 0) return { graded: 0, unmatched: 0 };
+
+  // Determine final scores by league
+  const byLeague: Record<string, EspnEvent[]> = {};
+  for (const lg of new Set(pending.map(p => p.league))) {
+    if (lg !== "NBA" && lg !== "MLB") continue;
+    const board = await fetchJson<Espn>(`${SCOREBOARD[lg as "NBA" | "MLB"]}?dates=${yyyymmddDate}`);
+    byLeague[lg] = (board?.events ?? []).filter(e => e.status?.type?.completed);
+  }
+
+  let graded = 0;
+  let unmatched = 0;
+
+  for (const p of pending) {
+    const events = byLeague[p.league] ?? [];
+    const match = events.find(ev => {
+      const competitors = ev.competitions?.[0]?.competitors ?? [];
+      const home = competitors.find(c => c.homeAway === "home")?.team?.displayName ?? "";
+      const away = competitors.find(c => c.homeAway === "away")?.team?.displayName ?? "";
+      return (
+        teamMatches(home, p.selection) ||
+        teamMatches(away, p.selection) ||
+        (p.matchup &&
+          (teamMatches(home, p.matchup) || teamMatches(away, p.matchup)))
+      );
+    });
+    if (!match) {
+      unmatched++;
+      continue;
+    }
+    const competitors = match.competitions?.[0]?.competitors ?? [];
+    const home = competitors.find(c => c.homeAway === "home");
+    const away = competitors.find(c => c.homeAway === "away");
+    const homeScore = parseInt(home?.score ?? "", 10);
+    const awayScore = parseInt(away?.score ?? "", 10);
+    if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) {
+      unmatched++;
+      continue;
+    }
+
+    const homeName = home?.team?.displayName ?? "";
+    const awayName = away?.team?.displayName ?? "";
+    const pickedHome = teamMatches(homeName, p.selection);
+    const pickedAway = teamMatches(awayName, p.selection);
+    if (!pickedHome && !pickedAway) {
+      unmatched++;
+      continue;
+    }
+    const homeWon = homeScore > awayScore;
+    const result: "win" | "loss" | "push" =
+      homeScore === awayScore ? "push" : (pickedHome ? (homeWon ? "win" : "loss") : (homeWon ? "loss" : "win"));
+
+    await prisma.modelPickSnapshot.update({
+      where: { id: p.id },
+      data: {
+        result,
+        actualValue: pickedHome ? homeScore - awayScore : awayScore - homeScore,
+        notes: `auto-graded vs ESPN final: ${awayName} ${awayScore} @ ${homeName} ${homeScore}`,
+        gradedAt: new Date(),
+      },
+    });
+    graded++;
+  }
+  return { graded, unmatched };
+}
+
+// ─── orchestrator ──────────────────────────────────────────────────────────
+
+export type SnapshotGradeReport = {
+  ranAt: string;
+  daysBack: number;
+  propsGraded: number;
+  propsUnmatched: number;
+  marketGraded: number;
+  marketUnmatched: number;
+};
+
+export async function gradeAllSnapshots(daysBack = 1): Promise<SnapshotGradeReport> {
+  const props = await gradeProps(daysBack);
+  const market = await gradeMarketPicks(daysBack);
+  return {
+    ranAt: new Date().toISOString(),
+    daysBack,
+    propsGraded: props.graded,
+    propsUnmatched: props.unmatched,
+    marketGraded: market.graded,
+    marketUnmatched: market.unmatched,
+  };
+}

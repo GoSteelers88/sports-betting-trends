@@ -56,13 +56,20 @@ jobs:
             echo "no artifact dev.db found; running against fresh DB"
           fi
 
-      - name: Run auto-grader
+      - name: Run auto-grader (bot picks via AgentOutcome)
         env:
           DATABASE_URL: "file:./prisma/dev.db"
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: npm run agent:grade -- ${{ github.event.inputs.daysBack || '1' }}
+
+      - name: Run snapshot grader (market picks + player props)
+        env:
+          DATABASE_URL: "file:./prisma/dev.db"
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: npm run picks:grade -- ${{ github.event.inputs.daysBack || '1' }}
 
       - name: Upload graded DB
         if: always()

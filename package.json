@@ -45,7 +45,8 @@
     "bot:start": "tsx src/bot/index.ts",
     "bot:register": "tsx scripts/register-discord-commands.ts",
     "scrape:nba-props": "tsx scripts/scrape-nba-props.ts",
-    "picks:log": "tsx scripts/log-picks.ts"
+    "picks:log": "tsx scripts/log-picks.ts",
+    "picks:grade": "tsx scripts/run-snapshot-grader.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",
