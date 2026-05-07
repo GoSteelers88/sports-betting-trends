@@ -133,10 +133,16 @@ jobs:
           fi
           DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
           git commit -m "auto-publish: agent run ${DATE_TAG} (refreshed snapshots)"
-          # Push with rebase to handle concurrent commits
+          # Push with rebase to handle concurrent commits. Ingest scripts also
+          # write non-allowlisted files (e.g. latest-player-props-mlb.json),
+          # which leave the working tree dirty and block `git pull --rebase`.
+          # --autostash + reset to HEAD pins the rebase to our commit only and
+          # discards the unstaged side-effects (they'll regenerate next run).
           for i in 1 2 3; do
-            git pull --rebase origin master && git push origin master && break
+            git pull --rebase --autostash origin master && git push origin master && break
             echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            git stash drop 2>/dev/null || true
             sleep 5
           done
 
