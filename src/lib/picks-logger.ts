@@ -136,9 +136,13 @@ async function logMarketPicks(): Promise<{ count: number; errors: string[] }> {
   return { count: logged, errors };
 }
 
-async function logPlayerProps(): Promise<{ count: number; errors: string[] }> {
+async function logPropsFile(
+  fileName: string,
+  source: "prop_nba" | "prop_mlb",
+  league: "NBA" | "MLB"
+): Promise<{ count: number; errors: string[] }> {
   const file = readJson<{ available?: boolean; topProps?: PropEntry[]; props?: PropEntry[] }>(
-    "latest-player-props.json",
+    fileName,
     {}
   );
   if (!file.available) return { count: 0, errors: [] };
@@ -155,7 +159,7 @@ async function logPlayerProps(): Promise<{ count: number; errors: string[] }> {
       await prisma.modelPickSnapshot.upsert({
         where: {
           source_snapshotDate_market_selection_player: {
-            source: "prop_nba",
+            source,
             snapshotDate: today,
             market: p.market,
             selection: `${p.pickSide.toUpperCase()} ${p.line}`,
@@ -163,8 +167,8 @@ async function logPlayerProps(): Promise<{ count: number; errors: string[] }> {
           },
         },
         create: {
-          source: "prop_nba",
-          league: "NBA",
+          source,
+          league,
           snapshotDate: today,
           matchup: p.opponent ? `${p.team ?? "?"} vs ${p.opponent}` : null,
           market: p.market,
@@ -196,10 +200,11 @@ async function logPlayerProps(): Promise<{ count: number; errors: string[] }> {
 
 export async function logTodaysSnapshots(): Promise<LogResult> {
   const market = await logMarketPicks();
-  const props = await logPlayerProps();
+  const nbaProps = await logPropsFile("latest-player-props.json", "prop_nba", "NBA");
+  const mlbProps = await logPropsFile("latest-player-props-mlb.json", "prop_mlb", "MLB");
   return {
     marketPicksLogged: market.count,
-    propsLogged: props.count,
-    errors: [...market.errors, ...props.errors],
+    propsLogged: nbaProps.count + mlbProps.count,
+    errors: [...market.errors, ...nbaProps.errors, ...mlbProps.errors],
   };
 }

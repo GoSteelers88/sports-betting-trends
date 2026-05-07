@@ -72,10 +72,14 @@ jobs:
       - name: Refresh data (odds, summary, injuries, NBA props) and log snapshots
         run: |
           npm run ingest:odds || echo "odds refresh failed (non-fatal)"
+          npm run ingest:odds || echo "odds refresh failed (non-fatal)"
           npm run ingest:injuries || echo "injuries refresh failed (non-fatal)"
           npm run ingest:free || echo "summary refresh failed (non-fatal)"
-          npm run scrape:nba-props || echo "props scrape failed (non-fatal)"
+          npm run scrape:nba-props || echo "nba props scrape failed (non-fatal)"
+          npm run scrape:mlb-props || echo "mlb props scrape failed (non-fatal)"
+          npm run scrape:mlb-signals || echo "mlb signals scrape failed (non-fatal)"
           npm run picks:log || echo "picks logger failed (non-fatal)"
+          npm run picks:clv || echo "clv tracker failed (non-fatal)"
 
       - name: Run orchestrator
         # Pass LEAGUE via env, never interpolate ${{ }} into shell bodies.

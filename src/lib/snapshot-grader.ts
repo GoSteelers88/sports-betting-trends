@@ -52,6 +52,7 @@ const SUMMARY: Record<"NBA" | "MLB", string> = {
 
 // Map our prop market keys to ESPN box-score stat labels (or sum-of)
 const PROP_STAT_MAP: Record<string, (stats: Map<string, number>) => number | null> = {
+  // NBA
   player_points:           s => s.get("PTS") ?? null,
   player_rebounds:         s => s.get("REB") ?? null,
   player_assists:          s => s.get("AST") ?? null,
@@ -64,7 +65,19 @@ const PROP_STAT_MAP: Record<string, (stats: Map<string, number>) => number | nul
   player_points_assists:   s => sumOrNull([s.get("PTS"), s.get("AST")]),
   player_rebounds_assists: s => sumOrNull([s.get("REB"), s.get("AST")]),
   player_blocks_steals:    s => sumOrNull([s.get("BLK"), s.get("STL")]),
+  // MLB batters (ESPN labels: H, HR, RBI, R, TB)
+  batter_hits:             s => s.get("H") ?? null,
+  batter_home_runs:        s => s.get("HR") ?? null,
+  batter_rbis:             s => s.get("RBI") ?? null,
+  batter_runs_scored:      s => s.get("R") ?? null,
+  batter_total_bases:      s => s.get("TB") ?? null,
+  // MLB pitchers (ESPN labels: K, ER)
+  pitcher_strikeouts:      s => s.get("K") ?? null,
+  pitcher_earned_runs:     s => s.get("ER") ?? null,
 };
+
+// MLB summary endpoint returns "boxscore" with separate batting / pitching
+// stat groups. Both share the same statistics[] structure as NBA.
 
 function sumOrNull(parts: Array<number | undefined>): number | null {
   if (parts.some(p => p === undefined)) return null;
@@ -211,16 +224,22 @@ async function gradeProps(daysBack: number): Promise<{ graded: number; unmatched
   const since = new Date(target);
   since.setUTCDate(since.getUTCDate() - 2);
 
+  // Both NBA and MLB props get graded — different stat lookups per league.
   const pending = await prisma.modelPickSnapshot.findMany({
     where: {
-      source: "prop_nba",
+      source: { in: ["prop_nba", "prop_mlb"] },
       result: null,
       createdAt: { gte: since },
     },
   });
   if (pending.length === 0) return { graded: 0, unmatched: 0 };
 
-  const lookup = await buildPlayerStatLookup("NBA", yyyymmddDate);
+  const nbaLookup = pending.some(p => p.source === "prop_nba")
+    ? await buildPlayerStatLookup("NBA", yyyymmddDate)
+    : { byPlayer: new Map() };
+  const mlbLookup = pending.some(p => p.source === "prop_mlb")
+    ? await buildPlayerStatLookup("MLB", yyyymmddDate)
+    : { byPlayer: new Map() };
   let graded = 0;
   let unmatched = 0;
 
@@ -234,6 +253,7 @@ async function gradeProps(daysBack: number): Promise<{ graded: number; unmatched
       unmatched++;
       continue;
     }
+    const lookup = p.source === "prop_mlb" ? mlbLookup : nbaLookup;
     const allEntries = lookup.byPlayer.get(normalizeName(p.player));
     if (!allEntries || allEntries.length === 0) {
       unmatched++;

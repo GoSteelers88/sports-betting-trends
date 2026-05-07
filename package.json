@@ -45,8 +45,11 @@
     "bot:start": "tsx src/bot/index.ts",
     "bot:register": "tsx scripts/register-discord-commands.ts",
     "scrape:nba-props": "tsx scripts/scrape-nba-props.ts",
+    "scrape:mlb-props": "tsx scripts/scrape-mlb-props.ts",
+    "scrape:mlb-signals": "tsx scripts/scrape-mlb-signals.ts",
     "picks:log": "tsx scripts/log-picks.ts",
-    "picks:grade": "tsx scripts/run-snapshot-grader.ts"
+    "picks:grade": "tsx scripts/run-snapshot-grader.ts",
+    "picks:clv": "tsx scripts/run-clv-tracker.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",

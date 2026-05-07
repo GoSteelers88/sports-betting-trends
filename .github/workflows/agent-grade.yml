@@ -47,3 +47,10 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           DAYS_BACK: ${{ github.event.inputs.daysBack || '1' }}
         run: npm run picks:grade -- "$DAYS_BACK"
+
+      - name: Run CLV tracker (capture closing lines for any pending picks)
+        env:
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: npm run picks:clv || echo "clv tracker failed (non-fatal)"

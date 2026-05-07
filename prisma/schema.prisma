@@ -125,6 +125,13 @@ model AgentPick {
 
   outcome AgentOutcome?
 
+  // CLV tracking (Closing Line Value): captured by the clv-tracker script
+  // shortly before game time. Positive cents = we picked at better price than
+  // closing line (good — true edge indicator). Negative = we paid worse.
+  closingOddsAmerican Int?
+  clvCents            Int?     // pickedOdds - closingOdds, in cents
+  clvCapturedAt       DateTime?
+
   @@index([league, gameDate])
   @@index([runId])
   // Idempotency: if cron retries fire two orchestrator runs that both produce

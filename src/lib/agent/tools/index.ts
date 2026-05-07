@@ -30,6 +30,16 @@ export type GameOdds = {
     spread: { line: number; homePrice: number; awayPrice: number } | null;
     total: { line: number; overPrice: number; underPrice: number } | null;
   };
+  // Best available price for each side across ALL books in the feed. If the
+  // bestPrice is materially better than consensus, that book is "off-market"
+  // and represents a real edge — placement should target that book.
+  bestPrice: {
+    home: { book: string; american: number; impliedProb: number } | null;
+    away: { book: string; american: number; impliedProb: number } | null;
+  };
+  // Spread of book prices (max - min in cents). High spread means books
+  // disagree, which itself is an edge signal.
+  bookSpread: { home: number | null; away: number | null };
   bookCount: number;
 };
 
@@ -97,6 +107,9 @@ export function getOdds(league: AgentLeague): { fetchedAt: string | null; events
   const events = (data.events ?? []).map((ev): GameOdds => {
     const homePrices: number[] = [];
     const awayPrices: number[] = [];
+    // Track per-book prices for off-market detection
+    const homeByBook: Array<{ book: string; price: number }> = [];
+    const awayByBook: Array<{ book: string; price: number }> = [];
     const spreads: { line: number; homePrice: number; awayPrice: number }[] = [];
     const totals: { line: number; overPrice: number; underPrice: number }[] = [];
 
@@ -104,8 +117,14 @@ export function getOdds(league: AgentLeague): { fetchedAt: string | null; events
       for (const market of book.markets ?? []) {
         if (market.key === "h2h") {
           for (const o of market.outcomes ?? []) {
-            if (o.name === ev.home_team) homePrices.push(o.price);
-            if (o.name === ev.away_team) awayPrices.push(o.price);
+            if (o.name === ev.home_team) {
+              homePrices.push(o.price);
+              homeByBook.push({ book: book.key, price: o.price });
+            }
+            if (o.name === ev.away_team) {
+              awayPrices.push(o.price);
+              awayByBook.push({ book: book.key, price: o.price });
+            }
           }
         } else if (market.key === "spreads") {
           const home = market.outcomes.find(o => o.name === ev.home_team);
@@ -146,6 +165,27 @@ export function getOdds(league: AgentLeague): { fetchedAt: string | null; events
         }
       : null;
 
+    // Best price = highest payout (for + odds, the bigger number; for - odds,
+    // the closer to 0). American odds: the higher numeric value is always the
+    // better payout for the bettor on that side.
+    const bestHome =
+      homeByBook.length > 0
+        ? homeByBook.reduce((best, cur) => (cur.price > best.price ? cur : best))
+        : null;
+    const bestAway =
+      awayByBook.length > 0
+        ? awayByBook.reduce((best, cur) => (cur.price > best.price ? cur : best))
+        : null;
+
+    const homeSpreadCents =
+      homeByBook.length > 0
+        ? Math.max(...homeByBook.map(b => b.price)) - Math.min(...homeByBook.map(b => b.price))
+        : null;
+    const awaySpreadCents =
+      awayByBook.length > 0
+        ? Math.max(...awayByBook.map(b => b.price)) - Math.min(...awayByBook.map(b => b.price))
+        : null;
+
     return {
       eventId: ev.id,
       commenceTime: ev.commence_time,
@@ -157,6 +197,15 @@ export function getOdds(league: AgentLeague): { fetchedAt: string | null; events
         spread: consensusSpread,
         total: consensusTotal,
       },
+      bestPrice: {
+        home: bestHome
+          ? { book: bestHome.book, american: bestHome.price, impliedProb: americanToImplied(bestHome.price) }
+          : null,
+        away: bestAway
+          ? { book: bestAway.book, american: bestAway.price, impliedProb: americanToImplied(bestAway.price) }
+          : null,
+      },
+      bookSpread: { home: homeSpreadCents, away: awaySpreadCents },
       bookCount: (ev.bookmakers ?? []).length,
     };
   });
@@ -251,6 +300,33 @@ export function getPlayerProps(league: AgentLeague): {
   };
 }
 
+// ─── Tool: get_mlb_signals ─────────────────────────────────────────────────
+
+type MlbSignals = {
+  generatedAt?: string;
+  regressionCandidates?: Array<{
+    player: string;
+    team: string | null;
+    pa: number | null;
+    woba: number | null;
+    xwoba: number | null;
+    xwobaGap: number | null;
+  }>;
+  velocityGainers?: Array<{
+    player: string;
+    team: string | null;
+    ip: number | null;
+    fbVelocity: number | null;
+    velocityDelta: number | null;
+    k9: number | null;
+  }>;
+  closerChanges?: Array<{ team: string; newCloser: string; effectiveDate: string }>;
+};
+
+export function getMlbSignals(): MlbSignals {
+  return loadJson<MlbSignals>("mlb-advanced-signals.json", {});
+}
+
 // ─── Tool: get_trend_summary ───────────────────────────────────────────────
 
 type SummaryLeague = {
@@ -276,7 +352,8 @@ export type ToolName =
   | "get_model_probabilities"
   | "get_injuries"
   | "get_player_props"
-  | "get_trend_summary";
+  | "get_trend_summary"
+  | "get_mlb_signals";
 
 export const TOOL_HANDLERS: Record<ToolName, (input: { league: AgentLeague }) => unknown> = {
   get_odds: ({ league }) => getOdds(league),
@@ -284,6 +361,7 @@ export const TOOL_HANDLERS: Record<ToolName, (input: { league: AgentLeague }) =>
   get_injuries: ({ league }) => getInjuries(league),
   get_player_props: ({ league }) => getPlayerProps(league),
   get_trend_summary: ({ league }) => getTrendSummary(league),
+  get_mlb_signals: () => getMlbSignals(),
 };
 
 // Anthropic tool definitions (JSON Schema format)
@@ -336,6 +414,16 @@ export const TOOL_DEFINITIONS = [
       type: "object" as const,
       properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
       required: ["league"],
+    },
+  },
+  {
+    name: "get_mlb_signals",
+    description:
+      "MLB-only advanced metrics from FanGraphs. Returns: regressionCandidates (batters with xwOBA - wOBA >= 0.020 = BABIP-suppressed, hits/total-bases overs are undervalued), velocityGainers (pitchers with rising FB velocity = strikeouts overs are undervalued), closerChanges (recent role shifts saves market may not have priced). Use to find props the market hasn't caught up with.",
+    input_schema: {
+      type: "object" as const,
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
+      required: [],
     },
   },
 ];
