@@ -1,5 +1,9 @@
 export const dynamic = "force-dynamic";
-export const maxDuration = 600;
+// Vercel Hobby caps at 300s. Note: this route's orchestrator uses spawnSync
+// to run npm ingest scripts, which won't work on Vercel serverless. The real
+// schedule lives in .github/workflows/agent-run.yml. This HTTP entry point
+// only works locally / in environments with shell access.
+export const maxDuration = 300;
 
 import { NextRequest, NextResponse } from "next/server";
 import { assertServiceAuth } from "@/lib/assertServiceAuth";
