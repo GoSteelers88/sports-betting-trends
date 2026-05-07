@@ -225,23 +225,35 @@ export default function Home() {
     return new Date(data.generatedAt).toLocaleString();
   }, [data?.generatedAt]);
 
-  const leagueOptions = ["ALL", "NBA", "NFL", "NCAAB", "MLB", "NHL", "EPL", "MLS", "UCL"];
+  const leagueOptions = ["ALL", "NBA", "MLB"];
+  const ALLOWED_LEAGUES = new Set(["NBA", "MLB"]);
+
+  // Restrict every league-keyed view to NBA + MLB at the presentation layer.
+  const visibleLeagues = useMemo(() => {
+    return (data?.leagues ?? []).filter(l => ALLOWED_LEAGUES.has(l.league));
+    // ALLOWED_LEAGUES is stable; safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.leagues]);
 
   const top5BestBets = useMemo(() => {
     const target = data?.topBestBetsTarget ?? 5;
-    return (data?.bestBets ?? []).slice(0, target);
+    const onlyAllowed = (data?.bestBets ?? []).filter(b => ALLOWED_LEAGUES.has(b.league));
+    return onlyAllowed.slice(0, target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.bestBets, data?.topBestBetsTarget]);
 
   const keyInjuries = useMemo(() => {
     if (!data?.injuries) return {};
     const filtered: Record<string, InjuryEntry[]> = {};
     for (const [league, entries] of Object.entries(data.injuries)) {
+      if (!ALLOWED_LEAGUES.has(league.toUpperCase())) continue;
       const severe = entries.filter(
         (e) => e.status.toLowerCase().includes("out") || e.status.toLowerCase().includes("doubtful"),
       );
       if (severe.length) filtered[league] = severe.slice(0, 15);
     }
     return filtered;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.injuries]);
 
 
@@ -255,7 +267,7 @@ export default function Home() {
         <header className="mb-6 rounded-xl border border-slate-800 bg-slate-900/80 p-5">
           <h1 className="text-2xl font-semibold tracking-tight">BJ Free-Data Betting Trends</h1>
           <p className="mt-2 text-sm text-slate-300">
-            Free-data snapshot across NBA, NFL, NCAAB, MLB, NHL, EPL, MLS, and UCL. Signals are directional support only, not betting advice.
+            Free-data snapshot across NBA and MLB. Signals are directional support only, not betting advice.
           </p>
           {generatedAt && <p className="mt-1 text-xs text-slate-400">Last generated: {generatedAt}</p>}
         </header>
@@ -291,7 +303,7 @@ export default function Home() {
             </select>
           </label>
           <div className="rounded-md bg-slate-800/60 p-3 text-sm text-slate-300">
-            <p>Conference/division filter applies to leagues that provide grouping data (NCAAB + MLB).</p>
+            <p>Division filter applies to leagues that provide grouping data (MLB).</p>
           </div>
         </section>
 
@@ -397,12 +409,12 @@ export default function Home() {
               </div>
               <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
                 <p className="text-xs uppercase tracking-wide text-slate-400">Leagues in view</p>
-                <p className="mt-1 text-lg font-semibold">{data.leagues.length}</p>
+                <p className="mt-1 text-lg font-semibold">{visibleLeagues.length}</p>
               </div>
             </section>
 
             <section className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-              {data.leagues.map((league) => (
+              {visibleLeagues.map((league) => (
                 <article key={league.league} className="rounded-xl border border-slate-800 bg-slate-900 p-5">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-xl font-semibold">{league.league}</h2>
@@ -628,7 +640,7 @@ export default function Home() {
             )}
 
             <section className="mb-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h3 className="mb-3 text-lg font-semibold">Full Game-Pick Ranking (NBA / NFL / NCAAB / MLB / NHL / EPL / MLS / UCL)</h3>
+              <h3 className="mb-3 text-lg font-semibold">Full Game-Pick Ranking (NBA / MLB)</h3>
               <div className="space-y-2 text-sm text-slate-200">
                 {data.bestBets.map((item, idx) => (
                   <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md bg-slate-800/70 p-3">
