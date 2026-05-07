@@ -60,6 +60,8 @@ jobs:
         env:
           DATABASE_URL: "file:./prisma/dev.db"
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: npm run agent:grade -- ${{ github.event.inputs.daysBack || '1' }}
 
       - name: Upload graded DB

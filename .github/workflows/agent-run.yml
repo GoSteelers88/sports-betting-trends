@@ -69,6 +69,8 @@ jobs:
           THE_ODDS_ODDS_FORMAT: american
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           DATABASE_URL: "file:./prisma/dev.db"
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: |
           LEAGUE="${{ github.event.inputs.league || 'BOTH' }}"
           npm run agent:run -- "$LEAGUE"
