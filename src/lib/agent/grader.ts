@@ -10,7 +10,11 @@ export type GradedPick = AnalystPick & {
   graderNotes: string[];
 };
 
-const MIN_EDGE = 0.03; // 300 bps
+// Minimum pre-vig edge required to keep a pick. Bumped from 3% → 6% to clear
+// market vig (Pinnacle ~2%, soft books 4-5%) plus a margin of safety for
+// model error. CLV-validated research: edges below the vig are net-negative
+// even when the model is right; the floor needs to leave room for the juice.
+const MIN_EDGE = 0.06; // 600 bps
 const MAX_KELLY_UNITS = 2.0;
 const MIN_THESIS_CHARS = 80;
 

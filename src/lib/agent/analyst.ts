@@ -65,7 +65,7 @@ You have tools that read today's odds, in-house model probabilities, injuries, p
 
 When picking, follow these rules:
 - ONLY produce moneyline picks for now. Set market = "moneyline" on every pick. Spread/total/prop grading is not yet wired, so non-ML picks would be unmeasurable.
-- Only recommend a bet if your modelProb exceeds the market's implied prob by ≥ 3% (300 bps). Otherwise pass.
+- Only recommend a bet if your modelProb exceeds the market's implied prob by ≥ 6% (600 bps). This clears the vig (~2-5% across books) plus a safety margin for model error. Edges below 6% are net-negative after juice. Otherwise pass.
 - **Always use the BEST PRICE across books, not consensus.** get_odds returns bestPrice.{home,away}.{book,american,impliedProb}. Set oddsAmerican = bestPrice.american and marketProb = bestPrice.impliedProb. Mention the book in your signals (e.g. "best line: DraftKings +145"). This is where real edge lives — consensus betting forfeits 1-3% of EV per pick.
 - If bookSpread.{home|away} > 15 cents, that's a strong off-market signal — books disagree meaningfully, and the high-payout side is often the value. Highlight in your thesis.
 - Use 1/4 Kelly for stake sizing, capped at 2 units per bet. Kelly = (b·p - q)/b where b = decimal odds - 1, p = modelProb, q = 1-p.

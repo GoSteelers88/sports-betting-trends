@@ -1,17 +1,39 @@
 import type { PaperTrial as PaperTrialData } from "../_data/dashboard";
 
+// CLV-validated trial: needs ~200 graded picks for statistical significance.
+// At 1-3 picks/day this takes 70-200 days, so we measure progress against
+// the sample-size target rather than calendar days.
+const TARGET_SAMPLE = 200;
+
 export function PaperTrial({ data }: { data: PaperTrialData }) {
-  const pct = Math.min(100, (data.dayNumber / 30) * 100);
+  const samplePct = Math.min(100, (data.totalGraded / TARGET_SAMPLE) * 100);
   const decided = data.wins + data.losses;
   const winRate = decided > 0 ? ((data.wins / decided) * 100).toFixed(1) : "—";
   const roiPct = data.roi !== null ? `${(data.roi * 100).toFixed(1)}%` : "—";
 
+  const clvBeatPct =
+    data.clvBeatRate !== null ? `${(data.clvBeatRate * 100).toFixed(1)}%` : "—";
+  const clvAvg =
+    data.clvAverageCents !== null
+      ? `${data.clvAverageCents >= 0 ? "+" : ""}${data.clvAverageCents.toFixed(1)}¢`
+      : "—";
+  const clvAccent: "lime" | "redx" | undefined =
+    data.clvAverageCents === null
+      ? undefined
+      : data.clvAverageCents >= 2
+      ? "lime"
+      : data.clvAverageCents < 0
+      ? "redx"
+      : undefined;
+
   // Color the bar by readiness state
   const barColor = data.ready
     ? "from-emerald-400 to-emerald-300"
-    : data.dayNumber >= 30
+    : data.totalGraded >= TARGET_SAMPLE
     ? "from-rose-500 to-rose-400"
     : "from-cyan-400 to-violet-400";
+
+  const remaining = Math.max(0, TARGET_SAMPLE - data.totalGraded);
 
   return (
     <section className="glass-strong rounded-3xl p-5 sm:p-6 relative overflow-hidden">
@@ -20,36 +42,51 @@ export function PaperTrial({ data }: { data: PaperTrialData }) {
       <div className="relative">
         <div className="flex items-baseline justify-between flex-wrap gap-2 mb-3">
           <div className="flex items-baseline gap-3">
-            <span className="display-eyebrow text-cyan-300">📋 Kalshi Paper Trial</span>
+            <span className="display-eyebrow text-cyan-300">📋 Paper Trial · CLV-gated</span>
             <span className="mono text-xs text-slate-400">
-              Day <span className="text-white">{data.dayNumber}</span> / 30
+              Day <span className="text-white">{data.dayNumber}</span> · {data.totalGraded}/{TARGET_SAMPLE} picks
             </span>
           </div>
           <span
             className={`mono text-xs px-2 py-0.5 rounded-full ${
               data.ready
                 ? "bg-emerald-500/20 text-emerald-200"
-                : data.dayNumber >= 30
+                : data.totalGraded >= TARGET_SAMPLE
                 ? "bg-rose-500/20 text-rose-200"
                 : "bg-slate-700/40 text-slate-300"
             }`}
           >
-            {data.ready ? "READY TO FUND" : data.dayNumber >= 30 ? "REVIEW & ADJUST" : `${data.daysRemaining}d remaining`}
+            {data.ready
+              ? "READY TO FUND"
+              : data.totalGraded >= TARGET_SAMPLE
+              ? "REVIEW & ADJUST"
+              : `${remaining} picks to go`}
           </span>
         </div>
 
-        {/* Progress bar */}
+        {/* Sample-size progress bar (replaces day progress) */}
         <div className="relative h-2 rounded-full bg-white/5 overflow-hidden mb-4">
           <div
             className={`absolute left-0 top-0 h-full rounded-full bg-gradient-to-r ${barColor}`}
-            style={{ width: `${pct}%` }}
+            style={{ width: `${samplePct}%` }}
           />
         </div>
 
-        {/* Top-line stats */}
+        {/* Top-line stats — CLV is the headliner */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <Mini label="Graded" value={`${data.totalGraded}`} />
-          <Mini label="Record" value={`${data.wins}-${data.losses}${data.pushes ? `-${data.pushes}` : ""}`} />
+          <Mini
+            label="CLV Beat"
+            value={clvBeatPct}
+            sub={`n=${data.clvSampleSize}`}
+            accent={
+              data.clvBeatRate !== null && data.clvBeatRate >= 0.55
+                ? "lime"
+                : data.clvBeatRate !== null && data.clvBeatRate < 0.5
+                ? "redx"
+                : undefined
+            }
+          />
+          <Mini label="Avg CLV" value={clvAvg} accent={clvAccent} />
           <Mini
             label="P&L"
             value={`${data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}u`}
@@ -82,11 +119,10 @@ export function PaperTrial({ data }: { data: PaperTrialData }) {
           </div>
         </div>
 
-        {/* Win-rate footnote */}
+        {/* Footnote — record + CLV explainer */}
         <p className="mt-3 text-xs text-slate-500">
-          {decided > 0 ? `Win rate ${winRate}% on ${decided} decided picks. ` : ""}
-          {data.maxLossStreak > 0 ? `Max losing streak: ${data.maxLossStreak}. ` : ""}
-          Trial ends after Day 30; if all 5 criteria met, the agent can begin Kalshi placement.
+          {decided > 0 ? `Record ${data.wins}-${data.losses}${data.pushes ? `-${data.pushes}` : ""} (${winRate}% W). ` : ""}
+          CLV beat rate is the leading indicator — &gt;55% over 200+ picks signals real edge. Trial unlocks Kalshi placement when all 5 criteria are met.
         </p>
       </div>
     </section>
@@ -96,10 +132,12 @@ export function PaperTrial({ data }: { data: PaperTrialData }) {
 function Mini({
   label,
   value,
+  sub,
   accent,
 }: {
   label: string;
   value: string;
+  sub?: string;
   accent?: "lime" | "redx";
 }) {
   const color = accent === "lime" ? "text-[#22ff88]" : accent === "redx" ? "text-[#ff3b3b]" : "text-white";
@@ -107,6 +145,7 @@ function Mini({
     <div className="rounded-lg bg-white/[0.03] border border-white/5 px-3 py-2">
       <p className="display-eyebrow text-slate-500 text-[0.6rem]">{label}</p>
       <p className={`mono mt-0.5 text-base font-semibold ${color}`}>{value}</p>
+      {sub ? <p className="mono text-[0.55rem] text-slate-600 -mt-0.5">{sub}</p> : null}
     </div>
   );
 }

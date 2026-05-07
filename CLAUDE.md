@@ -81,7 +81,7 @@ Files:
 | `client.ts` | Anthropic client + MODELS map |
 | `tools/index.ts` | get_odds (consensus + bestPrice off-market), get_model_probabilities, get_injuries, get_player_props, get_trend_summary, get_mlb_signals |
 | `analyst.ts` | Main analyst LLM loop; restricted to moneyline; requires gameTime per pick |
-| `grader.ts` | Local pick rubric (edge ≥3%, stake ≤2u, thesis ≥80 chars, NaN-safe) |
+| `grader.ts` | Local pick rubric (edge ≥6%, stake ≤2u, thesis ≥80 chars, NaN-safe). Floor bumped from 3% → 6% in May 2026 to clear vig + safety margin. |
 | `critic.ts` | Devil's advocate Sonnet pass; parseFailed → fail-closed |
 | `bankroll.ts` | 5u/day cap with worst edge/stake-ratio trim; same-game dedup; road-dog cluster flag |
 | `health.ts` | Data freshness + sanity checks |
@@ -216,14 +216,21 @@ All cron routes use timing-safe bearer compare with 4KB header guard.
 
 ## Paper Trial Status
 
-Started **2026-05-06**, runs 30 days (ends ~2026-06-05).
+Started **2026-05-06**. CLV-gated, not calendar-gated — runs until the
+sample-size target is hit (likely 70-200 days at 1-3 picks/day after the
+6% edge floor).
 
 Funding criteria (all 5 must pass before Kalshi placement enabled):
-1. Sample size ≥ 30 graded picks
-2. ROI ≥ +3%
-3. Win rate > 50% (on ≥10 decided picks)
-4. Max losing streak < 8
+1. Sample size ≥ 200 graded picks
+2. CLV beat rate ≥ 55% (n≥50) — primary signal
+3. Avg CLV ≥ +2¢ (n≥50)
+4. ROI ≥ +2%
 5. Critic kill rate ≥ 25% (raw picks the critic dropped)
+
+CLV is the only metric with statistical power at small samples. Win rate and
+losing-streak gates were dropped — they're noise at N<200 and duplicated by
+CLV anyway. Edge floor raised from 3% → 6% to clear vig (~2-5%) plus a
+margin for model error.
 
 Live status visible at `sports-betting-trends.vercel.app` in PaperTrial widget.
 

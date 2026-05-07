@@ -125,8 +125,15 @@ export type PaperTrial = {
   roi: number | null;
   maxLossStreak: number;
   criticKillRate: number | null;
+  // CLV (closing line value) — the only metric that distinguishes real edge
+  // from variance at small sample sizes. Beat rate >55% over 200+ bets is
+  // the professional threshold for "actually has edge." Avg CLV measured in
+  // cents on the American odds.
+  clvSampleSize: number;          // picks with closingOddsAmerican set
+  clvBeatRate: number | null;     // 0–1; share of picks with clvCents > 0
+  clvAverageCents: number | null;
   // Decision criteria (computed live)
-  ready: boolean;          // all 5 criteria met
+  ready: boolean;          // all criteria met
   criteria: Array<{ label: string; met: boolean; current: string; target: string }>;
 };
 
@@ -507,8 +514,9 @@ async function loadPaperTrial(): Promise<PaperTrial> {
   let totalStake = 0;
   let maxLossStreak = 0;
   let criticKillRate: number | null = null;
-  let totalPicks = 0;
-  let killedByCriticEstimate = 0;
+  let clvSampleSize = 0;
+  let clvBeatRate: number | null = null;
+  let clvAverageCents: number | null = null;
 
   try {
     const outcomes = await prisma.agentOutcome.findMany({
@@ -544,43 +552,64 @@ async function loadPaperTrial(): Promise<PaperTrial> {
     });
     const rawTotal = runs.reduce((s, r) => s + r.rawAnalystPicks, 0);
     const killedTotal = runs.reduce((s, r) => s + r.criticKilled, 0);
-    totalPicks = runs.reduce((s, r) => s + r.finalPickCount, 0);
-    killedByCriticEstimate = killedTotal;
     if (rawTotal > 0) {
       criticKillRate = killedTotal / rawTotal;
+    }
+
+    // CLV stats — only count picks where the closing line was captured.
+    // Win/loss is irrelevant here; CLV is a leading indicator of edge that
+    // resolves much faster than W/L (every pick contributes a measurement).
+    const clvPicks = await prisma.agentPick.findMany({
+      where: {
+        createdAt: { gte: PAPER_TRIAL_START },
+        clvCents: { not: null },
+      },
+      select: { clvCents: true },
+    });
+    clvSampleSize = clvPicks.length;
+    if (clvSampleSize > 0) {
+      const positive = clvPicks.filter(p => (p.clvCents ?? 0) > 0).length;
+      clvBeatRate = positive / clvSampleSize;
+      const sum = clvPicks.reduce((s, p) => s + (p.clvCents ?? 0), 0);
+      clvAverageCents = sum / clvSampleSize;
     }
   } catch (err) {
     console.error("paperTrial DB read failed:", err);
   }
 
-  const decided = wins + losses;
-  const winRate = decided > 0 ? wins / decided : 0;
   const roi = totalStake > 0 ? pnl / totalStake : null;
 
+  // CLV-centric criteria. Replaces the old W/L-based gates with metrics
+  // that have actual statistical power at small sample sizes:
+  //   1. CLV sample ≥ 200 — professional minimum for separating skill from variance
+  //   2. CLV beat rate ≥ 55% — sharp threshold; >50% is the bare minimum
+  //   3. Avg CLV ≥ +2¢ — must beat the closing line by enough to clear vig
+  //   4. ROI ≥ +2% — was +3% (still useful but secondary to CLV)
+  //   5. Critic kill rate ≥ 25% — kept; signals the critic is doing real work
   const criteria = [
     {
-      label: "Sample size ≥ 30",
-      met: totalGraded >= 30,
+      label: "Sample size ≥ 200",
+      met: totalGraded >= 200,
       current: `${totalGraded}`,
-      target: "30",
+      target: "200",
     },
     {
-      label: "ROI ≥ +3%",
-      met: roi !== null && roi >= 0.03,
+      label: "CLV beat rate ≥ 55%",
+      met: clvSampleSize >= 50 && clvBeatRate !== null && clvBeatRate >= 0.55,
+      current: clvBeatRate !== null ? `${(clvBeatRate * 100).toFixed(1)}%` : "—",
+      target: "≥ 55%",
+    },
+    {
+      label: "Avg CLV ≥ +2¢",
+      met: clvSampleSize >= 50 && clvAverageCents !== null && clvAverageCents >= 2,
+      current: clvAverageCents !== null ? `${clvAverageCents >= 0 ? "+" : ""}${clvAverageCents.toFixed(1)}¢` : "—",
+      target: "+2¢",
+    },
+    {
+      label: "ROI ≥ +2%",
+      met: roi !== null && roi >= 0.02,
       current: roi !== null ? `${(roi * 100).toFixed(1)}%` : "—",
-      target: "+3%",
-    },
-    {
-      label: "Win rate > 50%",
-      met: decided >= 10 && winRate > 0.5,
-      current: decided > 0 ? `${(winRate * 100).toFixed(1)}%` : "—",
-      target: "≥ 50%",
-    },
-    {
-      label: "Max loss streak < 8",
-      met: maxLossStreak < 8,
-      current: `${maxLossStreak}`,
-      target: "< 8",
+      target: "+2%",
     },
     {
       label: "Critic kill rate ≥ 25%",
@@ -603,6 +632,9 @@ async function loadPaperTrial(): Promise<PaperTrial> {
     roi,
     maxLossStreak,
     criticKillRate,
+    clvSampleSize,
+    clvBeatRate,
+    clvAverageCents,
     ready: criteria.every(c => c.met),
     criteria,
   };

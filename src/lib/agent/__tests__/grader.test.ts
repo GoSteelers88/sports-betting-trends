@@ -11,9 +11,9 @@ function pick(over: Partial<AnalystPick> = {}): AnalystPick {
     market: "moneyline",
     selection: "A",
     oddsAmerican: -130,
-    modelProb: 0.6,
+    modelProb: 0.62,
     marketProb: 0.55,
-    edge: 0.05,
+    edge: 0.07, // clears the 6% floor with headroom
     kellyStakeUnits: 1.0,
     confidence: 65,
     thesis: "this is a long enough thesis to pass the minimum 80 character threshold imposed by the grader function",
@@ -30,9 +30,16 @@ describe("gradePicks", () => {
     expect(out[0].graderOk).toBe(true);
   });
 
-  it("drops a pick below 3% edge threshold", () => {
-    const out = gradePicks([pick({ edge: 0.02, modelProb: 0.57, marketProb: 0.55 })]);
+  it("drops a pick below the 6% edge threshold", () => {
+    // 5% edge — used to pass the old 3% floor, must fail the new 6% floor.
+    const out = gradePicks([pick({ edge: 0.05, modelProb: 0.60, marketProb: 0.55 })]);
     expect(out).toHaveLength(0);
+  });
+
+  it("keeps a pick just above the 6% edge floor", () => {
+    // 6.5% computed — comfortably above the floor and float-fuzz-safe.
+    const out = gradePicks([pick({ edge: 0.065, modelProb: 0.615, marketProb: 0.55 })]);
+    expect(out).toHaveLength(1);
   });
 
   it("drops a pick with thesis too short", () => {
@@ -57,10 +64,10 @@ describe("gradePicks", () => {
   });
 
   it("drops picks where claimed edge mismatches computed edge by >0.5%", () => {
-    // model 0.6, market 0.55, computed = 0.05; claim 0.10 = mismatch
-    const out = gradePicks([pick({ edge: 0.10 })]);
-    // SOFT note expected, but since 0.10 also passes the 3% threshold the
-    // pick should still be in output — just with a SOFT note.
+    // model 0.62, market 0.55, computed = 0.07; claim 0.12 = mismatch.
+    // Computed 7% still clears the 6% floor, so the pick survives with a
+    // SOFT note rather than a HARD drop.
+    const out = gradePicks([pick({ edge: 0.12 })]);
     expect(out).toHaveLength(1);
     expect(out[0].graderNotes.some(n => /SOFT/.test(n))).toBe(true);
   });
