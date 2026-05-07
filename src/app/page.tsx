@@ -228,25 +228,41 @@ export default function Home() {
   const leagueOptions = ["ALL", "NBA", "MLB"];
   const ALLOWED_LEAGUES = new Set(["NBA", "MLB"]);
 
-  // Restrict every league-keyed view to NBA + MLB at the presentation layer.
+  // Honors both ALLOWED_LEAGUES (project scope) and the user's leagueFilter.
+  const matchesActiveFilter = (lg: string) => {
+    const upper = lg.toUpperCase();
+    if (!ALLOWED_LEAGUES.has(upper)) return false;
+    if (leagueFilter === "ALL") return true;
+    return upper === leagueFilter.toUpperCase();
+  };
+
   const visibleLeagues = useMemo(() => {
-    return (data?.leagues ?? []).filter(l => ALLOWED_LEAGUES.has(l.league));
-    // ALLOWED_LEAGUES is stable; safe to omit from deps
+    return (data?.leagues ?? []).filter(l => matchesActiveFilter(l.league));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data?.leagues]);
+  }, [data?.leagues, leagueFilter]);
 
   const top5BestBets = useMemo(() => {
     const target = data?.topBestBetsTarget ?? 5;
-    const onlyAllowed = (data?.bestBets ?? []).filter(b => ALLOWED_LEAGUES.has(b.league));
+    const onlyAllowed = (data?.bestBets ?? []).filter(b => matchesActiveFilter(b.league));
     return onlyAllowed.slice(0, target);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data?.bestBets, data?.topBestBetsTarget]);
+  }, [data?.bestBets, data?.topBestBetsTarget, leagueFilter]);
+
+  const visibleBestBets = useMemo(() => {
+    return (data?.bestBets ?? []).filter(b => matchesActiveFilter(b.league));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.bestBets, leagueFilter]);
+
+  const visibleLatestByLeague = useMemo(() => {
+    return (data?.latestByLeague ?? []).filter(l => matchesActiveFilter(l.league));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.latestByLeague, leagueFilter]);
 
   const keyInjuries = useMemo(() => {
     if (!data?.injuries) return {};
     const filtered: Record<string, InjuryEntry[]> = {};
     for (const [league, entries] of Object.entries(data.injuries)) {
-      if (!ALLOWED_LEAGUES.has(league.toUpperCase())) continue;
+      if (!matchesActiveFilter(league)) continue;
       const severe = entries.filter(
         (e) => e.status.toLowerCase().includes("out") || e.status.toLowerCase().includes("doubtful"),
       );
@@ -254,7 +270,7 @@ export default function Home() {
     }
     return filtered;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data?.injuries]);
+  }, [data?.injuries, leagueFilter]);
 
 
   const topPlayerProps = useMemo(() => {
@@ -641,8 +657,11 @@ export default function Home() {
 
             <section className="mb-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
               <h3 className="mb-3 text-lg font-semibold">Full Game-Pick Ranking (NBA / MLB)</h3>
+              {visibleBestBets.length === 0 && (
+                <p className="text-sm text-slate-400">No qualifying picks for this league/filter today.</p>
+              )}
               <div className="space-y-2 text-sm text-slate-200">
-                {data.bestBets.map((item, idx) => (
+                {visibleBestBets.map((item, idx) => (
                   <div key={`${item.league}-${item.matchup}-${idx}`} className="rounded-md bg-slate-800/70 p-3">
                     <p className="font-medium">
                       {item.matchup} ({item.league}{item.conference ? ` / ${item.conference}` : ""}){fmtGameTime(item.gameDate) ? ` · ${fmtGameTime(item.gameDate)}` : ""} \u2014 Pick {item.pickTeam}
@@ -667,8 +686,11 @@ export default function Home() {
 
             <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
               <h3 className="mb-3 text-lg font-semibold">Latest completed game per league</h3>
+              {visibleLatestByLeague.length === 0 && (
+                <p className="text-sm text-slate-400">No completed games for this league/filter.</p>
+              )}
               <div className="space-y-2 text-sm text-slate-200">
-                {data.latestByLeague.map((item) => (
+                {visibleLatestByLeague.map((item) => (
                   <div key={`${item.league}-${item.gameDate}`} className="rounded-md bg-slate-800/70 p-3">
                     <p className="font-medium">
                       {item.league}: {item.team} vs {item.opponent} ({new Date(item.gameDate).toLocaleDateString()})

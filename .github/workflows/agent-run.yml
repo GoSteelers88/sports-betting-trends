@@ -59,6 +59,20 @@ jobs:
         env:
           DATABASE_URL: "file:./prisma/dev.db"
 
+      - name: Refresh summary + injuries (so dashboard stays current)
+        env:
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+          THE_ODDS_LEAGUE: basketball_nba
+          THE_ODDS_REGIONS: us
+          THE_ODDS_MARKETS: h2h,spreads,totals
+          THE_ODDS_ODDS_FORMAT: american
+          DATABASE_URL: "file:./prisma/dev.db"
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          npm run ingest:injuries || echo "injuries refresh failed (non-fatal)"
+          npm run ingest:free || echo "summary refresh failed (non-fatal)"
+
       - name: Run orchestrator
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
