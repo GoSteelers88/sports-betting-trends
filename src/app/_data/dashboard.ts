@@ -242,14 +242,20 @@ function loadInjuries(): Injury[] {
 async function loadTodaysPicks(): Promise<SlatePick[]> {
   const since = new Date();
   since.setHours(0, 0, 0, 0);
-  const picks = await prisma.agentPick.findMany({
-    where: {
-      createdAt: { gte: since },
-      league: { in: ["NBA", "MLB"] },
-    },
-    include: { outcome: true },
-    orderBy: { edge: "desc" },
-  });
+  let picks: Awaited<ReturnType<typeof prisma.agentPick.findMany>>;
+  try {
+    picks = await prisma.agentPick.findMany({
+      where: {
+        createdAt: { gte: since },
+        league: { in: ["NBA", "MLB"] },
+      },
+      include: { outcome: true },
+      orderBy: { edge: "desc" },
+    });
+  } catch (err) {
+    console.error("loadTodaysPicks failed (DB unavailable):", err);
+    return [];
+  }
   return picks.map(p => ({
     id: p.id,
     league: p.league,
@@ -273,13 +279,19 @@ async function loadTodaysPicks(): Promise<SlatePick[]> {
 
 async function loadTrackRecord(days: number): Promise<TrackRecord> {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-  const outcomes = await prisma.agentOutcome.findMany({
-    where: {
-      gradedAt: { gte: since },
-      result: { in: ["win", "loss", "push"] },
-    },
-    include: { pick: true },
-  });
+  let outcomes: Awaited<ReturnType<typeof prisma.agentOutcome.findMany>>;
+  try {
+    outcomes = await prisma.agentOutcome.findMany({
+      where: {
+        gradedAt: { gte: since },
+        result: { in: ["win", "loss", "push"] },
+      },
+      include: { pick: true },
+    });
+  } catch (err) {
+    console.error("loadTrackRecord failed (DB unavailable):", err);
+    outcomes = [];
+  }
   const acc: TrackRecord = {
     windowDays: days,
     total: 0,
@@ -309,11 +321,15 @@ async function loadTrackRecord(days: number): Promise<TrackRecord> {
 }
 
 async function loadLastAgentRunAt(): Promise<string | null> {
-  const last = await prisma.agentPick.findFirst({
-    orderBy: { createdAt: "desc" },
-    select: { createdAt: true },
-  });
-  return last?.createdAt.toISOString() ?? null;
+  try {
+    const last = await prisma.agentPick.findFirst({
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    return last?.createdAt.toISOString() ?? null;
+  } catch {
+    return null;
+  }
 }
 
 // ─── orchestrator ──────────────────────────────────────────────────────────
