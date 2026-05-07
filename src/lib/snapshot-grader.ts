@@ -140,8 +140,11 @@ function unitsPnl(american: number | null, stake: number, result: string): numbe
 
 // ─── prop grading ──────────────────────────────────────────────────────────
 
+// Per-event player stat lookup so we can pick the right game when a player
+// played in multiple games inside the ±1 day fetch window.
 type PlayerStatLookup = {
-  byPlayer: Map<string, Map<string, number>>; // normalized name → stat label → value
+  // normalized name → array of (event date, stat label → value) entries
+  byPlayer: Map<string, Array<{ eventDate: number; stats: Map<string, number> }>>;
 };
 
 async function buildPlayerStatLookup(
@@ -170,6 +173,8 @@ async function buildPlayerStatLookup(
 
   for (const ev of events) {
     if (!ev.status?.type?.completed) continue;
+    const eventDate = ev.date ? new Date(ev.date).getTime() : NaN;
+    if (!Number.isFinite(eventDate)) continue;
     const summary = await fetchJson<EspnSummary>(`${SUMMARY[league]}?event=${ev.id}`);
     if (!summary?.boxscore?.players) continue;
 
@@ -181,14 +186,17 @@ async function buildPlayerStatLookup(
           const stats = ath.stats ?? [];
           if (!name || stats.length === 0) continue;
           const norm = normalizeName(name);
-          const map = lookup.byPlayer.get(norm) ?? new Map<string, number>();
+          const statMap = new Map<string, number>();
           for (let i = 0; i < Math.min(labels.length, stats.length); i++) {
             const label = labels[i];
             const raw = stats[i];
             const num = parseFloat(raw);
-            if (Number.isFinite(num)) map.set(label, num);
+            if (Number.isFinite(num)) statMap.set(label, num);
           }
-          lookup.byPlayer.set(norm, map);
+          if (statMap.size === 0) continue;
+          const list = lookup.byPlayer.get(norm) ?? [];
+          list.push({ eventDate, stats: statMap });
+          lookup.byPlayer.set(norm, list);
         }
       }
     }
@@ -216,13 +224,18 @@ async function gradeProps(daysBack: number): Promise<{ graded: number; unmatched
   let graded = 0;
   let unmatched = 0;
 
+  // 36-hour proximity: prop snapshots are anchored to snapshotDate (or
+  // createdAt if missing), and we pick the player's game whose ESPN date is
+  // closest within the window — handles back-to-backs and DH situations.
+  const PROXIMITY_MS = 36 * 60 * 60 * 1000;
+
   for (const p of pending) {
     if (!p.player || p.line === null || !p.market) {
       unmatched++;
       continue;
     }
-    const stats = lookup.byPlayer.get(normalizeName(p.player));
-    if (!stats) {
+    const allEntries = lookup.byPlayer.get(normalizeName(p.player));
+    if (!allEntries || allEntries.length === 0) {
       unmatched++;
       continue;
     }
@@ -231,13 +244,30 @@ async function gradeProps(daysBack: number): Promise<{ graded: number; unmatched
       unmatched++;
       continue;
     }
-    const actual = compute(stats);
+    const anchor = p.snapshotDate
+      ? new Date(`${p.snapshotDate}T12:00:00Z`).getTime()
+      : p.createdAt.getTime();
+    // Pick the game whose date is closest to the anchor and within 36h
+    let best: (typeof allEntries)[number] | null = null;
+    let bestDiff = Infinity;
+    for (const e of allEntries) {
+      const diff = Math.abs(e.eventDate - anchor);
+      if (diff < PROXIMITY_MS && diff < bestDiff) {
+        best = e;
+        bestDiff = diff;
+      }
+    }
+    if (!best) {
+      unmatched++;
+      continue;
+    }
+    const actual = compute(best.stats);
     if (actual === null) {
       unmatched++;
       continue;
     }
 
-    const side = p.selection.startsWith("OVER") ? "over" : "under";
+    const side = /^over\b/i.test(p.selection.trim()) ? "over" : "under";
     let result: "win" | "loss" | "push";
     if (actual === p.line) result = "push";
     else if (side === "over") result = actual > p.line ? "win" : "loss";
@@ -270,8 +300,15 @@ async function gradeMarketPicks(daysBack: number): Promise<{ graded: number; unm
   const since = new Date(target);
   since.setUTCDate(since.getUTCDate() - 2);
 
+  // For now we only auto-grade moneyline picks. Spread/total grading needs the
+  // line at-bet-time and the actual final score deltas — added in a follow-up.
   const pending = await prisma.modelPickSnapshot.findMany({
-    where: { source: "market", result: null, createdAt: { gte: since } },
+    where: {
+      source: "market",
+      result: null,
+      market: "moneyline",
+      createdAt: { gte: since },
+    },
   });
   if (pending.length === 0) return { graded: 0, unmatched: 0 };
 

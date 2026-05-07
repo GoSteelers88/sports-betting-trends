@@ -459,19 +459,18 @@ async function loadPaperTrial(): Promise<PaperTrial> {
       totalStake += o.pick.kellyStakeUnits;
     }
 
-    // Critic kill rate proxy: count picks the orchestrator generated vs critic-kept.
-    // We don't currently log raw analyst pick count separately, so we approximate
-    // using the run's `toolsUsed` length and pick count delta. For now we count
-    // killed picks as 0 (placeholder until run-level metadata is persisted).
-    const allPicks = await prisma.agentPick.findMany({
+    // Critic kill rate from real AgentRun metadata.
+    // Kill rate = critic-killed / (raw analyst picks ever generated).
+    const runs = await prisma.agentRun.findMany({
       where: { createdAt: { gte: PAPER_TRIAL_START } },
-      select: { id: true, runId: true },
+      select: { rawAnalystPicks: true, criticKilled: true, finalPickCount: true },
     });
-    totalPicks = allPicks.length;
-    // TODO: persist runId-level critic stats for true kill rate
-    killedByCriticEstimate = 0;
-    if (totalPicks > 0) {
-      criticKillRate = killedByCriticEstimate / Math.max(totalPicks + killedByCriticEstimate, 1);
+    const rawTotal = runs.reduce((s, r) => s + r.rawAnalystPicks, 0);
+    const killedTotal = runs.reduce((s, r) => s + r.criticKilled, 0);
+    totalPicks = runs.reduce((s, r) => s + r.finalPickCount, 0);
+    killedByCriticEstimate = killedTotal;
+    if (rawTotal > 0) {
+      criticKillRate = killedTotal / rawTotal;
     }
   } catch (err) {
     console.error("paperTrial DB read failed:", err);

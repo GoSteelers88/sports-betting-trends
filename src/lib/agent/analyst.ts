@@ -25,6 +25,11 @@ export type AnalystPick = {
   thesis: string;
   invalidation: string;
   signals: string[];
+  // ISO 8601 datetime for the actual game (commence_time from the odds feed).
+  // Required so the autograder + idempotency unique key target the right game,
+  // not the pick's persistence-time. Optional in older payloads — falls back
+  // to today UTC midnight if missing (with a warning logged).
+  gameTime?: string;
 };
 
 export type AnalyzeResult = {
@@ -49,8 +54,9 @@ You have tools that read today's odds, in-house model probabilities, injuries, p
 When picking, follow these rules:
 - Only recommend a bet if your modelProb exceeds the market's implied prob by ≥ 3% (300 bps). Otherwise pass.
 - Use 1/4 Kelly for stake sizing, capped at 2 units per bet. Kelly = (b·p - q)/b where b = decimal odds - 1.
-- Each pick must have: matchup, market, selection, oddsAmerican, modelProb, marketProb, edge, kellyStakeUnits, confidence (1-100), thesis (2-4 sentences), invalidation (one sentence), signals (array of short strings).
+- Each pick must have: matchup, market, selection, oddsAmerican, modelProb, marketProb, edge, kellyStakeUnits, confidence (1-100), thesis (2-4 sentences), invalidation (one sentence), signals (array of short strings), AND gameTime (ISO 8601 from get_odds tool's commence_time field).
 - Round modelProb and marketProb to 4 decimals; round kellyStakeUnits to 2 decimals.
+- Always copy gameTime exactly from the get_odds tool's commenceTime for that event. This is critical for grading.
 
 Past learnings from prior dreams (apply unless they contradict today's specific data):
 ${memoryBlock}
@@ -167,14 +173,21 @@ export async function persistFinalPicks(args: {
   finalPicks: GradedPick[];
   toolsUsed: ToolName[];
 }): Promise<{ ids: number[]; skipped: number }> {
-  // Anchor gameDate to today's UTC midnight so the unique key works across
-  // multiple runs in the same day (otherwise a millisecond difference would
-  // bypass the constraint).
-  const today = new Date();
-  const gameDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
   const ids: number[] = [];
   let skipped = 0;
   for (const p of args.finalPicks) {
+    // Use the actual game time (commenceTime from odds feed) so:
+    //   1. the autograder's 36h proximity match targets the right game day
+    //   2. the @@unique key correctly distinguishes doubleheaders (same matchup,
+    //      different times) from re-runs of the same pick.
+    let gameDate: Date;
+    if (p.gameTime) {
+      const parsed = new Date(p.gameTime);
+      gameDate = Number.isFinite(parsed.getTime()) ? parsed : fallbackGameDate();
+    } else {
+      console.warn(`persistFinalPicks: pick missing gameTime, falling back to today UTC midnight: ${p.matchup}`);
+      gameDate = fallbackGameDate();
+    }
     try {
       const created = await prisma.agentPick.create({
         data: {
@@ -210,6 +223,14 @@ export async function persistFinalPicks(args: {
     }
   }
   return { ids, skipped };
+}
+
+// Fallback when an analyst pick is missing gameTime — pin to today UTC noon
+// so we end up in the right calendar day rather than midnight (which lands
+// in yesterday for west-coast viewers). Should be rare with the updated prompt.
+function fallbackGameDate(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12));
 }
 
 // Strip optional ```json fences and parse

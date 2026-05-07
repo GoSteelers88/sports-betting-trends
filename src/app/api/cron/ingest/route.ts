@@ -1,30 +1,13 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "node:child_process";
-import crypto from "node:crypto";
+import { assertCronAuth } from "@/lib/assertCronAuth";
 
 const ROOT = process.cwd();
 
-// Constant-time bearer token check; fail-closed if no secret configured.
-function authOk(req: NextRequest, secret: string | undefined): boolean {
-  if (!secret) return false;
-  const auth = req.headers.get("authorization") ?? "";
-  if (!auth.startsWith("Bearer ")) return false;
-  const provided = auth.slice(7);
-  const a = Buffer.from(provided);
-  const b = Buffer.from(secret);
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
-}
-
 export async function POST(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
-  }
-  if (!authOk(req, secret)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authError = assertCronAuth(req);
+  if (authError) return authError;
 
   const body = await req.json().catch(() => ({}));
   const script = (body.script as string) ?? "ingest:all";
@@ -36,8 +19,7 @@ export async function POST(req: NextRequest) {
   }
 
   return new Promise<NextResponse>((resolve) => {
-    // shell: false — script names are an allowlist of literals, but defense
-    // in depth: never give the spawned process a shell.
+    // shell: false — script names are an allowlist of literals, defense in depth.
     const isWin = process.platform === "win32";
     const child = spawn(isWin ? "npm.cmd" : "npm", ["run", script], {
       cwd: ROOT,
@@ -45,10 +27,16 @@ export async function POST(req: NextRequest) {
       timeout: 300_000,
     });
 
+    // Bound stdout/stderr to prevent unbounded buffer growth on misbehaving scripts.
+    const MAX_BUF = 1_000_000; // 1MB cap per stream
     let stdout = "";
     let stderr = "";
-    child.stdout?.on("data", (d: Buffer) => { stdout += d.toString(); });
-    child.stderr?.on("data", (d: Buffer) => { stderr += d.toString(); });
+    child.stdout?.on("data", (d: Buffer) => {
+      if (stdout.length < MAX_BUF) stdout += d.toString();
+    });
+    child.stderr?.on("data", (d: Buffer) => {
+      if (stderr.length < MAX_BUF) stderr += d.toString();
+    });
 
     child.on("close", (code) => {
       resolve(NextResponse.json({

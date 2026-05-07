@@ -199,6 +199,29 @@ model ModelPickSnapshot {
   @@index([league, result])
 }
 
+// Per-run metadata so the dashboard can compute critic kill rate, bankroll
+// drop rate, and total pick count over time. Written by the orchestrator after
+// the post-pipeline completes.
+model AgentRun {
+  id                Int       @id @default(autoincrement())
+  runId             String    @unique
+  league            String
+  rawAnalystPicks   Int       // count from analyst.ts before grader/critic
+  graderKept        Int       // after the local pick-rubric grader
+  criticKilled      Int
+  criticWeakened    Int
+  bankrollDropped   Int
+  finalPickCount    Int
+  totalUnits        Float
+  bankrollFlags     String    // JSON array
+  parseFailed       Boolean   @default(false)
+  persistOk         Boolean   @default(true)
+  modelId           String
+  createdAt         DateTime  @default(now())
+
+  @@index([league, createdAt])
+}
+
 model AgentDreamRun {
   id            Int       @id @default(autoincrement())
   startedAt     DateTime  @default(now())

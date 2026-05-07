@@ -30,7 +30,30 @@ type SummaryBestBet = {
   score: number;
   rationaleSignals: string[];
   gameDate: string | null;
+  // Optional market type (moneyline | spread | total). When absent we infer
+  // from the line string ("Over X" / "Under X" → total; numeric like "-4.5"
+  // → spread; otherwise moneyline).
+  market?: string;
 };
+
+// Infer the market type from a best-bet's line string. The summary's
+// bestBets used to be ML-only, but spread/total picks now appear too —
+// labeling them "moneyline" makes the snapshot grader produce meaningless
+// W/L results.
+function inferMarket(line: string | null | undefined, explicit?: string): string {
+  if (explicit) {
+    const m = explicit.toLowerCase();
+    if (m.includes("total") || m.includes("over") || m.includes("under")) return "total";
+    if (m.includes("spread") || m.includes("ats")) return "spread";
+    if (m.includes("moneyline") || m.includes("ml")) return "moneyline";
+  }
+  if (!line) return "moneyline";
+  const l = line.trim().toLowerCase();
+  if (l.startsWith("over") || l.startsWith("under") || l.startsWith("o ") || l.startsWith("u ")) return "total";
+  // Pure numeric with optional sign indicates a spread
+  if (/^[+-]?\d+(\.\d+)?$/.test(l)) return "spread";
+  return "moneyline";
+}
 
 type PropEntry = {
   player: string;
@@ -60,15 +83,28 @@ async function logMarketPicks(): Promise<{ count: number; errors: string[] }> {
 
   for (const p of file.bestBets ?? []) {
     if (p.league !== "NBA" && p.league !== "MLB") continue;
+    const market = inferMarket(p.line, p.market);
+    // Build a selection that includes the line for spread/total so the grader
+    // can disambiguate — e.g. "Lakers -4.5" vs the Lakers ML.
+    const selection =
+      market === "moneyline"
+        ? p.pickTeam
+        : market === "total"
+        ? `${p.pickTeam} ${p.line ?? ""}`.trim()
+        : `${p.pickTeam} ${p.line ?? ""}`.trim();
+    const lineNum =
+      typeof p.line === "string" && /-?\d+(\.\d+)?/.test(p.line)
+        ? parseFloat(p.line.match(/-?\d+(\.\d+)?/)![0])
+        : null;
     try {
       await prisma.modelPickSnapshot.upsert({
         where: {
           source_snapshotDate_market_selection_player: {
             source: "market",
             snapshotDate: today,
-            market: "moneyline", // best-bets are team picks; bucket as moneyline for now
-            selection: p.pickTeam,
-            player: "", // empty string for the unique constraint (Prisma quirk: nulls aren't unique)
+            market,
+            selection,
+            player: "", // empty string for the unique constraint (SQLite quirk: nulls aren't unique)
           },
         },
         create: {
@@ -76,9 +112,9 @@ async function logMarketPicks(): Promise<{ count: number; errors: string[] }> {
           league: p.league,
           snapshotDate: today,
           matchup: p.matchup,
-          market: "moneyline",
-          selection: p.pickTeam,
-          line: null,
+          market,
+          selection,
+          line: lineNum,
           oddsAmerican: null,
           confidence: p.confidence,
           edge: null,
@@ -86,9 +122,9 @@ async function logMarketPicks(): Promise<{ count: number; errors: string[] }> {
           player: "",
         },
         update: {
-          // Refresh confidence + signals if the heuristic re-ranked it
           confidence: p.confidence,
           rationaleSignals: JSON.stringify(p.rationaleSignals ?? []),
+          line: lineNum,
         },
       });
       logged++;

@@ -20,6 +20,7 @@ import { applyBankrollGuard, type BankrollGuardResult } from "./bankroll";
 import { notifyPicks } from "./notify";
 import type { GradedPick } from "./grader";
 import type { AgentLeague } from "./tools";
+import { prisma } from "@/lib/prisma";
 
 export type OrchestratorTrace = {
   step: string;
@@ -287,6 +288,40 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
     trace.push({
       step: "discord_skipped",
       detail: "persistence failed — refusing to broadcast unpersisted picks",
+      at: new Date().toISOString(),
+    });
+  }
+
+  // Persist run-level metadata so the dashboard can compute critic kill rate
+  // and other paper-trial criteria. Failure is non-fatal — picks already
+  // landed; this is just observability.
+  try {
+    const weakened = critique_.decisions.filter(d => d.verdict === "weaken").length;
+    await prisma.agentRun.create({
+      data: {
+        runId: analystRunId ?? runId,
+        league,
+        rawAnalystPicks: analystPicks?.length ?? 0,
+        graderKept: analystPicks?.length ?? 0,
+        criticKilled: killed.length,
+        criticWeakened: weakened,
+        bankrollDropped: dropped.length,
+        finalPickCount: finalPicks.length,
+        totalUnits: +finalPicks.reduce((s, p) => s + p.kellyStakeUnits, 0).toFixed(2),
+        bankrollFlags: JSON.stringify(flags),
+        parseFailed: critique_.parseFailed === true,
+        persistOk,
+        modelId: MODELS.analyst,
+      },
+    });
+    trace.push({ step: "persist_run", detail: "ok", at: new Date().toISOString() });
+  } catch (err) {
+    // P2002 means duplicate runId — re-run of same orchestrator session.
+    // Other errors get logged but don't block the response.
+    const code = (err as { code?: string })?.code;
+    trace.push({
+      step: code === "P2002" ? "persist_run_duplicate" : "persist_run_failed",
+      detail: err instanceof Error ? err.message : String(err),
       at: new Date().toISOString(),
     });
   }
