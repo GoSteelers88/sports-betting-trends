@@ -7,14 +7,16 @@ on:
   workflow_dispatch:
     inputs:
       league:
-        description: League to analyze (NBA | MLB | BOTH)
+        description: League to analyze (NBA | MLB | WNBA | BOTH | ALL)
         required: true
         default: BOTH
         type: choice
         options:
           - NBA
           - MLB
+          - WNBA
           - BOTH
+          - ALL
   schedule:
     # Off-the-hour offsets to dodge GH Actions cron congestion at :00/:30 boundaries.
     # 14:07 UTC = 10:07 ET (morning slate scan)
@@ -30,12 +32,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      # Single source of truth: Turso. The DATABASE_URL fallback never triggers
-      # in CI because TURSO_DATABASE_URL is always set.
+      # Single source of truth: Turso. Application code goes through the libSQL
+      # adapter wired in src/lib/prisma.ts using TURSO_DATABASE_URL + TURSO_AUTH_TOKEN.
+      # DATABASE_URL is mirrored only to satisfy Prisma's schema-time URL parser
+      # — without it, PrismaClient construction throws "Environment variable not
+      # found: DATABASE_URL" even though the adapter would override the URL at
+      # runtime. This was the silent error fingerprinting agent-run logs prior
+      # to the WNBA wiring change.
       TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
       TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+      DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
       THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
-      THE_ODDS_LEAGUE: basketball_nba
+      THE_ODDS_LEAGUES: basketball_nba,baseball_mlb,basketball_wnba
       THE_ODDS_REGIONS: us
       THE_ODDS_MARKETS: h2h,spreads,totals
       THE_ODDS_ODDS_FORMAT: american
@@ -70,12 +78,20 @@ jobs:
       - name: Install Playwright Chromium (for prop scraper)
         run: npx playwright install --with-deps chromium
 
-      - name: Refresh data (odds, summary, injuries, NBA props) and log snapshots
+      - name: Refresh data (odds, summary, injuries, props) and rebuild models
         run: |
           npm run ingest:odds || echo "odds refresh failed (non-fatal)"
           npm run ingest:odds || echo "odds refresh failed (non-fatal)"
           npm run ingest:injuries || echo "injuries refresh failed (non-fatal)"
           npm run ingest:free || echo "summary refresh failed (non-fatal)"
+          # Rebuild league models. Inputs (efficiency files) are independent of
+          # today's slate; outputs join those with current odds events. Without
+          # these steps the analyst sees stale model probabilities and the
+          # critic kills every pick on home/away mismatches.
+          npm run ingest:nba-efficiency || echo "nba efficiency refresh failed (non-fatal)"
+          npm run ingest:nba-model || echo "nba model build failed (non-fatal)"
+          npm run ingest:wnba-efficiency || echo "wnba efficiency refresh failed (non-fatal — likely offseason)"
+          npm run ingest:wnba-model || echo "wnba model build failed (non-fatal — likely offseason)"
           npm run scrape:nba-props || echo "nba props scrape failed (non-fatal)"
           npm run scrape:mlb-props || echo "mlb props scrape failed (non-fatal)"
           npm run scrape:mlb-signals || echo "mlb signals scrape failed (non-fatal)"
@@ -101,6 +117,7 @@ jobs:
             "data/processed/latest-odds-api-baseball_mlb.json"
             "data/processed/latest-odds-api-basketball_nba.json"
             "data/processed/latest-odds-api-basketball_ncaab.json"
+            "data/processed/latest-odds-api-basketball_wnba.json"
             "data/processed/latest-odds-api-icehockey_nhl.json"
             "data/processed/latest-summary.json"
             "data/processed/latest-player-props.json"
@@ -111,6 +128,8 @@ jobs:
             "data/processed/mlb-model-input.json"
             "data/processed/nba-model.json"
             "data/processed/nba-efficiency.json"
+            "data/processed/wnba-model.json"
+            "data/processed/wnba-efficiency.json"
             "data/processed/mlb-pitchers-today.json"
             "data/processed/mlb-bullpen.json"
             "data/processed/mlb-batting.json"

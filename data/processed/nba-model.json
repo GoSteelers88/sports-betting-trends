@@ -1,42 +1,67 @@
 {
-  "generatedAt": "2026-05-06T17:42:47.973Z",
-  "source": "nba-model",
+  "generatedAt": "2026-05-09T14:05:20.840Z",
+  "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 1,
+  "recordCount": 4,
   "errors": [],
   "data": {
-    "generatedAt": "2026-05-06T17:42:47.973Z",
+    "generatedAt": "2026-05-09T14:05:20.840Z",
     "constants": {
-      "HOME_COURT_BOOST": 3,
-      "SIGMA": 11
+      "netRtgToPoints": 0.45,
+      "homeCourtBonus": 1.5,
+      "logisticSlope": 0.105
     },
     "teamCount": 30,
-    "gameCount": 2,
+    "gameCount": 4,
     "results": [
       {
-        "eventId": "290490",
-        "homeTeam": "New York Knicks",
-        "awayTeam": "Philadelphia 76ers",
-        "homeWinProb": 0.7178,
-        "awayWinProb": 0.2822,
-        "expectedMargin": 10.27,
-        "homeNetRtg": 6.823529411764706,
-        "awayNetRtg": -0.4444444444444444,
+        "eventId": "30d614c5d781b768faf9cf885e890851",
+        "homeTeam": "Philadelphia 76ers",
+        "awayTeam": "New York Knicks",
+        "homeWinProb": 0.5246,
+        "awayWinProb": 0.4754,
+        "expectedMargin": 0.94,
+        "homeNetRtg": -2.375,
+        "awayNetRtg": -1.125,
         "calibrated": false,
-        "startTime": "2026-05-06T23:00:00.000Z"
+        "startTime": "2026-05-08T23:12:00Z"
       },
       {
-        "eventId": "290433",
-        "homeTeam": "San Antonio Spurs",
-        "awayTeam": "Minnesota Timberwolves",
-        "homeWinProb": 0.8099,
-        "awayWinProb": 0.1901,
-        "expectedMargin": 15.94,
-        "homeNetRtg": 14,
-        "awayNetRtg": 1.0588235294117647,
+        "eventId": "1b5c084f510006e8f30cd6cac40e231d",
+        "homeTeam": "Minnesota Timberwolves",
+        "awayTeam": "San Antonio Spurs",
+        "homeWinProb": 0.3322,
+        "awayWinProb": 0.6678,
+        "expectedMargin": -6.65,
+        "homeNetRtg": 0.14285714285714285,
+        "awayNetRtg": 18.25,
         "calibrated": false,
-        "startTime": "2026-05-07T01:30:00.000Z"
+        "startTime": "2026-05-09T01:40:00Z"
+      },
+      {
+        "eventId": "2734c350b90f332dbece882dd10b204e",
+        "homeTeam": "Cleveland Cavaliers",
+        "awayTeam": "Detroit Pistons",
+        "homeWinProb": 0.567,
+        "awayWinProb": 0.433,
+        "expectedMargin": 2.57,
+        "homeNetRtg": 7.5,
+        "awayNetRtg": 5.125,
+        "calibrated": false,
+        "startTime": "2026-05-09T19:10:00Z"
+      },
+      {
+        "eventId": "40c8a29efb894c4dd6bf6acc5025c9cb",
+        "homeTeam": "Los Angeles Lakers",
+        "awayTeam": "Oklahoma City Thunder",
+        "homeWinProb": 0.5334,
+        "awayWinProb": 0.4666,
+        "expectedMargin": 1.27,
+        "homeNetRtg": 10.25,
+        "awayNetRtg": 10.75,
+        "calibrated": false,
+        "startTime": "2026-05-10T00:40:00Z"
       }
     ]
   }

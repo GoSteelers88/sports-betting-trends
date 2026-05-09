@@ -17,7 +17,7 @@ function loadJson<T>(file: string, fallback: T): T {
 
 // ─── Types we expose to the agent ──────────────────────────────────────────
 
-export type AgentLeague = "NBA" | "MLB" | "NCAAB";
+export type AgentLeague = "NBA" | "MLB" | "WNBA" | "NCAAB";
 
 export type GameOdds = {
   eventId: string;
@@ -79,12 +79,14 @@ function median(nums: number[]): number {
 const ODDS_FILE: Record<AgentLeague, string> = {
   NBA: "latest-odds-api-basketball_nba.json",
   MLB: "latest-odds-api-baseball_mlb.json",
+  WNBA: "latest-odds-api-basketball_wnba.json",
   NCAAB: "latest-odds-api-basketball_ncaab.json",
 };
 
 const MODEL_FILE: Record<AgentLeague, string | null> = {
   NBA: "nba-model.json",
   MLB: "mlb-model-output.json",
+  WNBA: "wnba-model.json",
   NCAAB: null,
 };
 
@@ -231,7 +233,9 @@ export function getModelProbabilities(league: AgentLeague): {
   const file = MODEL_FILE[league];
   if (!file) return { generatedAt: null, games: [] };
 
-  if (league === "NBA") {
+  // NBA + WNBA share the same envelope shape (built by basketball-model.ts —
+  // outer { generatedAt, data: { results } }).
+  if (league === "NBA" || league === "WNBA") {
     const data = loadJson<NbaModelFile>(file, {});
     return {
       generatedAt: data.generatedAt ?? null,
@@ -372,7 +376,7 @@ export const TOOL_DEFINITIONS = [
       "Get today's consensus odds for all games in a league. Returns moneyline, spread, and total medians across major US books, with implied probabilities.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -382,7 +386,7 @@ export const TOOL_DEFINITIONS = [
       "Get the in-house model's win probabilities for today's games. NBA model includes expected margin and net ratings; MLB model is calibrated and pitcher-aware.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -392,7 +396,7 @@ export const TOOL_DEFINITIONS = [
       "Get current injury list for a league. Returns player, team, status, injury type, and expected return date when available.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -402,7 +406,7 @@ export const TOOL_DEFINITIONS = [
       "Get the top-ranked player props for the league with consensus lines and the model's pick side and confidence. Currently NBA only.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -412,7 +416,7 @@ export const TOOL_DEFINITIONS = [
       "Get a high-level trend summary for the league, including trend score, recent averages, and best-bet rankings.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -422,7 +426,7 @@ export const TOOL_DEFINITIONS = [
       "MLB-only advanced metrics from FanGraphs. Returns: regressionCandidates (batters with xwOBA - wOBA >= 0.020 = BABIP-suppressed, hits/total-bases overs are undervalued), velocityGainers (pitchers with rising FB velocity = strikeouts overs are undervalued), closerChanges (recent role shifts saves market may not have priced). Use to find props the market hasn't caught up with.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
       required: [],
     },
   },

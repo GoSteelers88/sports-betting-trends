@@ -20,6 +20,9 @@ jobs:
     env:
       TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
       TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+      # Mirror so Prisma's schema-time URL parser doesn't throw; libSQL adapter
+      # overrides at runtime. See agent-run.yml for context.
+      DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
         with:

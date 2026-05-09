@@ -1,5 +1,8 @@
-// Run the orchestrator end-to-end for one or both leagues.
-// Usage: npm run agent:run -- NBA  |  npm run agent:run -- BOTH
+// Run the orchestrator end-to-end for one or more leagues.
+// Usage: npm run agent:run -- NBA   (single)
+//        npm run agent:run -- BOTH  (NBA + MLB; legacy default)
+//        npm run agent:run -- ALL   (NBA + MLB + WNBA)
+//        npm run agent:run -- WNBA  (single, opt-in)
 import { config } from "dotenv";
 config();
 
@@ -9,7 +12,11 @@ import type { AgentLeague } from "../src/lib/agent/tools";
 async function main() {
   const requested = (process.argv[2] ?? "BOTH").toUpperCase();
   const leagues: AgentLeague[] =
-    requested === "BOTH" ? ["NBA", "MLB"] : ([requested] as AgentLeague[]);
+    requested === "BOTH"
+      ? ["NBA", "MLB"]
+      : requested === "ALL"
+        ? ["NBA", "MLB", "WNBA"]
+        : ([requested] as AgentLeague[]);
 
   for (const league of leagues) {
     console.log(`\n══════════════ ${league} ORCHESTRATOR ══════════════`);

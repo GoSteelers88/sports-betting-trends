@@ -58,7 +58,7 @@ Operating procedure:
 
 Map of staleReasons → ingest scripts:
 - "odds file …" → ingest:odds
-- "model file …" / "model has 0 games" → ingest:nba-efficiency (NBA) or ingest:mlb-model (MLB; also requires ingest:mlb-pitchers, ingest:mlb-bullpen, ingest:mlb-batting if those are also flagged)
+- "model file …" / "model has 0 games" → ingest:nba-efficiency + ingest:nba-model (NBA), ingest:mlb-model (MLB; also requires ingest:mlb-pitchers, ingest:mlb-bullpen, ingest:mlb-batting if those are also flagged), or ingest:wnba-efficiency + ingest:wnba-model (WNBA)
 - "injury file …" → ingest:injuries
 
 Respond with a brief plain-text summary at the end (1-3 sentences). The picks themselves are returned out-of-band — your text is just for the run log.`;
@@ -69,7 +69,7 @@ const TOOL_DEFS = [
     description: "Check freshness and sanity of odds/model/injury snapshots for a league. Pure code, no API cost.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -95,7 +95,7 @@ const TOOL_DEFS = [
       "Hand off to the analyst agent. Returns the analyst's picks (already grader-checked). Call this exactly once after data is healthy.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
       required: ["league"],
     },
   },

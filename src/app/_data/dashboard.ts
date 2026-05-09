@@ -12,7 +12,7 @@ type OutcomeWithPick = Prisma.AgentOutcomeGetPayload<{ include: { pick: true } }
 const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 
 export type SlateGame = {
-  league: "NBA" | "MLB";
+  league: "NBA" | "MLB" | "WNBA";
   eventId: string;
   commenceTime: string;
   homeTeam: string;
@@ -192,9 +192,10 @@ type RawOddsEvent = {
 };
 type RawOddsFile = { events?: RawOddsEvent[] };
 
-const ODDS_FILE: Record<"NBA" | "MLB", string> = {
+const ODDS_FILE: Record<"NBA" | "MLB" | "WNBA", string> = {
   NBA: "latest-odds-api-basketball_nba.json",
   MLB: "latest-odds-api-baseball_mlb.json",
+  WNBA: "latest-odds-api-basketball_wnba.json",
 };
 
 type ModelGame = {
@@ -206,7 +207,7 @@ type ModelGame = {
   expectedMargin?: number;
 };
 
-function loadOdds(league: "NBA" | "MLB"): SlateGame[] {
+function loadOdds(league: "NBA" | "MLB" | "WNBA"): SlateGame[] {
   const file = readJson<RawOddsFile>(ODDS_FILE[league], { events: [] });
   return (file.events ?? []).map(ev => {
     const home: number[] = [];
@@ -273,9 +274,14 @@ function loadOdds(league: "NBA" | "MLB"): SlateGame[] {
   });
 }
 
-function loadModelMap(league: "NBA" | "MLB"): Map<string, ModelGame> {
+function loadModelMap(league: "NBA" | "MLB" | "WNBA"): Map<string, ModelGame> {
   if (league === "NBA") {
     const file = readJson<{ data?: { results?: ModelGame[] } }>("nba-model.json", {});
+    const results = file.data?.results ?? [];
+    return new Map(results.map(g => [`${g.homeTeam}::${g.awayTeam}`, g]));
+  }
+  if (league === "WNBA") {
+    const file = readJson<{ data?: { results?: ModelGame[] } }>("wnba-model.json", {});
     const results = file.data?.results ?? [];
     return new Map(results.map(g => [`${g.homeTeam}::${g.awayTeam}`, g]));
   }
@@ -286,8 +292,11 @@ function loadModelMap(league: "NBA" | "MLB"): Map<string, ModelGame> {
 function attachModel(games: SlateGame[]): SlateGame[] {
   const nbaModel = loadModelMap("NBA");
   const mlbModel = loadModelMap("MLB");
+  const wnbaModel = loadModelMap("WNBA");
   return games.map(g => {
-    const model = (g.league === "NBA" ? nbaModel : mlbModel).get(`${g.homeTeam}::${g.awayTeam}`);
+    const map =
+      g.league === "NBA" ? nbaModel : g.league === "WNBA" ? wnbaModel : mlbModel;
+    const model = map.get(`${g.homeTeam}::${g.awayTeam}`);
     if (!model) return g;
     return {
       ...g,
@@ -309,7 +318,7 @@ function loadMarketPicks(): MarketPick[] {
   const picks = file.bestBets ?? [];
   // Restrict to NBA + MLB and take the top 5
   return picks
-    .filter(p => p.league === "NBA" || p.league === "MLB")
+    .filter(p => p.league === "NBA" || p.league === "MLB" || p.league === "WNBA")
     .slice(0, 5);
 }
 
@@ -353,7 +362,7 @@ async function loadTodaysPicks(): Promise<SlatePick[]> {
     picks = await prisma.agentPick.findMany({
       where: {
         createdAt: { gte: since },
-        league: { in: ["NBA", "MLB"] },
+        league: { in: ["NBA", "MLB", "WNBA"] },
       },
       include: { outcome: true },
       orderBy: { edge: "desc" },
@@ -643,7 +652,11 @@ async function loadPaperTrial(): Promise<PaperTrial> {
 // ─── orchestrator ──────────────────────────────────────────────────────────
 
 export async function getDashboardData(): Promise<DashboardData> {
-  const allGames = attachModel([...loadOdds("NBA"), ...loadOdds("MLB")]);
+  const allGames = attachModel([
+    ...loadOdds("NBA"),
+    ...loadOdds("MLB"),
+    ...loadOdds("WNBA"),
+  ]);
   const picks = await loadTodaysPicks();
 
   // Mark games that have picks. Token-aware match — bidirectional substring

@@ -10,18 +10,21 @@ const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 const ODDS_FILE: Record<AgentLeague, string> = {
   NBA: "latest-odds-api-basketball_nba.json",
   MLB: "latest-odds-api-baseball_mlb.json",
+  WNBA: "latest-odds-api-basketball_wnba.json",
   NCAAB: "latest-odds-api-basketball_ncaab.json",
 };
 
 const MODEL_FILE: Record<AgentLeague, string | null> = {
   NBA: "nba-model.json",
   MLB: "mlb-model-output.json",
+  WNBA: "wnba-model.json",
   NCAAB: null,
 };
 
 const INJURY_FILE: Record<AgentLeague, string | null> = {
   NBA: "injuries-nba.json",
   MLB: null,
+  WNBA: null,
   NCAAB: null,
 };
 

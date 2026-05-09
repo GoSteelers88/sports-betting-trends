@@ -18,7 +18,8 @@ const data = new SlashCommandBuilder()
       .addChoices(
         { name: "ALL", value: "ALL" },
         { name: "NBA", value: "NBA" },
-        { name: "MLB", value: "MLB" }
+        { name: "MLB", value: "MLB" },
+        { name: "WNBA", value: "WNBA" }
       )
   );
 

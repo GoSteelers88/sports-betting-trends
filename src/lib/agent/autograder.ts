@@ -22,14 +22,15 @@ type Espn = {
   }>;
 };
 
-const ESPN: Record<"NBA" | "MLB" | "NCAAB", string> = {
+const ESPN: Record<"NBA" | "MLB" | "WNBA" | "NCAAB", string> = {
   NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
   MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
+  WNBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard",
   NCAAB: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard",
 };
 
 type GameFinal = {
-  league: "NBA" | "MLB" | "NCAAB";
+  league: "NBA" | "MLB" | "WNBA" | "NCAAB";
   homeTeam: string;
   awayTeam: string;
   homeScore: number;
@@ -37,7 +38,7 @@ type GameFinal = {
   date: string;
 };
 
-async function fetchFinalsForDay(league: "NBA" | "MLB" | "NCAAB", yyyymmdd: string): Promise<GameFinal[]> {
+async function fetchFinalsForDay(league: "NBA" | "MLB" | "WNBA" | "NCAAB", yyyymmdd: string): Promise<GameFinal[]> {
   const url = `${ESPN[league]}?dates=${yyyymmdd}`;
   const res = await fetch(url, {
     headers: { "User-Agent": "sports-betting-trends-agent/1.0" },
@@ -156,7 +157,7 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
     dates.push(yyyymmddUtc(d));
   }
 
-  const leagues = Array.from(new Set(pendingPicks.map(p => p.league))) as Array<"NBA" | "MLB" | "NCAAB">;
+  const leagues = Array.from(new Set(pendingPicks.map(p => p.league))) as Array<"NBA" | "MLB" | "WNBA" | "NCAAB">;
   const finalsByLeague = new Map<string, GameFinal[]>();
   for (const lg of leagues) {
     const seenIds = new Set<string>();
