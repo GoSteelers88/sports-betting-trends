@@ -1,19 +1,68 @@
 {
-  "generatedAt": "2026-05-09T14:06:08.755Z",
+  "generatedAt": "2026-05-09T14:13:12.895Z",
   "source": "wnba-efficiency-empirical",
-  "status": "no-games",
+  "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 0,
+  "recordCount": 4,
   "errors": [],
   "data": {
-    "generatedAt": "2026-05-09T14:06:08.756Z",
+    "generatedAt": "2026-05-09T14:13:12.895Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 0,
-    "gameCount": 0,
-    "results": []
+    "teamCount": 17,
+    "gameCount": 4,
+    "results": [
+      {
+        "eventId": "e28d54c8b0fc7378902ab7a5c361d19d",
+        "homeTeam": "Indiana Fever",
+        "awayTeam": "Dallas Wings",
+        "homeWinProb": 0.5568,
+        "awayWinProb": 0.4432,
+        "expectedMargin": 2.17,
+        "homeNetRtg": 16.5,
+        "awayNetRtg": 15,
+        "calibrated": false,
+        "startTime": "2026-05-09T17:00:00Z"
+      },
+      {
+        "eventId": "0f8c28106a569b3b61d33ef0c0e272ec",
+        "homeTeam": "Las Vegas Aces",
+        "awayTeam": "Phoenix Mercury",
+        "homeWinProb": 0.551,
+        "awayWinProb": 0.449,
+        "expectedMargin": 1.95,
+        "homeNetRtg": 16,
+        "awayNetRtg": 15,
+        "calibrated": false,
+        "startTime": "2026-05-09T19:30:00Z"
+      },
+      {
+        "eventId": "b692d09e8b6baf1cbac0e813043179bf",
+        "homeTeam": "Minnesota Lynx",
+        "awayTeam": "Atlanta Dream",
+        "homeWinProb": 0.5275,
+        "awayWinProb": 0.4725,
+        "expectedMargin": 1.05,
+        "homeNetRtg": 8,
+        "awayNetRtg": 9,
+        "calibrated": false,
+        "startTime": "2026-05-10T00:00:00Z"
+      },
+      {
+        "eventId": "616912e86364746bdaa3f23d68819458",
+        "homeTeam": "Portland Fire",
+        "awayTeam": "Chicago Sky",
+        "homeWinProb": 0.4685,
+        "awayWinProb": 0.5315,
+        "expectedMargin": -1.2,
+        "homeNetRtg": -10,
+        "awayNetRtg": -4,
+        "calibrated": false,
+        "startTime": "2026-05-10T01:00:00Z"
+      }
+    ]
   }
 }
