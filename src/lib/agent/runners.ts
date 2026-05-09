@@ -31,6 +31,8 @@ export const ALLOWED_SCRIPTS = [
   "ingest:nba-model",
   "ingest:wnba-efficiency",
   "ingest:wnba-model",
+  "ingest:nhl-efficiency",
+  "ingest:nhl-model",
   "ingest:mlb-pitchers",
   "ingest:mlb-bullpen",
   "ingest:mlb-batting",

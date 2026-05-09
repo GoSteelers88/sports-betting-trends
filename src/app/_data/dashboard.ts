@@ -12,7 +12,7 @@ type OutcomeWithPick = Prisma.AgentOutcomeGetPayload<{ include: { pick: true } }
 const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 
 export type SlateGame = {
-  league: "NBA" | "MLB" | "WNBA";
+  league: "NBA" | "MLB" | "WNBA" | "NHL";
   eventId: string;
   commenceTime: string;
   homeTeam: string;
@@ -192,10 +192,11 @@ type RawOddsEvent = {
 };
 type RawOddsFile = { events?: RawOddsEvent[] };
 
-const ODDS_FILE: Record<"NBA" | "MLB" | "WNBA", string> = {
+const ODDS_FILE: Record<"NBA" | "MLB" | "WNBA" | "NHL", string> = {
   NBA: "latest-odds-api-basketball_nba.json",
   MLB: "latest-odds-api-baseball_mlb.json",
   WNBA: "latest-odds-api-basketball_wnba.json",
+  NHL: "latest-odds-api-icehockey_nhl.json",
 };
 
 type ModelGame = {
@@ -207,7 +208,7 @@ type ModelGame = {
   expectedMargin?: number;
 };
 
-function loadOdds(league: "NBA" | "MLB" | "WNBA"): SlateGame[] {
+function loadOdds(league: "NBA" | "MLB" | "WNBA" | "NHL"): SlateGame[] {
   const file = readJson<RawOddsFile>(ODDS_FILE[league], { events: [] });
   return (file.events ?? []).map(ev => {
     const home: number[] = [];
@@ -274,14 +275,16 @@ function loadOdds(league: "NBA" | "MLB" | "WNBA"): SlateGame[] {
   });
 }
 
-function loadModelMap(league: "NBA" | "MLB" | "WNBA"): Map<string, ModelGame> {
-  if (league === "NBA") {
-    const file = readJson<{ data?: { results?: ModelGame[] } }>("nba-model.json", {});
-    const results = file.data?.results ?? [];
-    return new Map(results.map(g => [`${g.homeTeam}::${g.awayTeam}`, g]));
-  }
-  if (league === "WNBA") {
-    const file = readJson<{ data?: { results?: ModelGame[] } }>("wnba-model.json", {});
+function loadModelMap(league: "NBA" | "MLB" | "WNBA" | "NHL"): Map<string, ModelGame> {
+  // NBA / WNBA / NHL share the basketball-model.ts / hockey-model.ts envelope:
+  // outer { generatedAt, data: { results } }. MLB uses its own flat shape.
+  const wrappedFile =
+    league === "NBA" ? "nba-model.json"
+    : league === "WNBA" ? "wnba-model.json"
+    : league === "NHL" ? "nhl-model.json"
+    : null;
+  if (wrappedFile) {
+    const file = readJson<{ data?: { results?: ModelGame[] } }>(wrappedFile, {});
     const results = file.data?.results ?? [];
     return new Map(results.map(g => [`${g.homeTeam}::${g.awayTeam}`, g]));
   }
@@ -293,9 +296,13 @@ function attachModel(games: SlateGame[]): SlateGame[] {
   const nbaModel = loadModelMap("NBA");
   const mlbModel = loadModelMap("MLB");
   const wnbaModel = loadModelMap("WNBA");
+  const nhlModel = loadModelMap("NHL");
   return games.map(g => {
     const map =
-      g.league === "NBA" ? nbaModel : g.league === "WNBA" ? wnbaModel : mlbModel;
+      g.league === "NBA" ? nbaModel
+      : g.league === "WNBA" ? wnbaModel
+      : g.league === "NHL" ? nhlModel
+      : mlbModel;
     const model = map.get(`${g.homeTeam}::${g.awayTeam}`);
     if (!model) return g;
     return {
@@ -318,7 +325,7 @@ function loadMarketPicks(): MarketPick[] {
   const picks = file.bestBets ?? [];
   // Restrict to NBA + MLB and take the top 5
   return picks
-    .filter(p => p.league === "NBA" || p.league === "MLB" || p.league === "WNBA")
+    .filter(p => p.league === "NBA" || p.league === "MLB" || p.league === "WNBA" || p.league === "NHL")
     .slice(0, 5);
 }
 
@@ -340,11 +347,14 @@ function loadPlayerProps(): PlayerProp[] {
 type InjuryFile = { players?: Array<{ player: string; team: string; position?: string; status: string; injuryType?: string }> };
 
 function loadInjuries(): Injury[] {
-  const nba = readJson<InjuryFile>("injuries-nba.json", { players: [] });
   const out: Injury[] = [];
-  for (const p of nba.players ?? []) {
-    if (p.status?.toLowerCase().includes("out") || p.status?.toLowerCase().includes("doubtful")) {
-      out.push({ league: "NBA", ...p });
+  for (const [league, file] of [["NBA", "injuries-nba.json"], ["NHL", "injuries-nhl.json"]] as const) {
+    const data = readJson<InjuryFile>(file, { players: [] });
+    for (const p of data.players ?? []) {
+      const status = p.status?.toLowerCase() ?? "";
+      if (status.includes("out") || status.includes("doubtful")) {
+        out.push({ league, ...p });
+      }
     }
   }
   return out;
@@ -362,7 +372,7 @@ async function loadTodaysPicks(): Promise<SlatePick[]> {
     picks = await prisma.agentPick.findMany({
       where: {
         createdAt: { gte: since },
-        league: { in: ["NBA", "MLB", "WNBA"] },
+        league: { in: ["NBA", "MLB", "WNBA", "NHL"] },
       },
       include: { outcome: true },
       orderBy: { edge: "desc" },
@@ -656,6 +666,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     ...loadOdds("NBA"),
     ...loadOdds("MLB"),
     ...loadOdds("WNBA"),
+    ...loadOdds("NHL"),
   ]);
   const picks = await loadTodaysPicks();
 

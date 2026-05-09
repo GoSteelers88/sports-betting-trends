@@ -43,7 +43,7 @@ jobs:
       TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
       DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
       THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
-      THE_ODDS_LEAGUES: basketball_nba,baseball_mlb,basketball_wnba
+      THE_ODDS_LEAGUES: basketball_nba,baseball_mlb,basketball_wnba,icehockey_nhl
       THE_ODDS_REGIONS: us
       THE_ODDS_MARKETS: h2h,spreads,totals
       THE_ODDS_ODDS_FORMAT: american
@@ -92,6 +92,8 @@ jobs:
           npm run ingest:nba-model || echo "nba model build failed (non-fatal)"
           npm run ingest:wnba-efficiency || echo "wnba efficiency refresh failed (non-fatal — likely offseason)"
           npm run ingest:wnba-model || echo "wnba model build failed (non-fatal — likely offseason)"
+          npm run ingest:nhl-efficiency || echo "nhl efficiency refresh failed (non-fatal — likely offseason)"
+          npm run ingest:nhl-model || echo "nhl model build failed (non-fatal — likely offseason)"
           npm run scrape:nba-props || echo "nba props scrape failed (non-fatal)"
           npm run scrape:mlb-props || echo "mlb props scrape failed (non-fatal)"
           npm run scrape:mlb-signals || echo "mlb signals scrape failed (non-fatal)"
@@ -130,6 +132,8 @@ jobs:
             "data/processed/nba-efficiency.json"
             "data/processed/wnba-model.json"
             "data/processed/wnba-efficiency.json"
+            "data/processed/nhl-model.json"
+            "data/processed/nhl-efficiency.json"
             "data/processed/mlb-pitchers-today.json"
             "data/processed/mlb-bullpen.json"
             "data/processed/mlb-batting.json"

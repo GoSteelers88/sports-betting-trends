@@ -17,7 +17,7 @@ function loadJson<T>(file: string, fallback: T): T {
 
 // ─── Types we expose to the agent ──────────────────────────────────────────
 
-export type AgentLeague = "NBA" | "MLB" | "WNBA" | "NCAAB";
+export type AgentLeague = "NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB";
 
 export type GameOdds = {
   eventId: string;
@@ -80,6 +80,7 @@ const ODDS_FILE: Record<AgentLeague, string> = {
   NBA: "latest-odds-api-basketball_nba.json",
   MLB: "latest-odds-api-baseball_mlb.json",
   WNBA: "latest-odds-api-basketball_wnba.json",
+  NHL: "latest-odds-api-icehockey_nhl.json",
   NCAAB: "latest-odds-api-basketball_ncaab.json",
 };
 
@@ -87,6 +88,7 @@ const MODEL_FILE: Record<AgentLeague, string | null> = {
   NBA: "nba-model.json",
   MLB: "mlb-model-output.json",
   WNBA: "wnba-model.json",
+  NHL: "nhl-model.json",
   NCAAB: null,
 };
 
@@ -233,9 +235,10 @@ export function getModelProbabilities(league: AgentLeague): {
   const file = MODEL_FILE[league];
   if (!file) return { generatedAt: null, games: [] };
 
-  // NBA + WNBA share the same envelope shape (built by basketball-model.ts —
-  // outer { generatedAt, data: { results } }).
-  if (league === "NBA" || league === "WNBA") {
+  // NBA, WNBA, and NHL all share the same envelope shape — outer
+  // { generatedAt, data: { results } } — built by basketball-model.ts and
+  // hockey-model.ts respectively. The agent reads them through the same path.
+  if (league === "NBA" || league === "WNBA" || league === "NHL") {
     const data = loadJson<NbaModelFile>(file, {});
     return {
       generatedAt: data.generatedAt ?? null,
@@ -259,9 +262,12 @@ export function getModelProbabilities(league: AgentLeague): {
 type InjuryFile = { fetchedAt?: string; players?: Injury[] };
 
 export function getInjuries(league: AgentLeague): { fetchedAt: string | null; players: Injury[] } {
-  // We have nba/nfl/nhl injury snapshots; MLB and NCAAB injuries surface inside latest-summary
-  // for now. Return empty-list gracefully when absent.
-  const file = league === "NBA" ? "injuries-nba.json" : null;
+  // We have nba/nfl/nhl injury snapshots; MLB / WNBA / NCAAB injuries surface
+  // inside latest-summary for now. Return empty-list gracefully when absent.
+  const file =
+    league === "NBA" ? "injuries-nba.json"
+    : league === "NHL" ? "injuries-nhl.json"
+    : null;
   if (!file) return { fetchedAt: null, players: [] };
   const data = loadJson<InjuryFile>(file, {});
   return { fetchedAt: data.fetchedAt ?? null, players: data.players ?? [] };
@@ -376,7 +382,7 @@ export const TOOL_DEFINITIONS = [
       "Get today's consensus odds for all games in a league. Returns moneyline, spread, and total medians across major US books, with implied probabilities.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -386,7 +392,7 @@ export const TOOL_DEFINITIONS = [
       "Get the in-house model's win probabilities for today's games. NBA model includes expected margin and net ratings; MLB model is calibrated and pitcher-aware.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -396,7 +402,7 @@ export const TOOL_DEFINITIONS = [
       "Get current injury list for a league. Returns player, team, status, injury type, and expected return date when available.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -406,7 +412,7 @@ export const TOOL_DEFINITIONS = [
       "Get the top-ranked player props for the league with consensus lines and the model's pick side and confidence. Currently NBA only.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -416,7 +422,7 @@ export const TOOL_DEFINITIONS = [
       "Get a high-level trend summary for the league, including trend score, recent averages, and best-bet rankings.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
       required: ["league"],
     },
   },
@@ -426,7 +432,7 @@ export const TOOL_DEFINITIONS = [
       "MLB-only advanced metrics from FanGraphs. Returns: regressionCandidates (batters with xwOBA - wOBA >= 0.020 = BABIP-suppressed, hits/total-bases overs are undervalued), velocityGainers (pitchers with rising FB velocity = strikeouts overs are undervalued), closerChanges (recent role shifts saves market may not have priced). Use to find props the market hasn't caught up with.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
       required: [],
     },
   },

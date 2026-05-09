@@ -19,7 +19,8 @@ const data = new SlashCommandBuilder()
         { name: "ALL", value: "ALL" },
         { name: "NBA", value: "NBA" },
         { name: "MLB", value: "MLB" },
-        { name: "WNBA", value: "WNBA" }
+        { name: "WNBA", value: "WNBA" },
+        { name: "NHL", value: "NHL" }
       )
   );
 

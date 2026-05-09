@@ -1,0 +1,68 @@
+{
+  "generatedAt": "2026-05-09T15:12:25.241Z",
+  "source": "nhl-efficiency-empirical",
+  "status": "ok",
+  "freshnessMins": 0,
+  "recordCount": 4,
+  "errors": [],
+  "data": {
+    "generatedAt": "2026-05-09T15:12:25.241Z",
+    "constants": {
+      "goalDiffToMargin": 0.5,
+      "homeIceBonus": 0.2,
+      "logisticSlope": 0.3
+    },
+    "teamCount": 31,
+    "gameCount": 4,
+    "results": [
+      {
+        "eventId": "ff32d091f70d6cbd0449e919d784e5fc",
+        "homeTeam": "Philadelphia Flyers",
+        "awayTeam": "Carolina Hurricanes",
+        "homeWinProb": 0.4963,
+        "awayWinProb": 0.5037,
+        "expectedMargin": -0.05,
+        "homeNetRtg": 0.5,
+        "awayNetRtg": 1,
+        "calibrated": false,
+        "startTime": "2026-05-09T22:10:00Z"
+      },
+      {
+        "eventId": "06019ea348b06f7e342d8998911baca1",
+        "homeTeam": "Minnesota Wild",
+        "awayTeam": "Colorado Avalanche",
+        "homeWinProb": 0.4682,
+        "awayWinProb": 0.5318,
+        "expectedMargin": -0.42,
+        "homeNetRtg": 0.75,
+        "awayNetRtg": 2,
+        "calibrated": false,
+        "startTime": "2026-05-10T01:10:00Z"
+      },
+      {
+        "eventId": "7e034282e0ef033daa6d2f5e974f2933",
+        "homeTeam": "Montréal Canadiens",
+        "awayTeam": "Buffalo Sabres",
+        "homeWinProb": 0.4617,
+        "awayWinProb": 0.5383,
+        "expectedMargin": -0.51,
+        "homeNetRtg": 0.21428571428571427,
+        "awayNetRtg": 1.6363636363636365,
+        "calibrated": false,
+        "startTime": "2026-05-10T23:00:00Z"
+      },
+      {
+        "eventId": "928fcf1398f0f1814ca5aeebaae169b7",
+        "homeTeam": "Anaheim Ducks",
+        "awayTeam": "Vegas Golden Knights",
+        "homeWinProb": 0.4769,
+        "awayWinProb": 0.5231,
+        "expectedMargin": -0.31,
+        "homeNetRtg": -0.4166666666666667,
+        "awayNetRtg": 0.6,
+        "calibrated": false,
+        "startTime": "2026-05-11T01:40:00Z"
+      }
+    ]
+  }
+}

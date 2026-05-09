@@ -22,10 +22,11 @@ const data = new SlashCommandBuilder()
           .setDescription("Which league(s) to analyze")
           .addChoices(
             { name: "BOTH (NBA + MLB)", value: "BOTH" },
-            { name: "ALL (NBA + MLB + WNBA)", value: "ALL" },
+            { name: "ALL (NBA + MLB + WNBA + NHL)", value: "ALL" },
             { name: "NBA", value: "NBA" },
             { name: "MLB", value: "MLB" },
-            { name: "WNBA", value: "WNBA" }
+            { name: "WNBA", value: "WNBA" },
+            { name: "NHL", value: "NHL" }
           )
           .setRequired(true)
       )

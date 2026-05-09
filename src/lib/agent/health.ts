@@ -11,6 +11,7 @@ const ODDS_FILE: Record<AgentLeague, string> = {
   NBA: "latest-odds-api-basketball_nba.json",
   MLB: "latest-odds-api-baseball_mlb.json",
   WNBA: "latest-odds-api-basketball_wnba.json",
+  NHL: "latest-odds-api-icehockey_nhl.json",
   NCAAB: "latest-odds-api-basketball_ncaab.json",
 };
 
@@ -18,6 +19,7 @@ const MODEL_FILE: Record<AgentLeague, string | null> = {
   NBA: "nba-model.json",
   MLB: "mlb-model-output.json",
   WNBA: "wnba-model.json",
+  NHL: "nhl-model.json",
   NCAAB: null,
 };
 
@@ -25,6 +27,7 @@ const INJURY_FILE: Record<AgentLeague, string | null> = {
   NBA: "injuries-nba.json",
   MLB: null,
   WNBA: null,
+  NHL: "injuries-nhl.json",
   NCAAB: null,
 };
 
