@@ -57,6 +57,13 @@ data/processed/kalshi-trades.jsonl
 data/processed/kalshi-price-history.json
 data/processed/backtest-results.json
 data/processed/latest-odds-api*.json
+# Allow odds files that the agent-run workflow explicitly allowlists for
+# commit. Tracked files (NBA, MLB, NCAAB, NHL, top soccer leagues) bypass
+# the ignore above because they pre-date the rule. New files need explicit
+# exceptions or `git add` silently skips them — that's why the first WNBA
+# run modeled 4 games but the auto-publish commit landed without the odds
+# file, leaving the dashboard's loadOdds("WNBA") empty.
+!data/processed/latest-odds-api-basketball_wnba.json
 
 # Compiled script output
 scripts/*.js
