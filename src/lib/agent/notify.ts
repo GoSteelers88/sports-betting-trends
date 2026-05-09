@@ -9,9 +9,34 @@ function fmtAmerican(n: number): string {
   return n > 0 ? `+${n}` : `${n}`;
 }
 
+// Format the analyst's gameTime (ISO 8601 from The Odds API's commence_time)
+// into a compact "Sat 8:40 PM ET" so a Sunday-afternoon pick posted Saturday
+// morning doesn't read as "tonight". Returns empty when gameTime is missing
+// or unparseable so the line layout still works.
+function fmtGameTime(iso: string | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const tz = "America/New_York";
+  // Intl emits "EDT"/"EST"; normalize to a single "ET" label so Discord posts
+  // don't churn at the DST boundary.
+  const dayPart = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: tz }).format(d);
+  const timePart = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: tz,
+  }).format(d);
+  return `${dayPart} ${timePart} ET`;
+}
+
 function pickLine(p: GradedPick): string {
+  const when = fmtGameTime(p.gameTime);
+  const matchupLine = when
+    ? `• **${p.matchup}** _(${when})_ | ${p.market} | ${p.selection} @ \`${fmtAmerican(p.oddsAmerican)}\``
+    : `• **${p.matchup}** | ${p.market} | ${p.selection} @ \`${fmtAmerican(p.oddsAmerican)}\``;
   return (
-    `• **${p.matchup}** | ${p.market} | ${p.selection} @ \`${fmtAmerican(p.oddsAmerican)}\`\n` +
+    `${matchupLine}\n` +
     `  edge **${(p.edge * 100).toFixed(1)}%**, stake **${p.kellyStakeUnits}u**, conf **${p.confidence}**\n` +
     `  > ${p.thesis.slice(0, 350)}`
   );
