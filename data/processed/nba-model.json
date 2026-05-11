@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-05-10T23:35:31.914Z",
+  "generatedAt": "2026-05-11T10:01:21.361Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 4,
+  "recordCount": 3,
   "errors": [],
   "data": {
-    "generatedAt": "2026-05-10T23:35:31.914Z",
+    "generatedAt": "2026-05-11T10:01:21.361Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 30,
-    "gameCount": 4,
+    "gameCount": 3,
     "results": [
       {
-        "eventId": "2734c350b90f332dbece882dd10b204e",
+        "eventId": "fd_35580894",
         "homeTeam": "Cleveland Cavaliers",
         "awayTeam": "Detroit Pistons",
         "homeWinProb": 0.6043,
@@ -25,43 +25,31 @@
         "homeNetRtg": 9.375,
         "awayNetRtg": 3.75,
         "calibrated": false,
-        "startTime": "2026-05-09T19:10:00Z"
+        "startTime": "2026-05-12T00:10:00.000Z"
       },
       {
-        "eventId": "40c8a29efb894c4dd6bf6acc5025c9cb",
+        "eventId": "fd_35580895",
         "homeTeam": "Los Angeles Lakers",
         "awayTeam": "Oklahoma City Thunder",
-        "homeWinProb": 0.4118,
-        "awayWinProb": 0.5882,
-        "expectedMargin": -3.39,
-        "homeNetRtg": 2.125,
+        "homeWinProb": 0.3926,
+        "awayWinProb": 0.6074,
+        "expectedMargin": -4.16,
+        "homeNetRtg": 0.42857142857142855,
         "awayNetRtg": 13,
         "calibrated": false,
-        "startTime": "2026-05-10T00:40:00Z"
+        "startTime": "2026-05-12T02:40:00.000Z"
       },
       {
-        "eventId": "878243c543236baba132ad43ae333aae",
-        "homeTeam": "Philadelphia 76ers",
-        "awayTeam": "New York Knicks",
-        "homeWinProb": 0.3822,
-        "awayWinProb": 0.6178,
-        "expectedMargin": -4.57,
-        "homeNetRtg": -2.5,
-        "awayNetRtg": 11,
+        "eventId": "fd_35584988",
+        "homeTeam": "San Antonio Spurs",
+        "awayTeam": "Minnesota Timberwolves",
+        "homeWinProb": 0.7213,
+        "awayWinProb": 0.2787,
+        "expectedMargin": 9.06,
+        "homeNetRtg": 10.88888888888889,
+        "awayNetRtg": -5.9,
         "calibrated": false,
-        "startTime": "2026-05-10T19:40:00Z"
-      },
-      {
-        "eventId": "77e60e525f42e8337027f550bcd2f1cc",
-        "homeTeam": "Minnesota Timberwolves",
-        "awayTeam": "San Antonio Spurs",
-        "homeWinProb": 0.4588,
-        "awayWinProb": 0.5412,
-        "expectedMargin": -1.58,
-        "homeNetRtg": 5,
-        "awayNetRtg": 11.833333333333334,
-        "calibrated": false,
-        "startTime": "2026-05-10T23:40:00Z"
+        "startTime": "2026-05-13T02:00:00.000Z"
       }
     ]
   }

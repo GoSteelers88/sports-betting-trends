@@ -1,12 +1,14 @@
 {
-  "generatedAt": "2026-05-10T23:35:57.195Z",
+  "generatedAt": "2026-05-11T10:01:47.096Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 4,
-  "errors": [],
+  "recordCount": 3,
+  "errors": [
+    "unmodeled: Minnesota Frost @ Montreal Victoire (fd_35586171)"
+  ],
   "data": {
-    "generatedAt": "2026-05-10T23:35:57.195Z",
+    "generatedAt": "2026-05-11T10:01:47.096Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
@@ -16,19 +18,7 @@
     "gameCount": 4,
     "results": [
       {
-        "eventId": "ff32d091f70d6cbd0449e919d784e5fc",
-        "homeTeam": "Philadelphia Flyers",
-        "awayTeam": "Carolina Hurricanes",
-        "homeWinProb": 0.4919,
-        "awayWinProb": 0.5081,
-        "expectedMargin": -0.11,
-        "homeNetRtg": 0.38461538461538464,
-        "awayNetRtg": 1,
-        "calibrated": false,
-        "startTime": "2026-05-09T22:10:00Z"
-      },
-      {
-        "eventId": "06019ea348b06f7e342d8998911baca1",
+        "eventId": "fd_35591058",
         "homeTeam": "Minnesota Wild",
         "awayTeam": "Colorado Avalanche",
         "homeWinProb": 0.4822,
@@ -37,31 +27,31 @@
         "homeNetRtg": 0.625,
         "awayNetRtg": 1.5,
         "calibrated": false,
-        "startTime": "2026-05-10T01:10:00Z"
+        "startTime": "2026-05-12T00:10:00.000Z"
       },
       {
-        "eventId": "7e034282e0ef033daa6d2f5e974f2933",
-        "homeTeam": "Montréal Canadiens",
+        "eventId": "fd_35593965",
+        "homeTeam": "Montreal Canadiens",
         "awayTeam": "Buffalo Sabres",
-        "homeWinProb": 0.4566,
-        "awayWinProb": 0.5434,
-        "expectedMargin": -0.58,
-        "homeNetRtg": 0.07692307692307693,
-        "awayNetRtg": 1.6363636363636365,
+        "homeWinProb": 0.4846,
+        "awayWinProb": 0.5154,
+        "expectedMargin": -0.2,
+        "homeNetRtg": 0.35714285714285715,
+        "awayNetRtg": 1.1666666666666667,
         "calibrated": false,
-        "startTime": "2026-05-10T23:00:00Z"
+        "startTime": "2026-05-12T23:00:00.000Z"
       },
       {
-        "eventId": "928fcf1398f0f1814ca5aeebaae169b7",
-        "homeTeam": "Anaheim Ducks",
-        "awayTeam": "Vegas Golden Knights",
-        "homeWinProb": 0.4769,
-        "awayWinProb": 0.5231,
-        "expectedMargin": -0.31,
-        "homeNetRtg": -0.4166666666666667,
-        "awayNetRtg": 0.6,
+        "eventId": "fd_35593966",
+        "homeTeam": "Vegas Golden Knights",
+        "awayTeam": "Anaheim Ducks",
+        "homeWinProb": 0.5548,
+        "awayWinProb": 0.4452,
+        "expectedMargin": 0.73,
+        "homeNetRtg": 0.9333333333333333,
+        "awayNetRtg": -0.13333333333333333,
         "calibrated": false,
-        "startTime": "2026-05-11T01:40:00Z"
+        "startTime": "2026-05-13T01:30:00.000Z"
       }
     ]
   }
