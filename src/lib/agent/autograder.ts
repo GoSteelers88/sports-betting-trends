@@ -70,7 +70,7 @@ async function fetchFinalsForDay(league: "NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB
 }
 
 // Token-aware matcher: avoids "New York" matching both Yankees and Mets.
-function teamMatches(needle: string, haystack: string): boolean {
+export function teamMatches(needle: string, haystack: string): boolean {
   const norm = (s: string) =>
     s
       .toLowerCase()
@@ -91,6 +91,26 @@ function teamMatches(needle: string, haystack: string): boolean {
   const [need, have] = tokensA.length <= tokensB.length ? [tokensA, tokensB] : [tokensB, tokensA];
   const haveSet = new Set(have);
   return need.every(t => haveSet.has(t));
+}
+
+// True iff this ESPN final belongs to the same game as the pick.
+// Requires BOTH ESPN teams to appear in pick.matchup — not just one — so
+// "Texas Rangers vs Arizona Diamondbacks" cannot match a "Mets @ D'backs"
+// final. Also requires the selection to be one of the two ESPN teams so
+// we can grade win/loss correctly. The 36-hour proximity gate is layered
+// on top of this in the caller.
+export function matchesPickToFinal(
+  pick: { matchup: string; selection: string },
+  final: { homeTeam: string; awayTeam: string }
+): boolean {
+  const bothTeamsInMatchup =
+    teamMatches(final.homeTeam, pick.matchup) &&
+    teamMatches(final.awayTeam, pick.matchup);
+  if (!bothTeamsInMatchup) return false;
+  const selectionMatchesEspnTeam =
+    teamMatches(final.homeTeam, pick.selection) ||
+    teamMatches(final.awayTeam, pick.selection);
+  return selectionMatchesEspnTeam;
 }
 
 type GradeResult = "win" | "loss" | "push" | "void";
@@ -194,10 +214,7 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
     const pickTime = pick.gameDate.getTime();
     // Try to match by both teams in the pick.matchup AND by date proximity
     const match = finals.find(f => {
-      const teamOk =
-        (teamMatches(f.homeTeam, pick.matchup) || teamMatches(f.awayTeam, pick.matchup)) &&
-        (teamMatches(f.homeTeam, pick.selection) || teamMatches(f.awayTeam, pick.selection));
-      if (!teamOk) return false;
+      if (!matchesPickToFinal(pick, f)) return false;
       if (!f.date) return true; // no date info — fall back to team-only match
       const ft = new Date(f.date).getTime();
       if (!Number.isFinite(ft)) return true;
