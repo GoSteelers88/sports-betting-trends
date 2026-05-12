@@ -1,17 +1,18 @@
 // CLV (Closing Line Value) tracker — captures the closing odds for each
 // pending pick and stores the delta as the truest measure of edge quality.
 //
+// Closing odds are computed as the BEST PRICE across US books at close,
+// mirroring how the analyst picks (best line, not consensus). Comparing
+// best-open vs median-close produces a structurally negative CLV even when
+// the line never moves, which is what we want to avoid.
+//
 // Strategy:
 //   - Find AgentPick rows where clvCents IS NULL and gameDate is within the
 //     last 6 hours (window catches games starting ~now)
 //   - For each pick, query The Odds API for the same league and find the
 //     matching event by team name
-//   - Compute clvCents = pickedOdds - closingOdds  (positive = we beat the close)
+//   - Compute clvCents = pickedOdds - bestClosingOdds  (positive = we beat the close)
 //   - Update AgentPick atomically
-//
-// This is one of the most important metrics in sharp betting: if your CLV
-// is consistently positive, you're finding real edge. Win/loss is variance;
-// CLV is signal.
 
 import { prisma } from "./prisma";
 
@@ -35,13 +36,6 @@ type RawOddsEvent = {
     }>;
   }>;
 };
-
-function median(nums: number[]): number {
-  if (nums.length === 0) return 0;
-  const s = [...nums].sort((a, b) => a - b);
-  const m = Math.floor(s.length / 2);
-  return s.length % 2 === 0 ? (s[m - 1] + s[m]) / 2 : s[m];
-}
 
 // Token-aware match (avoids "New York" → both Yankees and Mets)
 function teamMatches(needle: string, hay: string): boolean {
@@ -90,7 +84,11 @@ async function fetchClosingOdds(league: string): Promise<RawOddsEvent[]> {
   }
 }
 
-function consensusForTeam(ev: RawOddsEvent, team: string): number | null {
+// Best American price across all US books for the bettor. Math.max works
+// directly because for American odds, numerically-larger is always better
+// for the bettor: +150 > +140 (bigger payout), -105 > -120 (less risk),
+// and any positive > any negative.
+function bestPriceForTeam(ev: RawOddsEvent, team: string): number | null {
   const prices: number[] = [];
   for (const book of ev.bookmakers ?? []) {
     for (const m of book.markets ?? []) {
@@ -100,7 +98,7 @@ function consensusForTeam(ev: RawOddsEvent, team: string): number | null {
       }
     }
   }
-  return prices.length > 0 ? Math.round(median(prices)) : null;
+  return prices.length > 0 ? Math.max(...prices) : null;
 }
 
 export type ClvCaptureResult = {
@@ -167,8 +165,8 @@ export async function captureClv(): Promise<ClvCaptureResult> {
         result.unmatched++;
         continue;
       }
-      // Find the side we picked
-      const closingOdds = consensusForTeam(ev, pick.selection);
+      // Find the side we picked — match analyst's "best line" selection logic
+      const closingOdds = bestPriceForTeam(ev, pick.selection);
       if (closingOdds === null) {
         result.unmatched++;
         continue;
