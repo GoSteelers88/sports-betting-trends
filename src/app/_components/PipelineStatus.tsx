@@ -18,10 +18,10 @@ export function PipelineStatus({ data }: { data: PipelineStatusData }) {
 
   if (data.totalRunsLast14d === 0) return null;
 
-  const raw = data.rawAnalystPicks14d;
-  const graderKept = data.graderKept14d;
-  const criticSurvived = Math.max(0, graderKept - data.criticKilled14d);
-  const shipped = data.finalShipped14d;
+  const raw = data.rawAnalystPicks14d ?? 0;
+  const graderKept = data.graderKept14d ?? 0;
+  const criticSurvived = Math.max(0, graderKept - (data.criticKilled14d ?? 0));
+  const shipped = data.finalShipped14d ?? 0;
 
   const stages: Stage[] = [
     { key: "raw", label: "Analyst raw", count: raw, hint: "LLM proposed", color: "#a855f7", glow: "rgba(168,85,247,0.35)" },
@@ -53,7 +53,8 @@ export function PipelineStatus({ data }: { data: PipelineStatusData }) {
       });
 
       counts.forEach((el, i) => {
-        const final = Number(el.dataset.stageCount ?? "0");
+        const parsed = Number(el.dataset.stageCount);
+        const final = Number.isFinite(parsed) ? parsed : 0;
         const obj = { v: 0 };
         gsap.to(obj, {
           v: final,
@@ -118,8 +119,7 @@ export function PipelineStatus({ data }: { data: PipelineStatusData }) {
                   />
                   <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none">
                     <span
-                      data-stage-count
-                      data-stage-count-value={s.count}
+                      data-stage-count={s.count}
                       className="mono text-lg sm:text-xl font-semibold text-white"
                       style={{ textShadow: "0 1px 8px rgba(0,0,0,0.55)" }}
                     >
