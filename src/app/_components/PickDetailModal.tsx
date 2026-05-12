@@ -49,16 +49,19 @@ export function PickDetailModal({
       role="dialog"
       aria-modal="true"
       aria-label={`${pick.matchup} pick details`}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6"
+      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-6"
     >
       <button
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/80"
       />
 
-      <div className="relative w-full sm:max-w-2xl glass-strong rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto animate-[slideUp_0.25s_ease-out]">
+      <div
+        className="relative w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto animate-[slideUp_0.25s_ease-out] border border-white/10"
+        style={{ backgroundColor: "#0b0d1a" }}
+      >
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
