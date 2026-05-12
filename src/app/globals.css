@@ -235,6 +235,64 @@ body {
     );
 }
 
+/* Animated perspective-warped turf — drives the BetBackground turf layer. */
+
+@keyframes turf-scroll-stripes {
+  from { background-position: 0 0; }
+  to   { background-position: 0 240px; }
+}
+@keyframes turf-scroll-hash {
+  from { background-position: 0 0; }
+  to   { background-position: 200px 0; }
+}
+
+.turf-perspective {
+  perspective: 800px;
+  perspective-origin: 50% 30%;
+  background-color: transparent;
+  position: relative;
+}
+/* Foreground field — perspective-tilted stripes that "run" toward the camera */
+.turf-perspective::before {
+  content: "";
+  position: absolute;
+  inset: 30% -20% -20% -20%;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(196, 90, 31, 0.12) 0,
+      rgba(196, 90, 31, 0.12) 2px,
+      transparent 2px,
+      transparent 60px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(216, 212, 204, 0.06) 0,
+      rgba(216, 212, 204, 0.06) 1px,
+      transparent 1px,
+      transparent 60px
+    );
+  transform: rotateX(72deg);
+  transform-origin: 50% 0%;
+  animation: turf-scroll-stripes 6s linear infinite;
+  opacity: 0.65;
+}
+/* Far-horizon hash band — perpendicular hashes scrolling horizontally */
+.turf-perspective::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 70% 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(216, 212, 204, 0.04) 0,
+    rgba(216, 212, 204, 0.04) 1px,
+    transparent 1px,
+    transparent 28px
+  );
+  animation: turf-scroll-hash 12s linear infinite;
+  opacity: 0.5;
+}
+
 /* ─── Hazard / barricade tape (kept from prior, recolored) ──────────────── */
 
 .tape {
@@ -277,7 +335,9 @@ button.bare {
   .radar-sweep,
   .scramble,
   .ticker-x,
-  .color-flash {
+  .color-flash,
+  .turf-perspective::before,
+  .turf-perspective::after {
     animation: none !important;
   }
 }

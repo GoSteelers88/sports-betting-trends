@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { SlatePick } from "../_data/dashboard";
+import { BetBackground } from "./BetBackground";
 
 function fmtAmerican(n: number): string {
   return n > 0 ? `+${n}` : `${n}`;
@@ -93,8 +94,10 @@ export function BetBlock({
     <section
       ref={ref}
       aria-label={`Bet ${index + 1}: ${pick.matchup}`}
-      className="relative min-h-[100svh] flex items-center justify-center turf overflow-hidden transition-transform duration-300 ease-out"
+      className="relative min-h-[100svh] flex items-center justify-center overflow-hidden transition-transform duration-300 ease-out"
     >
+      <BetBackground league={pick.league} />
+
       {/* Top + bottom transmission frame */}
       <div className="absolute top-0 left-0 right-0 px-6 sm:px-12 py-5 flex items-center justify-between var-mono text-[0.7rem] uppercase tracking-[0.3em] text-[var(--concrete-light)] z-10">
         <span>// TX_{indexStr}/{totalStr}</span>

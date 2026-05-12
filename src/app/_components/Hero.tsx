@@ -1,4 +1,5 @@
 import type { DashboardData } from "../_data/dashboard";
+import { BetBackground } from "./BetBackground";
 
 function rel(iso: string | null): string {
   if (!iso) return "NEVER";
@@ -35,7 +36,9 @@ export function Hero({ data }: { data: DashboardData }) {
     .replace(/\//g, ".");
 
   return (
-    <section className="relative min-h-[100svh] flex items-center justify-center px-6 sm:px-12 turf">
+    <section className="relative min-h-[100svh] flex items-center justify-center px-6 sm:px-12 overflow-hidden">
+      <BetBackground league="DEFAULT" />
+
       {/* Transmission frame */}
       <div className="absolute top-0 left-0 right-0 px-6 sm:px-12 py-5 flex items-center justify-between var-mono text-[0.7rem] uppercase tracking-[0.3em] text-[var(--concrete-light)] z-10">
         <span style={{ color: "var(--rust)" }}>// NATESTACKS</span>

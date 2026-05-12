@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { SlatePick } from "../_data/dashboard";
 import { BetBlock } from "./BetBlock";
+import { BetBackground } from "./BetBackground";
 import { PickDetailModal } from "./PickDetailModal";
 
 export function HotPicks({ picks }: { picks: SlatePick[] }) {
@@ -10,8 +11,9 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
 
   if (picks.length === 0) {
     return (
-      <section className="relative min-h-[80svh] flex items-center justify-center turf px-6">
-        <div className="text-center">
+      <section className="relative min-h-[80svh] flex items-center justify-center px-6 overflow-hidden">
+        <BetBackground league="DEFAULT" />
+        <div className="text-center relative">
           <p className="var-mono text-xs uppercase tracking-[0.4em] text-[var(--rust)] mb-6">
             // NULL TRANSMISSION
           </p>
