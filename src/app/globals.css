@@ -79,6 +79,20 @@ body {
   animation: meter-fill 800ms ease-out;
 }
 
+/* Modal slide-up entrance */
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Honor reduced-motion for all CSS animations on the dashboard */
+@media (prefers-reduced-motion: reduce) {
+  .meter-fill,
+  .live-dot {
+    animation: none !important;
+  }
+}
+
 /* Display headers */
 .display {
   font-family: var(--font-display), "Space Grotesk", system-ui, sans-serif;

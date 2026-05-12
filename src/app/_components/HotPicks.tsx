@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import type { SlatePick } from "../_data/dashboard";
+import { PickDetailModal } from "./PickDetailModal";
 
 function fmtAmerican(n: number): string {
   return n > 0 ? `+${n}` : `${n}`;
@@ -13,8 +17,8 @@ function leagueEmoji(league: string): string {
 function pickGlow(p: SlatePick): string {
   if (p.outcome?.result === "win") return "glow-lime";
   if (p.outcome?.result === "loss") return "";
-  if (p.edge >= 0.10) return "glow-pink"; // hot
-  if (p.edge >= 0.05) return "glow-cyan"; // solid
+  if (p.edge >= 0.10) return "glow-pink";
+  if (p.edge >= 0.05) return "glow-cyan";
   return "";
 }
 
@@ -27,6 +31,8 @@ function pickAccent(p: SlatePick): { tag: string; color: string } {
 }
 
 export function HotPicks({ picks }: { picks: SlatePick[] }) {
+  const [open, setOpen] = useState<SlatePick | null>(null);
+
   if (picks.length === 0) {
     return (
       <section>
@@ -47,7 +53,9 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
     <section>
       <div className="flex items-baseline justify-between mb-3">
         <h2 className="display-eyebrow text-pink-300">🔥 Hot Picks</h2>
-        <span className="text-xs text-slate-500 mono">{picks.length} live</span>
+        <span className="text-xs text-slate-500 mono">
+          {picks.length} live · tap for details
+        </span>
       </div>
 
       <div className="h-rail flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0">
@@ -55,9 +63,12 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
           const accent = pickAccent(p);
           const glowClass = pickGlow(p);
           return (
-            <article
+            <button
               key={p.id}
-              className={`shrink-0 w-[280px] sm:w-[320px] glass rounded-2xl p-4 ${glowClass}`}
+              type="button"
+              onClick={() => setOpen(p)}
+              aria-label={`Open details for ${p.matchup}`}
+              className={`group shrink-0 w-[280px] sm:w-[320px] text-left glass rounded-2xl p-4 ${glowClass} transition-transform hover:-translate-y-0.5 hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-white/30`}
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs flex items-center gap-1.5">
@@ -92,10 +103,16 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
               <p className="mt-3 text-xs text-slate-400 line-clamp-3 leading-relaxed">
                 {p.thesis}
               </p>
-            </article>
+
+              <p className="mt-2 text-[0.65rem] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                tap for full thesis + line journey →
+              </p>
+            </button>
           );
         })}
       </div>
+
+      <PickDetailModal pick={open} onClose={() => setOpen(null)} />
     </section>
   );
 }
@@ -121,7 +138,7 @@ function Field({
 }
 
 function EdgeMeter({ edge }: { edge: number }) {
-  const pct = Math.min(100, Math.max(0, edge * 100 * 4)); // 25% edge = full
+  const pct = Math.min(100, Math.max(0, edge * 100 * 4));
   const color = edge >= 0.10 ? "#ff007a" : edge >= 0.05 ? "#22ff88" : "#00d9ff";
   return (
     <div className="relative h-1.5 rounded-full bg-white/5 overflow-hidden">

@@ -97,6 +97,26 @@ export type MarketPick = {
   modelSpread: number | null;
 };
 
+export type AgentMemoryRule = {
+  id: number;
+  type: string;        // rule | pattern | bias | correction
+  scope: string;       // ALL | NBA | MLB | book:* | etc.
+  rule: string;
+  reasoning: string;
+  weight: number;      // 0–1
+  updatedAt: string;   // ISO
+  isFresh: boolean;    // updated in last 14d
+};
+
+export type AgentMemorySummary = {
+  rules: AgentMemoryRule[];
+  totalActive: number;
+  byScope: Record<string, number>;
+  lastDreamAt: string | null;     // most recent completed dream run
+  lastDreamStatus: string | null;
+  lastDreamAddedRetired: { added: number; retired: number } | null;
+};
+
 export type PlayerProp = {
   player: string;
   team: string | null;
@@ -147,6 +167,7 @@ export type DashboardData = {
   trackRecord30: TrackRecord;
   paperTrial: PaperTrial;
   pipelineStatus: PipelineStatus;
+  agentMemory: AgentMemorySummary;
   injuries: Injury[];
   status: {
     lastAgentRunAt: string | null;
@@ -659,6 +680,59 @@ async function loadPaperTrial(): Promise<PaperTrial> {
   };
 }
 
+async function loadAgentMemory(): Promise<AgentMemorySummary> {
+  const fallback: AgentMemorySummary = {
+    rules: [],
+    totalActive: 0,
+    byScope: {},
+    lastDreamAt: null,
+    lastDreamStatus: null,
+    lastDreamAddedRetired: null,
+  };
+  try {
+    const fresh = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const [rows, totalActive, lastDream] = await Promise.all([
+      prisma.agentMemory.findMany({
+        where: { active: true },
+        orderBy: [{ weight: "desc" }, { updatedAt: "desc" }],
+        take: 12,
+      }),
+      prisma.agentMemory.count({ where: { active: true } }),
+      prisma.agentDreamRun.findFirst({
+        orderBy: { startedAt: "desc" },
+      }),
+    ]);
+    const byScope: Record<string, number> = {};
+    const allActive = await prisma.agentMemory.findMany({
+      where: { active: true },
+      select: { scope: true },
+    });
+    for (const r of allActive) byScope[r.scope] = (byScope[r.scope] ?? 0) + 1;
+
+    return {
+      rules: rows.map(r => ({
+        id: r.id,
+        type: r.type,
+        scope: r.scope,
+        rule: r.rule,
+        reasoning: r.reasoning,
+        weight: r.weight,
+        updatedAt: r.updatedAt.toISOString(),
+        isFresh: r.updatedAt.getTime() >= fresh,
+      })),
+      totalActive,
+      byScope,
+      lastDreamAt: lastDream?.startedAt.toISOString() ?? null,
+      lastDreamStatus: lastDream?.status ?? null,
+      lastDreamAddedRetired: lastDream
+        ? { added: lastDream.memoriesAdded, retired: lastDream.memoriesRetired }
+        : null,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
 // ─── orchestrator ──────────────────────────────────────────────────────────
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -702,12 +776,13 @@ export async function getDashboardData(): Promise<DashboardData> {
     }))
     .sort((a, b) => new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime());
 
-  const [trackRecord7, trackRecord30, lastAgentRunAt, paperTrial, pipelineStatus] = await Promise.all([
+  const [trackRecord7, trackRecord30, lastAgentRunAt, paperTrial, pipelineStatus, agentMemory] = await Promise.all([
     loadTrackRecord(7),
     loadTrackRecord(30),
     loadLastAgentRunAt(),
     loadPaperTrial(),
     loadPipelineStatus(),
+    loadAgentMemory(),
   ]);
 
   const injuries = loadInjuries();
@@ -736,6 +811,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     trackRecord30,
     paperTrial,
     pipelineStatus,
+    agentMemory,
     injuries,
     status: {
       lastAgentRunAt,

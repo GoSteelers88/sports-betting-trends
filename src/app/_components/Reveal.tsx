@@ -20,6 +20,11 @@ export function Reveal({
 
   useEffect(() => {
     if (!ref.current) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      gsap.set(ref.current, { opacity: 1, y: 0 });
+      return;
+    }
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ref.current,

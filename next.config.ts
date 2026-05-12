@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   outputFileTracingIncludes: {
     "/api/free-stats/summary": ["./data/processed/**/*"],
     "/api/player-props": ["./data/processed/**/*"],
