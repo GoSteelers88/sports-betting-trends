@@ -7,62 +7,57 @@ function fmtAmerican(n: number | null): string {
 
 export function PlayerProps({ props }: { props: PlayerProp[] }) {
   if (props.length === 0) return null;
-
   return (
-    <section>
-      <div className="flex items-end justify-between mb-4 pb-3 border-b-[3px] border-white">
-        <h2 className="display-tight text-4xl sm:text-5xl text-white">PLAYER PROPS</h2>
-        <span className="display-eyebrow text-[var(--hazard)]">{props.length} RANKED // NBA</span>
+    <section className="relative">
+      <div className="flex items-baseline justify-between mb-3">
+        <span className="var-mono text-[0.7rem] uppercase tracking-[0.3em] text-[var(--rust)]">
+          // PROP_FEED // NBA
+        </span>
+        <span className="var-mono text-[0.7rem] uppercase tracking-[0.3em] text-[var(--foreground)]">
+          {props.length} RANKED
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border-[3px] border-white">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0" style={{ border: "1px solid var(--rust-deep)" }}>
         {props.map((p, idx) => {
           const price = p.pickSide === "over" ? p.overPrice : p.underPrice;
           const isOver = p.pickSide === "over";
           return (
-            <article
+            <li
               key={`${p.player}-${p.market}-${idx}`}
-              className="p-4 border-r-[3px] border-b-[3px] border-white last:border-r-0 md:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r-[3px] lg:[&:nth-child(3n)]:border-r-0"
+              className="p-3 var-mono"
+              style={{ borderBottom: "1px dashed var(--rust-deep)", borderRight: "1px dashed var(--rust-deep)" }}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="display-eyebrow bg-white text-black px-1.5 py-0.5 text-[0.55rem]">
-                  {(p.marketLabel ?? p.market).toUpperCase()}
-                </span>
-                <span className="mono text-[0.65rem] text-white/50">#{idx + 1}</span>
-              </div>
-
-              <p className="display text-white text-lg leading-tight">{p.player.toUpperCase()}</p>
-              <p className="mono text-[0.65rem] text-white/50 mb-3">
-                {(p.team ?? "—").toUpperCase()} {p.opponent ? `VS ${p.opponent.toUpperCase()}` : ""}
+              <p className="text-[0.6rem] uppercase tracking-[0.3em]" style={{ color: "var(--concrete)" }}>
+                #{String(idx + 1).padStart(2, "0")} ▸ {(p.marketLabel ?? p.market).toUpperCase()}
               </p>
-
-              <div className="flex items-end justify-between gap-3 mb-3 pb-3 border-b-[3px] border-white/20">
-                <span className="display flex items-center gap-2 text-base">
-                  <span className={`px-1.5 py-0.5 text-xs ${isOver ? "bg-[var(--color-win)] text-black" : "bg-[var(--color-loss)] text-white"}`}>
-                    {p.pickSide.toUpperCase()}
-                  </span>
-                  <span className="text-white">{p.line}</span>
+              <p
+                className="var-display text-lg sm:text-xl mt-1"
+                style={{ color: "var(--foreground)", ["--wght" as string]: "700" }}
+              >
+                {p.player.toUpperCase()}
+              </p>
+              <p className="text-[0.65rem] uppercase tracking-wider" style={{ color: "var(--concrete-light)" }}>
+                {p.team ?? "—"}{p.opponent ? ` VS ${p.opponent}` : ""}
+              </p>
+              <p className="mt-2 text-sm uppercase tracking-wider flex items-baseline justify-between">
+                <span style={{ color: isOver ? "var(--rust-flash)" : "var(--cold)" }}>
+                  {p.pickSide.toUpperCase()} {p.line}
                 </span>
-                <span className="odds-display text-3xl text-[var(--hazard)]">{fmtAmerican(price)}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 border-[2px] border-white">
-                  <div
-                    className="h-full bg-[var(--hazard)]"
-                    style={{ width: `${Math.min(100, p.confidence)}%` }}
-                  />
-                </div>
-                <span className="mono text-[0.65rem] text-white shrink-0">CONF {p.confidence}</span>
-              </div>
-
-              {p.rationaleSignals?.[0] && (
-                <p className="mono text-[0.7rem] text-white/50 mt-2 line-clamp-2">{p.rationaleSignals[0]}</p>
-              )}
-            </article>
+                <span
+                  className="var-display text-2xl"
+                  style={{ color: "var(--rust)", ["--wght" as string]: "800" }}
+                >
+                  {fmtAmerican(price)}
+                </span>
+              </p>
+              <p className="text-[0.6rem] uppercase tracking-wider mt-1" style={{ color: "var(--concrete)" }}>
+                CONF {p.confidence}
+              </p>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 }

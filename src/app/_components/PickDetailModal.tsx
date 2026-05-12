@@ -1,17 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { SlatePick } from "../_data/dashboard";
 
 function fmtAmerican(n: number): string {
   return n > 0 ? `+${n}` : `${n}`;
 }
-function leagueTag(league: string): string {
-  if (league === "MLB") return "MLB";
-  if (league === "NBA") return "NBA";
-  if (league === "WNBA") return "WNBA";
-  if (league === "NHL") return "NHL";
-  return league.toUpperCase();
+
+function pad(s: string, len: number): string {
+  if (s.length >= len) return s.slice(0, len);
+  return s + " ".repeat(len - s.length);
+}
+
+function rcptDate(iso: string): string {
+  const d = new Date(iso);
+  return d
+    .toLocaleString("en-US", {
+      timeZone: "America/New_York",
+      year: "2-digit",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+    .toUpperCase();
 }
 
 export function PickDetailModal({
@@ -21,34 +34,45 @@ export function PickDetailModal({
   pick: SlatePick | null;
   onClose: () => void;
 }) {
+  // Drive the flash overlay separately from the receipt enter — flash fires
+  // immediately on open, fades over ~450ms; receipt slides in beneath it.
+  const [flashKey, setFlashKey] = useState(0);
+
   useEffect(() => {
     if (!pick) return;
+    setFlashKey(k => k + 1); // re-fire animation on each open
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
+    const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      document.body.style.overflow = prevOverflow;
     };
   }, [pick, onClose]);
 
   if (!pick) return null;
 
+  const W = 42; // column width — same as a typical 80mm thermal printer
+  const dashLine = "=".repeat(W);
+  const dotLine = "-".repeat(W);
+
+  const stake = pick.kellyStakeUnits;
+  const toWin = stake * (pick.oddsAmerican > 0 ? pick.oddsAmerican / 100 : 100 / -pick.oddsAmerican);
   const modelPct = (pick.modelProb * 100).toFixed(1);
   const marketPct = (pick.marketProb * 100).toFixed(1);
-  const edgePct = (pick.edge * 100).toFixed(1);
+  const edgePct = (pick.edge * 100).toFixed(2);
   const clv = pick.clvCents;
-  const hasClosing = pick.closingOddsAmerican !== null;
+  const closing = pick.closingOddsAmerican;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={`${pick.matchup} pick details`}
-      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-6"
+      aria-label={`${pick.matchup} receipt`}
+      className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center p-4 sm:p-8 overflow-y-auto"
     >
       <button
         type="button"
@@ -57,142 +81,111 @@ export function PickDetailModal({
         className="absolute inset-0 bg-black/85"
       />
 
+      {/* Full-screen color flash — fires on every open via re-keyed div */}
+      <div key={flashKey} className="color-flash" aria-hidden="true" />
+
+      {/* The receipt itself — slides down from above like fresh thermal paper */}
       <div
-        className="relative w-full sm:max-w-2xl bg-black border-[3px] border-[var(--hazard)] max-h-[92vh] overflow-y-auto animate-[slideUp_0.25s_ease-out]"
+        className="relative receipt receipt-grain max-w-[440px] w-full p-6 sm:p-8 my-12"
+        style={{ animation: "receipt-print 0.55s cubic-bezier(0.16, 1, 0.3, 1)" }}
       >
-        {/* header strip */}
-        <div className="hazard-tape h-2" aria-hidden="true" />
+        <button
+          type="button"
+          aria-label="Close receipt"
+          onClick={onClose}
+          className="bare absolute -top-6 right-2 text-[#e9e4d8] text-xs uppercase tracking-widest hover:text-[var(--rust-flash)]"
+        >
+          [TEAR_OFF ×]
+        </button>
 
-        <div className="p-5 sm:p-7">
-          <div className="flex items-start justify-between gap-3 mb-5 pb-4 border-b-[3px] border-white">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="display-eyebrow bg-white text-black px-2 py-0.5">
-                  {leagueTag(pick.league)}
-                </span>
-                {pick.outcome?.result && (
-                  <span
-                    className={`display-eyebrow px-2 py-0.5 ${
-                      pick.outcome.result === "win"
-                        ? "bg-[var(--color-win)] text-black"
-                        : pick.outcome.result === "loss"
-                        ? "bg-[var(--color-loss)] text-white"
-                        : "bg-white text-black"
-                    }`}
-                  >
-                    {pick.outcome.result.toUpperCase()}
-                  </span>
-                )}
-              </div>
-              <h3 className="display-tight text-3xl sm:text-4xl text-white">
-                {pick.matchup.toUpperCase()}
-              </h3>
-              <p className="display text-base text-[var(--hazard)] mt-2">
-                {pick.selection.toUpperCase()} @ {fmtAmerican(pick.oddsAmerican)}
-              </p>
-            </div>
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={onClose}
-              className="shrink-0 w-10 h-10 bg-black border-[3px] border-white text-white display text-xl"
-            >
-              ×
-            </button>
-          </div>
+        <pre className="text-[0.78rem] sm:text-[0.85rem] leading-[1.5] whitespace-pre-wrap break-words font-bold">
+{`        NATESTACKS POS
+        TRANSMISSION_${rcptDate(pick.createdAt).slice(0, 8)}
+${dashLine}
+RCPT#  : ${pad(String(pick.id), 12)}
+LEAGUE : ${pad(pick.league, 12)}
+TIME   : ${rcptDate(pick.createdAt)}
+${dotLine}
 
-          <div className="grid grid-cols-3 gap-0 border-[3px] border-white mb-5">
-            <MetricBox label="MODEL" value={`${modelPct}%`} />
-            <MetricBox label="MARKET" value={`${marketPct}%`} />
-            <MetricBox label="EDGE" value={`${edgePct}%`} hazard />
-          </div>
+  ${pick.matchup.toUpperCase()}
 
-          <div className="mb-5">
-            <p className="display-eyebrow text-white mb-2">LINE JOURNEY</p>
-            <div className="border-[3px] border-white p-4 flex items-center justify-between gap-4">
-              <div className="text-center">
-                <p className="display-eyebrow text-white/60 text-[0.6rem]">PICKED AT</p>
-                <p className="odds-display text-2xl text-white mt-1">{fmtAmerican(pick.oddsAmerican)}</p>
-              </div>
-              <div className="flex-1 relative h-[3px] bg-white">
-                {hasClosing && (
-                  <span
-                    className={`absolute -top-3 left-1/2 -translate-x-1/2 mono text-[0.65rem] px-1.5 py-0.5 whitespace-nowrap ${
-                      clv === null
-                        ? "bg-white text-black"
-                        : clv > 0
-                        ? "bg-[var(--color-win)] text-black"
-                        : clv < 0
-                        ? "bg-[var(--color-loss)] text-white"
-                        : "bg-white text-black"
-                    }`}
-                  >
-                    {clv !== null ? `${clv > 0 ? "+" : ""}${clv}¢ CLV` : "—"}
-                  </span>
-                )}
-              </div>
-              <div className="text-center">
-                <p className="display-eyebrow text-white/60 text-[0.6rem]">CLOSED AT</p>
-                <p className={`odds-display text-2xl mt-1 ${hasClosing ? "text-white" : "text-white/30"}`}>
-                  {hasClosing ? fmtAmerican(pick.closingOddsAmerican!) : "PEND"}
-                </p>
-              </div>
-            </div>
-          </div>
+${dotLine}
+WAGER
+  ${pick.selection.toUpperCase()}
+  MARKET .......... ${pick.market.toUpperCase()}
+  ODDS  ........... ${fmtAmerican(pick.oddsAmerican)}
+  STAKE  .......... ${stake.toFixed(2).padStart(8)}U
+  TO WIN .......... ${toWin.toFixed(2).padStart(8)}U
+${dotLine}
+MODEL READOUT
+  MODEL PROB ...... ${pad(modelPct + "%", 10)}
+  MARKET PROB ..... ${pad(marketPct + "%", 10)}
+  EDGE   .......... ${pad("+" + edgePct + "%", 10)}
+  CONF (1-100) .... ${pad(String(pick.confidence), 10)}
+${dotLine}
+LINE JOURNEY
+  PICKED AT ....... ${pad(fmtAmerican(pick.oddsAmerican), 8)}
+  CLOSED AT ....... ${pad(closing !== null ? fmtAmerican(closing) : "—", 8)}
+  CLV  ............ ${pad(
+    clv !== null ? `${clv > 0 ? "+" : ""}${clv}¢` : "PENDING",
+    8
+  )}
+${dotLine}
 
-          <div className="grid grid-cols-2 gap-0 border-[3px] border-white mb-5">
-            <MetricBox label="STAKE" value={`${pick.kellyStakeUnits.toFixed(2)}U`} />
-            <MetricBox label="CONFIDENCE" value={`${pick.confidence}`} />
-          </div>
+THESIS:
+  ${pick.thesis.split("\n").join("\n  ")}
 
-          <div className="mb-5">
-            <p className="display-eyebrow text-white mb-2">THESIS</p>
-            <p className="mono text-sm text-white leading-relaxed">{pick.thesis}</p>
-          </div>
+INVALIDATION:
+  ${pick.invalidation || "—"}
 
-          {pick.invalidation && (
-            <div className="mb-2">
-              <p className="display-eyebrow text-[var(--hazard)] mb-2">INVALIDATION</p>
-              <p className="mono text-sm text-white/80 leading-relaxed">{pick.invalidation}</p>
-            </div>
-          )}
+${pick.outcome
+  ? `${dotLine}\nGRADED ${pick.outcome.result.toUpperCase()}\n  ACTUAL ........ ${pick.outcome.actualOutcome ?? "—"}\n  P/L  .......... ${(pick.outcome.unitsPnl ?? 0) > 0 ? "+" : ""}${(pick.outcome.unitsPnl ?? 0).toFixed(2)}U\n`
+  : `${dotLine}\nSTATUS: PENDING — AWAITING SETTLEMENT\n`}
+${dashLine}
+  KEEP THIS RECEIPT FOR YOUR RECORDS
+  PICKS ARE MODEL OUTPUT - NOT ADVICE
+${dashLine}
 
-          {pick.outcome?.unitsPnl !== null && pick.outcome?.unitsPnl !== undefined && (
-            <div className="mt-5 pt-4 border-t-[3px] border-white flex items-center justify-between">
-              <span className="display text-white">RESULT</span>
-              <span
-                className={`odds-display text-3xl ${
-                  pick.outcome.unitsPnl > 0
-                    ? "text-[var(--color-win)]"
-                    : pick.outcome.unitsPnl < 0
-                    ? "text-[var(--color-loss)]"
-                    : "text-white"
-                }`}
-              >
-                {pick.outcome.unitsPnl > 0 ? "+" : ""}
-                {pick.outcome.unitsPnl.toFixed(2)}U
-              </span>
-            </div>
-          )}
+      THANK YOU FOR YOUR EDGE.
+`}
+        </pre>
+
+        {/* Faux barcode — vertical bars row */}
+        <div className="mt-2 mb-1">
+          <Barcode seed={pick.id} />
+          <p className="text-center text-[0.7rem] tracking-[0.3em] mt-1">
+            {String(pick.id).padStart(10, "0")}
+          </p>
         </div>
       </div>
     </div>
   );
 }
 
-function MetricBox({
-  label,
-  value,
-  hazard,
-}: {
-  label: string;
-  value: string;
-  hazard?: boolean;
-}) {
+// Deterministic faux-barcode generated from the pick id — gives every receipt
+// a unique bar pattern without external libs.
+function Barcode({ seed }: { seed: number }) {
+  const bars: { w: number; black: boolean }[] = [];
+  let n = (seed + 1) * 2654435761;
+  for (let i = 0; i < 48; i++) {
+    n ^= n << 13;
+    n ^= n >>> 17;
+    n ^= n << 5;
+    const w = ((n >>> 0) % 4) + 1;
+    bars.push({ w, black: i % 2 === 0 });
+  }
   return (
-    <div className="px-3 py-3 border-r-[3px] border-white last:border-r-0 text-center">
-      <p className="display-eyebrow text-white/60 text-[0.6rem]">{label}</p>
-      <p className={`odds-display mt-1 text-2xl ${hazard ? "text-[var(--hazard)]" : "text-white"}`}>{value}</p>
+    <div className="flex items-stretch h-12 gap-[1px]">
+      {bars.map((b, i) => (
+        <span
+          key={i}
+          style={{
+            width: `${b.w}px`,
+            background: b.black ? "#1a1a1a" : "transparent",
+            flexGrow: b.w / 2,
+          }}
+        />
+      ))}
     </div>
   );
 }

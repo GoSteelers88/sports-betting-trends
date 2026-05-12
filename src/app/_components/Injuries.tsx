@@ -5,58 +5,48 @@ import type { Injury } from "../_data/dashboard";
 
 export function Injuries({ injuries }: { injuries: Injury[] }) {
   const [open, setOpen] = useState(false);
-
   if (injuries.length === 0) return null;
-
   const byLeague: Record<string, Injury[]> = {};
   for (const i of injuries) (byLeague[i.league] ??= []).push(i);
 
   return (
-    <section>
+    <section className="relative">
       <button
+        type="button"
         onClick={() => setOpen(o => !o)}
-        className="w-full brutal-card p-4 flex items-center justify-between text-left hover:bg-white hover:text-black transition-colors"
+        className="bare w-full flex items-center justify-between py-3"
+        style={{ borderTop: "1px solid var(--rust-deep)", borderBottom: "1px solid var(--rust-deep)" }}
       >
-        <span className="display-tight text-2xl sm:text-3xl">⚠ KEY INJURIES</span>
-        <span className="flex items-center gap-3">
-          <span className="mono text-xs">
-            {Object.entries(byLeague)
-              .map(([lg, list]) => `${list.length} ${lg}`)
-              .join(" // ")}
-          </span>
-          <span className={`display text-xl transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
+        <span className="var-mono text-[0.7rem] uppercase tracking-[0.3em]" style={{ color: "var(--rust)" }}>
+          // INJURY_FEED
+        </span>
+        <span className="flex items-center gap-3 var-mono text-[0.7rem] uppercase tracking-wider" style={{ color: "var(--concrete-light)" }}>
+          {Object.entries(byLeague).map(([lg, list]) => `${list.length} ${lg}`).join(" // ")}
+          <span style={{ color: "var(--rust)" }}>{open ? "−" : "+"}</span>
         </span>
       </button>
 
       {open && (
-        <div className="mt-3 brutal-card p-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {Object.entries(byLeague).map(([league, list]) => (
-              <div key={league}>
-                <p className="display-eyebrow text-[var(--hazard)] mb-3 pb-2 border-b-[3px] border-white">
-                  {league} // {list.length}
-                </p>
-                <ul className="space-y-0 border-[3px] border-white">
-                  {list.map((inj, idx) => (
-                    <li
-                      key={`${inj.player}-${idx}`}
-                      className={`flex items-center justify-between gap-3 px-3 py-2 ${idx > 0 ? "border-t-[3px] border-white" : ""}`}
-                    >
-                      <span className="display text-sm text-white truncate">{inj.player.toUpperCase()}</span>
-                      <span className="flex items-center gap-2 shrink-0">
-                        <span className="mono text-[0.65rem] text-white/50 truncate max-w-[100px]">
-                          {inj.team}
-                        </span>
-                        <span className="display-eyebrow text-[var(--color-loss)] text-[0.6rem]">
-                          {inj.status.toUpperCase()}
-                        </span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 py-3">
+          {Object.entries(byLeague).map(([league, list]) => (
+            <div key={league}>
+              <p className="var-mono text-[0.65rem] uppercase tracking-[0.3em] mb-2" style={{ color: "var(--rust)" }}>
+                ▸ {league} [{list.length}]
+              </p>
+              <ul className="space-y-0.5">
+                {list.map((inj, idx) => (
+                  <li
+                    key={`${inj.player}-${idx}`}
+                    className="flex items-center justify-between gap-2 py-0.5 var-mono text-[0.7rem] uppercase tracking-wider"
+                    style={{ color: "var(--concrete-light)" }}
+                  >
+                    <span className="truncate" style={{ color: "var(--foreground)" }}>{inj.player}</span>
+                    <span style={{ color: "var(--rust)" }}>{inj.status}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       )}
     </section>

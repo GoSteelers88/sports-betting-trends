@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import type { PipelineStatus as PipelineStatusData } from "../_data/dashboard";
 
-type Stage = { key: string; label: string; count: number; hint: string };
+type Stage = { key: string; label: string; count: number };
 
 export function PipelineStatus({ data }: { data: PipelineStatusData }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -17,20 +17,20 @@ export function PipelineStatus({ data }: { data: PipelineStatusData }) {
   const shipped = data.finalShipped14d ?? 0;
 
   const stages: Stage[] = [
-    { key: "raw", label: "ANALYST RAW", count: raw, hint: "LLM PROPOSED" },
-    { key: "grader", label: "GRADER KEPT", count: graderKept, hint: "≥6% EDGE" },
-    { key: "critic", label: "CRITIC SURVIVED", count: criticSurvived, hint: "DEVIL'S ADVOCATE" },
-    { key: "shipped", label: "SHIPPED", count: shipped, hint: "TO DB + DISCORD" },
+    { key: "raw", label: "ANALYST_RAW", count: raw },
+    { key: "grader", label: "GRADER_KEPT", count: graderKept },
+    { key: "critic", label: "CRITIC_SURVIVED", count: criticSurvived },
+    { key: "shipped", label: "SHIPPED", count: shipped },
   ];
   const maxCount = Math.max(...stages.map(s => s.count), 1);
 
   useEffect(() => {
     if (!rootRef.current) return;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const ctx = gsap.context(() => {
       const bars = rootRef.current!.querySelectorAll<HTMLElement>("[data-stage-bar]");
       const counts = rootRef.current!.querySelectorAll<HTMLElement>("[data-stage-count]");
-      if (reduceMotion) {
+      if (reduce) {
         bars.forEach(b => gsap.set(b, { scaleX: 1 }));
         return;
       }
@@ -52,75 +52,73 @@ export function PipelineStatus({ data }: { data: PipelineStatusData }) {
     return () => ctx.revert();
   }, []);
 
-  const killRatePct = data.killRatePct;
-  const avgClv = data.avgClvCents;
-
   return (
-    <section ref={rootRef} className="brutal-card p-5 sm:p-6">
-      <div className="flex items-center justify-between mb-5 pb-4 border-b-[3px] border-white">
-        <span className="display text-2xl sm:text-3xl text-white">AGENT PIPELINE</span>
-        <span className="mono text-xs text-white/60">LAST 14D · {data.totalRunsLast14d} RUNS</span>
+    <section className="relative">
+      <div className="flex items-baseline justify-between mb-3">
+        <span className="var-mono text-[0.7rem] uppercase tracking-[0.3em] text-[var(--rust)]">
+          // AGENT_PIPELINE — LAST_14D
+        </span>
+        <span className="var-mono text-[0.7rem] uppercase tracking-[0.3em] text-[var(--foreground)]">
+          {data.totalRunsLast14d} RUNS
+        </span>
       </div>
 
-      <div className="space-y-3">
-        {stages.map((s, i) => {
-          const widthPct = (s.count / maxCount) * 100;
-          const prev = i === 0 ? null : stages[i - 1].count;
-          const survivalPct = prev === null || prev === 0 ? null : Math.round((s.count / prev) * 100);
-          return (
-            <div key={s.key} className="flex items-stretch gap-3">
-              <div className="w-32 sm:w-40 shrink-0 flex flex-col justify-center">
-                <p className="display text-[0.7rem] text-white leading-tight">{s.label}</p>
-                <p className="mono text-[0.6rem] text-white/40 mt-0.5">{s.hint}</p>
-              </div>
+      <div ref={rootRef} className="p-5 sm:p-6" style={{ border: "1px solid var(--rust-deep)" }}>
+        {/* Radar sweep decoration */}
+        <div className="relative h-0 mb-2">
+          <svg viewBox="0 0 200 8" className="w-full h-2" aria-hidden="true">
+            <line x1="0" y1="4" x2="200" y2="4" stroke="var(--rust-deep)" strokeDasharray="3 5" />
+          </svg>
+        </div>
 
-              <div className="flex-1 relative h-14 border-[3px] border-white bg-black">
-                <div
-                  data-stage-bar
-                  className="absolute inset-y-0 left-0 bg-[var(--hazard)]"
-                  style={{ width: `${Math.max(widthPct, 1)}%` }}
-                />
-                <div className="absolute inset-0 flex items-center justify-between px-4">
+        <div className="space-y-2">
+          {stages.map((s, i) => {
+            const widthPct = (s.count / maxCount) * 100;
+            const prev = i === 0 ? null : stages[i - 1].count;
+            const survival = prev === null || prev === 0 ? null : Math.round((s.count / prev) * 100);
+            return (
+              <div key={s.key} className="grid grid-cols-[140px_1fr_auto] sm:grid-cols-[180px_1fr_auto] items-center gap-3">
+                <span className="var-mono text-[0.65rem] uppercase tracking-[0.2em] text-[var(--concrete-light)]">
+                  {s.label}
+                </span>
+                <div className="relative h-7 bg-[var(--concrete-dark)]/60">
+                  <div
+                    data-stage-bar
+                    className="absolute inset-y-0 left-0"
+                    style={{ width: `${Math.max(widthPct, 1)}%`, background: "var(--rust)" }}
+                  />
                   <span
                     data-stage-count
                     data-stage-count={s.count}
-                    className="odds-display text-2xl sm:text-3xl text-black mix-blend-difference"
+                    className="var-display absolute inset-y-0 left-2 flex items-center text-base sm:text-lg"
+                    style={{ color: "var(--foreground)", ["--wght" as string]: "800" }}
                   >
                     {s.count}
                   </span>
-                  {survivalPct !== null && (
-                    <span className="display-eyebrow text-black bg-white px-1.5 py-0.5 text-[0.6rem] mix-blend-difference">
-                      {survivalPct}% KEPT
-                    </span>
-                  )}
                 </div>
+                <span className="var-mono text-[0.65rem] uppercase tracking-wider text-[var(--rust)] w-16 text-right">
+                  {survival !== null ? `${survival}%` : "—"}
+                </span>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border-[3px] border-white mt-6">
-        <Cell
-          label="KILL RATE"
-          value={killRatePct !== null ? `${killRatePct}%` : "—"}
-          hint="CRITIC / RAW"
-          pos={killRatePct !== null && killRatePct >= 25}
-        />
-        <Cell label="BANKROLL CUT" value={`${data.bankrollDropped14d}`} hint="CAP / DUP" />
-        <Cell
-          label="AVG CLV"
-          value={avgClv !== null ? `${avgClv > 0 ? "+" : ""}${avgClv}¢` : "—"}
-          hint={`N=${data.clvSampleSize}`}
-          pos={avgClv !== null && avgClv > 0}
-          neg={avgClv !== null && avgClv < 0}
-        />
-        <Cell
-          label={data.parseFailedRuns14d > 0 ? "PARSE FAILS" : "PARSE OK"}
-          value={data.parseFailedRuns14d > 0 ? `${data.parseFailedRuns14d}` : "✓"}
-          hint={data.parseFailedRuns14d > 0 ? "JSON BROKE" : "ALL RUNS"}
-          neg={data.parseFailedRuns14d > 0}
-        />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 mt-6 pt-5" style={{ borderTop: "1px dashed var(--rust-deep)" }}>
+          <Cell label="KILL_RATE" value={data.killRatePct !== null ? `${data.killRatePct}%` : "—"} hot={data.killRatePct !== null && data.killRatePct >= 25} />
+          <Cell label="BANKROLL_CUT" value={`${data.bankrollDropped14d}`} />
+          <Cell
+            label="AVG_CLV"
+            value={data.avgClvCents !== null ? `${data.avgClvCents > 0 ? "+" : ""}${data.avgClvCents}¢` : "—"}
+            hot={data.avgClvCents !== null && data.avgClvCents > 0}
+            cold={data.avgClvCents !== null && data.avgClvCents < 0}
+          />
+          <Cell
+            label={data.parseFailedRuns14d > 0 ? "PARSE_FAIL" : "PARSE_OK"}
+            value={data.parseFailedRuns14d > 0 ? String(data.parseFailedRuns14d) : "✓"}
+            cold={data.parseFailedRuns14d > 0}
+          />
+        </div>
       </div>
     </section>
   );
@@ -129,22 +127,27 @@ export function PipelineStatus({ data }: { data: PipelineStatusData }) {
 function Cell({
   label,
   value,
-  hint,
-  pos,
-  neg,
+  hot,
+  cold,
 }: {
   label: string;
   value: string;
-  hint?: string;
-  pos?: boolean;
-  neg?: boolean;
+  hot?: boolean;
+  cold?: boolean;
 }) {
-  const color = pos ? "text-[var(--color-win)]" : neg ? "text-[var(--color-loss)]" : "text-white";
+  const color = hot ? "var(--rust-flash)" : cold ? "var(--cold)" : "var(--foreground)";
+  const weight = hot ? 800 : cold ? 300 : 500;
   return (
-    <div className="px-3 py-3 border-r-[3px] border-b-[3px] border-white last:border-r-0 sm:[&:nth-child(4)]:border-r-0 sm:[&:nth-child(n+3)]:border-b-0 [&:nth-child(n+3)]:border-b-0">
-      <p className="display-eyebrow text-white/60 text-[0.6rem]">{label}</p>
-      <p className={`odds-display mt-1 text-2xl ${color}`}>{value}</p>
-      {hint && <p className="mono text-[0.6rem] text-white/40 mt-0.5">{hint}</p>}
+    <div>
+      <p className="var-mono text-[0.6rem] uppercase tracking-[0.3em] text-[var(--concrete)]">
+        {label}
+      </p>
+      <p
+        className="var-display text-2xl sm:text-3xl mt-1"
+        style={{ color, ["--wght" as string]: String(weight) }}
+      >
+        {value}
+      </p>
     </div>
   );
 }

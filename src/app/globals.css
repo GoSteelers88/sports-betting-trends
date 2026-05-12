@@ -1,17 +1,25 @@
 @import "tailwindcss";
 
+/* ─── Industrial Grunge × Cyberpunk Brutalism palette ───────────────────── */
+
 @theme inline {
-  --color-background: #000000;
-  --color-foreground: #ffffff;
+  /* Oil Spill Black: not pure black — a slight blue-green sheen */
+  --color-background: #0a0c0d;
+  --color-foreground: #d8d4cc;
 
-  /* Hazard yellow primary action color — pure fluorescent */
-  --color-hazard: #faff00;
-  --color-hazard-shadow: #d4d800;
+  /* Rust Orange — primary action / hot odds */
+  --color-rust: #c45a1f;
+  --color-rust-deep: #7a3811;
+  --color-rust-flash: #ff6a1f;
 
-  /* Status accents — kept brutal: pure RGB, no soft pastel */
-  --color-win: #00ff5a;
-  --color-loss: #ff003c;
-  --color-neutral: #888888;
+  /* Concrete Gray — body, secondary surfaces */
+  --color-concrete: #6e6e6e;
+  --color-concrete-dark: #2a2a2a;
+  --color-concrete-light: #a8a59b;
+
+  /* Cold/hot temperature signals (used by variable-font weight) */
+  --color-cold: #5a6c70;
+  --color-hot: #ff6a1f;
 
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
@@ -19,277 +27,264 @@
 }
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --hazard: #faff00;
-  --hazard-shadow: #d4d800;
+  --background: #0a0c0d;
+  --foreground: #d8d4cc;
+  --rust: #c45a1f;
+  --rust-deep: #7a3811;
+  --rust-flash: #ff6a1f;
+  --concrete: #6e6e6e;
+  --concrete-dark: #2a2a2a;
+  --hot: #ff6a1f;
+  --cold: #5a6c70;
+  /* Global scroll progress, 0..1 — kept in sync via window scroll listener */
+  --scroll-y: 0;
 }
 
 html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
   min-height: 100vh;
+  /* Allow scroll-snap on the kinetic axis without breaking nested scroll */
+  scroll-behavior: smooth;
 }
 
 body {
-  /* No gradients. Pure black + grain. */
-  background-color: #000;
+  background: #0a0c0d;
+  background-image:
+    /* concrete gradient gradient — not radial, but a hard 2-tone bias */
+    linear-gradient(180deg, #0a0c0d 0%, #050606 100%);
+  overflow-x: hidden;
 }
 
-/* ─── Brutalist primitives ──────────────────────────────────────────────── */
+/* ─── Living grain — animated TV interference ───────────────────────────── */
 
-.brutal-card {
-  background: #000;
-  border: 3px solid #fff;
-  position: relative;
-}
-.brutal-card-hazard {
-  border-color: var(--hazard);
-}
-.brutal-card-win {
-  border-color: var(--color-win);
-}
-.brutal-card-loss {
-  border-color: var(--color-loss);
-}
-
-/* Inverse: filled hazard block with black text — for primary CTAs / odds chips */
-.brutal-fill-hazard {
-  background: var(--hazard);
-  color: #000;
-  border: 3px solid var(--hazard);
-}
-
-/* Sharp button reset — never rounded, never animated by default */
-button.brutal {
-  background: transparent;
-  border: 3px solid #fff;
-  color: #fff;
-  padding: 0.75rem 1.25rem;
-  font-family: var(--font-display), "Archivo Black", "Helvetica Neue", sans-serif;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  position: relative;
-  transition: none;
-}
-button.brutal-hazard {
-  background: var(--hazard);
-  color: #000;
-  border-color: var(--hazard);
-}
-
-/* ─── Glitch hover effect ───────────────────────────────────────────────── */
-
-@keyframes glitch-jitter {
+@keyframes grain-shift {
   0%   { transform: translate(0, 0); }
-  20%  { transform: translate(-2px, 1px); }
-  40%  { transform: translate(2px, -1px); }
-  60%  { transform: translate(-1px, 2px); }
-  80%  { transform: translate(1px, -2px); }
+  10%  { transform: translate(-3%, 1%); }
+  25%  { transform: translate(2%, -2%); }
+  40%  { transform: translate(-1%, 3%); }
+  55%  { transform: translate(3%, 1%); }
+  70%  { transform: translate(-2%, -1%); }
+  85%  { transform: translate(1%, 2%); }
   100% { transform: translate(0, 0); }
 }
 
-@keyframes glitch-clip {
-  0%, 100% { clip-path: inset(0 0 0 0); }
-  20% { clip-path: inset(20% 0 30% 0); }
-  40% { clip-path: inset(50% 0 10% 0); }
-  60% { clip-path: inset(10% 0 60% 0); }
-  80% { clip-path: inset(70% 0 0 0); }
-}
-
-.glitch {
-  position: relative;
-  display: inline-block;
-}
-.glitch::before,
-.glitch::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+.grain-live::before {
+  content: "";
+  position: fixed;
+  inset: -8%;
   pointer-events: none;
-  opacity: 0;
-  display: flex;
-  align-items: center;
-  justify-content: inherit;
-  padding: inherit;
-}
-.glitch:hover::before {
-  opacity: 1;
-  color: #ff003c;
-  transform: translate(-3px, 0);
-  animation: glitch-clip 0.6s infinite linear alternate-reverse;
-  mix-blend-mode: screen;
-}
-.glitch:hover::after {
-  opacity: 1;
-  color: #00d4ff;
-  transform: translate(3px, 0);
-  animation: glitch-clip 0.45s infinite linear alternate;
-  mix-blend-mode: screen;
-}
-.glitch:hover {
-  animation: glitch-jitter 0.2s infinite steps(2);
+  opacity: 0.22;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='280'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: overlay;
+  animation: grain-shift 0.4s steps(4) infinite;
 }
 
-/* ─── Typography utilities ──────────────────────────────────────────────── */
-
-.display {
-  font-family: var(--font-display), "Archivo Black", "Helvetica Neue", sans-serif;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-}
-.display-tight {
-  font-family: var(--font-display), "Archivo Black", sans-serif;
-  letter-spacing: -0.03em;
-  line-height: 0.85;
-  text-transform: uppercase;
-}
-.display-eyebrow {
-  font-family: var(--font-display), "Archivo Black", sans-serif;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-size: 0.7rem;
-}
-.odds-display {
-  font-family: var(--font-display), "Archivo Black", sans-serif;
-  letter-spacing: -0.04em;
-  font-feature-settings: "tnum" 1;
-  line-height: 0.9;
-}
-.mono {
-  font-family: var(--font-mono), "JetBrains Mono", "Courier New", monospace;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
-
-/* ─── Status pills ──────────────────────────────────────────────────────── */
-
-.live-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  background: var(--hazard);
-  border: 2px solid #000;
-  outline: 2px solid var(--hazard);
-}
-
-@keyframes hazard-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0.3; }
-}
-.hazard-blink {
-  animation: hazard-blink 1s steps(1) infinite;
-}
-
-/* ─── Marquee / ticker tape ─────────────────────────────────────────────── */
-
-@keyframes ticker-vertical {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-50%); }
-}
-
-.ticker-vertical {
-  animation: ticker-vertical 30s linear infinite;
-}
-.ticker-vertical:hover {
-  animation-play-state: paused;
-}
-
-@keyframes ticker-horizontal {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-.ticker-horizontal {
-  animation: ticker-horizontal 40s linear infinite;
-}
-.ticker-horizontal:hover {
-  animation-play-state: paused;
-}
-
-/* ─── Hazard tape / caution stripes ─────────────────────────────────────── */
-
-.hazard-tape {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    var(--hazard) 0,
-    var(--hazard) 16px,
-    #000 16px,
-    #000 32px
-  );
-}
-
-/* ─── Grainy noise overlay (heavier than v1) ────────────────────────────── */
-
-.grain::before {
+/* Static scanlines, low-opacity */
+.grain-live::after {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.12;
   z-index: 1;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  mix-blend-mode: overlay;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.35) 0px,
+    rgba(0, 0, 0, 0.35) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
 }
 
-/* ─── Athlete photo slot ────────────────────────────────────────────────── */
+/* ─── Variable-font: deformation driven by edge ─────────────────────────── */
 
-/* Container that overlays grainy texture + scanline; drop a <img/> inside.
-   Designed to extend past card boundaries via negative margins. */
-.athlete-slot {
+/* Custom property -based weight, set per-element via inline style */
+.var-display {
+  font-family: var(--font-display), Inter, system-ui, sans-serif;
+  font-variation-settings: "wght" var(--wght, 600);
+  letter-spacing: var(--lsp, -0.04em);
+  line-height: 0.82;
+  text-transform: uppercase;
+}
+
+.var-mono {
+  font-family: var(--font-mono), "JetBrains Mono", monospace;
+  font-variation-settings: "wght" var(--wght, 400);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hot odds vibrate — ultra-bold + jitter */
+@keyframes hot-vibrate {
+  0%, 100% { transform: translate(0, 0) skew(0deg, 0deg); }
+  20%  { transform: translate(-1px, 0) skew(-0.2deg, 0); }
+  40%  { transform: translate(1px, -1px) skew(0.3deg, 0); }
+  60%  { transform: translate(-1px, 1px) skew(-0.1deg, 0); }
+  80%  { transform: translate(1px, 0) skew(0.2deg, 0); }
+}
+.hot-vibrate {
+  animation: hot-vibrate 0.18s steps(2) infinite;
+}
+
+/* Cold odds — thin, translucent */
+.cold-fade {
+  opacity: 0.45;
+}
+
+/* ─── Color flash transition (used on receipt open) ─────────────────────── */
+
+@keyframes color-flash-rust {
+  0%   { background: var(--rust-flash); opacity: 1; }
+  50%  { background: var(--rust); opacity: 0.95; }
+  100% { background: var(--rust-deep); opacity: 0; }
+}
+.color-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  animation: color-flash-rust 0.45s ease-out forwards;
+  mix-blend-mode: hard-light;
+}
+
+/* ─── Thermal receipt ───────────────────────────────────────────────────── */
+
+@keyframes receipt-print {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(0); }
+}
+.receipt {
+  background: #e9e4d8; /* off-white thermal stock */
+  color: #1a1a1a;
+  font-family: var(--font-mono), "JetBrains Mono", "Courier New", monospace;
+  /* Slight rough edge on top + bottom — perforated tear */
+  --tear: linear-gradient(
+    -45deg,
+    transparent 33%,
+    #e9e4d8 33%,
+    #e9e4d8 66%,
+    transparent 66%
+  );
   position: relative;
-  overflow: hidden;
-  background: #0a0a0a;
+  box-shadow:
+    inset 0 0 0 0,
+    0 0 0 1px rgba(0, 0, 0, 0.18),
+    0 18px 40px rgba(0, 0, 0, 0.55);
 }
-.athlete-slot img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(0.4) contrast(1.15) brightness(0.85);
-  mix-blend-mode: luminosity;
-}
-.athlete-slot::after {
+.receipt::before,
+.receipt::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background:
+  left: 0;
+  right: 0;
+  height: 12px;
+  background-image: var(--tear);
+  background-size: 12px 12px;
+  background-repeat: repeat-x;
+}
+.receipt::before { top: -10px; }
+.receipt::after  { bottom: -10px; transform: rotate(180deg); }
+
+/* Light grain on the thermal stock so it looks printed */
+.receipt-grain::before {
+  background-image:
+    var(--tear),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='2' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.2'/></svg>");
+}
+
+/* ─── Radar / scramble screen viz ───────────────────────────────────────── */
+
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.radar-sweep {
+  animation: radar-sweep 4s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes scramble-flicker {
+  0%, 92%, 100% { opacity: 1; }
+  93% { opacity: 0.3; transform: translateX(2px); }
+  95% { opacity: 0.6; transform: translateX(-3px); }
+  97% { opacity: 0.4; }
+}
+.scramble {
+  animation: scramble-flicker 6s steps(1) infinite;
+}
+
+/* ─── Turf pattern (background motif for bet blocks) ────────────────────── */
+
+.turf {
+  background-image:
     repeating-linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.4) 0,
-      rgba(0, 0, 0, 0.4) 1px,
+      rgba(216, 212, 204, 0.025) 0,
+      rgba(216, 212, 204, 0.025) 1px,
       transparent 1px,
-      transparent 3px
+      transparent 80px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(216, 212, 204, 0.04) 0,
+      rgba(216, 212, 204, 0.04) 1px,
+      transparent 1px,
+      transparent 80px
     );
-  pointer-events: none;
 }
 
-/* ─── Scrollbars ────────────────────────────────────────────────────────── */
+/* ─── Hazard / barricade tape (kept from prior, recolored) ──────────────── */
 
-.h-rail::-webkit-scrollbar { height: 8px; }
-.h-rail::-webkit-scrollbar-track { background: #000; }
-.h-rail::-webkit-scrollbar-thumb { background: var(--hazard); border: 2px solid #000; }
-
-/* ─── Modal entrance ────────────────────────────────────────────────────── */
-
-@keyframes slideUp {
-  from { transform: translateY(24px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+.tape {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--rust) 0,
+    var(--rust) 14px,
+    #0a0c0d 14px,
+    #0a0c0d 28px
+  );
 }
+
+/* ─── Receipt tear button reset ─────────────────────────────────────────── */
+
+button.bare {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ─── Tickers (bottom telemetry strip) ──────────────────────────────────── */
+
+@keyframes ticker-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-x {
+  animation: ticker-x 60s linear infinite;
+}
+.ticker-x:hover { animation-play-state: paused; }
 
 /* ─── Reduced motion ────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .hazard-blink,
-  .ticker-vertical,
-  .ticker-horizontal,
-  .glitch:hover,
-  .glitch:hover::before,
-  .glitch:hover::after {
+  .grain-live::before,
+  .hot-vibrate,
+  .radar-sweep,
+  .scramble,
+  .ticker-x,
+  .color-flash {
     animation: none !important;
   }
 }
+
+/* ─── Custom scrollbar — concrete + rust ────────────────────────────────── */
+
+::-webkit-scrollbar { width: 10px; height: 8px; }
+::-webkit-scrollbar-track { background: #0a0c0d; }
+::-webkit-scrollbar-thumb { background: var(--rust); border: 2px solid #0a0c0d; }
+::-webkit-scrollbar-thumb:hover { background: var(--rust-flash); }

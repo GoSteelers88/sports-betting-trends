@@ -1,27 +1,29 @@
 import type { Metadata } from "next";
-import { Archivo_Black, JetBrains_Mono, Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
+// Inter is a variable font with wght axis 100..900 — drives the
+// odds-distortion typography (hot = 900, cold = 200).
 const inter = Inter({
+  variable: "--font-display",
+  subsets: ["latin"],
+  axes: ["opsz"],
+});
+
+const interSans = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
 });
 
-// Archivo Black — single weight (900), perfect for brutalist display + odds
-const archivoBlack = Archivo_Black({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
+// JetBrains Mono — thermal receipt + radar telemetry
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "NATESTACKS // SPORTS TRENDS",
-  description: "Live picks. Real edges. No fluff.",
+  title: "//NATESTACKS — TRANSMISSION 001",
+  description: "Sports edges. Live. Raw. No fluff.",
 };
 
 export default function RootLayout({
@@ -32,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${archivoBlack.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${interSans.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
       </body>

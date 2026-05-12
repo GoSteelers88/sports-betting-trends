@@ -1,90 +1,57 @@
 import type { MarketPick } from "../_data/dashboard";
 
-function leagueTag(league: string): string {
-  return league.toUpperCase();
-}
-
-function fmtGameTime(iso: string | null): string {
-  if (!iso) return "";
-  return new Date(iso)
-    .toLocaleString("en-US", {
-      timeZone: "America/New_York",
-      weekday: "short",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })
-    .toUpperCase();
-}
-
 export function MarketPicks({ picks }: { picks: MarketPick[] }) {
-  if (picks.length === 0) {
-    return (
-      <section>
-        <SectionHeader title="MARKET PICKS" subtitle="0 RANKED" />
-        <div className="brutal-card p-6 text-center">
-          <p className="display-eyebrow text-white/60">
-            HEURISTIC MODEL NEEDS MORE GAMES TO SCORE
-          </p>
-        </div>
-      </section>
-    );
-  }
+  if (picks.length === 0) return null;
 
   return (
-    <section>
-      <SectionHeader title="MARKET PICKS" subtitle={`${picks.length} RANKED // TREND + ATS + INJURY`} />
+    <section className="relative">
+      <div className="flex items-baseline justify-between mb-3">
+        <span className="var-mono text-[0.7rem] uppercase tracking-[0.3em] text-[var(--rust)]">
+          // MARKET_HEURISTIC_FEED
+        </span>
+        <span className="var-mono text-[0.7rem] uppercase tracking-[0.3em] text-[var(--foreground)]">
+          {picks.length} RANKED
+        </span>
+      </div>
 
-      <ul className="border-[3px] border-white">
+      <ul className="divide-y" style={{ borderColor: "var(--rust-deep)" }}>
         {picks.map((p, idx) => (
           <li
             key={`${p.league}-${p.matchup}-${idx}`}
-            className={`flex items-center gap-4 p-4 ${idx > 0 ? "border-t-[3px] border-white" : ""}`}
+            className="flex items-center gap-4 py-2"
+            style={{ borderColor: "var(--rust-deep)" }}
           >
-            <span className="odds-display text-3xl sm:text-4xl text-[var(--hazard)] w-12 shrink-0">
-              #{idx + 1}
+            <span
+              className="var-display text-2xl sm:text-3xl w-10 shrink-0"
+              style={{
+                color: p.score >= 75 ? "var(--rust-flash)" : "var(--concrete)",
+                ["--wght" as string]: "800",
+              }}
+            >
+              {String(idx + 1).padStart(2, "0")}
             </span>
-
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="display-eyebrow bg-white text-black px-1.5 py-0.5 text-[0.55rem]">
-                  {leagueTag(p.league)}
-                </span>
-                {fmtGameTime(p.gameDate) && (
-                  <span className="mono text-[0.65rem] text-white/50">{fmtGameTime(p.gameDate)}</span>
-                )}
-              </div>
-              <p className="display text-white text-base leading-tight">{p.matchup.toUpperCase()}</p>
-              <p className="mono text-xs text-white/70 mt-1">
-                PICK <span className="text-[var(--hazard)]">{p.pickTeam.toUpperCase()}</span>
-                {p.line && <span className="text-white/50"> ({p.line})</span>}
+              <p className="var-mono text-xs sm:text-sm uppercase tracking-wider truncate" style={{ color: "var(--foreground)" }}>
+                <span style={{ color: "var(--rust)" }}>[{p.league}]</span> {p.matchup.toUpperCase()}
               </p>
-              {p.rationaleSignals?.[0] && (
-                <p className="mono text-[0.7rem] text-white/50 mt-1 line-clamp-1">
-                  {p.rationaleSignals[0]}
-                </p>
-              )}
-            </div>
-
-            <div className="text-right shrink-0">
-              <p className="display-eyebrow text-white/60 text-[0.55rem]">SCORE</p>
-              <p className={`odds-display text-3xl ${p.score >= 75 ? "text-[var(--color-win)]" : p.score >= 60 ? "text-[var(--hazard)]" : "text-white"}`}>
-                {p.score}
+              <p className="var-mono text-[0.7rem] uppercase tracking-wider truncate" style={{ color: "var(--concrete-light)" }}>
+                ▸ {p.pickTeam.toUpperCase()}
+                {p.line && <> ({p.line})</>}
+                {p.rationaleSignals?.[0] && <> ▸ {p.rationaleSignals[0]}</>}
               </p>
-              <p className="mono text-[0.6rem] text-white/40">CONF {p.confidence}%</p>
             </div>
+            <span
+              className="var-display text-2xl sm:text-3xl shrink-0"
+              style={{
+                color: p.score >= 75 ? "var(--rust-flash)" : p.score >= 60 ? "var(--rust)" : "var(--concrete)",
+                ["--wght" as string]: "700",
+              }}
+            >
+              {p.score}
+            </span>
           </li>
         ))}
       </ul>
     </section>
-  );
-}
-
-function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div className="flex items-end justify-between mb-4 pb-3 border-b-[3px] border-white">
-      <h2 className="display-tight text-4xl sm:text-5xl text-white">{title}</h2>
-      <span className="display-eyebrow text-[var(--hazard)]">{subtitle}</span>
-    </div>
   );
 }
