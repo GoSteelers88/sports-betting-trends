@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Sora, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 
-// Inter is a variable font with wght axis 100..900 — drives the
-// odds-distortion typography (hot = 900, cold = 200).
-const inter = Inter({
+const sora = Sora({
   variable: "--font-display",
   subsets: ["latin"],
-  axes: ["opsz"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const interSans = Inter({
@@ -15,15 +13,15 @@ const interSans = Inter({
   subsets: ["latin"],
 });
 
-// JetBrains Mono — thermal receipt + radar telemetry
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "//NATESTACKS — TRANSMISSION 001",
-  description: "Sports edges. Live. Raw. No fluff.",
+  title: "NATESTACKS OS — Edge Reactor",
+  description:
+    "An autonomous betting intelligence operating system. Watch an AI prosecute the market in real time.",
 };
 
 export default function RootLayout({
@@ -34,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${interSans.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${interSans.variable} ${sora.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
       </body>

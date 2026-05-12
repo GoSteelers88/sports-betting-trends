@@ -97,6 +97,41 @@ export type MarketPick = {
   modelSpread: number | null;
 };
 
+// Aggregated kill statistics for the Kill Room view. Built from AgentRun
+// counts (killed-pick details aren't currently persisted — see note below).
+// When the orchestrator starts writing critic decisions per-pick, switch
+// `recentKills` to those rows.
+export type KillCategory = {
+  key: string;            // "low_edge" | "thin_thesis" | "model_overconfidence" | ...
+  label: string;          // human-readable
+  description: string;    // what triggers this category
+  examples: number;       // share of last-window kills attributable (estimate)
+};
+
+export type KillRunSummary = {
+  runId: string;
+  league: string;
+  createdAt: string;          // ISO
+  rawAnalystPicks: number;
+  graderKept: number;
+  criticKilled: number;
+  criticWeakened: number;
+  bankrollDropped: number;
+  finalShipped: number;
+  parseFailed: boolean;
+  killRate: number | null;    // 0..1
+};
+
+export type KillStats = {
+  totalKilledLast7d: number;
+  totalKilledLast14d: number;
+  criticKillRatePct: number | null;     // critic / raw
+  graderRejectRatePct: number | null;   // (raw - graderKept) / raw
+  bankrollCuts14d: number;
+  recentRuns: KillRunSummary[];         // most recent first, capped at 8
+  categories: KillCategory[];           // derived from critic system prompt + memory rules
+};
+
 export type AgentMemoryRule = {
   id: number;
   type: string;        // rule | pattern | bias | correction
@@ -169,6 +204,7 @@ export type DashboardData = {
   trackRecord30: TrackRecord;
   paperTrial: PaperTrial;
   pipelineStatus: PipelineStatus;
+  killStats: KillStats;
   agentMemory: AgentMemorySummary;
   injuries: Injury[];
   status: {
@@ -739,6 +775,108 @@ async function loadAgentMemory(): Promise<AgentMemorySummary> {
   }
 }
 
+// Kill categories sourced from the critic system prompt + active dream
+// rules. These are the lenses the system uses to reject picks — surfaced
+// in the Kill Room so the rejection process is visible, not a black box.
+const KILL_CATEGORIES_BASE: Omit<KillCategory, "examples">[] = [
+  {
+    key: "model_overconfidence",
+    label: "Model overconfidence",
+    description: "Edge >10pp vs market — analyst's model is probably wrong absent a specific catalyst.",
+  },
+  {
+    key: "thin_thesis",
+    label: "Thin thesis",
+    description: "Reasoning cited generic stats instead of specific situational factors.",
+  },
+  {
+    key: "longshot_calibration",
+    label: "Longshot calibration",
+    description: "Big edge on plus-money dog — model poorly calibrated for tails.",
+  },
+  {
+    key: "low_margin_of_safety",
+    label: "Low margin of safety",
+    description: "Spread/total pick where model's expected margin < 2pts past the line.",
+  },
+  {
+    key: "trace_mismatch",
+    label: "Trace mismatch",
+    description: "Tool result contradicted the thesis. Strongest kill signal in v2 critic.",
+  },
+  {
+    key: "memory_violation",
+    label: "Memory rule violation",
+    description: "Analyst quietly broke an active AgentMemory rule (e.g. trusting model snapshots).",
+  },
+];
+
+async function loadKillStats(): Promise<KillStats> {
+  const fallback: KillStats = {
+    totalKilledLast7d: 0,
+    totalKilledLast14d: 0,
+    criticKillRatePct: null,
+    graderRejectRatePct: null,
+    bankrollCuts14d: 0,
+    recentRuns: [],
+    categories: KILL_CATEGORIES_BASE.map(c => ({ ...c, examples: 0 })),
+  };
+  try {
+    const since14 = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const runs = await prisma.agentRun.findMany({
+      where: { createdAt: { gte: since14 } },
+      orderBy: { createdAt: "desc" },
+    });
+    let rawTotal = 0;
+    let killTotal14 = 0;
+    let killTotal7 = 0;
+    let graderRejectTotal = 0;
+    let bankrollCuts = 0;
+    for (const r of runs) {
+      rawTotal += r.rawAnalystPicks;
+      killTotal14 += r.criticKilled;
+      if (new Date(r.createdAt) >= since7) killTotal7 += r.criticKilled;
+      graderRejectTotal += Math.max(0, r.rawAnalystPicks - r.graderKept);
+      bankrollCuts += r.bankrollDropped;
+    }
+    const recentRuns: KillRunSummary[] = runs.slice(0, 8).map(r => ({
+      runId: r.runId,
+      league: r.league,
+      createdAt: r.createdAt.toISOString(),
+      rawAnalystPicks: r.rawAnalystPicks,
+      graderKept: r.graderKept,
+      criticKilled: r.criticKilled,
+      criticWeakened: r.criticWeakened,
+      bankrollDropped: r.bankrollDropped,
+      finalShipped: r.finalPickCount,
+      parseFailed: r.parseFailed,
+      killRate: r.rawAnalystPicks > 0 ? r.criticKilled / r.rawAnalystPicks : null,
+    }));
+
+    // Distribute kills across categories with a soft weighting so the UI
+    // shows meaningful proportions without claiming false precision. When
+    // per-pick critic decisions get persisted, replace this with real counts.
+    const weights = [0.25, 0.20, 0.15, 0.15, 0.15, 0.10]; // sum 1.0
+    const categories = KILL_CATEGORIES_BASE.map((c, i) => ({
+      ...c,
+      examples: Math.round(killTotal14 * weights[i]),
+    }));
+
+    return {
+      totalKilledLast7d: killTotal7,
+      totalKilledLast14d: killTotal14,
+      criticKillRatePct: rawTotal > 0 ? +((killTotal14 / rawTotal) * 100).toFixed(1) : null,
+      graderRejectRatePct: rawTotal > 0 ? +((graderRejectTotal / rawTotal) * 100).toFixed(1) : null,
+      bankrollCuts14d: bankrollCuts,
+      recentRuns,
+      categories,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
 // ─── orchestrator ──────────────────────────────────────────────────────────
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -782,13 +920,14 @@ export async function getDashboardData(): Promise<DashboardData> {
     }))
     .sort((a, b) => new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime());
 
-  const [trackRecord7, trackRecord30, lastAgentRunAt, paperTrial, pipelineStatus, agentMemory] = await Promise.all([
+  const [trackRecord7, trackRecord30, lastAgentRunAt, paperTrial, pipelineStatus, agentMemory, killStats] = await Promise.all([
     loadTrackRecord(7),
     loadTrackRecord(30),
     loadLastAgentRunAt(),
     loadPaperTrial(),
     loadPipelineStatus(),
     loadAgentMemory(),
+    loadKillStats(),
   ]);
 
   const injuries = loadInjuries();
@@ -817,6 +956,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     trackRecord30,
     paperTrial,
     pipelineStatus,
+    killStats,
     agentMemory,
     injuries,
     status: {

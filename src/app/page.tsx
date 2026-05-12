@@ -1,13 +1,13 @@
 import { getDashboardData } from "./_data/dashboard";
-import { Hero } from "./_components/Hero";
-import { HotPicks } from "./_components/HotPicks";
-import { PaperTrial } from "./_components/PaperTrial";
-import { PipelineStatus } from "./_components/PipelineStatus";
-import { AgentMemoryPanel } from "./_components/AgentMemoryPanel";
-import { MarketPicks } from "./_components/MarketPicks";
-import { PlayerProps } from "./_components/PlayerProps";
-import { Slate } from "./_components/Slate";
-import { Injuries } from "./_components/Injuries";
+import { CommandHeader } from "./_components/CommandHeader";
+import { DeploymentGate } from "./_components/DeploymentGate";
+import { EdgeReactor } from "./_components/EdgeReactor";
+import { SurvivorBrief } from "./_components/SurvivorBrief";
+import { KillRoom } from "./_components/KillRoom";
+import { PropSignals } from "./_components/PropSignals";
+import { MarketFeed } from "./_components/MarketFeed";
+import { SystemMemory } from "./_components/SystemMemory";
+import { VolatilityInputs } from "./_components/VolatilityInputs";
 import { Footer } from "./_components/Footer";
 
 export const dynamic = "force-dynamic";
@@ -17,29 +17,21 @@ export default async function Home() {
   const data = await getDashboardData();
 
   return (
-    <main className="grain-live relative bg-[#0a0c0d]">
-      {/* ░░░ KINETIC AXIS — bets dominate ░░░ */}
-      <Hero data={data} />
-      <HotPicks picks={data.picks} />
-
-      {/* ░░░ OPERATOR CONSOLE — telemetry ░░░ */}
-      <div className="relative px-4 sm:px-8 py-12 space-y-10 max-w-6xl mx-auto">
-        <PaperTrial data={data.paperTrial} />
-        <PipelineStatus data={data.pipelineStatus} />
-        <AgentMemoryPanel data={data.agentMemory} />
-        <MarketPicks picks={data.marketPicks} />
-        <PlayerProps props={data.playerProps} />
-      </div>
-
-      {/* ░░░ FEEDS — ticker tape ░░░ */}
-      <div className="relative px-4 sm:px-8 py-6 space-y-6 max-w-6xl mx-auto">
-        <Slate games={data.slate} />
-        <Injuries injuries={data.injuries} />
-      </div>
-
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-8">
-        <Footer generatedAt={data.generatedAt} />
-      </div>
-    </main>
+    <>
+      <CommandHeader data={data} />
+      <main className="relative">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-10 space-y-12 sm:space-y-16">
+          <DeploymentGate data={data.paperTrial} />
+          <EdgeReactor data={data.pipelineStatus} />
+          <SurvivorBrief picks={data.picks} />
+          <KillRoom data={data.killStats} />
+          <PropSignals props={data.playerProps} />
+          <MarketFeed games={data.slate} />
+          <SystemMemory data={data.agentMemory} />
+          <VolatilityInputs injuries={data.injuries} />
+          <Footer generatedAt={data.generatedAt} />
+        </div>
+      </main>
+    </>
   );
 }
