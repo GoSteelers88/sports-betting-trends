@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #05060f;
-  --color-foreground: #f5f7ff;
+  --color-background: #000000;
+  --color-foreground: #ffffff;
 
-  /* Brand accents */
-  --color-cyan: #00d9ff;
-  --color-lime: #22ff88;
-  --color-pink: #ff007a;
-  --color-amber: #ff8c42;
-  --color-redx: #ff3b3b;
-  --color-violet: #a855f7;
+  /* Hazard yellow primary action color — pure fluorescent */
+  --color-hazard: #faff00;
+  --color-hazard-shadow: #d4d800;
+
+  /* Status accents — kept brutal: pure RGB, no soft pastel */
+  --color-win: #00ff5a;
+  --color-loss: #ff003c;
+  --color-neutral: #888888;
 
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
@@ -18,109 +19,277 @@
 }
 
 :root {
-  --background: #05060f;
-  --foreground: #f5f7ff;
+  --background: #000000;
+  --foreground: #ffffff;
+  --hazard: #faff00;
+  --hazard-shadow: #d4d800;
 }
 
 html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   min-height: 100vh;
 }
 
 body {
-  /* Layered radial gradients for nightclub depth */
-  background-image:
-    radial-gradient(900px 600px at 15% -10%, rgba(168, 85, 247, 0.18), transparent 60%),
-    radial-gradient(800px 600px at 95% 10%, rgba(0, 217, 255, 0.12), transparent 60%),
-    radial-gradient(900px 700px at 50% 100%, rgba(255, 0, 122, 0.10), transparent 65%);
-  background-attachment: fixed;
+  /* No gradients. Pure black + grain. */
+  background-color: #000;
 }
 
-/* Glassmorphism utility */
-.glass {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+/* ─── Brutalist primitives ──────────────────────────────────────────────── */
+
+.brutal-card {
+  background: #000;
+  border: 3px solid #fff;
+  position: relative;
 }
-.glass-strong {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(22px) saturate(160%);
+.brutal-card-hazard {
+  border-color: var(--hazard);
+}
+.brutal-card-win {
+  border-color: var(--color-win);
+}
+.brutal-card-loss {
+  border-color: var(--color-loss);
 }
 
-/* Glow accents */
-.glow-cyan { box-shadow: 0 0 24px rgba(0, 217, 255, 0.18), inset 0 0 0 1px rgba(0, 217, 255, 0.25); }
-.glow-lime { box-shadow: 0 0 24px rgba(34, 255, 136, 0.20), inset 0 0 0 1px rgba(34, 255, 136, 0.30); }
-.glow-pink { box-shadow: 0 0 28px rgba(255, 0, 122, 0.22), inset 0 0 0 1px rgba(255, 0, 122, 0.30); }
-.glow-amber { box-shadow: 0 0 22px rgba(255, 140, 66, 0.20), inset 0 0 0 1px rgba(255, 140, 66, 0.30); }
-
-/* Pulsing live dot */
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 255, 136, 0.6); }
-  50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(34, 255, 136, 0); }
+/* Inverse: filled hazard block with black text — for primary CTAs / odds chips */
+.brutal-fill-hazard {
+  background: var(--hazard);
+  color: #000;
+  border: 3px solid var(--hazard);
 }
-.live-dot {
+
+/* Sharp button reset — never rounded, never animated by default */
+button.brutal {
+  background: transparent;
+  border: 3px solid #fff;
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-display), "Archivo Black", "Helvetica Neue", sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  transition: none;
+}
+button.brutal-hazard {
+  background: var(--hazard);
+  color: #000;
+  border-color: var(--hazard);
+}
+
+/* ─── Glitch hover effect ───────────────────────────────────────────────── */
+
+@keyframes glitch-jitter {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-2px, 1px); }
+  40%  { transform: translate(2px, -1px); }
+  60%  { transform: translate(-1px, 2px); }
+  80%  { transform: translate(1px, -2px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes glitch-clip {
+  0%, 100% { clip-path: inset(0 0 0 0); }
+  20% { clip-path: inset(20% 0 30% 0); }
+  40% { clip-path: inset(50% 0 10% 0); }
+  60% { clip-path: inset(10% 0 60% 0); }
+  80% { clip-path: inset(70% 0 0 0); }
+}
+
+.glitch {
+  position: relative;
   display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 9999px;
-  background: #22ff88;
-  animation: pulse-glow 2s infinite;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: inherit;
+  padding: inherit;
+}
+.glitch:hover::before {
+  opacity: 1;
+  color: #ff003c;
+  transform: translate(-3px, 0);
+  animation: glitch-clip 0.6s infinite linear alternate-reverse;
+  mix-blend-mode: screen;
+}
+.glitch:hover::after {
+  opacity: 1;
+  color: #00d4ff;
+  transform: translate(3px, 0);
+  animation: glitch-clip 0.45s infinite linear alternate;
+  mix-blend-mode: screen;
+}
+.glitch:hover {
+  animation: glitch-jitter 0.2s infinite steps(2);
 }
 
-/* Edge meter fill animation */
-@keyframes meter-fill {
-  from { width: 0%; }
-}
-.meter-fill {
-  animation: meter-fill 800ms ease-out;
-}
+/* ─── Typography utilities ──────────────────────────────────────────────── */
 
-/* Modal slide-up entrance */
-@keyframes slideUp {
-  from { transform: translateY(24px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* Honor reduced-motion for all CSS animations on the dashboard */
-@media (prefers-reduced-motion: reduce) {
-  .meter-fill,
-  .live-dot {
-    animation: none !important;
-  }
-}
-
-/* Display headers */
 .display {
-  font-family: var(--font-display), "Space Grotesk", system-ui, sans-serif;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display), "Archivo Black", "Helvetica Neue", sans-serif;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.display-tight {
+  font-family: var(--font-display), "Archivo Black", sans-serif;
+  letter-spacing: -0.03em;
+  line-height: 0.85;
+  text-transform: uppercase;
 }
 .display-eyebrow {
-  font-family: var(--font-display), "Space Grotesk", system-ui, sans-serif;
-  font-weight: 600;
+  font-family: var(--font-display), "Archivo Black", sans-serif;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-size: 0.7rem;
 }
+.odds-display {
+  font-family: var(--font-display), "Archivo Black", sans-serif;
+  letter-spacing: -0.04em;
+  font-feature-settings: "tnum" 1;
+  line-height: 0.9;
+}
+.mono {
+  font-family: var(--font-mono), "JetBrains Mono", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
 
-/* Mono numbers */
-.mono { font-family: var(--font-mono), "Geist Mono", "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
+/* ─── Status pills ──────────────────────────────────────────────────────── */
 
-/* Subtle scroll on horizontal rails */
-.h-rail::-webkit-scrollbar { height: 6px; }
-.h-rail::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 9999px; }
-.h-rail::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); }
+.live-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: var(--hazard);
+  border: 2px solid #000;
+  outline: 2px solid var(--hazard);
+}
 
-/* Noise texture overlay (optional, very subtle) */
-.noise::before {
+@keyframes hazard-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.3; }
+}
+.hazard-blink {
+  animation: hazard-blink 1s steps(1) infinite;
+}
+
+/* ─── Marquee / ticker tape ─────────────────────────────────────────────── */
+
+@keyframes ticker-vertical {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+
+.ticker-vertical {
+  animation: ticker-vertical 30s linear infinite;
+}
+.ticker-vertical:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-horizontal {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-horizontal {
+  animation: ticker-horizontal 40s linear infinite;
+}
+.ticker-horizontal:hover {
+  animation-play-state: paused;
+}
+
+/* ─── Hazard tape / caution stripes ─────────────────────────────────────── */
+
+.hazard-tape {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--hazard) 0,
+    var(--hazard) 16px,
+    #000 16px,
+    #000 32px
+  );
+}
+
+/* ─── Grainy noise overlay (heavier than v1) ────────────────────────────── */
+
+.grain::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.025;
+  opacity: 0.12;
   z-index: 1;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: overlay;
+}
+
+/* ─── Athlete photo slot ────────────────────────────────────────────────── */
+
+/* Container that overlays grainy texture + scanline; drop a <img/> inside.
+   Designed to extend past card boundaries via negative margins. */
+.athlete-slot {
+  position: relative;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+.athlete-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(0.4) contrast(1.15) brightness(0.85);
+  mix-blend-mode: luminosity;
+}
+.athlete-slot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.4) 0,
+      rgba(0, 0, 0, 0.4) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  pointer-events: none;
+}
+
+/* ─── Scrollbars ────────────────────────────────────────────────────────── */
+
+.h-rail::-webkit-scrollbar { height: 8px; }
+.h-rail::-webkit-scrollbar-track { background: #000; }
+.h-rail::-webkit-scrollbar-thumb { background: var(--hazard); border: 2px solid #000; }
+
+/* ─── Modal entrance ────────────────────────────────────────────────────── */
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* ─── Reduced motion ────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .hazard-blink,
+  .ticker-vertical,
+  .ticker-horizontal,
+  .glitch:hover,
+  .glitch:hover::before,
+  .glitch:hover::after {
+    animation: none !important;
+  }
 }

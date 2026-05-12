@@ -8,26 +8,24 @@ function fmtAmerican(n: number): string {
   return n > 0 ? `+${n}` : `${n}`;
 }
 
-function leagueEmoji(league: string): string {
-  if (league === "MLB") return "⚾";
-  if (league === "NBA") return "🏀";
-  return "🎯";
+function leagueTag(league: string): string {
+  if (league === "MLB") return "MLB";
+  if (league === "NBA") return "NBA";
+  if (league === "WNBA") return "WNBA";
+  if (league === "NHL") return "NHL";
+  return league.toUpperCase();
 }
 
-function pickGlow(p: SlatePick): string {
-  if (p.outcome?.result === "win") return "glow-lime";
-  if (p.outcome?.result === "loss") return "";
-  if (p.edge >= 0.10) return "glow-pink";
-  if (p.edge >= 0.05) return "glow-cyan";
-  return "";
-}
-
-function pickAccent(p: SlatePick): { tag: string; color: string } {
-  if (p.outcome?.result === "win") return { tag: "WIN", color: "text-[#22ff88]" };
-  if (p.outcome?.result === "loss") return { tag: "LOSS", color: "text-[#ff3b3b]" };
-  if (p.edge >= 0.10) return { tag: "HOT", color: "text-[#ff007a]" };
-  if (p.edge >= 0.05) return { tag: "EDGE", color: "text-[#00d9ff]" };
-  return { tag: "PICK", color: "text-slate-300" };
+function pickStatus(p: SlatePick): { tag: string; cardBorder: string; tagBg: string; tagFg: string } {
+  if (p.outcome?.result === "win")
+    return { tag: "WIN", cardBorder: "brutal-card-win", tagBg: "bg-[var(--color-win)]", tagFg: "text-black" };
+  if (p.outcome?.result === "loss")
+    return { tag: "LOSS", cardBorder: "brutal-card-loss", tagBg: "bg-[var(--color-loss)]", tagFg: "text-white" };
+  if (p.edge >= 0.10)
+    return { tag: "HOT", cardBorder: "brutal-card-hazard", tagBg: "bg-[var(--hazard)]", tagFg: "text-black" };
+  if (p.edge >= 0.05)
+    return { tag: "EDGE", cardBorder: "", tagBg: "bg-white", tagFg: "text-black" };
+  return { tag: "LIVE", cardBorder: "", tagBg: "bg-white", tagFg: "text-black" };
 }
 
 export function HotPicks({ picks }: { picks: SlatePick[] }) {
@@ -36,13 +34,11 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
   if (picks.length === 0) {
     return (
       <section>
-        <div className="flex items-baseline justify-between mb-3">
-          <h2 className="display-eyebrow text-pink-300">🤖 Bot Picks</h2>
-        </div>
-        <div className="glass rounded-2xl p-8 text-center">
-          <p className="display text-2xl text-slate-300 mb-2">No edge tonight</p>
-          <p className="text-sm text-slate-500">
-            The agent passed on every game it analyzed. Discipline &gt; action — check back after the next run.
+        <SectionHeader title="BOT PICKS" subtitle="0 LIVE" />
+        <div className="brutal-card p-10 text-center">
+          <p className="display text-4xl sm:text-5xl text-white mb-3">NO EDGE TONIGHT.</p>
+          <p className="display-eyebrow text-white/60">
+            DISCIPLINE &gt; ACTION — AGENT PASSED ON EVERY GAME
           </p>
         </div>
       </section>
@@ -51,62 +47,73 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
 
   return (
     <section>
-      <div className="flex items-baseline justify-between mb-3">
-        <h2 className="display-eyebrow text-pink-300">🔥 Hot Picks</h2>
-        <span className="text-xs text-slate-500 mono">
-          {picks.length} live · tap for details
-        </span>
-      </div>
+      <SectionHeader title="HOT PICKS" subtitle={`${picks.length} LIVE // TAP FOR DETAIL`} />
 
-      <div className="h-rail flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="h-rail flex gap-0 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-2">
         {picks.map(p => {
-          const accent = pickAccent(p);
-          const glowClass = pickGlow(p);
+          const s = pickStatus(p);
           return (
             <button
               key={p.id}
               type="button"
               onClick={() => setOpen(p)}
               aria-label={`Open details for ${p.matchup}`}
-              className={`group shrink-0 w-[280px] sm:w-[320px] text-left glass rounded-2xl p-4 ${glowClass} transition-transform hover:-translate-y-0.5 hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-white/30`}
+              className={`group shrink-0 w-[320px] sm:w-[360px] text-left brutal-card ${s.cardBorder} -mr-[3px] last:mr-0`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs flex items-center gap-1.5">
-                  <span className="text-base">{leagueEmoji(p.league)}</span>
-                  <span className="display-eyebrow text-slate-400">{p.league}</span>
+              {/* Athlete photo slot — drop a real image at /public/athletes/{league}.jpg */}
+              <div className="athlete-slot h-32 border-b-[3px] border-inherit relative">
+                <div
+                  className="absolute inset-0 flex items-end p-3"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(circle at 70% 30%, rgba(250,255,0,0.15), transparent 55%)",
+                  }}
+                >
+                  <span
+                    className="display-tight text-white/15 text-[6rem] leading-none"
+                    aria-hidden="true"
+                  >
+                    {leagueTag(p.league)}
+                  </span>
+                </div>
+                <span className={`absolute top-3 right-3 ${s.tagBg} ${s.tagFg} display px-2 py-0.5 text-xs`}>
+                  {s.tag}
                 </span>
-                <span className={`display-eyebrow ${accent.color}`}>{accent.tag}</span>
+                <span className="absolute top-3 left-3 display-eyebrow text-white">
+                  {leagueTag(p.league)}
+                </span>
               </div>
 
-              <p className="display text-base font-semibold leading-snug mb-1 text-white">
-                {p.matchup}
-              </p>
-              <p className="text-sm text-slate-300 mb-3 mono">
-                {p.selection} · <span className="text-slate-100">{fmtAmerican(p.oddsAmerican)}</span>
-              </p>
+              <div className="p-4">
+                <p className="display text-lg leading-tight text-white mb-3">
+                  {p.matchup.toUpperCase()}
+                </p>
 
-              <EdgeMeter edge={p.edge} />
+                <div className="flex items-end justify-between gap-3 mb-4 pb-3 border-b-[3px] border-white/20">
+                  <span className="display text-sm text-white/80">{p.selection.toUpperCase()}</span>
+                  <span className="odds-display text-4xl text-[var(--hazard)]">
+                    {fmtAmerican(p.oddsAmerican)}
+                  </span>
+                </div>
 
-              <div className="flex justify-between mt-3 pt-3 border-t border-white/5">
-                <Field label="Stake" value={`${p.kellyStakeUnits.toFixed(2)}u`} />
-                <Field label="Conf" value={`${p.confidence}`} />
-                <Field label="Edge" value={`${(p.edge * 100).toFixed(1)}%`} accent />
-                {p.clvCents !== null && (
+                <div className="grid grid-cols-3 gap-0 border-[3px] border-white mb-3">
+                  <Field label="EDGE" value={`${(p.edge * 100).toFixed(1)}%`} hazard />
+                  <Field label="STAKE" value={`${p.kellyStakeUnits.toFixed(2)}U`} />
                   <Field
                     label="CLV"
-                    value={`${p.clvCents > 0 ? "+" : ""}${p.clvCents}¢`}
-                    customColor={p.clvCents > 0 ? "text-[#22ff88]" : p.clvCents < 0 ? "text-[#ff3b3b]" : "text-slate-300"}
+                    value={p.clvCents !== null ? `${p.clvCents > 0 ? "+" : ""}${p.clvCents}¢` : "—"}
+                    pos={p.clvCents !== null && p.clvCents > 0}
+                    neg={p.clvCents !== null && p.clvCents < 0}
                   />
-                )}
+                </div>
+
+                <p className="mono text-[0.7rem] text-white/60 line-clamp-3 leading-relaxed">
+                  {p.thesis}
+                </p>
+                <p className="mono text-[0.6rem] text-[var(--hazard)] mt-3 opacity-0 group-hover:opacity-100">
+                  ▶ FULL THESIS + LINE JOURNEY
+                </p>
               </div>
-
-              <p className="mt-3 text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                {p.thesis}
-              </p>
-
-              <p className="mt-2 text-[0.65rem] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                tap for full thesis + line journey →
-              </p>
             </button>
           );
         })}
@@ -117,35 +124,39 @@ export function HotPicks({ picks }: { picks: SlatePick[] }) {
   );
 }
 
-function Field({
-  label,
-  value,
-  accent,
-  customColor,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-  customColor?: string;
-}) {
-  const color = customColor ?? (accent ? "text-[#22ff88] font-semibold" : "text-white");
+function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="text-center">
-      <p className="display-eyebrow text-slate-500 text-[0.6rem]">{label}</p>
-      <p className={`mono text-sm mt-0.5 ${color}`}>{value}</p>
+    <div className="flex items-end justify-between mb-4 pb-3 border-b-[3px] border-white">
+      <h2 className="display-tight text-4xl sm:text-5xl text-white">{title}</h2>
+      <span className="display-eyebrow text-[var(--hazard)]">{subtitle}</span>
     </div>
   );
 }
 
-function EdgeMeter({ edge }: { edge: number }) {
-  const pct = Math.min(100, Math.max(0, edge * 100 * 4));
-  const color = edge >= 0.10 ? "#ff007a" : edge >= 0.05 ? "#22ff88" : "#00d9ff";
+function Field({
+  label,
+  value,
+  hazard,
+  pos,
+  neg,
+}: {
+  label: string;
+  value: string;
+  hazard?: boolean;
+  pos?: boolean;
+  neg?: boolean;
+}) {
+  const color = hazard
+    ? "text-[var(--hazard)]"
+    : pos
+    ? "text-[var(--color-win)]"
+    : neg
+    ? "text-[var(--color-loss)]"
+    : "text-white";
   return (
-    <div className="relative h-1.5 rounded-full bg-white/5 overflow-hidden">
-      <div
-        className="meter-fill absolute left-0 top-0 h-full rounded-full"
-        style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}, ${color}aa)` }}
-      />
+    <div className="px-2 py-2 border-r-[3px] border-white last:border-r-0 text-center">
+      <p className="display-eyebrow text-white/60 text-[0.55rem]">{label}</p>
+      <p className={`odds-display mt-0.5 text-base ${color}`}>{value}</p>
     </div>
   );
 }

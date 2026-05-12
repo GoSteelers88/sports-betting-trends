@@ -5,59 +5,50 @@ function fmtAmerican(n: number): string {
 }
 
 function fmtTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", {
-    timeZone: "America/New_York",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
-
-function leagueIcon(league: string): string {
-  if (league === "MLB") return "⚾";
-  if (league === "NBA") return "🏀";
-  return "🎯";
-}
-
-function leagueAccent(league: string): string {
-  if (league === "MLB") return "text-amber-300";
-  if (league === "NBA") return "text-violet-300";
-  return "text-slate-300";
+  return new Date(iso)
+    .toLocaleString("en-US", {
+      timeZone: "America/New_York",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .toUpperCase();
 }
 
 export function Slate({ games }: { games: SlateGame[] }) {
   if (games.length === 0) {
     return (
       <section>
-        <h2 className="display-eyebrow text-cyan-300 mb-3">Tonight&apos;s Slate</h2>
-        <div className="glass rounded-2xl p-8 text-center">
-          <p className="display text-2xl text-slate-300 mb-2">No games today</p>
-          <p className="text-sm text-slate-500">Off-day for both leagues. Refresh tomorrow.</p>
+        <div className="flex items-end justify-between mb-4 pb-3 border-b-[3px] border-white">
+          <h2 className="display-tight text-4xl sm:text-5xl text-white">TONIGHT&apos;S SLATE</h2>
+        </div>
+        <div className="brutal-card p-10 text-center">
+          <p className="display text-3xl text-white mb-2">NO GAMES TODAY.</p>
+          <p className="display-eyebrow text-white/60">OFF-DAY ALL LEAGUES</p>
         </div>
       </section>
     );
   }
 
-  // Group by league for headers
   const byLeague: Record<string, SlateGame[]> = {};
   for (const g of games) (byLeague[g.league] ??= []).push(g);
 
   return (
     <section>
-      <div className="flex items-baseline justify-between mb-3">
-        <h2 className="display-eyebrow text-cyan-300">Tonight&apos;s Slate</h2>
-        <span className="text-xs text-slate-500 mono">{games.length} games</span>
+      <div className="flex items-end justify-between mb-4 pb-3 border-b-[3px] border-white">
+        <h2 className="display-tight text-4xl sm:text-5xl text-white">TONIGHT&apos;S SLATE</h2>
+        <span className="display-eyebrow text-[var(--hazard)]">{games.length} GAMES</span>
       </div>
 
       <div className="space-y-6">
         {Object.entries(byLeague).map(([league, leagueGames]) => (
           <div key={league}>
-            <p className={`display-eyebrow mb-2 ${leagueAccent(league)}`}>
-              {leagueIcon(league)} {league} · {leagueGames.length}
+            <p className="display-eyebrow text-[var(--hazard)] mb-2">
+              {league} // {leagueGames.length}
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {leagueGames.map(g => (
-                <GameCard key={g.eventId} game={g} />
+            <div className="border-[3px] border-white">
+              {leagueGames.map((g, idx) => (
+                <GameRow key={g.eventId} game={g} isFirst={idx === 0} />
               ))}
             </div>
           </div>
@@ -67,127 +58,109 @@ export function Slate({ games }: { games: SlateGame[] }) {
   );
 }
 
-function GameCard({ game }: { game: SlateGame }) {
-  const { consensus, modelHomeProb, hasPick } = game;
-  const pickGlow = hasPick ? "glow-lime" : "";
-  const borderClass = hasPick ? "border-emerald-400/30" : "border-white/8";
-
-  // Compute model probability bar position
-  const modelProb = modelHomeProb;
-  const marketProb = consensus.home?.impliedProb ?? null;
-
+function GameRow({ game, isFirst }: { game: SlateGame; isFirst: boolean }) {
+  const { consensus, hasPick, modelHomeProb } = game;
   return (
-    <article className={`relative rounded-2xl glass p-4 ${pickGlow}`} style={{ borderColor: undefined }}>
-      <div className="flex items-baseline justify-between mb-3">
-        <span className="mono text-xs text-slate-400">{fmtTime(game.commenceTime)} ET</span>
+    <div
+      className={`p-4 ${!isFirst ? "border-t-[3px] border-white" : ""} ${
+        hasPick ? "bg-[var(--hazard)] text-black" : ""
+      }`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className={`mono text-xs ${hasPick ? "text-black" : "text-white/50"}`}>
+          {fmtTime(game.commenceTime)} ET
+        </span>
         {hasPick && (
-          <span className="display-eyebrow text-emerald-300">★ Agent Pick</span>
+          <span className="display-eyebrow bg-black text-[var(--hazard)] px-2 py-0.5">
+            ★ AGENT PICK
+          </span>
         )}
       </div>
 
-      <div className="space-y-1.5 mb-3">
+      <div className="grid grid-cols-2 gap-3 mb-2">
         <TeamRow
           name={game.awayTeam}
-          subscript="(away)"
           american={consensus.away?.american ?? null}
           spread={consensus.spread ? -consensus.spread.line : null}
-          spreadPrice={consensus.spread?.awayPrice ?? null}
+          dark={hasPick}
         />
         <TeamRow
           name={game.homeTeam}
-          subscript="(home)"
           american={consensus.home?.american ?? null}
           spread={consensus.spread?.line ?? null}
-          spreadPrice={consensus.spread?.homePrice ?? null}
+          dark={hasPick}
         />
       </div>
 
       {consensus.total && (
-        <p className="mono text-xs text-slate-400 mb-3">
-          O/U <span className="text-slate-200">{consensus.total.line}</span>{" "}
-          <span className="text-slate-500">·</span>{" "}
-          O {fmtAmerican(consensus.total.overPrice)} / U {fmtAmerican(consensus.total.underPrice)}
+        <p className={`mono text-xs ${hasPick ? "text-black/70" : "text-white/40"}`}>
+          O/U <span className={hasPick ? "text-black" : "text-white"}>{consensus.total.line}</span>{" "}
+          · O {fmtAmerican(consensus.total.overPrice)} / U {fmtAmerican(consensus.total.underPrice)}
         </p>
       )}
 
-      {modelProb !== null && marketProb !== null && (
-        <div className="mb-3">
-          <div className="flex items-center justify-between text-[0.65rem] mb-1">
-            <span className="display-eyebrow text-slate-500">Model {(modelProb * 100).toFixed(0)}%</span>
-            <span className="display-eyebrow text-slate-500">Market {(marketProb * 100).toFixed(0)}%</span>
+      {modelHomeProb !== null && consensus.home?.impliedProb !== null && consensus.home?.impliedProb !== undefined && (
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-[0.6rem] mb-1">
+            <span className={`display-eyebrow ${hasPick ? "text-black/60" : "text-white/50"}`}>
+              MODEL {Math.round(modelHomeProb * 100)}%
+            </span>
+            <span className={`display-eyebrow ${hasPick ? "text-black/60" : "text-white/50"}`}>
+              MARKET {Math.round(consensus.home.impliedProb * 100)}%
+            </span>
           </div>
-          <div className="relative h-1.5 rounded-full bg-white/5 overflow-hidden">
+          <div className={`relative h-1.5 ${hasPick ? "bg-black/30" : "bg-white/10"}`}>
             <div
-              className="absolute top-0 left-0 h-full rounded-full bg-cyan-400/60"
-              style={{ width: `${marketProb * 100}%` }}
+              className={`absolute top-0 left-0 h-full ${hasPick ? "bg-black" : "bg-white/60"}`}
+              style={{ width: `${consensus.home.impliedProb * 100}%` }}
             />
             <div
-              className="absolute top-0 left-0 h-full rounded-full"
-              style={{
-                width: `${modelProb * 100}%`,
-                background:
-                  modelProb > marketProb
-                    ? "linear-gradient(90deg, #22ff88aa, #22ff88)"
-                    : "linear-gradient(90deg, #ff007aaa, #ff007a)",
-              }}
+              className={`absolute top-0 left-0 h-full ${hasPick ? "bg-black" : "bg-[var(--hazard)]"}`}
+              style={{ width: `${modelHomeProb * 100}%`, mixBlendMode: hasPick ? "normal" : "screen" }}
             />
           </div>
         </div>
       )}
 
       {game.pick && (
-        <div className="rounded-md border border-emerald-400/20 bg-emerald-500/5 p-2.5 mt-2">
-          <p className="text-xs mono">
-            <span className="text-emerald-300">{game.pick.selection}</span>{" "}
-            <span className="text-slate-400">@</span>{" "}
-            <span className="text-white">{fmtAmerican(game.pick.oddsAmerican)}</span>
-            <span className="text-slate-500"> · </span>
-            <span className="text-emerald-200">edge {(game.pick.edge * 100).toFixed(1)}%</span>
-            <span className="text-slate-500"> · </span>
-            <span className="text-slate-300">{game.pick.kellyStakeUnits.toFixed(2)}u</span>
+        <div className="mt-3 pt-3 border-t-[3px] border-black/20">
+          <p className="mono text-xs">
+            <span className="display">{game.pick.selection.toUpperCase()}</span>{" "}
+            @ <span className="display">{fmtAmerican(game.pick.oddsAmerican)}</span>
+            <span className="opacity-60"> · EDGE {(game.pick.edge * 100).toFixed(1)}% · {game.pick.kellyStakeUnits.toFixed(2)}U</span>
           </p>
-          <p className="text-xs text-slate-400 mt-1.5 line-clamp-2">{game.pick.thesis}</p>
+          <p className="mono text-[0.7rem] mt-1 line-clamp-2 opacity-80">{game.pick.thesis}</p>
         </div>
       )}
-    </article>
+    </div>
   );
 }
 
 function TeamRow({
   name,
-  subscript,
   american,
   spread,
-  spreadPrice,
+  dark,
 }: {
   name: string;
-  subscript: string;
   american: number | null;
   spread: number | null;
-  spreadPrice: number | null;
+  dark: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-white truncate">{name}</p>
-      </div>
-      <div className="flex items-center gap-3 shrink-0">
-        {spread !== null && (
-          <span className="text-xs mono text-slate-400">
-            {spread > 0 ? "+" : ""}
-            {spread}
-            {spreadPrice !== null && (
-              <span className="text-slate-600"> ({fmtAmerican(spreadPrice)})</span>
-            )}
-          </span>
-        )}
-        <span
-          className={`mono text-sm font-semibold ${
-            american !== null && american < 0 ? "text-cyan-200" : "text-emerald-200"
-          }`}
-        >
+    <div>
+      <p className={`display text-sm leading-tight ${dark ? "text-black" : "text-white"}`}>
+        {name.toUpperCase()}
+      </p>
+      <div className={`flex items-baseline gap-2 mt-1 ${dark ? "text-black" : "text-white"}`}>
+        <span className="odds-display text-2xl">
           {american !== null ? fmtAmerican(american) : "—"}
         </span>
+        {spread !== null && (
+          <span className={`mono text-xs ${dark ? "text-black/60" : "text-white/50"}`}>
+            {spread > 0 ? "+" : ""}{spread}
+          </span>
+        )}
       </div>
     </div>
   );

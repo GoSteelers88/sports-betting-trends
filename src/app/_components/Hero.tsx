@@ -1,20 +1,19 @@
 import type { DashboardData } from "../_data/dashboard";
 
 function fmtRelative(iso: string | null): string {
-  if (!iso) return "never";
+  if (!iso) return "NEVER";
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
+  if (m < 1) return "NOW";
+  if (m < 60) return `${m}M AGO`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
+  if (h < 24) return `${h}H AGO`;
   const d = Math.floor(h / 24);
-  return `${d}d ago`;
+  return `${d}D AGO`;
 }
 
 function fmtTimeUntilEt(iso: string): string {
-  const t = new Date(iso);
-  return t.toLocaleString("en-US", {
+  return new Date(iso).toLocaleString("en-US", {
     timeZone: "America/New_York",
     weekday: "short",
     hour: "numeric",
@@ -25,52 +24,53 @@ function fmtTimeUntilEt(iso: string): string {
 
 export function Hero({ data }: { data: DashboardData }) {
   const { status, trackRecord7 } = data;
-  const todayDateEt = new Date().toLocaleDateString("en-US", {
+  const todayEt = new Date().toLocaleDateString("en-US", {
     timeZone: "America/New_York",
     weekday: "long",
-    month: "short",
+    month: "long",
     day: "numeric",
   });
-
-  const nbaCount = data.slate.filter(g => g.league === "NBA").length;
-  const mlbCount = data.slate.filter(g => g.league === "MLB").length;
+  const nba = data.slate.filter(g => g.league === "NBA").length;
+  const mlb = data.slate.filter(g => g.league === "MLB").length;
+  const wnba = data.slate.filter(g => g.league === "WNBA").length;
+  const nhl = data.slate.filter(g => g.league === "NHL").length;
 
   return (
-    <section className="relative overflow-hidden rounded-3xl glass-strong p-6 sm:p-8">
-      <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-[#a855f7]/30 blur-3xl" />
-      <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-[#00d9ff]/20 blur-3xl" />
-      <div className="relative">
-        <div className="flex flex-wrap items-center gap-3 mb-3">
-          <span className="display-eyebrow text-cyan-300">Tonight&apos;s Slate</span>
-          <span className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs">
-            <span className="live-dot" />
-            <span className="text-emerald-300">live</span>
-            <span className="text-slate-400">·</span>
-            <span className="text-slate-300">last run {fmtRelative(status.lastAgentRunAt)}</span>
+    <section className="relative">
+      <div className="hazard-tape h-3 mb-4" aria-hidden="true" />
+
+      <div className="brutal-card p-6 sm:p-10">
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+          <span className="display-eyebrow text-[var(--hazard)]">// LIVE</span>
+          <span className="flex items-center gap-2">
+            <span className="live-dot hazard-blink" />
+            <span className="display-eyebrow text-white">
+              LAST RUN — {fmtRelative(status.lastAgentRunAt)}
+            </span>
           </span>
         </div>
-        <h1 className="display text-4xl sm:text-5xl font-bold leading-tight">
-          {todayDateEt}
-        </h1>
-        <p className="mt-2 text-slate-300 text-sm sm:text-base">
-          <span className="mono text-white">{mlbCount}</span> MLB
-          <span className="mx-2 text-slate-600">·</span>
-          <span className="mono text-white">{nbaCount}</span> NBA
-          <span className="mx-2 text-slate-600">·</span>
-          <span className="mono text-emerald-300">{status.todayPickCount}</span> picks live
-          <span className="mx-2 text-slate-600">·</span>
-          <span className="text-slate-400">next run</span>{" "}
-          <span className="mono text-cyan-200">{fmtTimeUntilEt(status.nextScheduledRunUtc)}</span>
-        </p>
 
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Stat label="Today P&L" value={fmtUnits(status.todayPnl)} accent={status.todayPnl >= 0 ? "lime" : "redx"} />
-          <Stat label="Last 7d Record" value={`${trackRecord7.wins}-${trackRecord7.losses}${trackRecord7.pushes ? `-${trackRecord7.pushes}` : ""}`} />
-          <Stat label="Last 7d Units" value={fmtUnits(trackRecord7.pnl)} accent={trackRecord7.pnl >= 0 ? "lime" : "redx"} />
+        <h1 className="display-tight text-white text-[clamp(2.5rem,9vw,7rem)]">
+          {todayEt.toUpperCase()}
+        </h1>
+
+        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 display-eyebrow text-white text-[0.85rem]">
+          <span>MLB <span className="text-[var(--hazard)] mono text-base">{mlb}</span></span>
+          <span>NBA <span className="text-[var(--hazard)] mono text-base">{nba}</span></span>
+          {wnba > 0 && <span>WNBA <span className="text-[var(--hazard)] mono text-base">{wnba}</span></span>}
+          {nhl > 0 && <span>NHL <span className="text-[var(--hazard)] mono text-base">{nhl}</span></span>}
+          <span>PICKS LIVE <span className="text-[var(--hazard)] mono text-base">{status.todayPickCount}</span></span>
+          <span>NEXT <span className="text-white mono text-base">{fmtTimeUntilEt(status.nextScheduledRunUtc)}</span></span>
+        </div>
+
+        <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-0 border-t-[3px] border-white">
+          <Stat label="TODAY P&L" value={fmtUnits(status.todayPnl)} pos={status.todayPnl >= 0} />
+          <Stat label="7D RECORD" value={`${trackRecord7.wins}-${trackRecord7.losses}${trackRecord7.pushes ? `-${trackRecord7.pushes}` : ""}`} />
+          <Stat label="7D UNITS" value={fmtUnits(trackRecord7.pnl)} pos={trackRecord7.pnl >= 0} />
           <Stat
-            label="ROI 7d"
+            label="7D ROI"
             value={trackRecord7.roi !== null ? `${(trackRecord7.roi * 100).toFixed(1)}%` : "—"}
-            accent={trackRecord7.roi !== null && trackRecord7.roi >= 0 ? "lime" : "redx"}
+            pos={trackRecord7.roi !== null && trackRecord7.roi >= 0}
           />
         </div>
       </div>
@@ -78,32 +78,17 @@ export function Hero({ data }: { data: DashboardData }) {
   );
 }
 
-function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: "lime" | "redx" | "cyan";
-}) {
-  const color =
-    accent === "lime"
-      ? "text-[#22ff88]"
-      : accent === "redx"
-      ? "text-[#ff3b3b]"
-      : accent === "cyan"
-      ? "text-[#00d9ff]"
-      : "text-white";
+function Stat({ label, value, pos }: { label: string; value: string; pos?: boolean }) {
+  const color = pos === undefined ? "text-white" : pos ? "text-[var(--color-win)]" : "text-[var(--color-loss)]";
   return (
-    <div className="glass rounded-xl p-3">
-      <p className="display-eyebrow text-slate-400">{label}</p>
-      <p className={`mono mt-1 text-xl font-semibold ${color}`}>{value}</p>
+    <div className="border-r-[3px] border-white last:border-r-0 last-of-type:border-r-0 py-4 px-3 sm:px-5">
+      <p className="display-eyebrow text-white/60 text-[0.6rem]">{label}</p>
+      <p className={`odds-display mt-2 text-3xl sm:text-4xl ${color}`}>{value}</p>
     </div>
   );
 }
 
 function fmtUnits(n: number): string {
-  if (n === 0) return "0.00u";
-  return `${n > 0 ? "+" : ""}${n.toFixed(2)}u`;
+  if (n === 0) return "0.00U";
+  return `${n > 0 ? "+" : ""}${n.toFixed(2)}U`;
 }

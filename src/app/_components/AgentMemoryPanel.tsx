@@ -3,37 +3,23 @@
 import { useState } from "react";
 import type { AgentMemorySummary } from "../_data/dashboard";
 
-function typeColor(type: string): { fg: string; bg: string; border: string } {
-  switch (type) {
-    case "correction":
-      return { fg: "#ff8c42", bg: "rgba(255,140,66,0.12)", border: "rgba(255,140,66,0.35)" };
-    case "bias":
-      return { fg: "#ff007a", bg: "rgba(255,0,122,0.12)", border: "rgba(255,0,122,0.35)" };
-    case "pattern":
-      return { fg: "#00d9ff", bg: "rgba(0,217,255,0.12)", border: "rgba(0,217,255,0.35)" };
-    case "rule":
-    default:
-      return { fg: "#a855f7", bg: "rgba(168,85,247,0.12)", border: "rgba(168,85,247,0.35)" };
-  }
-}
-
 function scopeBadge(scope: string): string {
-  if (scope === "ALL") return "🌐 ALL";
-  if (scope === "NBA") return "🏀 NBA";
-  if (scope === "MLB") return "⚾ MLB";
-  if (scope.startsWith("book:")) return `📚 ${scope.slice(5)}`;
-  return scope;
+  if (scope === "ALL") return "ALL";
+  if (scope === "NBA") return "NBA";
+  if (scope === "MLB") return "MLB";
+  if (scope.startsWith("book:")) return scope.slice(5).toUpperCase();
+  return scope.toUpperCase();
 }
 
 function relativeTime(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
   const hours = Math.floor(ms / 3_600_000);
-  if (hours < 1) return "just now";
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 1) return "NOW";
+  if (hours < 24) return `${hours}H`;
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
+  if (days < 7) return `${days}D`;
   const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `${weeks}w ago`;
+  if (weeks < 5) return `${weeks}W`;
   return new Date(iso).toLocaleDateString();
 }
 
@@ -47,70 +33,49 @@ export function AgentMemoryPanel({ data }: { data: AgentMemorySummary }) {
     scopeFilter === "ALL_SCOPES"
       ? data.rules
       : data.rules.filter(r => r.scope === scopeFilter);
-
   const scopes = ["ALL_SCOPES", ...Object.keys(data.byScope).sort()];
-
-  const lastDreamLabel = data.lastDreamAt
-    ? `Dream ${relativeTime(data.lastDreamAt)}`
-    : "no dream yet";
 
   return (
     <section>
-      <div className="flex items-baseline justify-between mb-3 gap-3 flex-wrap">
-        <h2 className="display-eyebrow text-violet-300">🧠 Agent Memory</h2>
-        <span className="text-xs text-slate-500 mono">
-          {data.totalActive} active rule{data.totalActive === 1 ? "" : "s"} · {lastDreamLabel}
+      <div className="flex items-end justify-between mb-4 pb-3 border-b-[3px] border-white">
+        <h2 className="display-tight text-4xl sm:text-5xl text-white">AGENT MEMORY</h2>
+        <span className="display-eyebrow text-[var(--hazard)] text-right">
+          {data.totalActive} ACTIVE RULE{data.totalActive === 1 ? "" : "S"}
+          {data.lastDreamAt && (
+            <> {" // "} DREAM {relativeTime(data.lastDreamAt)}</>
+          )}
           {data.lastDreamAddedRetired && (
-            <span className="text-slate-600">
-              {" "}· +{data.lastDreamAddedRetired.added}/−{data.lastDreamAddedRetired.retired}
-            </span>
+            <> {" // "} +{data.lastDreamAddedRetired.added}/−{data.lastDreamAddedRetired.retired}</>
           )}
         </span>
       </div>
 
-      <div className="glass rounded-2xl p-4 sm:p-5">
+      <div className="brutal-card p-5 sm:p-6">
         {data.lastDreamNotes && (
-          <div
-            className="mb-4 rounded-xl p-3 sm:p-4 relative overflow-hidden"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(168,85,247,0.10), rgba(0,217,255,0.06))",
-              border: "1px solid rgba(168,85,247,0.25)",
-            }}
-          >
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-base leading-none">💭</span>
-              <p className="display-eyebrow text-violet-200 text-[0.65rem]">
-                What dream learned
-                {data.lastDreamPicksReviewed !== null && (
-                  <span className="text-slate-500 normal-case tracking-normal">
-                    {" "}· reviewed {data.lastDreamPicksReviewed} pick
-                    {data.lastDreamPicksReviewed === 1 ? "" : "s"}
-                  </span>
-                )}
-              </p>
-            </div>
-            <p className="text-sm text-slate-200 leading-relaxed">
-              {data.lastDreamNotes}
+          <div className="mb-5 brutal-fill-hazard p-4">
+            <p className="display-eyebrow text-black mb-2">
+              WHAT DREAM LEARNED
+              {data.lastDreamPicksReviewed !== null && (
+                <> {" // "} REVIEWED {data.lastDreamPicksReviewed} PICK{data.lastDreamPicksReviewed === 1 ? "" : "S"}</>
+              )}
             </p>
+            <p className="mono text-sm text-black leading-relaxed">{data.lastDreamNotes}</p>
           </div>
         )}
 
         {scopes.length > 1 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {scopes.map(s => {
+          <div className="flex flex-wrap gap-0 mb-4 border-[3px] border-white">
+            {scopes.map((s, i) => {
               const isActive = scopeFilter === s;
-              const label = s === "ALL_SCOPES" ? `all (${data.rules.length})` : `${scopeBadge(s)} (${data.byScope[s]})`;
+              const label = s === "ALL_SCOPES" ? `ALL (${data.rules.length})` : `${scopeBadge(s)} (${data.byScope[s]})`;
               return (
                 <button
                   key={s}
                   type="button"
                   onClick={() => setScopeFilter(s)}
-                  className={`mono text-[0.65rem] px-2 py-1 rounded-full border transition-colors ${
-                    isActive
-                      ? "bg-violet-400/15 border-violet-400/50 text-violet-200"
-                      : "bg-white/[0.02] border-white/10 text-slate-400 hover:text-slate-200 hover:border-white/20"
-                  }`}
+                  className={`display-eyebrow text-[0.65rem] px-3 py-2 border-r-[3px] border-white last:border-r-0 ${
+                    isActive ? "bg-[var(--hazard)] text-black" : "bg-black text-white hover:bg-white hover:text-black"
+                  } ${i === scopes.length - 1 ? "border-r-0" : ""}`}
                 >
                   {label}
                 </button>
@@ -120,66 +85,53 @@ export function AgentMemoryPanel({ data }: { data: AgentMemorySummary }) {
         )}
 
         {filtered.length === 0 ? (
-          <p className="text-sm text-slate-500 text-center py-6">
-            No rules in this scope yet. Dream consolidates picks weekly on Mondays.
+          <p className="display text-center text-white/60 py-6">
+            NO RULES IN THIS SCOPE. DREAM RUNS MONDAYS 06:00 UTC.
           </p>
         ) : (
-          <ul className="space-y-2">
-            {filtered.map(r => {
-              const c = typeColor(r.type);
+          <ul className="space-y-0 border-[3px] border-white">
+            {filtered.map((r, idx) => {
               const isOpen = expanded === r.id;
               const weightPct = Math.round(Math.max(0, Math.min(1, r.weight)) * 100);
               return (
-                <li key={r.id}>
+                <li key={r.id} className={idx > 0 ? "border-t-[3px] border-white" : ""}>
                   <button
                     type="button"
                     onClick={() => setExpanded(isOpen ? null : r.id)}
                     aria-expanded={isOpen}
-                    className="w-full text-left rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/15 transition-colors p-3"
+                    className="w-full text-left p-4 hover:bg-white/5"
                   >
-                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                      <span
-                        className="mono text-[0.6rem] px-1.5 py-0.5 rounded uppercase tracking-wider"
-                        style={{ color: c.fg, background: c.bg, border: `1px solid ${c.border}` }}
-                      >
-                        {r.type}
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span className="display-eyebrow bg-white text-black px-2 py-0.5 text-[0.6rem]">
+                        {r.type.toUpperCase()}
                       </span>
-                      <span className="mono text-[0.6rem] text-slate-400">
-                        {scopeBadge(r.scope)}
-                      </span>
+                      <span className="display-eyebrow text-white text-[0.6rem]">{scopeBadge(r.scope)}</span>
                       {r.isFresh && (
-                        <span className="mono text-[0.6rem] text-[#22ff88] uppercase tracking-wider">
-                          • new
+                        <span className="display-eyebrow bg-[var(--hazard)] text-black px-1.5 py-0.5 text-[0.55rem]">
+                          NEW
                         </span>
                       )}
-                      <span className="ml-auto mono text-[0.6rem] text-slate-500">
-                        {relativeTime(r.updatedAt)}
-                      </span>
+                      <span className="ml-auto mono text-[0.6rem] text-white/50">{relativeTime(r.updatedAt)}</span>
                     </div>
 
-                    <p className="text-sm text-slate-100 leading-snug mb-2">{r.rule}</p>
+                    <p className="display text-white text-base leading-snug mb-3">{r.rule}</p>
 
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-2 bg-black border-[2px] border-white">
                         <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${weightPct}%`,
-                            background: `linear-gradient(90deg, ${c.fg}, ${c.fg}88)`,
-                          }}
+                          className="h-full bg-[var(--hazard)]"
+                          style={{ width: `${weightPct}%` }}
                         />
                       </div>
-                      <span className="mono text-[0.6rem] text-slate-500 shrink-0">
-                        weight {r.weight.toFixed(2)}
+                      <span className="mono text-[0.6rem] text-white shrink-0">
+                        W {r.weight.toFixed(2)}
                       </span>
                     </div>
 
                     {isOpen && (
-                      <div className="mt-3 pt-3 border-t border-white/5">
-                        <p className="display-eyebrow text-slate-500 text-[0.6rem] mb-1">
-                          Why dream concluded this
-                        </p>
-                        <p className="text-xs text-slate-300 leading-relaxed">{r.reasoning}</p>
+                      <div className="mt-4 pt-4 border-t-[3px] border-white">
+                        <p className="display-eyebrow text-[var(--hazard)] mb-2">WHY DREAM CONCLUDED THIS</p>
+                        <p className="mono text-xs text-white leading-relaxed">{r.reasoning}</p>
                       </div>
                     )}
                   </button>

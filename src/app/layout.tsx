@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Space_Grotesk, Inter } from "next/font/google";
+import { Archivo_Black, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,20 +7,21 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const spaceGrotesk = Space_Grotesk({
+// Archivo Black — single weight (900), perfect for brutalist display + odds
+const archivoBlack = Archivo_Black({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400"],
 });
 
-const geistMono = Geist_Mono({
+const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "NateStacks — Sports Betting Trends",
-  description: "Live picks and edges across MLB and NBA.",
+  title: "NATESTACKS // SPORTS TRENDS",
+  description: "Live picks. Real edges. No fluff.",
 };
 
 export default function RootLayout({
@@ -31,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${archivoBlack.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
       </body>
