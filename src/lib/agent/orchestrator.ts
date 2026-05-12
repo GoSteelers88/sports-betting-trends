@@ -14,7 +14,7 @@ import crypto from "node:crypto";
 import { getAnthropic, MODELS } from "./client";
 import { checkHealth, type DataHealth } from "./health";
 import { runIngest, ALLOWED_SCRIPTS, type IngestScript, type IngestResult } from "./runners";
-import { analyze, persistFinalPicks } from "./analyst";
+import { analyze, persistFinalPicks, type TraceStep } from "./analyst";
 import { critique, applyCritiqueToPicks, type CritiqueResult } from "./critic";
 import { applyBankrollGuard, type BankrollGuardResult } from "./bankroll";
 import { notifyPicks, notifyError } from "./notify";
@@ -112,6 +112,7 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
   let analystPicks: GradedPick[] | null = null;
   let analystRunId: string | null = null;
   let analystToolsUsed: string[] = [];
+  let analystTrace: TraceStep[] = [];
   let rawAnalystPickCount = 0; // pre-grader count for accurate kill-rate denominator
 
   const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [
@@ -169,6 +170,7 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
               analystPicks = out.picks;
               analystRunId = out.runId;
               analystToolsUsed = out.toolsUsed;
+              analystTrace = out.reasoningTrace;
               rawAnalystPickCount = out.rawAnalystPickCount;
               trace.push({
                 step: "delegate_to_analyst",
@@ -226,7 +228,7 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
   let finalPicks: GradedPick[] = [];
 
   if (analystPicks && analystPicks.length > 0) {
-    critique_ = await critique(league, analystPicks);
+    critique_ = await critique(league, analystPicks, analystTrace);
     trace.push({ step: "critic", detail: critique_, at: new Date().toISOString() });
 
     // Fail-closed: if critic JSON failed to parse (parseFailed flag set, or

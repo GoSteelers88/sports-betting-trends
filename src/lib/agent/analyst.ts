@@ -37,6 +37,15 @@ export type AnalystPick = {
   gameTime?: string;
 };
 
+// A single step in the analyst's reasoning loop. The critic uses this to
+// audit upstream decisions (did the analyst gather the right data? did it
+// ignore a tool result that contradicts the thesis?) rather than only
+// judging the final JSON output.
+export type TraceStep =
+  | { kind: "reasoning"; text: string }
+  | { kind: "tool_call"; name: string; argsSummary: string }
+  | { kind: "tool_result"; name: string; resultSummary: string };
+
 export type AnalyzeResult = {
   runId: string;
   league: AgentLeague;
@@ -48,6 +57,7 @@ export type AnalyzeResult = {
   rawAnalystPickCount: number;
   toolsUsed: ToolName[];
   rawResponseText: string;
+  reasoningTrace: TraceStep[];
   iterations: number;
 };
 
@@ -108,6 +118,7 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
   ];
 
   const toolsUsed: ToolName[] = [];
+  const reasoningTrace: TraceStep[] = [];
   let iterations = 0;
   let finalText = "";
 
@@ -126,6 +137,13 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
     messages.push({ role: "assistant", content: response.content });
 
     if (response.stop_reason === "tool_use") {
+      // Capture any inter-turn narrative the analyst wrote before invoking tools
+      for (const block of response.content) {
+        if (block.type === "text" && block.text.trim()) {
+          reasoningTrace.push({ kind: "reasoning", text: block.text.slice(0, 800) });
+        }
+      }
+
       const toolResults: Array<{
         type: "tool_result";
         tool_use_id: string;
@@ -136,6 +154,11 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
         if (block.type === "tool_use") {
           const name = block.name as ToolName;
           toolsUsed.push(name);
+          reasoningTrace.push({
+            kind: "tool_call",
+            name,
+            argsSummary: JSON.stringify(block.input ?? {}).slice(0, 300),
+          });
           const handler = TOOL_HANDLERS[name];
           let result: unknown = { error: `unknown tool: ${name}` };
           if (handler) {
@@ -146,10 +169,16 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
               result = { error: err instanceof Error ? err.message : String(err) };
             }
           }
+          const serialized = JSON.stringify(result);
+          reasoningTrace.push({
+            kind: "tool_result",
+            name,
+            resultSummary: serialized.slice(0, 1500),
+          });
           toolResults.push({
             type: "tool_result",
             tool_use_id: block.id,
-            content: JSON.stringify(result).slice(0, 200_000),
+            content: serialized.slice(0, 200_000),
           });
         }
       }
@@ -180,6 +209,7 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
     rawAnalystPickCount: parsed.length,
     toolsUsed,
     rawResponseText: finalText,
+    reasoningTrace,
     iterations,
   };
 }
