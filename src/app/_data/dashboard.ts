@@ -114,7 +114,9 @@ export type AgentMemorySummary = {
   byScope: Record<string, number>;
   lastDreamAt: string | null;     // most recent completed dream run
   lastDreamStatus: string | null;
+  lastDreamNotes: string | null;  // Opus's free-text summary of what changed
   lastDreamAddedRetired: { added: number; retired: number } | null;
+  lastDreamPicksReviewed: number | null;
 };
 
 export type PlayerProp = {
@@ -687,7 +689,9 @@ async function loadAgentMemory(): Promise<AgentMemorySummary> {
     byScope: {},
     lastDreamAt: null,
     lastDreamStatus: null,
+    lastDreamNotes: null,
     lastDreamAddedRetired: null,
+    lastDreamPicksReviewed: null,
   };
   try {
     const fresh = Date.now() - 14 * 24 * 60 * 60 * 1000;
@@ -724,9 +728,11 @@ async function loadAgentMemory(): Promise<AgentMemorySummary> {
       byScope,
       lastDreamAt: lastDream?.startedAt.toISOString() ?? null,
       lastDreamStatus: lastDream?.status ?? null,
+      lastDreamNotes: lastDream?.notes ?? null,
       lastDreamAddedRetired: lastDream
         ? { added: lastDream.memoriesAdded, retired: lastDream.memoriesRetired }
         : null,
+      lastDreamPicksReviewed: lastDream?.picksReviewed ?? null,
     };
   } catch {
     return fallback;

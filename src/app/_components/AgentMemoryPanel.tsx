@@ -69,6 +69,33 @@ export function AgentMemoryPanel({ data }: { data: AgentMemorySummary }) {
       </div>
 
       <div className="glass rounded-2xl p-4 sm:p-5">
+        {data.lastDreamNotes && (
+          <div
+            className="mb-4 rounded-xl p-3 sm:p-4 relative overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(168,85,247,0.10), rgba(0,217,255,0.06))",
+              border: "1px solid rgba(168,85,247,0.25)",
+            }}
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-base leading-none">💭</span>
+              <p className="display-eyebrow text-violet-200 text-[0.65rem]">
+                What dream learned
+                {data.lastDreamPicksReviewed !== null && (
+                  <span className="text-slate-500 normal-case tracking-normal">
+                    {" "}· reviewed {data.lastDreamPicksReviewed} pick
+                    {data.lastDreamPicksReviewed === 1 ? "" : "s"}
+                  </span>
+                )}
+              </p>
+            </div>
+            <p className="text-sm text-slate-200 leading-relaxed">
+              {data.lastDreamNotes}
+            </p>
+          </div>
+        )}
+
         {scopes.length > 1 && (
           <div className="flex flex-wrap gap-1.5 mb-4">
             {scopes.map(s => {
