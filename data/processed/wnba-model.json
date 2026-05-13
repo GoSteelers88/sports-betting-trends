@@ -1,56 +1,20 @@
 {
-  "generatedAt": "2026-05-12T23:41:43.107Z",
+  "generatedAt": "2026-05-13T16:39:34.185Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 7,
+  "recordCount": 6,
   "errors": [],
   "data": {
-    "generatedAt": "2026-05-12T23:41:43.107Z",
+    "generatedAt": "2026-05-13T16:39:34.185Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 7,
+    "gameCount": 6,
     "results": [
-      {
-        "eventId": "fd_35588636",
-        "homeTeam": "Dallas Wings",
-        "awayTeam": "Atlanta Dream",
-        "homeWinProb": 0.6736,
-        "awayWinProb": 0.3264,
-        "expectedMargin": 6.9,
-        "homeNetRtg": 17,
-        "awayNetRtg": 5,
-        "calibrated": false,
-        "startTime": "2026-05-13T00:00:00.000Z"
-      },
-      {
-        "eventId": "fd_35588632",
-        "homeTeam": "Phoenix Mercury",
-        "awayTeam": "Minnesota Lynx",
-        "homeWinProb": 0.5858,
-        "awayWinProb": 0.4142,
-        "expectedMargin": 3.3,
-        "homeNetRtg": 15,
-        "awayNetRtg": 11,
-        "calibrated": false,
-        "startTime": "2026-05-13T02:00:00.000Z"
-      },
-      {
-        "eventId": "fd_35588637",
-        "homeTeam": "Portland Fire",
-        "awayTeam": "New York Liberty",
-        "homeWinProb": 0.3026,
-        "awayWinProb": 0.6974,
-        "expectedMargin": -7.95,
-        "homeNetRtg": -12.5,
-        "awayNetRtg": 8.5,
-        "calibrated": false,
-        "startTime": "2026-05-13T02:00:00.000Z"
-      },
       {
         "eventId": "fd_35593044",
         "homeTeam": "Toronto Tempo",
@@ -98,6 +62,30 @@
         "awayNetRtg": 18,
         "calibrated": false,
         "startTime": "2026-05-14T02:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35596581",
+        "homeTeam": "Dallas Wings",
+        "awayTeam": "Minnesota Lynx",
+        "homeWinProb": 0.5216,
+        "awayWinProb": 0.4784,
+        "expectedMargin": 0.83,
+        "homeNetRtg": 6,
+        "awayNetRtg": 7.5,
+        "calibrated": false,
+        "startTime": "2026-05-15T00:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35596583",
+        "homeTeam": "Portland Fire",
+        "awayTeam": "New York Liberty",
+        "homeWinProb": 0.3915,
+        "awayWinProb": 0.6085,
+        "expectedMargin": -4.2,
+        "homeNetRtg": -7.666666666666667,
+        "awayNetRtg": 5,
+        "calibrated": false,
+        "startTime": "2026-05-15T02:00:00.000Z"
       }
     ]
   }

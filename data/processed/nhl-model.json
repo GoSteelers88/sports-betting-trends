@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-05-12T23:41:51.598Z",
+  "generatedAt": "2026-05-13T16:39:42.523Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
   "recordCount": 3,
   "errors": [
-    "unmodeled: Minnesota Frost @ Montreal Victoire (fd_35599726)"
+    "unmodeled: Ottawa Charge @ Montreal Victoire (fd_35603397)"
   ],
   "data": {
-    "generatedAt": "2026-05-12T23:41:51.598Z",
+    "generatedAt": "2026-05-13T16:39:42.523Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
@@ -17,30 +17,6 @@
     "teamCount": 31,
     "gameCount": 4,
     "results": [
-      {
-        "eventId": "fd_35593965",
-        "homeTeam": "Montreal Canadiens",
-        "awayTeam": "Buffalo Sabres",
-        "homeWinProb": 0.4846,
-        "awayWinProb": 0.5154,
-        "expectedMargin": -0.2,
-        "homeNetRtg": 0.35714285714285715,
-        "awayNetRtg": 1.1666666666666667,
-        "calibrated": false,
-        "startTime": "2026-05-12T23:13:00.000Z"
-      },
-      {
-        "eventId": "fd_35593966",
-        "homeTeam": "Vegas Golden Knights",
-        "awayTeam": "Anaheim Ducks",
-        "homeWinProb": 0.5417,
-        "awayWinProb": 0.4583,
-        "expectedMargin": 0.56,
-        "homeNetRtg": 0.7142857142857143,
-        "awayNetRtg": 0,
-        "calibrated": false,
-        "startTime": "2026-05-13T01:50:00.000Z"
-      },
       {
         "eventId": "fd_35597513",
         "homeTeam": "Colorado Avalanche",
@@ -52,6 +28,30 @@
         "awayNetRtg": -1,
         "calibrated": false,
         "startTime": "2026-05-14T00:10:00.000Z"
+      },
+      {
+        "eventId": "fd_35602082",
+        "homeTeam": "Buffalo Sabres",
+        "awayTeam": "Montreal Canadiens",
+        "homeWinProb": 0.4864,
+        "awayWinProb": 0.5136,
+        "expectedMargin": -0.18,
+        "homeNetRtg": 0.16666666666666666,
+        "awayNetRtg": 0.9285714285714286,
+        "calibrated": false,
+        "startTime": "2026-05-14T23:00:46.000Z"
+      },
+      {
+        "eventId": "fd_35602086",
+        "homeTeam": "Anaheim Ducks",
+        "awayTeam": "Vegas Golden Knights",
+        "homeWinProb": 0.4835,
+        "awayWinProb": 0.5165,
+        "expectedMargin": -0.22,
+        "homeNetRtg": -0.38461538461538464,
+        "awayNetRtg": 0.45454545454545453,
+        "calibrated": false,
+        "startTime": "2026-05-15T01:30:00.000Z"
       }
     ]
   }
