@@ -162,7 +162,7 @@ function FeedRow({ game }: { game: SlateGame }) {
         {game.league}
       </span>
       <div className="md:order-none order-3 col-span-2 md:col-span-1 min-w-0">
-        <p className="font-display font-semibold text-sm truncate">
+        <p className="font-sans text-sm truncate">
           <span className="text-[var(--text)]">{game.awayTeam}</span>{" "}
           <span className="text-[var(--muted)]">@</span>{" "}
           <span className="text-[var(--text)]">{game.homeTeam}</span>

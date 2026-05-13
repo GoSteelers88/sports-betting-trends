@@ -43,7 +43,7 @@ export function CommandHeader({ data }: { data: DashboardData }) {
       <div className="px-4 sm:px-6 py-2 flex items-center gap-3 sm:gap-6 flex-wrap text-xs hairline">
         <div className="flex items-center gap-2 shrink-0">
           <span className="dot dot-pulse" style={{ color: "var(--edge)" }} />
-          <span className="font-display font-bold text-sm sm:text-base tracking-tight">
+          <span className="font-display text-base sm:text-lg tracking-tight" style={{ fontStyle: "italic" }}>
             NATESTACKS<span style={{ color: "var(--edge)" }}>·</span>OS
           </span>
         </div>

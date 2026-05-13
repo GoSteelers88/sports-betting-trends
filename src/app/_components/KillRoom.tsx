@@ -62,7 +62,7 @@ export function KillRoom({ data }: { data: KillStats }) {
             return (
               <li key={c.key} className="px-4 py-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 items-center">
                 <div className="min-w-0">
-                  <p className="font-display font-semibold text-sm text-[var(--text)]">
+                  <p className="font-sans text-sm text-[var(--text)]">
                     {c.label}
                   </p>
                   <p className="font-mono text-[0.7rem] text-[var(--muted)] truncate">

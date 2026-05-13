@@ -82,63 +82,68 @@ export function OverallLedger({
   const leagues = Object.entries(byLeague).sort((a, b) => (b[1].pnl ?? 0) - (a[1].pnl ?? 0));
 
   return (
-    <section className="space-y-4">
-      <SectionHeader
-        id={labels.anchor}
-        index={labels.index}
-        label={labels.eyebrow}
-        title={`${wlRecord} · ${fmtUnits(pnl)}`}
-        subtitle={`${labels.subtitlePrefix} since ${fmtDate(startDate)}. ${totalPicks} total picks · ${graded} graded · ${pending} pending.`}
-        status={roi !== null ? `ROI ${(roi * 100).toFixed(1)}%` : "PAPER"}
-        statusColor={roi !== null && roi > 0 ? "edge" : roi !== null && roi < 0 ? "kill" : "muted"}
-      />
+    <section id={labels.anchor} className="space-y-10">
+      {/* Editorial banner — no SectionHeader chrome. Tag + record on one
+          baseline, then the massive number takes the page. */}
+      <div className="flex items-baseline justify-between flex-wrap gap-3 pb-3 border-b border-[var(--border)]">
+        <p className="eyebrow">{labels.eyebrow}</p>
+        <p className="eyebrow text-[var(--faint)]">
+          since {fmtDate(startDate)} · {totalPicks} shipped · {graded} graded · {pending} pending
+        </p>
+      </div>
 
-      {/* Headline P&L card */}
-      <div className="surface-edge p-5 sm:p-7 relative overflow-hidden scanlines">
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 lg:gap-10 items-center">
-          <div>
-            <p className="eyebrow text-[var(--muted)] mb-2">CUMULATIVE UNITS</p>
-            <p
-              className="font-display font-bold leading-none"
-              style={{
-                fontSize: "clamp(4.5rem, 12vw, 9rem)",
-                color: pnlColor,
-                letterSpacing: "-0.05em",
-              }}
+      {/* Hero number — spans wide, italic serif, single dominant element */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-16 items-start">
+        <div>
+          <p className="eyebrow mb-4">Cumulative units</p>
+          <p
+            className="font-display leading-[0.85]"
+            style={{
+              fontStyle: "italic",
+              fontSize: "clamp(5.5rem, 16vw, 14rem)",
+              color: pnlColor,
+              letterSpacing: "-0.05em",
+            }}
+          >
+            {pnl > 0 ? "+" : ""}{pnl.toFixed(2)}
+            <span
+              className="text-[var(--muted)]"
+              style={{ fontStyle: "normal", fontSize: "0.4em", marginLeft: "0.1em" }}
             >
-              {pnl > 0 ? "+" : ""}{pnl.toFixed(2)}
-              <span className="text-[var(--muted)]">U</span>
-            </p>
-            <p className="mt-2 font-mono text-sm text-[var(--text)] max-w-md">
-              <span className="reactor-active" style={{ color: pnlColor }}>●</span>{" "}
-              <span className="numeric" style={{ color: pnlColor }}>{wlRecord}</span>{" "}
-              on <span className="numeric">{totalStake.toFixed(2)}U</span> staked since paper trial began.
-            </p>
-          </div>
-
-          {/* Headline stat grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-[var(--border)]">
-            <Datum
-              label="WIN RATE"
-              value={winRate !== null ? `${(winRate * 100).toFixed(1)}%` : "—"}
-              color={winRate !== null && winRate >= 0.55 ? "edge" : winRate !== null && winRate >= 0.5 ? "signal" : "muted"}
-            />
-            <Datum
-              label="ROI"
-              value={roi !== null ? `${roi > 0 ? "+" : ""}${(roi * 100).toFixed(1)}%` : "—"}
-              color={roiColor}
-            />
-            <Datum
-              label="STREAK"
-              value={currentStreak.length > 0 ? `${currentStreak.kind}${currentStreak.length}` : "—"}
-              color={currentStreak.kind === "W" ? "edge" : currentStreak.kind === "L" ? "kill" : "muted"}
-            />
-            <Datum
-              label="PEAK / TROUGH"
-              value={`W${longestWinStreak} / L${longestLossStreak}`}
-            />
-          </div>
+              u
+            </span>
+          </p>
+          <p className="mt-6 font-sans text-base text-[var(--text)] max-w-lg leading-relaxed">
+            <span style={{ color: pnlColor }}>●</span>{" "}
+            <span className="numeric font-medium" style={{ color: pnlColor }}>{wlRecord}</span>{" "}
+            <span className="text-[var(--muted)]">record on </span>
+            <span className="numeric text-[var(--text)]">{totalStake.toFixed(2)}u</span>{" "}
+            <span className="text-[var(--muted)]">staked since paper trial began.</span>
+          </p>
         </div>
+
+        {/* Right rail — vertical stat list, editorial-table style */}
+        <dl className="grid grid-cols-2 gap-x-8 gap-y-10 lg:border-l lg:border-[var(--border)] lg:pl-12 pt-6">
+          <StatBlock
+            label="Win rate"
+            value={winRate !== null ? `${(winRate * 100).toFixed(1)}%` : "—"}
+            color={winRate !== null && winRate >= 0.55 ? "edge" : winRate !== null && winRate >= 0.5 ? "signal" : "muted"}
+          />
+          <StatBlock
+            label="ROI"
+            value={roi !== null ? `${roi > 0 ? "+" : ""}${(roi * 100).toFixed(1)}%` : "—"}
+            color={roiColor}
+          />
+          <StatBlock
+            label="Streak"
+            value={currentStreak.length > 0 ? `${currentStreak.kind}${currentStreak.length}` : "—"}
+            color={currentStreak.kind === "W" ? "edge" : currentStreak.kind === "L" ? "kill" : "muted"}
+          />
+          <StatBlock
+            label="Peak · Trough"
+            value={`W${longestWinStreak} · L${longestLossStreak}`}
+          />
+        </dl>
       </div>
 
       {/* By-league breakdown + best/worst */}
@@ -192,7 +197,7 @@ export function OverallLedger({
   );
 }
 
-function Datum({
+function StatBlock({
   label,
   value,
   color = "text",
@@ -202,9 +207,17 @@ function Datum({
   color?: "edge" | "warn" | "kill" | "signal" | "muted" | "text";
 }) {
   return (
-    <div className="px-3 py-2 border-r border-b border-[var(--border)] last:border-r-0 sm:border-b-0">
-      <p className="eyebrow text-[var(--muted)]">{label}</p>
-      <p className="numeric text-lg sm:text-xl mt-0.5" style={{ color: `var(--${color === "muted" ? "muted" : color})` }}>
+    <div>
+      <p className="eyebrow mb-3">{label}</p>
+      <p
+        className="font-display leading-none"
+        style={{
+          fontStyle: "italic",
+          fontSize: "clamp(2.25rem, 4.5vw, 3.5rem)",
+          letterSpacing: "-0.02em",
+          color: `var(--${color === "muted" ? "muted" : color})`,
+        }}
+      >
         {value}
       </p>
     </div>
@@ -236,7 +249,7 @@ function BestWorstCard({
           {pick.unitsPnl > 0 ? "+" : ""}{pick.unitsPnl.toFixed(2)}U
         </p>
       </div>
-      <p className="font-display font-semibold text-sm mt-1 truncate">{pick.matchup}</p>
+      <p className="font-sans text-sm mt-1 truncate text-[var(--text)]">{pick.matchup}</p>
       <p className="font-mono text-xs text-[var(--muted)] truncate">
         {pick.league} · {pick.selection}
       </p>

@@ -87,22 +87,22 @@ export function EdgeReactor({ data }: { data: PipelineStatusData }) {
       />
 
       {/* The kill-rate centerpiece — dominant visually */}
-      <div className="surface p-5 sm:p-7 scanlines relative">
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 lg:gap-10 items-center">
+      <div className="surface p-5 sm:p-8 relative">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 lg:gap-12 items-center">
           <div>
-            <p className="eyebrow text-[var(--muted)] mb-2">CRITIC KILL RATE — 14D</p>
+            <p className="eyebrow mb-3">CRITIC KILL RATE — 14D</p>
             <p
-              className="font-display font-bold leading-none"
+              className="font-display leading-none"
               style={{
-                fontSize: "clamp(4.5rem, 12vw, 9rem)",
+                fontSize: "clamp(5rem, 14vw, 11rem)",
                 color: killRate >= 25 ? "var(--edge)" : "var(--warn)",
-                letterSpacing: "-0.05em",
+                letterSpacing: "-0.04em",
               }}
             >
-              {killRate.toFixed(1)}<span className="text-[var(--muted)]">%</span>
+              {killRate.toFixed(1)}<span className="text-[var(--muted)] font-display-roman" style={{ fontStyle: "normal" }}>%</span>
             </p>
-            <p className="mt-2 font-mono text-sm text-[var(--text)] max-w-md">
-              <span className="reactor-active" style={{ color: "var(--kill)" }}>●</span>{" "}
+            <p className="mt-4 font-sans text-sm text-[var(--text)] max-w-md leading-relaxed">
+              <span style={{ color: "var(--kill)" }}>●</span>{" "}
               The critic killed <span className="numeric text-[var(--kill)]">{totalKilled}</span> of {raw} ideas. Only survivors reach the board.
             </p>
           </div>

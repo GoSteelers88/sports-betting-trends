@@ -162,7 +162,7 @@ function PickRow({ pick, divider }: { pick: SlatePick; divider: boolean; pnlColo
       <div className="min-w-0">
         {isProp ? (
           <>
-            <p className="font-display font-semibold text-sm truncate">{pick.player}</p>
+            <p className="font-sans text-sm truncate text-[var(--text)]">{pick.player}</p>
             <p className="font-mono text-xs text-[var(--muted)] truncate">
               {pick.side?.toUpperCase()} {pick.line} {formatPropType(pick.propType)} <span className="text-[var(--text)]">@ {fmtAmerican(pick.oddsAmerican)}</span>
               <span className="hidden sm:inline"> · {pick.matchup}</span>
@@ -170,7 +170,7 @@ function PickRow({ pick, divider }: { pick: SlatePick; divider: boolean; pnlColo
           </>
         ) : (
           <>
-            <p className="font-display font-semibold text-sm truncate">{pick.matchup}</p>
+            <p className="font-sans text-sm truncate text-[var(--text)]">{pick.matchup}</p>
             <p className="font-mono text-xs text-[var(--muted)] truncate">
               {pick.selection} <span className="text-[var(--text)]">@ {fmtAmerican(pick.oddsAmerican)}</span>
               <span className="hidden sm:inline"> · {gameTimeEt(pick.createdAt)}</span>

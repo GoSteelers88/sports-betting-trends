@@ -52,7 +52,7 @@ export function PropSignals({ props }: { props: PlayerProp[] }) {
                 </span>
               </header>
 
-              <h3 className="font-display text-lg font-bold leading-tight">{p.player}</h3>
+              <h3 className="font-display text-2xl leading-tight text-[var(--text)]">{p.player}</h3>
               <p className="font-mono text-xs text-[var(--muted)] mb-3">
                 {p.team ?? "—"}{p.opponent ? ` vs ${p.opponent}` : ""}
               </p>

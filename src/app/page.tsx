@@ -1,5 +1,7 @@
 import { getDashboardData } from "./_data/dashboard";
-import { CommandHeader } from "./_components/CommandHeader";
+import { Sidebar } from "./_components/Sidebar";
+import { TickerMarquee } from "./_components/TickerMarquee";
+import { Hero } from "./_components/Hero";
 import { DeploymentGate } from "./_components/DeploymentGate";
 import { OverallLedger } from "./_components/OverallLedger";
 import { EdgeReactor } from "./_components/EdgeReactor";
@@ -20,27 +22,42 @@ export default async function Home() {
 
   return (
     <>
-      <CommandHeader data={data} />
-      <main className="relative">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-10 space-y-12 sm:space-y-16">
-          <DeploymentGate data={data.paperTrial} />
-          <OverallLedger data={data.overallRecord.games} kind="games" />
-          <EdgeReactor data={data.pipelineStatus} />
-          <SurvivorBrief picks={data.picks.games} kind="games" />
-          <LastNightLedger data={data.lastNight.games} kind="games" />
-          <KillRoom data={data.killStats} />
-          <PropSignals props={data.playerProps} />
-          <MarketFeed games={data.slate} />
-          {/* Player-prop track lives below — completely separate from the
-              game track so a 6-0 ML record doesn't get diluted by prop noise. */}
-          <SurvivorBrief picks={data.picks.props} kind="props" />
-          <LastNightLedger data={data.lastNight.props} kind="props" />
-          <OverallLedger data={data.overallRecord.props} kind="props" />
-          <SystemMemory data={data.agentMemory} />
-          <VolatilityInputs injuries={data.injuries} />
-          <Footer generatedAt={data.generatedAt} />
-        </div>
-      </main>
+      <TickerMarquee data={data} />
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
+        <Sidebar data={data} />
+        <main className="relative min-w-0">
+          <div className="px-5 sm:px-10 lg:px-14 max-w-[1400px]">
+            {/* Hero — full-viewport editorial moment */}
+            <Hero data={data} />
+
+            {/* Games track — runs first, the agent's main competence */}
+            <div className="space-y-24 sm:space-y-32 pb-24">
+              <OverallLedger data={data.overallRecord.games} kind="games" />
+              <EdgeReactor data={data.pipelineStatus} />
+              <SurvivorBrief picks={data.picks.games} kind="games" />
+              <LastNightLedger data={data.lastNight.games} kind="games" />
+              <DeploymentGate data={data.paperTrial} />
+              <MarketFeed games={data.slate} />
+
+              {/* Props track — entirely separate visual band */}
+              <div className="border-t border-[var(--border)] pt-24 sm:pt-32 space-y-24 sm:space-y-32">
+                <SurvivorBrief picks={data.picks.props} kind="props" />
+                <LastNightLedger data={data.lastNight.props} kind="props" />
+                <OverallLedger data={data.overallRecord.props} kind="props" />
+                <PropSignals props={data.playerProps} />
+              </div>
+
+              {/* Back of the book — supporting context */}
+              <div className="border-t border-[var(--border)] pt-24 sm:pt-32 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+                <KillRoom data={data.killStats} />
+                <SystemMemory data={data.agentMemory} />
+              </div>
+              <VolatilityInputs injuries={data.injuries} />
+              <Footer generatedAt={data.generatedAt} />
+            </div>
+          </div>
+        </main>
+      </div>
     </>
   );
 }

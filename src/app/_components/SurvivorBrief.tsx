@@ -114,106 +114,133 @@ export function SurvivorBrief({
   const open = openId !== null ? picks.find(p => p.id === openId) ?? null : null;
 
   return (
-    <section className="space-y-4">
-      <SectionHeader
-        id={labels.anchor}
-        index={labels.index}
-        label={labels.eyebrow}
-        title={`${picks.length} ${labels.title}${picks.length === 1 ? "" : "S"}`}
-        subtitle={labels.subtitle}
-        status="SURVIVED CRITIC"
-        statusColor="edge"
-      />
+    <section id={labels.anchor} className="space-y-10">
+      {/* Editorial spread banner */}
+      <div className="flex items-baseline justify-between flex-wrap gap-3 pb-3 border-b border-[var(--border)]">
+        <p className="eyebrow">{labels.eyebrow}</p>
+        <p className="eyebrow text-[var(--faint)]">
+          {picks.length} survivor{picks.length === 1 ? "" : "s"} · critic passed
+        </p>
+      </div>
 
-      {/* Headline survivor — large intelligence brief card */}
-      <article className="surface-edge p-5 sm:p-7 relative overflow-hidden">
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <span className="pill" style={{ color: "var(--edge)", borderColor: "var(--edge)" }}>
-            ★ TOP SURVIVOR
-          </span>
-          <span className="pill" style={{ color: "var(--signal)", borderColor: "var(--signal)" }}>
-            {headline.league}
-          </span>
-          <span className="pill" style={{ color: "var(--muted)", borderColor: "var(--border-strong)" }}>
-            {headline.market.toUpperCase()}
-          </span>
-          {headline.outcome?.result && (
-            <span
-              className="pill"
-              style={{
-                color: headline.outcome.result === "win" ? "var(--edge)" : "var(--kill)",
-                borderColor: headline.outcome.result === "win" ? "var(--edge)" : "var(--kill)",
-              }}
-            >
-              {headline.outcome.result.toUpperCase()}
+      {/* Magazine-style two-column spread:
+            left column — pull quote (the pick + thesis)
+            right column — narrow data rail */}
+      <article className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-10 lg:gap-16">
+        <div>
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            <span className="pill" style={{ color: "var(--edge)", borderColor: "var(--edge)" }}>
+              ★ Top survivor
             </span>
+            <span className="pill" style={{ color: "var(--signal)", borderColor: "var(--signal)" }}>
+              {headline.league}
+            </span>
+            {headline.outcome?.result && (
+              <span
+                className="pill"
+                style={{
+                  color: headline.outcome.result === "win" ? "var(--edge)" : "var(--kill)",
+                  borderColor: headline.outcome.result === "win" ? "var(--edge)" : "var(--kill)",
+                }}
+              >
+                {headline.outcome.result.toUpperCase()}
+              </span>
+            )}
+          </div>
+
+          {headline.market === "prop" && headline.player ? (
+            <>
+              <h3
+                className="font-display leading-[0.95] text-[var(--text)]"
+                style={{
+                  fontStyle: "italic",
+                  fontSize: "clamp(3rem, 7.5vw, 6.5rem)",
+                  letterSpacing: "-0.025em",
+                }}
+              >
+                {headline.player}
+              </h3>
+              <p className="mt-2 font-mono text-xs text-[var(--muted)]">{headline.matchup}</p>
+              <p
+                className="mt-4 font-display text-2xl sm:text-3xl text-[var(--edge)]"
+                style={{ fontStyle: "italic" }}
+              >
+                {headline.side?.toUpperCase()} {headline.line} {formatPropType(headline.propType)}
+                <span className="text-[var(--text)] numeric" style={{ fontStyle: "normal" }}> @ {fmtAmerican(headline.oddsAmerican)}</span>
+              </p>
+            </>
+          ) : (
+            <>
+              <h3
+                className="font-display leading-[0.95] text-[var(--text)]"
+                style={{
+                  fontStyle: "italic",
+                  fontSize: "clamp(3rem, 7.5vw, 6.5rem)",
+                  letterSpacing: "-0.025em",
+                }}
+              >
+                {headline.matchup}
+              </h3>
+              <p
+                className="mt-4 font-display text-2xl sm:text-3xl text-[var(--edge)]"
+                style={{ fontStyle: "italic" }}
+              >
+                {headline.selection}{" "}
+                <span className="text-[var(--text)] numeric" style={{ fontStyle: "normal" }}>@ {fmtAmerican(headline.oddsAmerican)}</span>
+              </p>
+            </>
           )}
+
+          {/* Thesis as pull-quote */}
+          <blockquote
+            className="mt-10 pl-6 border-l-2 border-[var(--edge)] font-display text-xl sm:text-2xl text-[var(--text)] leading-snug max-w-2xl"
+            style={{ fontStyle: "italic" }}
+          >
+            {headline.thesis}
+          </blockquote>
+
+          <p className="mt-6 max-w-2xl text-sm text-[var(--muted)] leading-relaxed">
+            <span className="eyebrow text-[var(--warn)] mr-2">What kills it</span>
+            {headline.invalidation || "—"}
+          </p>
+
           <button
             type="button"
             onClick={() => setOpenId(headline.id)}
-            className="ml-auto eyebrow text-[var(--text)] hover:text-[var(--edge)] px-2 py-1 border border-[var(--border)] hover:border-[var(--edge)]"
+            className="mt-10 eyebrow inline-flex items-center gap-3 text-[var(--text)] hover:text-[var(--edge)] transition-colors group"
           >
-            OPEN AUTOPSY →
+            <span className="w-10 h-px bg-current group-hover:w-16 transition-all duration-300" />
+            Open autopsy
           </button>
         </div>
 
-        {headline.market === "prop" && headline.player ? (
-          <>
-            <h3 className="font-display text-2xl sm:text-4xl font-bold leading-tight">
-              {headline.player}
-            </h3>
-            <p className="mt-1 font-mono text-xs sm:text-sm text-[var(--muted)] truncate">
-              {headline.matchup}
-            </p>
-            <p className="mt-2 font-display text-lg sm:text-2xl text-[var(--edge)]">
-              {headline.side?.toUpperCase()} {headline.line} {formatPropType(headline.propType)}
-              <span className="text-[var(--text)] numeric"> @ {fmtAmerican(headline.oddsAmerican)}</span>
-            </p>
-          </>
-        ) : (
-          <>
-            <h3 className="font-display text-2xl sm:text-4xl font-bold leading-tight">
-              {headline.matchup}
-            </h3>
-            <p className="mt-2 font-display text-lg sm:text-2xl text-[var(--edge)]">
-              {headline.selection} <span className="text-[var(--text)] numeric">@ {fmtAmerican(headline.oddsAmerican)}</span>
-            </p>
-          </>
-        )}
-
-        {/* Model vs Market — the visual centerpiece per spec */}
-        <ModelMarketBar
-          modelProb={headline.modelProb}
-          marketProb={headline.marketProb}
-          edge={headline.edge}
-        />
-
-        {/* Numeric brief grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-0 mt-5 border border-[var(--border)]">
-          <Datum label="EDGE" value={fmtPct(headline.edge, 2)} color="edge" />
-          <Datum label="STAKE" value={`${headline.kellyStakeUnits.toFixed(2)}U`} />
-          <Datum label="CONF" value={`${headline.confidence}`} />
-          <Datum label="MODEL" value={fmtPct(headline.modelProb)} color="signal" />
-          <Datum
+        {/* Right rail — narrow stat column */}
+        <dl className="space-y-8 lg:border-l lg:border-[var(--border)] lg:pl-12">
+          <RailStat label="Edge" value={fmtPct(headline.edge, 2)} color="edge" big />
+          <RailStat label="Stake" value={`${headline.kellyStakeUnits.toFixed(2)}u`} />
+          <RailStat label="Model probability" value={fmtPct(headline.modelProb)} color="signal" />
+          <RailStat label="Market probability" value={fmtPct(headline.marketProb)} color="muted" />
+          <RailStat label="Confidence" value={`${headline.confidence}`} />
+          <RailStat
             label="CLV"
-            value={headline.clvCents !== null ? `${headline.clvCents > 0 ? "+" : ""}${headline.clvCents}¢` : "PEND"}
-            color={headline.clvCents !== null && headline.clvCents > 0 ? "edge" : headline.clvCents !== null && headline.clvCents < 0 ? "kill" : "muted"}
+            value={
+              headline.market === "prop"
+                ? "n/a"
+                : headline.clvCents !== null
+                ? `${headline.clvCents > 0 ? "+" : ""}${headline.clvCents}¢`
+                : "pending"
+            }
+            color={
+              headline.market === "prop"
+                ? "muted"
+                : headline.clvCents !== null && headline.clvCents > 0
+                ? "edge"
+                : headline.clvCents !== null && headline.clvCents < 0
+                ? "kill"
+                : "muted"
+            }
           />
-        </div>
-
-        {/* Thesis + invalidation as separate dossiers */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
-          <div className="surface p-4">
-            <p className="eyebrow text-[var(--edge)] mb-1.5">THESIS</p>
-            <p className="text-sm text-[var(--text)] leading-relaxed">{headline.thesis}</p>
-          </div>
-          <div className="surface p-4">
-            <p className="eyebrow text-[var(--warn)] mb-1.5">WHAT WOULD KILL THIS</p>
-            <p className="text-sm text-[var(--text)] leading-relaxed">
-              {headline.invalidation || "—"}
-            </p>
-          </div>
-        </div>
+        </dl>
       </article>
 
       {/* Other survivors as a stack */}
@@ -232,14 +259,14 @@ export function SurvivorBrief({
                 <div className="min-w-0">
                   {p.market === "prop" && p.player ? (
                     <>
-                      <p className="font-display font-semibold text-sm truncate">{p.player}</p>
+                      <p className="font-sans text-sm truncate text-[var(--text)]">{p.player}</p>
                       <p className="font-mono text-xs text-[var(--muted)] truncate">
                         {p.side?.toUpperCase()} {p.line} {formatPropType(p.propType)} · {p.matchup}
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="font-display font-semibold text-sm truncate">{p.matchup}</p>
+                      <p className="font-sans text-sm truncate text-[var(--text)]">{p.matchup}</p>
                       <p className="font-mono text-xs text-[var(--muted)] truncate">{p.selection}</p>
                     </>
                   )}
@@ -271,19 +298,30 @@ export function SurvivorBrief({
   );
 }
 
-function Datum({
+function RailStat({
   label,
   value,
   color = "text",
+  big = false,
 }: {
   label: string;
   value: string;
   color?: "edge" | "warn" | "kill" | "signal" | "muted" | "text";
+  big?: boolean;
 }) {
+  const colorVar = color === "muted" ? "var(--muted)" : `var(--${color})`;
   return (
-    <div className="px-3 py-2 border-r border-[var(--border)] last:border-r-0">
-      <p className="eyebrow text-[var(--muted)]">{label}</p>
-      <p className="numeric text-lg sm:text-xl mt-0.5" style={{ color: `var(--${color})` }}>
+    <div>
+      <p className="eyebrow mb-2">{label}</p>
+      <p
+        className="font-display leading-none"
+        style={{
+          fontStyle: "italic",
+          fontSize: big ? "clamp(2.5rem, 5vw, 4rem)" : "clamp(1.5rem, 2.5vw, 2.25rem)",
+          color: colorVar,
+          letterSpacing: "-0.02em",
+        }}
+      >
         {value}
       </p>
     </div>

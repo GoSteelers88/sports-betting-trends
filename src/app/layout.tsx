@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Sora, JetBrains_Mono, Inter } from "next/font/google";
+import { Instrument_Serif, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 
-const sora = Sora({
+// Editorial display face — italic by default. Used for big headline numbers,
+// section titles, and any moment that wants to feel "magazine layout" instead
+// of "trading terminal". Inspired by Studio Namma (Awwwards SOTD 2026-05).
+const instrumentSerif = Instrument_Serif({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400"],
+  style: ["normal", "italic"],
 });
 
 const interSans = Inter({
@@ -19,9 +23,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NATESTACKS OS — Edge Reactor",
+  title: "NATESTACKS — Edge Ledger",
   description:
-    "An autonomous betting intelligence operating system. Watch an AI prosecute the market in real time.",
+    "An autonomous betting intelligence system. Watch an AI prosecute the market in real time.",
 };
 
 export default function RootLayout({
@@ -32,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${interSans.variable} ${sora.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${interSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
       </body>

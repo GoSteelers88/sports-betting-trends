@@ -51,7 +51,7 @@ export function VolatilityInputs({ injuries }: { injuries: Injury[] }) {
                     className="px-4 py-2 grid grid-cols-[1fr_auto] gap-3 items-center text-sm"
                   >
                     <div className="min-w-0">
-                      <p className="font-display font-semibold truncate text-[var(--text)]">
+                      <p className="font-sans truncate text-[var(--text)]">
                         {inj.player}
                       </p>
                       <p className="font-mono text-[0.65rem] text-[var(--muted)] truncate">

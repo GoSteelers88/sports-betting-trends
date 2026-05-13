@@ -81,8 +81,13 @@ function GateModule({
 
   return (
     <article
-      className="p-3 sm:p-4 surface flex flex-col gap-2"
-      style={{ borderColor: state === "passed" ? "rgba(57,255,136,0.35)" : state === "failed" ? "rgba(255,77,77,0.35)" : "var(--border)" }}
+      className="p-4 sm:p-5 surface flex flex-col gap-3"
+      style={{
+        borderColor:
+          state === "passed" ? "rgba(217,122,61,0.35)"
+          : state === "failed" ? "rgba(178,58,72,0.35)"
+          : "var(--border)",
+      }}
     >
       <div className="flex items-center justify-between">
         <span
@@ -99,7 +104,7 @@ function GateModule({
           {palette.label}
         </span>
       </div>
-      <h3 className="font-display text-sm font-semibold leading-tight text-[var(--text)]">
+      <h3 className="font-display text-lg leading-tight text-[var(--text)]">
         {criterion.label}
       </h3>
       <div className="flex items-baseline justify-between mt-auto">

@@ -145,7 +145,7 @@ export function PickAutopsy({
                 {pick.outcome?.result?.toUpperCase() ?? "PENDING"}
               </span>
             </div>
-            <h2 className="font-display text-xl sm:text-2xl font-bold leading-tight truncate">
+            <h2 className="font-display text-2xl sm:text-3xl leading-tight truncate">
               {pick.matchup}
             </h2>
             <p className="font-mono text-sm text-[var(--edge)]">

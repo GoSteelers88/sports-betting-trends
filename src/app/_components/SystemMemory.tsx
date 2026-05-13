@@ -118,7 +118,7 @@ export function SystemMemory({ data }: { data: AgentMemorySummary }) {
                       {impact.label} · UPDATED {rel(r.updatedAt)}
                     </span>
                   </div>
-                  <p className="font-display text-base font-semibold leading-snug text-[var(--text)]">
+                  <p className="font-display text-lg leading-snug text-[var(--text)]">
                     {r.rule}
                   </p>
                   <div className="mt-3 flex items-center gap-3">
