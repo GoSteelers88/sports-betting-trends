@@ -21,7 +21,33 @@ const STREAK_COLOR: Record<string, string> = {
   "—": "var(--muted)",
 };
 
-export function OverallLedger({ data }: { data: OverallRecord }) {
+const OVERALL_LABELS = {
+  games: {
+    anchor: "ledger",
+    index: "10",
+    eyebrow: "ALL-TIME LEDGER · GAMES",
+    subtitlePrefix: "Every game pick (ML/spread/total) the agent has shipped",
+    emptyTitle: "NO GAME PICKS RECORDED",
+    emptyBody: "The agent has not shipped a game pick yet.",
+  },
+  props: {
+    anchor: "prop-ledger",
+    index: "12",
+    eyebrow: "ALL-TIME LEDGER · PROPS",
+    subtitlePrefix: "Every player-prop pick the agent has shipped",
+    emptyTitle: "NO PROP PICKS RECORDED",
+    emptyBody: "The agent hasn't shipped a player prop yet — the projector hasn't found a qualifying edge.",
+  },
+} as const;
+
+export function OverallLedger({
+  data,
+  kind = "games",
+}: {
+  data: OverallRecord;
+  kind?: "games" | "props";
+}) {
+  const labels = OVERALL_LABELS[kind];
   const {
     startDate, totalPicks, graded, pending,
     wins, losses, pushes, pnl, totalStake, roi, winRate,
@@ -33,16 +59,16 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
     return (
       <section className="space-y-4">
         <SectionHeader
-          id="ledger"
-          index="10"
-          label="ALL-TIME LEDGER"
-          title="NO PICKS RECORDED"
+          id={labels.anchor}
+          index={labels.index}
+          label={labels.eyebrow}
+          title={labels.emptyTitle}
           status="STANDBY"
           statusColor="muted"
         />
         <div className="surface p-6">
           <p className="font-mono text-sm text-[var(--muted)]">
-            ▸ The agent has not shipped a pick yet. Ledger initializes on first persisted pick.
+            ▸ {labels.emptyBody}
           </p>
         </div>
       </section>
@@ -54,16 +80,15 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
   const roiColor = roi !== null && roi > 0 ? "edge" : roi !== null && roi < 0 ? "kill" : "muted";
 
   const leagues = Object.entries(byLeague).sort((a, b) => (b[1].pnl ?? 0) - (a[1].pnl ?? 0));
-  const markets = Object.entries(data.byMarket).sort((a, b) => (b[1].pnl ?? 0) - (a[1].pnl ?? 0));
 
   return (
     <section className="space-y-4">
       <SectionHeader
-        id="ledger"
-        index="10"
-        label="ALL-TIME LEDGER"
+        id={labels.anchor}
+        index={labels.index}
+        label={labels.eyebrow}
         title={`${wlRecord} · ${fmtUnits(pnl)}`}
-        subtitle={`Every pick the agent has ever shipped, going back to ${fmtDate(startDate)}. ${totalPicks} total picks · ${graded} graded · ${pending} pending.`}
+        subtitle={`${labels.subtitlePrefix} since ${fmtDate(startDate)}. ${totalPicks} total picks · ${graded} graded · ${pending} pending.`}
         status={roi !== null ? `ROI ${(roi * 100).toFixed(1)}%` : "PAPER"}
         statusColor={roi !== null && roi > 0 ? "edge" : roi !== null && roi < 0 ? "kill" : "muted"}
       />
@@ -115,46 +140,6 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
           </div>
         </div>
       </div>
-
-      {/* By-market breakdown (ML vs prop) */}
-      {markets.length > 0 && (
-        <div className="surface">
-          <div className="px-4 py-2 border-b border-[var(--border)]">
-            <p className="eyebrow text-[var(--muted)]">BY MARKET</p>
-          </div>
-          <ul>
-            {markets.map(([market, mk], i) => (
-              <li
-                key={market}
-                className={`grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-[var(--border)]" : ""}`}
-              >
-                <span className="pill" style={{ color: "var(--warn)", borderColor: "var(--warn)" }}>
-                  {market.toUpperCase()}
-                </span>
-                <span className="font-mono text-xs text-[var(--muted)]">
-                  {mk.wins}-{mk.losses}{mk.pushes > 0 ? `-${mk.pushes}` : ""}
-                  {mk.pending > 0 ? ` · ${mk.pending} PEND` : ""}
-                </span>
-                <span className="numeric text-xs text-[var(--muted)] hidden sm:inline">
-                  {mk.totalStake.toFixed(2)}U STAKED
-                </span>
-                <span
-                  className="numeric text-sm"
-                  style={{ color: mk.pnl > 0 ? "var(--edge)" : mk.pnl < 0 ? "var(--kill)" : "var(--text)" }}
-                >
-                  {mk.pnl > 0 ? "+" : ""}{mk.pnl.toFixed(2)}U
-                </span>
-                <span
-                  className="numeric text-xs w-16 text-right"
-                  style={{ color: mk.roi !== null && mk.roi > 0 ? "var(--edge)" : mk.roi !== null && mk.roi < 0 ? "var(--kill)" : "var(--muted)" }}
-                >
-                  {mk.roi !== null ? `${mk.roi > 0 ? "+" : ""}${(mk.roi * 100).toFixed(0)}%` : "—"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {/* By-league breakdown + best/worst */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">

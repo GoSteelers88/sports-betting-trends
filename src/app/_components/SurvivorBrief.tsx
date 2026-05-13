@@ -41,8 +41,46 @@ function formatPropType(propType: string | null): string {
   return PROP_LABELS[propType] ?? propType.replace(/^player_|^batter_|^pitcher_/, "").replace(/_/g, " ");
 }
 
-export function SurvivorBrief({ picks }: { picks: SlatePick[] }) {
+// Per-kind labels keep the games / props sections visually distinct while
+// reusing the same component shell. Anchors come straight from the spec
+// (CommandHeader nav uses them).
+const SECTION_LABELS = {
+  games: {
+    anchor: "survivors",
+    index: "03",
+    eyebrow: "SURVIVOR BRIEF · GAMES",
+    title: "GAME SURVIVOR",
+    subtitle:
+      "Moneyline/spread/total picks that survived the analyst, grader, critic, and bankroll guard.",
+    emptyTitle: "NO GAME EDGE",
+    emptyHeadline: "No game picks survived the critic today.",
+    emptyBody:
+      "Discipline > action. Capital remains locked on the moneyline board. Nothing cleared the 6% edge floor + critic pass.",
+  },
+  props: {
+    anchor: "prop-survivors",
+    index: "04",
+    eyebrow: "SURVIVOR BRIEF · PROPS",
+    title: "PROP SURVIVOR",
+    subtitle:
+      "Player props that cleared the projector + critic. modelProb on every pick comes from get_prop_projection, not analyst reasoning.",
+    emptyTitle: "NO PROP EDGE",
+    emptyHeadline: "No prop picks survived today.",
+    emptyBody:
+      "Prop track is independent from games — the projector returned no qualifying edges, or the critic killed every one it found.",
+  },
+} as const;
+
+export function SurvivorBrief({
+  picks,
+  kind = "games",
+}: {
+  picks: SlatePick[];
+  kind?: "games" | "props";
+}) {
   const [openId, setOpenId] = useState<number | null>(null);
+
+  const labels = SECTION_LABELS[kind];
 
   // The brief: the single highest-edge survivor — that's the headline.
   // Other survivors get listed below as a stack.
@@ -54,19 +92,19 @@ export function SurvivorBrief({ picks }: { picks: SlatePick[] }) {
     return (
       <section className="space-y-4">
         <SectionHeader
-          id="survivors"
-          index="03"
-          label="SURVIVOR BRIEF"
-          title="NO EDGE DETECTED"
+          id={labels.anchor}
+          index={labels.index}
+          label={labels.eyebrow}
+          title={labels.emptyTitle}
           status="CAPITAL LOCKED"
           statusColor="muted"
         />
         <div className="surface p-8 sm:p-10">
           <p className="font-display text-2xl sm:text-3xl text-[var(--text)] mb-3">
-            The critic found no survivable market inefficiency.
+            {labels.emptyHeadline}
           </p>
           <p className="font-mono text-sm text-[var(--muted)] max-w-xl">
-            ▸ Discipline &gt; action. Capital remains locked. The agent passed on every game it analyzed.
+            ▸ {labels.emptyBody}
           </p>
         </div>
       </section>
@@ -78,11 +116,11 @@ export function SurvivorBrief({ picks }: { picks: SlatePick[] }) {
   return (
     <section className="space-y-4">
       <SectionHeader
-        id="survivors"
-        index="03"
-        label="SURVIVOR BRIEF"
-        title={`${picks.length} SURVIVOR${picks.length === 1 ? "" : "S"}`}
-        subtitle="Every pick below has survived the analyst, the grader, the critic, and the bankroll guard. They're the only ones the system would put real capital on."
+        id={labels.anchor}
+        index={labels.index}
+        label={labels.eyebrow}
+        title={`${picks.length} ${labels.title}${picks.length === 1 ? "" : "S"}`}
+        subtitle={labels.subtitle}
         status="SURVIVED CRITIC"
         statusColor="edge"
       />

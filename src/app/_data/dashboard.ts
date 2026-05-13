@@ -261,7 +261,10 @@ export type PaperTrial = {
 export type DashboardData = {
   generatedAt: string;
   slate: SlateGame[];
-  picks: SlatePick[];
+  // Today's picks split by kind. Game picks (moneyline/spread/total) are
+  // the agent's core competence; player props are a separate track with
+  // its own validation criteria and live in their own dashboard sections.
+  picks: { games: SlatePick[]; props: SlatePick[] };
   marketPicks: MarketPick[];
   playerProps: PlayerProp[];
   trackRecord7: TrackRecord;
@@ -270,8 +273,8 @@ export type DashboardData = {
   pipelineStatus: PipelineStatus;
   killStats: KillStats;
   agentMemory: AgentMemorySummary;
-  lastNight: LastNightLedger;
-  overallRecord: OverallRecord;
+  lastNight: { games: LastNightLedger; props: LastNightLedger };
+  overallRecord: { games: OverallRecord; props: OverallRecord };
   injuries: Injury[];
   status: {
     lastAgentRunAt: string | null;
@@ -487,7 +490,7 @@ function loadInjuries(): Injury[] {
 
 // ─── DB queries ────────────────────────────────────────────────────────────
 
-async function loadTodaysPicks(): Promise<SlatePick[]> {
+async function loadTodaysPicks(): Promise<{ games: SlatePick[]; props: SlatePick[] }> {
   // UTC midnight (matches the persistence convention) — previously used local
   // tz which slipped on non-UTC hosts and on Vercel during DST transitions.
   const since = new Date();
@@ -504,9 +507,9 @@ async function loadTodaysPicks(): Promise<SlatePick[]> {
     });
   } catch (err) {
     console.error("loadTodaysPicks failed (DB unavailable):", err);
-    return [];
+    return { games: [], props: [] };
   }
-  return picks.map(p => ({
+  const mapped = picks.map(p => ({
     id: p.id,
     league: p.league,
     matchup: p.matchup,
@@ -531,6 +534,10 @@ async function loadTodaysPicks(): Promise<SlatePick[]> {
     line: p.line ?? null,
     side: (p.side === "over" || p.side === "under" ? p.side : null) as "over" | "under" | null,
   }));
+  return {
+    games: mapped.filter(p => p.market !== "prop"),
+    props: mapped.filter(p => p.market === "prop"),
+  };
 }
 
 async function loadPipelineStatus(): Promise<PipelineStatus> {
@@ -999,7 +1006,7 @@ async function loadKillStats(): Promise<KillStats> {
 // SurvivorBrief (which is today-only). Captures both early MLB games and late
 // NHL/NBA games that resolved overnight, without depending on createdAt
 // (the agent-run that produced a pick may have been the prior afternoon).
-async function loadLastNightLedger(): Promise<LastNightLedger> {
+async function loadLastNightLedger(): Promise<{ games: LastNightLedger; props: LastNightLedger }> {
   const now = new Date();
   const start = new Date(now.getTime() - 36 * 60 * 60 * 1000);
   const empty: LastNightLedger = {
@@ -1019,7 +1026,7 @@ async function loadLastNightLedger(): Promise<LastNightLedger> {
     });
   } catch (err) {
     console.error("loadLastNightLedger failed:", err);
-    return empty;
+    return { games: empty, props: empty };
   }
   const picks: SlatePick[] = rows.map(p => ({
     id: p.id,
@@ -1046,6 +1053,15 @@ async function loadLastNightLedger(): Promise<LastNightLedger> {
     line: p.line ?? null,
     side: (p.side === "over" || p.side === "under" ? p.side : null) as "over" | "under" | null,
   }));
+  const games = picks.filter(p => p.market !== "prop");
+  const props = picks.filter(p => p.market === "prop");
+  return {
+    games: summarizeLastNight(games, start, now),
+    props: summarizeLastNight(props, start, now),
+  };
+}
+
+function summarizeLastNight(picks: SlatePick[], start: Date, end: Date): LastNightLedger {
   let wins = 0, losses = 0, pushes = 0, pending = 0, pnl = 0, totalStake = 0;
   for (const p of picks) {
     totalStake += p.kellyStakeUnits;
@@ -1058,7 +1074,7 @@ async function loadLastNightLedger(): Promise<LastNightLedger> {
   }
   return {
     windowStart: start.toISOString(),
-    windowEnd: now.toISOString(),
+    windowEnd: end.toISOString(),
     picks,
     graded: wins + losses + pushes,
     pending,
@@ -1072,7 +1088,10 @@ async function loadLastNightLedger(): Promise<LastNightLedger> {
 
 // Full lifetime ledger since paper trial began. Captures everything the agent
 // has ever shipped — by-league breakdown, streaks, best/worst single picks.
-async function loadOverallRecord(): Promise<OverallRecord> {
+// Returns two ledgers — `games` (moneyline/spread/total) and `props` (player
+// props). Streaks/best/worst are scoped to each subset so the "GAMES W-L-P"
+// headline doesn't get yanked by an ugly prop loss and vice versa.
+async function loadOverallRecord(): Promise<{ games: OverallRecord; props: OverallRecord }> {
   const empty: OverallRecord = {
     startDate: PAPER_TRIAL_START.toISOString(),
     totalPicks: 0,
@@ -1096,8 +1115,30 @@ async function loadOverallRecord(): Promise<OverallRecord> {
     });
   } catch (err) {
     console.error("loadOverallRecord failed:", err);
-    return empty;
+    return { games: empty, props: empty };
   }
+  return {
+    games: summarizeRecord(picks.filter(p => p.market !== "prop")),
+    props: summarizeRecord(picks.filter(p => p.market === "prop")),
+  };
+}
+
+function summarizeRecord(picks: PickWithOutcome[]): OverallRecord {
+  const empty: OverallRecord = {
+    startDate: PAPER_TRIAL_START.toISOString(),
+    totalPicks: 0,
+    graded: 0, pending: 0,
+    wins: 0, losses: 0, pushes: 0,
+    pnl: 0, totalStake: 0,
+    roi: null, winRate: null,
+    currentStreak: { kind: "—", length: 0 },
+    longestWinStreak: 0,
+    longestLossStreak: 0,
+    best: null, worst: null,
+    byLeague: {},
+    byMarket: {},
+  };
+  if (picks.length === 0) return empty;
 
   const byLeague: OverallRecord["byLeague"] = {};
   const byMarket: OverallRecord["byMarket"] = {};
@@ -1218,8 +1259,10 @@ export async function getDashboardData(): Promise<DashboardData> {
     const matchupTokens = new Set(m.split(/\s+/));
     return teamTokens.every(x => matchupTokens.has(x));
   };
+  // Only ML/spread/total picks attach to slate game cards (props live in
+  // their own section, not pinned to a game card).
   const picksByGame = new Map<string, SlatePick>();
-  for (const p of picks) {
+  for (const p of picks.games) {
     const game = allGames.find(g => teamInMatchup(p.matchup, g.homeTeam) || teamInMatchup(p.matchup, g.awayTeam));
     if (game) picksByGame.set(game.eventId, p);
   }
@@ -1247,7 +1290,8 @@ export async function getDashboardData(): Promise<DashboardData> {
   const marketPicks = loadMarketPicks();
   const playerProps = loadPlayerProps();
 
-  const todayPnl = picks.reduce((s, p) => s + (p.outcome?.unitsPnl ?? 0), 0);
+  const allTodayPicks = [...picks.games, ...picks.props];
+  const todayPnl = allTodayPicks.reduce((s, p) => s + (p.outcome?.unitsPnl ?? 0), 0);
 
   // Next scheduled run: 14:00 or 22:30 UTC, whichever is next
   const now = new Date();
@@ -1277,7 +1321,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     status: {
       lastAgentRunAt,
       nextScheduledRunUtc: next.toISOString(),
-      todayPickCount: picks.length,
+      todayPickCount: allTodayPicks.length,
       todaySlateCount: slate.length,
       todayPnl: +todayPnl.toFixed(2),
     },

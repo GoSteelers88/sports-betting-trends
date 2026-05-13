@@ -46,7 +46,33 @@ function formatPropType(propType: string | null): string {
   return PROP_LABELS[propType] ?? propType.replace(/^player_|^batter_|^pitcher_/, "").replace(/_/g, " ");
 }
 
-export function LastNightLedger({ data }: { data: LastNightLedgerData }) {
+const LASTNIGHT_LABELS = {
+  games: {
+    anchor: "last-night",
+    index: "06",
+    eyebrow: "LAST NIGHT · GAMES",
+    subtitle:
+      "Every game pick (moneyline/spread/total) whose game tipped, pitched, or dropped the puck in the last 36 hours.",
+    emptyBody: "No game picks resolved in the last 36 hours.",
+  },
+  props: {
+    anchor: "last-night-props",
+    index: "11",
+    eyebrow: "LAST NIGHT · PROPS",
+    subtitle:
+      "Player props whose game completed in the last 36 hours. Autograder resolves these against ESPN box scores at 13:00 UTC.",
+    emptyBody: "No prop picks resolved in the last 36 hours.",
+  },
+} as const;
+
+export function LastNightLedger({
+  data,
+  kind = "games",
+}: {
+  data: LastNightLedgerData;
+  kind?: "games" | "props";
+}) {
+  const labels = LASTNIGHT_LABELS[kind];
   const { picks, graded, pending, wins, losses, pushes, pnl, totalStake } = data;
   const roi = totalStake > 0 && graded > 0 ? pnl / totalStake : null;
   const wlRecord = `${wins}-${losses}${pushes > 0 ? `-${pushes}` : ""}`;
@@ -55,16 +81,16 @@ export function LastNightLedger({ data }: { data: LastNightLedgerData }) {
     return (
       <section className="space-y-4">
         <SectionHeader
-          id="last-night"
-          index="06"
-          label="LAST NIGHT"
+          id={labels.anchor}
+          index={labels.index}
+          label={labels.eyebrow}
           title="LEDGER QUIET"
           status="NO PICKS"
           statusColor="muted"
         />
         <div className="surface p-6">
           <p className="font-mono text-sm text-[var(--muted)]">
-            ▸ No picks resolved in the last 36 hours.
+            ▸ {labels.emptyBody}
           </p>
         </div>
       </section>
@@ -82,11 +108,11 @@ export function LastNightLedger({ data }: { data: LastNightLedgerData }) {
   return (
     <section className="space-y-4">
       <SectionHeader
-        id="last-night"
-        index="06"
-        label="LAST NIGHT"
+        id={labels.anchor}
+        index={labels.index}
+        label={labels.eyebrow}
         title={`${wlRecord} · ${fmtUnits(pnl)}`}
-        subtitle="Every pick whose game tipped, pitched, or dropped the puck in the last 36 hours. Pending rows clear when the autograder runs at 13:00 UTC."
+        subtitle={labels.subtitle}
         status={pendingBadge}
         statusColor={pendingColor}
       />
