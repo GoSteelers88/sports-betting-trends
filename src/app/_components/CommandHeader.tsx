@@ -23,8 +23,10 @@ function fmtEt(iso: string): string {
 }
 
 const NAV = [
+  { id: "ledger", label: "Ledger" },
   { id: "reactor", label: "Reactor" },
   { id: "survivors", label: "Survivors" },
+  { id: "last-night", label: "Last Night" },
   { id: "kill-room", label: "Kill Room" },
   { id: "prop-signals", label: "Props" },
   { id: "market-feed", label: "Market Feed" },

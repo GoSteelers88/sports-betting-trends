@@ -169,6 +169,47 @@ export type PlayerProp = {
   rationaleSignals: string[];
 };
 
+export type LastNightLedger = {
+  windowStart: string;       // ISO — start of the lookback window
+  windowEnd: string;         // ISO — end of the lookback window (now)
+  picks: SlatePick[];        // picks whose gameDate is in window (most recent first)
+  graded: number;
+  pending: number;
+  wins: number;
+  losses: number;
+  pushes: number;
+  pnl: number;               // sum of unitsPnl for graded picks
+  totalStake: number;        // sum of kellyStakeUnits across all picks in window
+};
+
+export type OverallRecord = {
+  startDate: string;         // ISO — paper trial start
+  totalPicks: number;        // every AgentPick (graded + pending)
+  graded: number;
+  pending: number;
+  wins: number;
+  losses: number;
+  pushes: number;
+  pnl: number;               // total units pnl
+  totalStake: number;        // total stake across graded picks
+  roi: number | null;        // pnl / totalStake
+  winRate: number | null;    // wins / (wins + losses)
+  currentStreak: { kind: "W" | "L" | "P" | "—"; length: number };
+  longestWinStreak: number;
+  longestLossStreak: number;
+  best: { id: number; matchup: string; selection: string; league: string; unitsPnl: number } | null;
+  worst: { id: number; matchup: string; selection: string; league: string; unitsPnl: number } | null;
+  byLeague: Record<string, {
+    wins: number;
+    losses: number;
+    pushes: number;
+    pending: number;
+    pnl: number;
+    totalStake: number;
+    roi: number | null;
+  }>;
+};
+
 export type PaperTrial = {
   startDate: string;       // ISO
   dayNumber: number;       // 1..30
@@ -206,6 +247,8 @@ export type DashboardData = {
   pipelineStatus: PipelineStatus;
   killStats: KillStats;
   agentMemory: AgentMemorySummary;
+  lastNight: LastNightLedger;
+  overallRecord: OverallRecord;
   injuries: Injury[];
   status: {
     lastAgentRunAt: string | null;
@@ -877,6 +920,184 @@ async function loadKillStats(): Promise<KillStats> {
   }
 }
 
+// ─── last night ledger ─────────────────────────────────────────────────────
+
+// Picks whose gameDate is in the past but within the last ~36h. Sits next to
+// SurvivorBrief (which is today-only). Captures both early MLB games and late
+// NHL/NBA games that resolved overnight, without depending on createdAt
+// (the agent-run that produced a pick may have been the prior afternoon).
+async function loadLastNightLedger(): Promise<LastNightLedger> {
+  const now = new Date();
+  const start = new Date(now.getTime() - 36 * 60 * 60 * 1000);
+  const empty: LastNightLedger = {
+    windowStart: start.toISOString(),
+    windowEnd: now.toISOString(),
+    picks: [],
+    graded: 0, pending: 0,
+    wins: 0, losses: 0, pushes: 0,
+    pnl: 0, totalStake: 0,
+  };
+  let rows: PickWithOutcome[];
+  try {
+    rows = await prisma.agentPick.findMany({
+      where: { gameDate: { gte: start, lt: now } },
+      include: { outcome: true },
+      orderBy: { gameDate: "desc" },
+    });
+  } catch (err) {
+    console.error("loadLastNightLedger failed:", err);
+    return empty;
+  }
+  const picks: SlatePick[] = rows.map(p => ({
+    id: p.id,
+    league: p.league,
+    matchup: p.matchup,
+    market: p.market,
+    selection: p.selection,
+    oddsAmerican: p.oddsAmerican,
+    edge: p.edge,
+    modelProb: p.modelProb,
+    marketProb: p.marketProb,
+    kellyStakeUnits: p.kellyStakeUnits,
+    confidence: p.confidence,
+    thesis: p.thesis,
+    invalidation: p.invalidation,
+    outcome: p.outcome
+      ? { result: p.outcome.result, unitsPnl: p.outcome.unitsPnl ?? null }
+      : null,
+    closingOddsAmerican: p.closingOddsAmerican ?? null,
+    clvCents: p.clvCents ?? null,
+    createdAt: p.createdAt.toISOString(),
+  }));
+  let wins = 0, losses = 0, pushes = 0, pending = 0, pnl = 0, totalStake = 0;
+  for (const p of picks) {
+    totalStake += p.kellyStakeUnits;
+    if (!p.outcome) { pending++; continue; }
+    if (p.outcome.result === "win") wins++;
+    else if (p.outcome.result === "loss") losses++;
+    else if (p.outcome.result === "push") pushes++;
+    else { pending++; continue; }
+    pnl += p.outcome.unitsPnl ?? 0;
+  }
+  return {
+    windowStart: start.toISOString(),
+    windowEnd: now.toISOString(),
+    picks,
+    graded: wins + losses + pushes,
+    pending,
+    wins, losses, pushes,
+    pnl: +pnl.toFixed(4),
+    totalStake: +totalStake.toFixed(4),
+  };
+}
+
+// ─── overall record ────────────────────────────────────────────────────────
+
+// Full lifetime ledger since paper trial began. Captures everything the agent
+// has ever shipped — by-league breakdown, streaks, best/worst single picks.
+async function loadOverallRecord(): Promise<OverallRecord> {
+  const empty: OverallRecord = {
+    startDate: PAPER_TRIAL_START.toISOString(),
+    totalPicks: 0,
+    graded: 0, pending: 0,
+    wins: 0, losses: 0, pushes: 0,
+    pnl: 0, totalStake: 0,
+    roi: null, winRate: null,
+    currentStreak: { kind: "—", length: 0 },
+    longestWinStreak: 0,
+    longestLossStreak: 0,
+    best: null, worst: null,
+    byLeague: {},
+  };
+  let picks: PickWithOutcome[];
+  try {
+    picks = await prisma.agentPick.findMany({
+      where: { createdAt: { gte: PAPER_TRIAL_START } },
+      include: { outcome: true },
+      orderBy: { gameDate: "asc" },
+    });
+  } catch (err) {
+    console.error("loadOverallRecord failed:", err);
+    return empty;
+  }
+
+  const byLeague: OverallRecord["byLeague"] = {};
+  let wins = 0, losses = 0, pushes = 0, pending = 0;
+  let pnl = 0, totalStake = 0;
+  let best: OverallRecord["best"] = null;
+  let worst: OverallRecord["worst"] = null;
+  let curWinStreak = 0, curLossStreak = 0;
+  let longestWinStreak = 0, longestLossStreak = 0;
+  let lastGradedKind: "W" | "L" | "P" | "—" = "—";
+
+  for (const p of picks) {
+    const lg = (byLeague[p.league] ??= {
+      wins: 0, losses: 0, pushes: 0, pending: 0,
+      pnl: 0, totalStake: 0, roi: null,
+    });
+    totalStake += p.kellyStakeUnits;
+    lg.totalStake += p.kellyStakeUnits;
+
+    if (!p.outcome) {
+      pending++; lg.pending++;
+      continue;
+    }
+    const units = p.outcome.unitsPnl ?? 0;
+    pnl += units; lg.pnl += units;
+
+    if (p.outcome.result === "win") {
+      wins++; lg.wins++;
+      curWinStreak++; curLossStreak = 0;
+      longestWinStreak = Math.max(longestWinStreak, curWinStreak);
+      lastGradedKind = "W";
+      if (!best || units > best.unitsPnl) {
+        best = { id: p.id, matchup: p.matchup, selection: p.selection, league: p.league, unitsPnl: +units.toFixed(4) };
+      }
+    } else if (p.outcome.result === "loss") {
+      losses++; lg.losses++;
+      curLossStreak++; curWinStreak = 0;
+      longestLossStreak = Math.max(longestLossStreak, curLossStreak);
+      lastGradedKind = "L";
+      if (!worst || units < worst.unitsPnl) {
+        worst = { id: p.id, matchup: p.matchup, selection: p.selection, league: p.league, unitsPnl: +units.toFixed(4) };
+      }
+    } else if (p.outcome.result === "push") {
+      pushes++; lg.pushes++;
+      curWinStreak = 0; curLossStreak = 0;
+      lastGradedKind = "P";
+    }
+  }
+
+  for (const lg of Object.values(byLeague)) {
+    lg.roi = lg.totalStake > 0 ? +(lg.pnl / lg.totalStake).toFixed(4) : null;
+    lg.pnl = +lg.pnl.toFixed(4);
+    lg.totalStake = +lg.totalStake.toFixed(4);
+  }
+
+  const graded = wins + losses + pushes;
+  const currentStreakLen =
+    lastGradedKind === "W" ? curWinStreak
+    : lastGradedKind === "L" ? curLossStreak
+    : lastGradedKind === "P" ? 1
+    : 0;
+
+  return {
+    startDate: PAPER_TRIAL_START.toISOString(),
+    totalPicks: picks.length,
+    graded, pending,
+    wins, losses, pushes,
+    pnl: +pnl.toFixed(4),
+    totalStake: +totalStake.toFixed(4),
+    roi: totalStake > 0 ? +(pnl / totalStake).toFixed(4) : null,
+    winRate: wins + losses > 0 ? +(wins / (wins + losses)).toFixed(4) : null,
+    currentStreak: { kind: lastGradedKind, length: currentStreakLen },
+    longestWinStreak,
+    longestLossStreak,
+    best, worst,
+    byLeague,
+  };
+}
+
 // ─── orchestrator ──────────────────────────────────────────────────────────
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -920,7 +1141,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     }))
     .sort((a, b) => new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime());
 
-  const [trackRecord7, trackRecord30, lastAgentRunAt, paperTrial, pipelineStatus, agentMemory, killStats] = await Promise.all([
+  const [trackRecord7, trackRecord30, lastAgentRunAt, paperTrial, pipelineStatus, agentMemory, killStats, lastNight, overallRecord] = await Promise.all([
     loadTrackRecord(7),
     loadTrackRecord(30),
     loadLastAgentRunAt(),
@@ -928,6 +1149,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     loadPipelineStatus(),
     loadAgentMemory(),
     loadKillStats(),
+    loadLastNightLedger(),
+    loadOverallRecord(),
   ]);
 
   const injuries = loadInjuries();
@@ -958,6 +1181,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     pipelineStatus,
     killStats,
     agentMemory,
+    lastNight,
+    overallRecord,
     injuries,
     status: {
       lastAgentRunAt,
