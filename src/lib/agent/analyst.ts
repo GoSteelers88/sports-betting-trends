@@ -35,6 +35,13 @@ export type AnalystPick = {
   // not the pick's persistence-time. Optional in older payloads — falls back
   // to today UTC midnight if missing (with a warning logged).
   gameTime?: string;
+  // Prop-only structured fields. Required when market === "prop"; ignored
+  // for moneyline. The autograder reads these to look up the player's box
+  // score line and compare to `line` for over/under resolution.
+  player?: string;
+  propType?: string;
+  line?: number;
+  side?: "over" | "under";
 };
 
 // A single step in the analyst's reasoning loop. The critic uses this to
@@ -71,15 +78,47 @@ ${recordBlock}
 
 Your job: produce a small ranked list of bets for today's slate, each with explicit reasoning, EV, and an invalidation level. Quality over quantity. Pass on slates with no edge.
 
-You have tools that read today's odds, in-house model probabilities, injuries, player props, and league trend summaries. Always start by calling tools — never invent numbers. Call multiple tools in parallel when independent.
+You have tools that read today's odds, in-house model probabilities, injuries, player props, league trend summaries, and a deterministic prop projector. Always start by calling tools — never invent numbers. Call multiple tools in parallel when independent.
 
-When picking, follow these rules:
-- ONLY produce moneyline picks for now. Set market = "moneyline" on every pick. Spread/total/prop grading is not yet wired, so non-ML picks would be unmeasurable.
-- Only recommend a bet if your modelProb exceeds the market's implied prob by ≥ 6% (600 bps). This clears the vig (~2-5% across books) plus a safety margin for model error. Edges below 6% are net-negative after juice. Otherwise pass.
-- **Always use the BEST PRICE across books, not consensus.** get_odds returns bestPrice.{home,away}.{book,american,impliedProb}. Set oddsAmerican = bestPrice.american and marketProb = bestPrice.impliedProb. Mention the book in your signals (e.g. "best line: DraftKings +145"). This is where real edge lives — consensus betting forfeits 1-3% of EV per pick.
-- If bookSpread.{home|away} > 15 cents, that's a strong off-market signal — books disagree meaningfully, and the high-payout side is often the value. Highlight in your thesis.
-- Use 1/4 Kelly for stake sizing, capped at 2 units per bet. Kelly = (b·p - q)/b where b = decimal odds - 1, p = modelProb, q = 1-p.
-- Each pick must have: matchup, market="moneyline", selection (a team name), oddsAmerican, modelProb, marketProb, edge, kellyStakeUnits, confidence (1-100), thesis (2-4 sentences), invalidation (one sentence), signals (array of short strings — include "best line: BOOK PRICE" as the first signal), AND gameTime (ISO 8601 from get_odds tool's commence_time field).
+You can produce TWO kinds of picks: moneyline picks and player-prop picks. Different rules apply to each.
+
+═══ MONEYLINE PICKS (market = "moneyline") ═══
+- Only recommend a bet if your modelProb exceeds the market's implied prob by ≥ 6% (600 bps). This clears the vig (~2-5%) plus a safety margin. Edges below 6% are net-negative after juice. Otherwise pass.
+- **Always use the BEST PRICE across books, not consensus.** get_odds returns bestPrice.{home,away}.{book,american,impliedProb}. Set oddsAmerican = bestPrice.american and marketProb = bestPrice.impliedProb. Mention the book in your signals (e.g. "best line: DraftKings +145").
+- If bookSpread.{home|away} > 15 cents, that's a strong off-market signal — highlight in your thesis.
+- Use 1/4 Kelly for stake sizing, capped at 2 units. Kelly = (b·p - q)/b where b = decimal odds - 1, p = modelProb, q = 1-p.
+- Required fields: matchup, market="moneyline", selection (a team name), oddsAmerican, modelProb, marketProb, edge, kellyStakeUnits, confidence (1-100), thesis (≥80 chars), invalidation (one sentence), signals (array; first signal = "best line: BOOK PRICE"), gameTime (ISO 8601 from commence_time).
+
+═══ PROP PICKS (market = "prop") — NBA + MLB ONLY ═══
+**modelProb for a prop MUST come from the get_prop_projection tool. Never invent a modelProb from reasoning alone — LLMs are not reliable at prop math.**
+
+Workflow:
+1. Call get_player_props to see what props are available with their consensus lines + over/under prices.
+2. For any prop you're considering, call get_prop_projection(league, player, propType, line, side, opponent). It returns: projected, stddev, modelProb, nGames, rollingMean, opponentFactor, recentForm, notes.
+3. If get_prop_projection returns { available: false }, SKIP the prop. Do not back-fill with reasoning.
+4. Set the pick's modelProb = projection.modelProb (verbatim, do not adjust). Set marketProb = the implied prob of the chosen side's price (americanToImplied: positive odds → 100/(odds+100); negative odds → -odds/(-odds+100)).
+5. Apply the SAME ≥6% edge floor as moneyline picks. Most props will NOT have 6% edge — that's expected.
+6. Use 1/4 Kelly capped at 2u, same as ML.
+
+Required fields for a prop pick:
+- matchup: "Player Team @ Opponent" or "Player vs Opponent" (so the game is identifiable)
+- market: "prop"
+- selection: human-readable, e.g. "Anthony Edwards OVER 27.5 pts"
+- player: full display name as returned by get_player_props
+- propType: the key from get_player_props (player_points, player_rebounds, batter_hits, etc.)
+- line: numeric prop line
+- side: "over" or "under"
+- oddsAmerican: the price of the side you're picking (overPrice if side=over, underPrice if side=under)
+- modelProb: VERBATIM from get_prop_projection
+- marketProb: implied prob of your side's price
+- edge: modelProb − marketProb
+- kellyStakeUnits, confidence, thesis (mention opponentFactor + recentForm + any injury/usage angle), invalidation, signals (include "projection: X.X over/under L (n=N games)"), gameTime
+
+Use thesis to explain WHY you're picking this prop — what changed (opponent matchup, recent form, role change, injury filling minutes, FanGraphs xwOBA gap, FB velocity bump). The projection number alone is not a thesis.
+
+Prop-specific risk: at most one prop per player per slate. Avoid stacking high-correlation legs (e.g. Anthony Edwards' points + Anthony Edwards' rebounds — these are correlated).
+
+═══ COMMON RULES (both pick types) ═══
 - Round modelProb and marketProb to 4 decimals; round kellyStakeUnits to 2 decimals.
 - Always copy gameTime exactly from the get_odds tool's commenceTime for that event. This is critical for grading.
 
@@ -259,6 +298,12 @@ export async function persistFinalPicks(args: {
           signals: JSON.stringify(p.signals),
           toolsUsed: JSON.stringify(args.toolsUsed),
           modelId: MODELS.analyst,
+          // Prop-only structured fields; null for moneyline picks. The
+          // autograder reads these to look up the player's box-score line.
+          player: p.market === "prop" ? p.player ?? null : null,
+          propType: p.market === "prop" ? p.propType ?? null : null,
+          line: p.market === "prop" ? p.line ?? null : null,
+          side: p.market === "prop" ? p.side ?? null : null,
         },
       });
       ids.push(created.id);

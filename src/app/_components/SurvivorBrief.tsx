@@ -12,6 +12,35 @@ function fmtPct(n: number, digits = 1): string {
   return `${(n * 100).toFixed(digits)}%`;
 }
 
+// Map prop-type keys to short, readable labels. The keys come from the
+// scraper (RotoWire / odds feed), so the inverse mapping is stable.
+const PROP_LABELS: Record<string, string> = {
+  player_points: "pts",
+  player_rebounds: "reb",
+  player_assists: "ast",
+  player_threes: "3PM",
+  player_blocks: "blk",
+  player_steals: "stl",
+  player_turnovers: "TO",
+  player_points_rebounds_assists: "PRA",
+  player_points_rebounds: "P+R",
+  player_points_assists: "P+A",
+  player_rebounds_assists: "R+A",
+  player_blocks_steals: "B+S",
+  batter_hits: "hits",
+  batter_home_runs: "HR",
+  batter_rbis: "RBI",
+  batter_runs_scored: "runs",
+  batter_total_bases: "TB",
+  pitcher_strikeouts: "K",
+  pitcher_earned_runs: "ER",
+};
+
+function formatPropType(propType: string | null): string {
+  if (!propType) return "";
+  return PROP_LABELS[propType] ?? propType.replace(/^player_|^batter_|^pitcher_/, "").replace(/_/g, " ");
+}
+
 export function SurvivorBrief({ picks }: { picks: SlatePick[] }) {
   const [openId, setOpenId] = useState<number | null>(null);
 
@@ -90,12 +119,29 @@ export function SurvivorBrief({ picks }: { picks: SlatePick[] }) {
           </button>
         </div>
 
-        <h3 className="font-display text-2xl sm:text-4xl font-bold leading-tight">
-          {headline.matchup}
-        </h3>
-        <p className="mt-2 font-display text-lg sm:text-2xl text-[var(--edge)]">
-          {headline.selection} <span className="text-[var(--text)] numeric">@ {fmtAmerican(headline.oddsAmerican)}</span>
-        </p>
+        {headline.market === "prop" && headline.player ? (
+          <>
+            <h3 className="font-display text-2xl sm:text-4xl font-bold leading-tight">
+              {headline.player}
+            </h3>
+            <p className="mt-1 font-mono text-xs sm:text-sm text-[var(--muted)] truncate">
+              {headline.matchup}
+            </p>
+            <p className="mt-2 font-display text-lg sm:text-2xl text-[var(--edge)]">
+              {headline.side?.toUpperCase()} {headline.line} {formatPropType(headline.propType)}
+              <span className="text-[var(--text)] numeric"> @ {fmtAmerican(headline.oddsAmerican)}</span>
+            </p>
+          </>
+        ) : (
+          <>
+            <h3 className="font-display text-2xl sm:text-4xl font-bold leading-tight">
+              {headline.matchup}
+            </h3>
+            <p className="mt-2 font-display text-lg sm:text-2xl text-[var(--edge)]">
+              {headline.selection} <span className="text-[var(--text)] numeric">@ {fmtAmerican(headline.oddsAmerican)}</span>
+            </p>
+          </>
+        )}
 
         {/* Model vs Market — the visual centerpiece per spec */}
         <ModelMarketBar
@@ -146,8 +192,19 @@ export function SurvivorBrief({ picks }: { picks: SlatePick[] }) {
                   {p.league}
                 </span>
                 <div className="min-w-0">
-                  <p className="font-display font-semibold text-sm truncate">{p.matchup}</p>
-                  <p className="font-mono text-xs text-[var(--muted)] truncate">{p.selection}</p>
+                  {p.market === "prop" && p.player ? (
+                    <>
+                      <p className="font-display font-semibold text-sm truncate">{p.player}</p>
+                      <p className="font-mono text-xs text-[var(--muted)] truncate">
+                        {p.side?.toUpperCase()} {p.line} {formatPropType(p.propType)} · {p.matchup}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-display font-semibold text-sm truncate">{p.matchup}</p>
+                      <p className="font-mono text-xs text-[var(--muted)] truncate">{p.selection}</p>
+                    </>
+                  )}
                 </div>
                 <span className="numeric text-sm text-[var(--text)] hidden sm:inline">
                   {fmtAmerican(p.oddsAmerican)}

@@ -21,27 +21,31 @@ type Stage = {
 
 function buildLifecycle(pick: SlatePick): Stage[] {
   const shipped = true; // it's in AgentPick so it was shipped
+  const isProp = pick.market === "prop";
   const clvDone = pick.clvCents !== null;
   const resultDone = pick.outcome !== null;
-  const killed = pick.outcome?.result === "loss" ? false : false; // never killed if present
   return [
     {
       key: "detected",
       label: "DETECTED",
       status: "done",
-      detail: `Analyst surfaced this market via get_odds + get_model_probabilities tools.`,
+      detail: isProp
+        ? `Analyst surfaced this prop via get_player_props.`
+        : `Analyst surfaced this market via get_odds + get_model_probabilities tools.`,
     },
     {
       key: "modeled",
       label: "MODELED",
       status: "done",
-      detail: `Model ${fmtPct(pick.modelProb)} vs market ${fmtPct(pick.marketProb)} → edge ${fmtPct(pick.edge, 2)}.`,
+      detail: isProp
+        ? `Projection via get_prop_projection → model ${fmtPct(pick.modelProb)} vs market ${fmtPct(pick.marketProb)} → edge ${fmtPct(pick.edge, 2)}.`
+        : `Model ${fmtPct(pick.modelProb)} vs market ${fmtPct(pick.marketProb)} → edge ${fmtPct(pick.edge, 2)}.`,
     },
     {
       key: "graded",
       label: "GRADED",
       status: "done",
-      detail: `Local grader passed: edge ≥ 6%, stake ≤ 2u, thesis ≥ 80 chars.`,
+      detail: `Local grader passed: edge ≥ 6%, stake ≤ 2u, thesis ≥ 80 chars${isProp ? ", structured prop fields present" : ""}.`,
     },
     {
       key: "critic",
@@ -60,8 +64,10 @@ function buildLifecycle(pick: SlatePick): Stage[] {
     {
       key: "clv",
       label: "CLV CAPTURED",
-      status: clvDone ? "done" : shipped ? "active" : "future",
-      detail: clvDone
+      status: isProp ? "future" : clvDone ? "done" : shipped ? "active" : "future",
+      detail: isProp
+        ? "CLV not tracked for props — prop markets lack the market-making liquidity for closing line to be a reliable edge signal."
+        : clvDone
         ? `Closed at ${fmtAmerican(pick.closingOddsAmerican ?? 0)} → CLV ${pick.clvCents! > 0 ? "+" : ""}${pick.clvCents}¢.`
         : "Awaiting closing line capture (12h pre-game to 30min post-start window).",
     },
@@ -164,8 +170,18 @@ export function PickAutopsy({
             <Mini label="STAKE" value={`${pick.kellyStakeUnits.toFixed(2)}U`} />
             <Mini
               label="CLV"
-              value={pick.clvCents !== null ? `${pick.clvCents > 0 ? "+" : ""}${pick.clvCents}¢` : "PEND"}
-              color={pick.clvCents !== null && pick.clvCents > 0 ? "edge" : pick.clvCents !== null && pick.clvCents < 0 ? "kill" : "muted"}
+              value={
+                pick.market === "prop"
+                  ? "N/A"
+                  : pick.clvCents !== null ? `${pick.clvCents > 0 ? "+" : ""}${pick.clvCents}¢` : "PEND"
+              }
+              color={
+                pick.market === "prop"
+                  ? "muted"
+                  : pick.clvCents !== null && pick.clvCents > 0 ? "edge"
+                  : pick.clvCents !== null && pick.clvCents < 0 ? "kill"
+                  : "muted"
+              }
             />
           </div>
 

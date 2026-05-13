@@ -54,6 +54,7 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
   const roiColor = roi !== null && roi > 0 ? "edge" : roi !== null && roi < 0 ? "kill" : "muted";
 
   const leagues = Object.entries(byLeague).sort((a, b) => (b[1].pnl ?? 0) - (a[1].pnl ?? 0));
+  const markets = Object.entries(data.byMarket).sort((a, b) => (b[1].pnl ?? 0) - (a[1].pnl ?? 0));
 
   return (
     <section className="space-y-4">
@@ -114,6 +115,46 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
           </div>
         </div>
       </div>
+
+      {/* By-market breakdown (ML vs prop) */}
+      {markets.length > 0 && (
+        <div className="surface">
+          <div className="px-4 py-2 border-b border-[var(--border)]">
+            <p className="eyebrow text-[var(--muted)]">BY MARKET</p>
+          </div>
+          <ul>
+            {markets.map(([market, mk], i) => (
+              <li
+                key={market}
+                className={`grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-[var(--border)]" : ""}`}
+              >
+                <span className="pill" style={{ color: "var(--warn)", borderColor: "var(--warn)" }}>
+                  {market.toUpperCase()}
+                </span>
+                <span className="font-mono text-xs text-[var(--muted)]">
+                  {mk.wins}-{mk.losses}{mk.pushes > 0 ? `-${mk.pushes}` : ""}
+                  {mk.pending > 0 ? ` · ${mk.pending} PEND` : ""}
+                </span>
+                <span className="numeric text-xs text-[var(--muted)] hidden sm:inline">
+                  {mk.totalStake.toFixed(2)}U STAKED
+                </span>
+                <span
+                  className="numeric text-sm"
+                  style={{ color: mk.pnl > 0 ? "var(--edge)" : mk.pnl < 0 ? "var(--kill)" : "var(--text)" }}
+                >
+                  {mk.pnl > 0 ? "+" : ""}{mk.pnl.toFixed(2)}U
+                </span>
+                <span
+                  className="numeric text-xs w-16 text-right"
+                  style={{ color: mk.roi !== null && mk.roi > 0 ? "var(--edge)" : mk.roi !== null && mk.roi < 0 ? "var(--kill)" : "var(--muted)" }}
+                >
+                  {mk.roi !== null ? `${mk.roi > 0 ? "+" : ""}${(mk.roi * 100).toFixed(0)}%` : "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* By-league breakdown + best/worst */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">

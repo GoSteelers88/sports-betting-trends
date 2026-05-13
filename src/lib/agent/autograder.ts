@@ -1,8 +1,20 @@
 // Daily auto-grader. Fetches yesterday's final scores from ESPN's public
 // scoreboard endpoints and writes AgentOutcome rows for any pending picks
 // that match. Without this the dream agent has no data to learn from.
+//
+// Handles two pick shapes:
+//   • moneyline — picks resolved via team-level final score lookup.
+//   • prop      — picks resolved via player box-score line (shared logic
+//                 lives in src/lib/prop-grading.ts, also used by the
+//                 snapshot grader and the prop projector).
 
 import { prisma } from "@/lib/prisma";
+import {
+  buildPlayerStatLookup,
+  resolveProp,
+  type PlayerStatLookup,
+  type PropGradingLeague,
+} from "@/lib/prop-grading";
 
 type Espn = {
   events?: Array<{
@@ -159,14 +171,15 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
   const yyyymmddDate = yyyymmddUtc(target);
 
   // Pull pending picks from the target date (loose window — anything with no outcome
-  // from the last 3 days, since cron may have missed runs)
+  // from the last 3 days, since cron may have missed runs). Grades both
+  // moneyline AND prop picks; spread/total still skipped until line lookup wired.
   const since = new Date(target);
   since.setUTCDate(since.getUTCDate() - 2);
   const pendingPicks = await prisma.agentPick.findMany({
     where: {
       gameDate: { gte: since },
       outcome: null,
-      market: "moneyline", // v1: moneyline only — spread/total need line lookup
+      market: { in: ["moneyline", "prop"] },
     },
   });
 
@@ -178,7 +191,10 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
     dates.push(yyyymmddUtc(d));
   }
 
-  const leagues = Array.from(new Set(pendingPicks.map(p => p.league))) as Array<"NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB">;
+  const mlPicks = pendingPicks.filter(p => p.market === "moneyline");
+  const propPicks = pendingPicks.filter(p => p.market === "prop");
+
+  const leagues = Array.from(new Set(mlPicks.map(p => p.league))) as Array<"NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB">;
   const finalsByLeague = new Map<string, GameFinal[]>();
   for (const lg of leagues) {
     const seenIds = new Set<string>();
@@ -195,6 +211,16 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
     finalsByLeague.set(lg, all);
   }
 
+  // Box-score lookups for prop picks. Only NBA + MLB have the player-stat
+  // extractor; props from other leagues fall through to unmatched.
+  const propLeagues = Array.from(
+    new Set(propPicks.map(p => p.league).filter((l): l is PropGradingLeague => l === "NBA" || l === "MLB"))
+  );
+  const lookupByLeague = new Map<PropGradingLeague, PlayerStatLookup>();
+  for (const lg of propLeagues) {
+    lookupByLeague.set(lg, await buildPlayerStatLookup(lg, yyyymmddDate));
+  }
+
   const report: AutoGradeReport = {
     ranAt: new Date().toISOString(),
     date: yyyymmddDate,
@@ -209,13 +235,13 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
   // from being mis-graded against the wrong day's score.
   const PROXIMITY_MS = 36 * 60 * 60 * 1000;
 
-  for (const pick of pendingPicks) {
+  // ─── moneyline branch ─────────────────────────────────────────────────────
+  for (const pick of mlPicks) {
     const finals = finalsByLeague.get(pick.league) ?? [];
     const pickTime = pick.gameDate.getTime();
-    // Try to match by both teams in the pick.matchup AND by date proximity
     const match = finals.find(f => {
       if (!matchesPickToFinal(pick, f)) return false;
-      if (!f.date) return true; // no date info — fall back to team-only match
+      if (!f.date) return true;
       const ft = new Date(f.date).getTime();
       if (!Number.isFinite(ft)) return true;
       return Math.abs(ft - pickTime) < PROXIMITY_MS;
@@ -225,18 +251,13 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
       continue;
     }
 
-    let result: GradeResult | null = null;
-    if (pick.market === "moneyline") {
-      result = gradeMoneyline(pick.selection, match);
-    }
+    const result = gradeMoneyline(pick.selection, match);
     if (!result) {
       report.unmatched++;
       continue;
     }
 
     const pnl = unitsPnl(pick.oddsAmerican, pick.kellyStakeUnits, result);
-    // Use upsert so concurrent runs (cron + manual trigger) don't crash on
-    // unique-pickId constraint.
     try {
       await prisma.agentOutcome.upsert({
         where: { pickId: pick.id },
@@ -261,20 +282,85 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
       continue;
     }
 
-    report.graded++;
-    const lg = (report.byLeague[pick.league] ??= {
-      graded: 0,
-      wins: 0,
-      losses: 0,
-      pushes: 0,
-      unitsPnl: 0,
+    tallyResult(report, pick.league, result, pnl);
+  }
+
+  // ─── prop branch ──────────────────────────────────────────────────────────
+  for (const pick of propPicks) {
+    if (pick.league !== "NBA" && pick.league !== "MLB") {
+      report.unmatched++;
+      continue;
+    }
+    if (!pick.player || !pick.propType || pick.line === null || (pick.side !== "over" && pick.side !== "under")) {
+      // Missing structured fields → can't auto-resolve. These will need
+      // manual grading via /grade. Counted as unmatched for visibility.
+      report.unmatched++;
+      continue;
+    }
+    const lookup = lookupByLeague.get(pick.league);
+    if (!lookup) {
+      report.unmatched++;
+      continue;
+    }
+    const resolved = resolveProp(lookup, {
+      player: pick.player,
+      propType: pick.propType,
+      line: pick.line,
+      side: pick.side,
+      anchorMs: pick.gameDate.getTime(),
     });
-    lg.graded++;
-    if (result === "win") lg.wins++;
-    else if (result === "loss") lg.losses++;
-    else lg.pushes++;
-    lg.unitsPnl = +(lg.unitsPnl + pnl).toFixed(4);
+    if (!resolved) {
+      report.unmatched++;
+      continue;
+    }
+    const pnl = unitsPnl(pick.oddsAmerican, pick.kellyStakeUnits, resolved.result);
+    const actualOutcome = `${pick.player}: ${resolved.actual} (line ${pick.line} ${pick.side})`;
+    try {
+      await prisma.agentOutcome.upsert({
+        where: { pickId: pick.id },
+        create: {
+          pickId: pick.id,
+          result: resolved.result,
+          actualOutcome,
+          unitsPnl: pnl,
+          notes: "auto-graded prop from ESPN box score",
+        },
+        update: {
+          result: resolved.result,
+          actualOutcome,
+          unitsPnl: pnl,
+          notes: "auto-graded prop from ESPN box score (regraded)",
+          gradedAt: new Date(),
+        },
+      });
+    } catch (err) {
+      console.error(`failed to grade prop pick #${pick.id}:`, err);
+      report.unmatched++;
+      continue;
+    }
+    tallyResult(report, pick.league, resolved.result, pnl);
   }
 
   return report;
+}
+
+function tallyResult(
+  report: AutoGradeReport,
+  league: string,
+  result: GradeResult,
+  pnl: number
+): void {
+  report.graded++;
+  const lg = (report.byLeague[league] ??= {
+    graded: 0,
+    wins: 0,
+    losses: 0,
+    pushes: 0,
+    unitsPnl: 0,
+  });
+  lg.graded++;
+  if (result === "win") lg.wins++;
+  else if (result === "loss") lg.losses++;
+  else lg.pushes++;
+  lg.unitsPnl = +(lg.unitsPnl + pnl).toFixed(4);
 }

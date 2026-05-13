@@ -30,6 +30,22 @@ const RESULT_COLOR: Record<string, string> = {
   pending: "var(--warn)",
 };
 
+const PROP_LABELS: Record<string, string> = {
+  player_points: "pts", player_rebounds: "reb", player_assists: "ast",
+  player_threes: "3PM", player_blocks: "blk", player_steals: "stl",
+  player_turnovers: "TO", player_points_rebounds_assists: "PRA",
+  player_points_rebounds: "P+R", player_points_assists: "P+A",
+  player_rebounds_assists: "R+A", player_blocks_steals: "B+S",
+  batter_hits: "hits", batter_home_runs: "HR", batter_rbis: "RBI",
+  batter_runs_scored: "runs", batter_total_bases: "TB",
+  pitcher_strikeouts: "K", pitcher_earned_runs: "ER",
+};
+
+function formatPropType(propType: string | null): string {
+  if (!propType) return "";
+  return PROP_LABELS[propType] ?? propType.replace(/^player_|^batter_|^pitcher_/, "").replace(/_/g, " ");
+}
+
 export function LastNightLedger({ data }: { data: LastNightLedgerData }) {
   const { picks, graded, pending, wins, losses, pushes, pnl, totalStake } = data;
   const roi = totalStake > 0 && graded > 0 ? pnl / totalStake : null;
@@ -102,6 +118,7 @@ function PickRow({ pick, divider }: { pick: SlatePick; divider: boolean; pnlColo
   const result = pick.outcome?.result ?? "pending";
   const color = RESULT_COLOR[result] ?? "var(--muted)";
   const units = pick.outcome?.unitsPnl ?? null;
+  const isProp = pick.market === "prop" && pick.player;
 
   return (
     <li
@@ -114,14 +131,26 @@ function PickRow({ pick, divider }: { pick: SlatePick; divider: boolean; pnlColo
         {result.toUpperCase()}
       </span>
       <span className="pill hidden sm:inline-block" style={{ color: "var(--signal)", borderColor: "var(--signal)" }}>
-        {pick.league}
+        {isProp ? "PROP" : pick.league}
       </span>
       <div className="min-w-0">
-        <p className="font-display font-semibold text-sm truncate">{pick.matchup}</p>
-        <p className="font-mono text-xs text-[var(--muted)] truncate">
-          {pick.selection} <span className="text-[var(--text)]">@ {fmtAmerican(pick.oddsAmerican)}</span>
-          <span className="hidden sm:inline"> · {gameTimeEt(pick.createdAt)}</span>
-        </p>
+        {isProp ? (
+          <>
+            <p className="font-display font-semibold text-sm truncate">{pick.player}</p>
+            <p className="font-mono text-xs text-[var(--muted)] truncate">
+              {pick.side?.toUpperCase()} {pick.line} {formatPropType(pick.propType)} <span className="text-[var(--text)]">@ {fmtAmerican(pick.oddsAmerican)}</span>
+              <span className="hidden sm:inline"> · {pick.matchup}</span>
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="font-display font-semibold text-sm truncate">{pick.matchup}</p>
+            <p className="font-mono text-xs text-[var(--muted)] truncate">
+              {pick.selection} <span className="text-[var(--text)]">@ {fmtAmerican(pick.oddsAmerican)}</span>
+              <span className="hidden sm:inline"> · {gameTimeEt(pick.createdAt)}</span>
+            </p>
+          </>
+        )}
       </div>
       <span className="numeric text-xs text-[var(--muted)] hidden sm:inline">
         {pick.kellyStakeUnits.toFixed(2)}U

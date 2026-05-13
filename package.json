@@ -40,6 +40,7 @@
     "ingest:mlb-batting": "tsx scripts/ingest-mlb-batting.ts",
     "ingest:mlb-weather": "python scripts/python/ingest_mlb_weather.py",
     "ingest:mlb-model": "tsx scripts/ingest-mlb-model.ts",
+    "ingest:player-gamelogs": "tsx scripts/ingest-player-gamelogs.ts",
     "ingest:all": "npm run ingest:injuries && npm run ingest:nba-efficiency && npm run ingest:context && npm run scrape:all && npm run ingest:mlb-pitchers && npm run ingest:mlb-bullpen && npm run ingest:mlb-batting && npm run ingest:mlb-weather && npm run ingest:mlb-model && npm run ingest:free && npm run ingest:props",
     "validate:latest-games": "tsx scripts/validate-latest-games.ts",
     "qa:data": "npm run ingest:all && npm run validate:latest-games && npm run lint && npm run build",

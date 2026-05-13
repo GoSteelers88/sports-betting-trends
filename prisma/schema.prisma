@@ -132,6 +132,16 @@ model AgentPick {
   clvCents            Int?     // pickedOdds - closingOdds, in cents
   clvCapturedAt       DateTime?
 
+  // Player-prop fields (null for team-level markets). When market = "prop",
+  // all four must be populated; the autograder uses these to look up the
+  // player's box-score line and compare to `line` for over/under resolution.
+  // CLV is not meaningful on props (thin market-making — see paper trial
+  // criteria), so clvCents stays null for prop picks.
+  player    String?  // canonical player name from get_player_props
+  propType  String?  // e.g. player_points, batter_runs_scored
+  line      Float?   // numeric prop line
+  side      String?  // "over" | "under"
+
   @@index([league, gameDate])
   @@index([runId])
   // Idempotency: if cron retries fire two orchestrator runs that both produce

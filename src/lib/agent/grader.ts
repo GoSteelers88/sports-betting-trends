@@ -66,6 +66,19 @@ export function gradePicks(picks: AnalystPick[]): GradedPick[] {
     if (!Array.isArray(p.signals) || p.signals.length === 0)
       notes.push("SOFT: no signals listed");
 
+    // Prop picks need the four structured fields so the autograder can
+    // resolve them against ESPN box scores. The analyst prompt requires
+    // these but the grader is the enforcement layer — refuse to ship a
+    // prop pick that can't be auto-graded.
+    if (p.market === "prop") {
+      if (!p.player) notes.push("HARD: prop pick missing player");
+      if (!p.propType) notes.push("HARD: prop pick missing propType");
+      if (typeof p.line !== "number" || !Number.isFinite(p.line))
+        notes.push("HARD: prop pick missing or non-numeric line");
+      if (p.side !== "over" && p.side !== "under")
+        notes.push(`HARD: prop pick side must be "over" or "under", got ${JSON.stringify(p.side)}`);
+    }
+
     const hardFail = notes.some(n => n.startsWith("HARD:"));
     if (hardFail) continue; // drop entirely
 

@@ -49,6 +49,12 @@ export type SlatePick = {
   closingOddsAmerican: number | null;
   clvCents: number | null;
   createdAt: string;
+  // Prop-only structured fields (null for moneyline picks). UI uses these
+  // to render prop-shaped headlines (player name + line + over/under).
+  player: string | null;
+  propType: string | null;
+  line: number | null;
+  side: "over" | "under" | null;
 };
 
 export type PipelineStatus = {
@@ -208,6 +214,18 @@ export type OverallRecord = {
     totalStake: number;
     roi: number | null;
   }>;
+  // Split by market — keeps the prop track record visible (and lets the
+  // dashboard surface it independently of ML CLV, since prop CLV is
+  // unreliable per industry research).
+  byMarket: Record<string, {
+    wins: number;
+    losses: number;
+    pushes: number;
+    pending: number;
+    pnl: number;
+    totalStake: number;
+    roi: number | null;
+  }>;
 };
 
 export type PaperTrial = {
@@ -223,13 +241,18 @@ export type PaperTrial = {
   roi: number | null;
   maxLossStreak: number;
   criticKillRate: number | null;
-  // CLV (closing line value) — the only metric that distinguishes real edge
-  // from variance at small sample sizes. Beat rate >55% over 200+ bets is
-  // the professional threshold for "actually has edge." Avg CLV measured in
-  // cents on the American odds.
-  clvSampleSize: number;          // picks with closingOddsAmerican set
+  // CLV (closing line value) — ML picks only. Prop markets lack market-
+  // making liquidity for CLV to be a reliable edge signal, so they are
+  // excluded from this sample. Beat rate >55% over 200+ bets is the
+  // professional threshold for "actually has edge."
+  clvSampleSize: number;          // ML picks with closingOddsAmerican set
   clvBeatRate: number | null;     // 0–1; share of picks with clvCents > 0
   clvAverageCents: number | null;
+  // Prop track — separate sample. CLV is unreliable here, so prop edge
+  // is validated by win rate at the vig-cleared threshold (~55% at -110).
+  propSampleSize: number;
+  propWinRate: number | null;
+  propRoi: number | null;
   // Decision criteria (computed live)
   ready: boolean;          // all criteria met
   criteria: Array<{ label: string; met: boolean; current: string; target: string }>;
@@ -503,6 +526,10 @@ async function loadTodaysPicks(): Promise<SlatePick[]> {
     closingOddsAmerican: p.closingOddsAmerican ?? null,
     clvCents: p.clvCents ?? null,
     createdAt: p.createdAt.toISOString(),
+    player: p.player ?? null,
+    propType: p.propType ?? null,
+    line: p.line ?? null,
+    side: (p.side === "over" || p.side === "under" ? p.side : null) as "over" | "under" | null,
   }));
 }
 
@@ -638,6 +665,9 @@ async function loadPaperTrial(): Promise<PaperTrial> {
   let clvSampleSize = 0;
   let clvBeatRate: number | null = null;
   let clvAverageCents: number | null = null;
+  let propSampleSize = 0;
+  let propWinRate: number | null = null;
+  let propRoi: number | null = null;
 
   try {
     const outcomes = await prisma.agentOutcome.findMany({
@@ -677,13 +707,15 @@ async function loadPaperTrial(): Promise<PaperTrial> {
       criticKillRate = killedTotal / rawTotal;
     }
 
-    // CLV stats — only count picks where the closing line was captured.
-    // Win/loss is irrelevant here; CLV is a leading indicator of edge that
-    // resolves much faster than W/L (every pick contributes a measurement).
+    // CLV stats — ML picks only. Prop markets lack the market-making
+    // liquidity to make CLV a reliable edge signal (industry consensus),
+    // so we exclude them rather than letting noisy prop closings dilute
+    // the metric that gates Kalshi placement.
     const clvPicks = await prisma.agentPick.findMany({
       where: {
         createdAt: { gte: PAPER_TRIAL_START },
         clvCents: { not: null },
+        market: { not: "prop" },
       },
       select: { clvCents: true },
     });
@@ -693,6 +725,27 @@ async function loadPaperTrial(): Promise<PaperTrial> {
       clvBeatRate = positive / clvSampleSize;
       const sum = clvPicks.reduce((s, p) => s + (p.clvCents ?? 0), 0);
       clvAverageCents = sum / clvSampleSize;
+    }
+
+    // Prop-only outcomes — counted separately so the prop track doesn't
+    // contaminate ML CLV. Win rate threshold for vig-cleared prop edge
+    // is ~55% at standard -110 / -115 pricing.
+    const propOutcomes = await prisma.agentOutcome.findMany({
+      where: {
+        gradedAt: { gte: PAPER_TRIAL_START },
+        result: { in: ["win", "loss", "push"] },
+        pick: { market: "prop" },
+      },
+      include: { pick: true },
+    });
+    propSampleSize = propOutcomes.length;
+    if (propSampleSize > 0) {
+      const pw = propOutcomes.filter(o => o.result === "win").length;
+      const pl = propOutcomes.filter(o => o.result === "loss").length;
+      if (pw + pl > 0) propWinRate = pw / (pw + pl);
+      const propPnl = propOutcomes.reduce((s, o) => s + (o.unitsPnl ?? 0), 0);
+      const propStake = propOutcomes.reduce((s, o) => s + o.pick.kellyStakeUnits, 0);
+      if (propStake > 0) propRoi = propPnl / propStake;
     }
   } catch (err) {
     console.error("paperTrial DB read failed:", err);
@@ -740,6 +793,23 @@ async function loadPaperTrial(): Promise<PaperTrial> {
     },
   ];
 
+  // Prop track gets its own criteria — appended only when there's any
+  // prop activity, so the section stays hidden during ML-only stretches.
+  if (propSampleSize > 0) {
+    criteria.push({
+      label: "Prop sample ≥ 100",
+      met: propSampleSize >= 100,
+      current: `${propSampleSize}`,
+      target: "100",
+    });
+    criteria.push({
+      label: "Prop win rate ≥ 55%",
+      met: propSampleSize >= 50 && propWinRate !== null && propWinRate >= 0.55,
+      current: propWinRate !== null ? `${(propWinRate * 100).toFixed(1)}%` : "—",
+      target: "≥ 55%",
+    });
+  }
+
   return {
     startDate: PAPER_TRIAL_START.toISOString(),
     dayNumber,
@@ -756,6 +826,9 @@ async function loadPaperTrial(): Promise<PaperTrial> {
     clvSampleSize,
     clvBeatRate,
     clvAverageCents,
+    propSampleSize,
+    propWinRate,
+    propRoi,
     ready: criteria.every(c => c.met),
     criteria,
   };
@@ -968,6 +1041,10 @@ async function loadLastNightLedger(): Promise<LastNightLedger> {
     closingOddsAmerican: p.closingOddsAmerican ?? null,
     clvCents: p.clvCents ?? null,
     createdAt: p.createdAt.toISOString(),
+    player: p.player ?? null,
+    propType: p.propType ?? null,
+    line: p.line ?? null,
+    side: (p.side === "over" || p.side === "under" ? p.side : null) as "over" | "under" | null,
   }));
   let wins = 0, losses = 0, pushes = 0, pending = 0, pnl = 0, totalStake = 0;
   for (const p of picks) {
@@ -1008,6 +1085,7 @@ async function loadOverallRecord(): Promise<OverallRecord> {
     longestLossStreak: 0,
     best: null, worst: null,
     byLeague: {},
+    byMarket: {},
   };
   let picks: PickWithOutcome[];
   try {
@@ -1022,6 +1100,7 @@ async function loadOverallRecord(): Promise<OverallRecord> {
   }
 
   const byLeague: OverallRecord["byLeague"] = {};
+  const byMarket: OverallRecord["byMarket"] = {};
   let wins = 0, losses = 0, pushes = 0, pending = 0;
   let pnl = 0, totalStake = 0;
   let best: OverallRecord["best"] = null;
@@ -1035,18 +1114,23 @@ async function loadOverallRecord(): Promise<OverallRecord> {
       wins: 0, losses: 0, pushes: 0, pending: 0,
       pnl: 0, totalStake: 0, roi: null,
     });
+    const mk = (byMarket[p.market] ??= {
+      wins: 0, losses: 0, pushes: 0, pending: 0,
+      pnl: 0, totalStake: 0, roi: null,
+    });
     totalStake += p.kellyStakeUnits;
     lg.totalStake += p.kellyStakeUnits;
+    mk.totalStake += p.kellyStakeUnits;
 
     if (!p.outcome) {
-      pending++; lg.pending++;
+      pending++; lg.pending++; mk.pending++;
       continue;
     }
     const units = p.outcome.unitsPnl ?? 0;
-    pnl += units; lg.pnl += units;
+    pnl += units; lg.pnl += units; mk.pnl += units;
 
     if (p.outcome.result === "win") {
-      wins++; lg.wins++;
+      wins++; lg.wins++; mk.wins++;
       curWinStreak++; curLossStreak = 0;
       longestWinStreak = Math.max(longestWinStreak, curWinStreak);
       lastGradedKind = "W";
@@ -1054,7 +1138,7 @@ async function loadOverallRecord(): Promise<OverallRecord> {
         best = { id: p.id, matchup: p.matchup, selection: p.selection, league: p.league, unitsPnl: +units.toFixed(4) };
       }
     } else if (p.outcome.result === "loss") {
-      losses++; lg.losses++;
+      losses++; lg.losses++; mk.losses++;
       curLossStreak++; curWinStreak = 0;
       longestLossStreak = Math.max(longestLossStreak, curLossStreak);
       lastGradedKind = "L";
@@ -1062,7 +1146,7 @@ async function loadOverallRecord(): Promise<OverallRecord> {
         worst = { id: p.id, matchup: p.matchup, selection: p.selection, league: p.league, unitsPnl: +units.toFixed(4) };
       }
     } else if (p.outcome.result === "push") {
-      pushes++; lg.pushes++;
+      pushes++; lg.pushes++; mk.pushes++;
       curWinStreak = 0; curLossStreak = 0;
       lastGradedKind = "P";
     }
@@ -1072,6 +1156,11 @@ async function loadOverallRecord(): Promise<OverallRecord> {
     lg.roi = lg.totalStake > 0 ? +(lg.pnl / lg.totalStake).toFixed(4) : null;
     lg.pnl = +lg.pnl.toFixed(4);
     lg.totalStake = +lg.totalStake.toFixed(4);
+  }
+  for (const mk of Object.values(byMarket)) {
+    mk.roi = mk.totalStake > 0 ? +(mk.pnl / mk.totalStake).toFixed(4) : null;
+    mk.pnl = +mk.pnl.toFixed(4);
+    mk.totalStake = +mk.totalStake.toFixed(4);
   }
 
   const graded = wins + losses + pushes;
@@ -1095,6 +1184,7 @@ async function loadOverallRecord(): Promise<OverallRecord> {
     longestLossStreak,
     best, worst,
     byLeague,
+    byMarket,
   };
 }
 

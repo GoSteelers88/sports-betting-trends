@@ -3,6 +3,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { project as projectProp, type ProjectionInput } from "@/lib/prop-projector";
 
 const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 
@@ -355,6 +356,39 @@ export function getTrendSummary(league: AgentLeague): SummaryLeague | null {
   return (data.leagues ?? []).find(l => l.league.toUpperCase() === league) ?? null;
 }
 
+// ─── Tool: get_prop_projection ─────────────────────────────────────────────
+// Deterministic projection for a player prop. Required source of modelProb
+// for any prop pick the analyst returns — Claude must NOT invent
+// modelProbs for props from reasoning alone (LLMs are unreliable on
+// stat-level prop math; see OpticOdds + Anthropic research).
+
+export type PropProjectionInput = {
+  league: "NBA" | "MLB";
+  player: string;
+  propType: string;
+  line: number;
+  side: "over" | "under";
+  opponent?: string | null;
+};
+
+export function getPropProjection(input: PropProjectionInput) {
+  if (input.league !== "NBA" && input.league !== "MLB") {
+    return { available: false, reason: "prop projection only supported for NBA + MLB" };
+  }
+  const proj = projectProp(input satisfies ProjectionInput);
+  if (!proj) {
+    return {
+      available: false,
+      reason:
+        "no projection available — player not found in last 10–14 day game log, or insufficient games (need ≥5). Skip this prop.",
+    };
+  }
+  return {
+    available: true,
+    ...proj,
+  };
+}
+
 // ─── Tool dispatch table ───────────────────────────────────────────────────
 
 export type ToolName =
@@ -363,15 +397,20 @@ export type ToolName =
   | "get_injuries"
   | "get_player_props"
   | "get_trend_summary"
-  | "get_mlb_signals";
+  | "get_mlb_signals"
+  | "get_prop_projection";
 
-export const TOOL_HANDLERS: Record<ToolName, (input: { league: AgentLeague }) => unknown> = {
-  get_odds: ({ league }) => getOdds(league),
-  get_model_probabilities: ({ league }) => getModelProbabilities(league),
-  get_injuries: ({ league }) => getInjuries(league),
-  get_player_props: ({ league }) => getPlayerProps(league),
-  get_trend_summary: ({ league }) => getTrendSummary(league),
+// Most tools take a simple { league } input. get_prop_projection takes a
+// richer payload, so the dispatch table uses `unknown` and each handler
+// narrows. The analyst loop already passes block.input verbatim.
+export const TOOL_HANDLERS: Record<ToolName, (input: unknown) => unknown> = {
+  get_odds: input => getOdds((input as { league: AgentLeague }).league),
+  get_model_probabilities: input => getModelProbabilities((input as { league: AgentLeague }).league),
+  get_injuries: input => getInjuries((input as { league: AgentLeague }).league),
+  get_player_props: input => getPlayerProps((input as { league: AgentLeague }).league),
+  get_trend_summary: input => getTrendSummary((input as { league: AgentLeague }).league),
   get_mlb_signals: () => getMlbSignals(),
+  get_prop_projection: input => getPropProjection(input as PropProjectionInput),
 };
 
 // Anthropic tool definitions (JSON Schema format)
@@ -434,6 +473,23 @@ export const TOOL_DEFINITIONS = [
       type: "object" as const,
       properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
       required: [],
+    },
+  },
+  {
+    name: "get_prop_projection",
+    description:
+      "REQUIRED source of modelProb for any prop pick you ship. Computes a deterministic projection from the player's last 10-14 games + opponent allowance. Returns: projected (adjusted mean), stddev, modelProb (probability of the chosen side hitting), nGames, rollingMean, opponentFactor (1.0 = neutral, <1 = tough matchup, >1 = soft), recentForm (last 5 values), notes. Returns { available: false } when the player has < 5 games in the window — in that case you MUST skip the prop, never invent a modelProb. Currently NBA + MLB only. propType uses the keys from get_player_props (player_points, player_rebounds, batter_hits, etc.). Opponent must be the full team displayName (e.g. 'Minnesota Timberwolves'), not abbreviations.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        league: { type: "string", enum: ["NBA", "MLB"] },
+        player: { type: "string", description: "Full player display name" },
+        propType: { type: "string", description: "Prop key (player_points, player_rebounds, batter_hits, etc.)" },
+        line: { type: "number" },
+        side: { type: "string", enum: ["over", "under"] },
+        opponent: { type: "string", description: "Opponent team displayName, used for matchup adjustment" },
+      },
+      required: ["league", "player", "propType", "line", "side"],
     },
   },
 ];

@@ -4,8 +4,10 @@
 import type { GradedPick } from "./grader";
 
 const MAX_DAILY_UNITS = 5.0;
-const MAX_PICKS_PER_GAME = 1;
-const ROAD_DOG_CLUSTER_LIMIT = 3; // flag if 3+ road dogs same day
+const MAX_ML_PICKS_PER_GAME = 1;
+const MAX_PROP_PICKS_PER_GAME = 2; // allow at most 2 props on the same matchup
+const MAX_PROPS_PER_PLAYER = 1;    // never stack two legs on the same player
+const ROAD_DOG_CLUSTER_LIMIT = 3;  // flag if 3+ road dogs same day
 const FLOAT_EPSILON = 1e-9;
 
 export type BankrollGuardResult = {
@@ -79,19 +81,52 @@ function gameKey(p: GradedPick): string {
 export function applyBankrollGuard(picks: GradedPick[]): BankrollGuardResult {
   const dropped: Array<{ pick: GradedPick; reason: string }> = [];
   const flags: string[] = [];
-  const seenGames = new Map<string, number>(); // game → pick count
   const sortedByEdge = [...picks].sort((a, b) => b.edge - a.edge);
 
-  // Pass 1: drop multiple picks on same game, keep highest-edge
+  // Pass 1: per-game and per-player caps. ML picks: at most 1 per game.
+  // Prop picks: at most 2 per game and at most 1 per player. Run as a
+  // single pass against highest-edge-first so the survivor on a contested
+  // game is always the strongest pick.
+  const mlByGame = new Map<string, number>();
+  const propsByGame = new Map<string, number>();
+  const propsByPlayer = new Map<string, number>();
   const sameGamePass: GradedPick[] = [];
   for (const p of sortedByEdge) {
     const key = gameKey(p);
-    const count = seenGames.get(key) ?? 0;
-    if (count >= MAX_PICKS_PER_GAME) {
+    if (p.market === "moneyline") {
+      const count = mlByGame.get(key) ?? 0;
+      if (count >= MAX_ML_PICKS_PER_GAME) {
+        dropped.push({ pick: p, reason: `same-game ML duplicate (already have ${count} on "${p.matchup}")` });
+        continue;
+      }
+      mlByGame.set(key, count + 1);
+      sameGamePass.push(p);
+      continue;
+    }
+    if (p.market === "prop") {
+      const gameCount = propsByGame.get(key) ?? 0;
+      if (gameCount >= MAX_PROP_PICKS_PER_GAME) {
+        dropped.push({ pick: p, reason: `prop game-cap (already have ${gameCount} prop legs on "${p.matchup}")` });
+        continue;
+      }
+      const playerKey = normalizeForMatch(p.player ?? "");
+      const playerCount = playerKey ? propsByPlayer.get(playerKey) ?? 0 : 0;
+      if (playerKey && playerCount >= MAX_PROPS_PER_PLAYER) {
+        dropped.push({ pick: p, reason: `prop player-cap (already have a leg on "${p.player}")` });
+        continue;
+      }
+      propsByGame.set(key, gameCount + 1);
+      if (playerKey) propsByPlayer.set(playerKey, playerCount + 1);
+      sameGamePass.push(p);
+      continue;
+    }
+    // Spread/total — fall through to the conservative ML cap.
+    const count = mlByGame.get(key) ?? 0;
+    if (count >= MAX_ML_PICKS_PER_GAME) {
       dropped.push({ pick: p, reason: `same-game duplicate (already have ${count} on "${p.matchup}")` });
       continue;
     }
-    seenGames.set(key, count + 1);
+    mlByGame.set(key, count + 1);
     sameGamePass.push(p);
   }
 
