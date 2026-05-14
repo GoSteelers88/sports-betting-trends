@@ -1,14 +1,15 @@
 {
-  "generatedAt": "2026-05-13T23:41:39.556Z",
+  "generatedAt": "2026-05-14T16:25:23.118Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 3,
+  "recordCount": 2,
   "errors": [
+    "unmodeled: Away Goals @ Home Goals (bv_25555699)",
     "unmodeled: Ottawa Charge @ Montreal Victoire (fd_35603397)"
   ],
   "data": {
-    "generatedAt": "2026-05-13T23:41:39.556Z",
+    "generatedAt": "2026-05-14T16:25:23.118Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
@@ -18,40 +19,28 @@
     "gameCount": 4,
     "results": [
       {
-        "eventId": "fd_35597513",
-        "homeTeam": "Colorado Avalanche",
-        "awayTeam": "Minnesota Wild",
-        "homeWinProb": 0.5769,
-        "awayWinProb": 0.4231,
-        "expectedMargin": 1.03,
-        "homeNetRtg": 0.6666666666666666,
-        "awayNetRtg": -1,
-        "calibrated": false,
-        "startTime": "2026-05-14T00:10:00.000Z"
-      },
-      {
         "eventId": "fd_35602082",
         "homeTeam": "Buffalo Sabres",
         "awayTeam": "Montreal Canadiens",
-        "homeWinProb": 0.4864,
-        "awayWinProb": 0.5136,
-        "expectedMargin": -0.18,
-        "homeNetRtg": 0.16666666666666666,
+        "homeWinProb": 0.4836,
+        "awayWinProb": 0.5164,
+        "expectedMargin": -0.22,
+        "homeNetRtg": 0.09090909090909091,
         "awayNetRtg": 0.9285714285714286,
         "calibrated": false,
-        "startTime": "2026-05-14T23:00:46.000Z"
+        "startTime": "2026-05-14T23:10:46.000Z"
       },
       {
         "eventId": "fd_35602086",
         "homeTeam": "Anaheim Ducks",
         "awayTeam": "Vegas Golden Knights",
-        "homeWinProb": 0.4835,
-        "awayWinProb": 0.5165,
-        "expectedMargin": -0.22,
-        "homeNetRtg": -0.38461538461538464,
+        "homeWinProb": 0.4864,
+        "awayWinProb": 0.5136,
+        "expectedMargin": -0.18,
+        "homeNetRtg": -0.3076923076923077,
         "awayNetRtg": 0.45454545454545453,
         "calibrated": false,
-        "startTime": "2026-05-15T01:30:00.000Z"
+        "startTime": "2026-05-15T01:50:00.000Z"
       }
     ]
   }

@@ -1,103 +1,39 @@
 {
-  "fetchedAt": "2026-05-13T23:41:05.094Z",
+  "fetchedAt": "2026-05-14T16:24:44.967Z",
   "league": "icehockey_nhl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 4,
   "sampleEvent": {
-    "id": "fd_35597513",
+    "id": "bv_25555699",
     "sport_key": "icehockey_nhl",
-    "commence_time": "2026-05-14T00:10:00.000Z",
-    "home_team": "Colorado Avalanche",
-    "away_team": "Minnesota Wild"
+    "commence_time": "2026-05-14T23:10:00.000Z",
+    "home_team": "Home Goals",
+    "away_team": "Away Goals"
   },
   "events": [
     {
-      "id": "fd_35597513",
+      "id": "bv_25555699",
       "sport_key": "icehockey_nhl",
       "sport_title": "NHL",
-      "commence_time": "2026-05-14T00:10:00.000Z",
-      "home_team": "Colorado Avalanche",
-      "away_team": "Minnesota Wild",
+      "commence_time": "2026-05-14T23:10:00.000Z",
+      "home_team": "Home Goals",
+      "away_team": "Away Goals",
       "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Minnesota Wild",
-                  "price": 184
-                },
-                {
-                  "name": "Colorado Avalanche",
-                  "price": -225
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Minnesota Wild",
-                  "price": -134,
-                  "point": 1.5
-                },
-                {
-                  "name": "Colorado Avalanche",
-                  "price": 110,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -102,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": -120,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        },
         {
           "key": "bovada",
           "title": "Bovada",
           "markets": [
             {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Minnesota Wild",
-                  "price": -130,
-                  "point": 1.5
-                },
-                {
-                  "name": "Colorado Avalanche",
-                  "price": 110,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Minnesota Wild",
-                  "price": 190
+                  "name": "Away Goals",
+                  "price": 100
                 },
                 {
-                  "name": "Colorado Avalanche",
-                  "price": -230
+                  "name": "Home Goals",
+                  "price": -120
                 }
               ]
             },
@@ -106,72 +42,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 100,
-                  "point": 6.5
+                  "price": 102,
+                  "point": 12.5
                 },
                 {
                   "name": "Under",
-                  "price": -120,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35603397",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-05-14T23:00:00.000Z",
-      "home_team": "Montreal Victoire",
-      "away_team": "Ottawa Charge",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Ottawa Charge",
-                  "price": 134
-                },
-                {
-                  "name": "Montreal Victoire",
-                  "price": -162
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Ottawa Charge",
-                  "price": -225,
-                  "point": 1.5
-                },
-                {
-                  "name": "Montreal Victoire",
-                  "price": 180,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 118,
-                  "point": 4.5
-                },
-                {
-                  "name": "Under",
-                  "price": -144,
-                  "point": 4.5
+                  "price": -122,
+                  "point": 12.5
                 }
               ]
             }
@@ -183,7 +60,7 @@
       "id": "fd_35602082",
       "sport_key": "icehockey_nhl",
       "sport_title": "NHL",
-      "commence_time": "2026-05-14T23:00:46.000Z",
+      "commence_time": "2026-05-14T23:10:46.000Z",
       "home_team": "Buffalo Sabres",
       "away_team": "Montreal Canadiens",
       "bookmakers": [
@@ -209,7 +86,7 @@
               "outcomes": [
                 {
                   "name": "Montreal Canadiens",
-                  "price": -250,
+                  "price": -260,
                   "point": 1.5
                 },
                 {
@@ -273,13 +150,72 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 100,
+                  "price": -105,
                   "point": 6
                 },
                 {
                   "name": "Under",
-                  "price": -120,
+                  "price": -115,
                   "point": 6
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35603397",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-05-14T23:20:29.000Z",
+      "home_team": "Montreal Victoire",
+      "away_team": "Ottawa Charge",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Ottawa Charge",
+                  "price": 134
+                },
+                {
+                  "name": "Montreal Victoire",
+                  "price": -162
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Ottawa Charge",
+                  "price": -225,
+                  "point": 1.5
+                },
+                {
+                  "name": "Montreal Victoire",
+                  "price": 180,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 118,
+                  "point": 4.5
+                },
+                {
+                  "name": "Under",
+                  "price": -144,
+                  "point": 4.5
                 }
               ]
             }
@@ -291,7 +227,7 @@
       "id": "fd_35602086",
       "sport_key": "icehockey_nhl",
       "sport_title": "NHL",
-      "commence_time": "2026-05-15T01:30:00.000Z",
+      "commence_time": "2026-05-15T01:50:00.000Z",
       "home_team": "Anaheim Ducks",
       "away_team": "Vegas Golden Knights",
       "bookmakers": [
@@ -332,12 +268,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 104,
+                  "price": 106,
                   "point": 6.5
                 },
                 {
                   "name": "Under",
-                  "price": -128,
+                  "price": -130,
                   "point": 6.5
                 }
               ]
@@ -353,12 +289,12 @@
               "outcomes": [
                 {
                   "name": "Vegas Golden Knights",
-                  "price": 225,
+                  "price": 220,
                   "point": -1.5
                 },
                 {
                   "name": "Anaheim Ducks",
-                  "price": -275,
+                  "price": -270,
                   "point": 1.5
                 }
               ]
@@ -368,11 +304,11 @@
               "outcomes": [
                 {
                   "name": "Vegas Golden Knights",
-                  "price": -112
+                  "price": -115
                 },
                 {
                   "name": "Anaheim Ducks",
-                  "price": -108
+                  "price": -105
                 }
               ]
             },
@@ -381,13 +317,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 105,
-                  "point": 6.5
+                  "price": -122,
+                  "point": 6
                 },
                 {
                   "name": "Under",
-                  "price": -125,
-                  "point": 6.5
+                  "price": 102,
+                  "point": 6
                 }
               ]
             }
