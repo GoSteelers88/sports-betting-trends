@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-05-16T15:14:24.107Z",
+  "generatedAt": "2026-05-16T23:34:40.819Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 4,
+  "recordCount": 6,
   "errors": [],
   "data": {
-    "generatedAt": "2026-05-16T15:14:24.107Z",
+    "generatedAt": "2026-05-16T23:34:40.819Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 4,
+    "gameCount": 6,
     "results": [
       {
         "eventId": "fd_35608246",
@@ -62,6 +62,30 @@
         "awayNetRtg": -5.5,
         "calibrated": false,
         "startTime": "2026-05-17T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35611456",
+        "homeTeam": "Dallas Wings",
+        "awayTeam": "Washington Mystics",
+        "homeWinProb": 0.5079,
+        "awayWinProb": 0.4921,
+        "expectedMargin": 0.3,
+        "homeNetRtg": 2.6666666666666665,
+        "awayNetRtg": 5.333333333333333,
+        "calibrated": false,
+        "startTime": "2026-05-19T00:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35611460",
+        "homeTeam": "Portland Fire",
+        "awayTeam": "Connecticut Sun",
+        "homeWinProb": 0.5714,
+        "awayWinProb": 0.4286,
+        "expectedMargin": 2.74,
+        "homeNetRtg": -10.25,
+        "awayNetRtg": -13,
+        "calibrated": false,
+        "startTime": "2026-05-19T02:00:00.000Z"
       }
     ]
   }
