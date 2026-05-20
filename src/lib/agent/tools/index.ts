@@ -7,18 +7,102 @@ import { project as projectProp, type ProjectionInput } from "@/lib/prop-project
 
 const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 
-function loadJson<T>(file: string, fallback: T): T {
+// Staleness threshold for data files. Beyond this, the loader marks the file
+// as "stale" — the tool will pass that signal back to the analyst so it can
+// see in-band that its odds/model/injury data is old, and the orchestrator
+// can decide whether to ingest before delegating. 6h covers a typical
+// GH Actions ingest cadence (every 8h) plus headroom.
+const STALE_AGE_MS = 6 * 60 * 60 * 1000;
+
+export type DataStatus = "ok" | "stale" | "missing" | "malformed";
+
+export type LoadResult<T> = {
+  data: T;
+  status: DataStatus;
+  // Last-modified time of the file. Null if the file is missing.
+  mtimeMs: number | null;
+  // Age in milliseconds, computed at load time. Null if missing.
+  ageMs: number | null;
+};
+
+// In-process de-dupe set so each (file, status) emission is logged once per
+// process. Without this, every tool call on a stale/missing file would
+// re-spam Discord.
+const _emittedWarnings = new Set<string>();
+
+function loadJsonWithStatus<T>(file: string, fallback: T): LoadResult<T> {
+  const fullPath = path.join(PROCESSED, file);
+  let stat: fs.Stats;
   try {
-    const raw = fs.readFileSync(path.join(PROCESSED, file), "utf8");
-    return JSON.parse(raw) as T;
+    stat = fs.statSync(fullPath);
   } catch {
-    return fallback;
+    emitWarning(file, "missing", null);
+    return { data: fallback, status: "missing", mtimeMs: null, ageMs: null };
   }
+
+  const ageMs = Date.now() - stat.mtimeMs;
+  let raw: string;
+  try {
+    raw = fs.readFileSync(fullPath, "utf8");
+  } catch {
+    emitWarning(file, "missing", null);
+    return { data: fallback, status: "missing", mtimeMs: stat.mtimeMs, ageMs };
+  }
+
+  let parsed: T;
+  try {
+    parsed = JSON.parse(raw) as T;
+  } catch (err) {
+    console.error(`loadJsonWithStatus: malformed JSON in ${file}:`, err);
+    emitWarning(file, "malformed", ageMs);
+    return { data: fallback, status: "malformed", mtimeMs: stat.mtimeMs, ageMs };
+  }
+
+  if (ageMs > STALE_AGE_MS) {
+    emitWarning(file, "stale", ageMs);
+    return { data: parsed, status: "stale", mtimeMs: stat.mtimeMs, ageMs };
+  }
+  return { data: parsed, status: "ok", mtimeMs: stat.mtimeMs, ageMs };
+}
+
+function emitWarning(file: string, status: DataStatus, ageMs: number | null): void {
+  const key = `${file}:${status}`;
+  if (_emittedWarnings.has(key)) return;
+  _emittedWarnings.add(key);
+  const ageStr = ageMs !== null ? `${(ageMs / 3_600_000).toFixed(1)}h old` : "no mtime";
+  console.warn(`[tools/loadJson] ${status.toUpperCase()}: ${file} (${ageStr})`);
+}
+
+// Format a LoadResult's status into a string the analyst can read in the
+// tool response payload. Returns null when the file is fresh — keeps the
+// tool output unchanged in the common path.
+function dataWarning(file: string, status: DataStatus, ageMs: number | null): string | null {
+  if (status === "ok") return null;
+  const ageHrs = ageMs !== null ? (ageMs / 3_600_000).toFixed(1) : "unknown";
+  if (status === "stale") {
+    return `DATA WARNING: ${file} is ${ageHrs}h old (stale > ${STALE_AGE_MS / 3_600_000}h). Numbers may not reflect the current slate — treat with caution and prefer skipping rather than picking on stale data.`;
+  }
+  if (status === "missing") {
+    return `DATA ERROR: ${file} is missing. This tool returned empty/fallback data. You cannot reliably pick from missing data — pass on any pick that depends on this file.`;
+  }
+  return `DATA ERROR: ${file} is malformed JSON (age ${ageHrs}h). Treat as missing — pass on picks that depend on it.`;
 }
 
 // ─── Types we expose to the agent ──────────────────────────────────────────
 
 export type AgentLeague = "NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB";
+
+// Leagues the pipeline is allowed to generate picks for. Tightened to NBA+MLB
+// after the 2026-05 paper trial showed WNBA/NHL picks were leaking through
+// scope-creep, contaminating the funding metrics, and bypassing the prop
+// autograder (NBA/MLB only). Other leagues remain in the AgentLeague type so
+// the autograder + dashboard can still surface legacy picks.
+export const IN_SCOPE_LEAGUES = ["NBA", "MLB"] as const;
+export type InScopeLeague = (typeof IN_SCOPE_LEAGUES)[number];
+
+export function isInScope(league: string): league is InScopeLeague {
+  return (IN_SCOPE_LEAGUES as readonly string[]).includes(league);
+}
 
 export type GameOdds = {
   eventId: string;
@@ -107,8 +191,12 @@ type RawOddsEvent = {
 };
 type RawOddsFile = { events?: RawOddsEvent[]; fetchedAt?: string };
 
-export function getOdds(league: AgentLeague): { fetchedAt: string | null; events: GameOdds[] } {
-  const data = loadJson<RawOddsFile>(ODDS_FILE[league], { events: [] });
+export function getOdds(
+  league: AgentLeague
+): { fetchedAt: string | null; events: GameOdds[]; dataWarning?: string } {
+  const file = ODDS_FILE[league];
+  const loaded = loadJsonWithStatus<RawOddsFile>(file, { events: [] });
+  const data = loaded.data;
   const events = (data.events ?? []).map((ev): GameOdds => {
     const homePrices: number[] = [];
     const awayPrices: number[] = [];
@@ -215,7 +303,12 @@ export function getOdds(league: AgentLeague): { fetchedAt: string | null; events
     };
   });
 
-  return { fetchedAt: data.fetchedAt ?? null, events };
+  const warn = dataWarning(file, loaded.status, loaded.ageMs);
+  return {
+    fetchedAt: data.fetchedAt ?? null,
+    events,
+    ...(warn ? { dataWarning: warn } : {}),
+  };
 }
 
 // ─── Tool: get_model_probabilities ─────────────────────────────────────────
@@ -232,6 +325,7 @@ type MlbModelFile = {
 export function getModelProbabilities(league: AgentLeague): {
   generatedAt: string | null;
   games: ModelView[];
+  dataWarning?: string;
 } {
   const file = MODEL_FILE[league];
   if (!file) return { generatedAt: null, games: [] };
@@ -240,18 +334,22 @@ export function getModelProbabilities(league: AgentLeague): {
   // { generatedAt, data: { results } } — built by basketball-model.ts and
   // hockey-model.ts respectively. The agent reads them through the same path.
   if (league === "NBA" || league === "WNBA" || league === "NHL") {
-    const data = loadJson<NbaModelFile>(file, {});
+    const loaded = loadJsonWithStatus<NbaModelFile>(file, {});
+    const warn = dataWarning(file, loaded.status, loaded.ageMs);
     return {
-      generatedAt: data.generatedAt ?? null,
-      games: data.data?.results ?? [],
+      generatedAt: loaded.data.generatedAt ?? null,
+      games: loaded.data.data?.results ?? [],
+      ...(warn ? { dataWarning: warn } : {}),
     };
   }
 
   if (league === "MLB") {
-    const data = loadJson<MlbModelFile>(file, {});
+    const loaded = loadJsonWithStatus<MlbModelFile>(file, {});
+    const warn = dataWarning(file, loaded.status, loaded.ageMs);
     return {
-      generatedAt: data.generatedAt ?? null,
-      games: data.results ?? [],
+      generatedAt: loaded.data.generatedAt ?? null,
+      games: loaded.data.results ?? [],
+      ...(warn ? { dataWarning: warn } : {}),
     };
   }
 
@@ -262,7 +360,9 @@ export function getModelProbabilities(league: AgentLeague): {
 
 type InjuryFile = { fetchedAt?: string; players?: Injury[] };
 
-export function getInjuries(league: AgentLeague): { fetchedAt: string | null; players: Injury[] } {
+export function getInjuries(
+  league: AgentLeague
+): { fetchedAt: string | null; players: Injury[]; dataWarning?: string } {
   // We have nba/nfl/nhl injury snapshots; MLB / WNBA / NCAAB injuries surface
   // inside latest-summary for now. Return empty-list gracefully when absent.
   const file =
@@ -270,8 +370,13 @@ export function getInjuries(league: AgentLeague): { fetchedAt: string | null; pl
     : league === "NHL" ? "injuries-nhl.json"
     : null;
   if (!file) return { fetchedAt: null, players: [] };
-  const data = loadJson<InjuryFile>(file, {});
-  return { fetchedAt: data.fetchedAt ?? null, players: data.players ?? [] };
+  const loaded = loadJsonWithStatus<InjuryFile>(file, {});
+  const warn = dataWarning(file, loaded.status, loaded.ageMs);
+  return {
+    fetchedAt: loaded.data.fetchedAt ?? null,
+    players: loaded.data.players ?? [],
+    ...(warn ? { dataWarning: warn } : {}),
+  };
 }
 
 // ─── Tool: get_player_props (NBA only currently) ───────────────────────────
@@ -301,13 +406,17 @@ export function getPlayerProps(league: AgentLeague): {
   generatedAt: string | null;
   available: boolean;
   topProps: PropEntry[];
+  dataWarning?: string;
 } {
   if (league !== "NBA") return { generatedAt: null, available: false, topProps: [] };
-  const data = loadJson<PropsFile>("latest-player-props.json", {});
+  const file = "latest-player-props.json";
+  const loaded = loadJsonWithStatus<PropsFile>(file, {});
+  const warn = dataWarning(file, loaded.status, loaded.ageMs);
   return {
-    generatedAt: data.generatedAt ?? null,
-    available: data.available ?? false,
-    topProps: data.topProps ?? [],
+    generatedAt: loaded.data.generatedAt ?? null,
+    available: loaded.data.available ?? false,
+    topProps: loaded.data.topProps ?? [],
+    ...(warn ? { dataWarning: warn } : {}),
   };
 }
 
@@ -334,8 +443,14 @@ type MlbSignals = {
   closerChanges?: Array<{ team: string; newCloser: string; effectiveDate: string }>;
 };
 
-export function getMlbSignals(): MlbSignals {
-  return loadJson<MlbSignals>("mlb-advanced-signals.json", {});
+export function getMlbSignals(): MlbSignals & { dataWarning?: string } {
+  const file = "mlb-advanced-signals.json";
+  const loaded = loadJsonWithStatus<MlbSignals>(file, {});
+  const warn = dataWarning(file, loaded.status, loaded.ageMs);
+  return {
+    ...loaded.data,
+    ...(warn ? { dataWarning: warn } : {}),
+  };
 }
 
 // ─── Tool: get_trend_summary ───────────────────────────────────────────────
@@ -351,9 +466,17 @@ type SummaryLeague = {
 };
 type SummaryFile = { generatedAt?: string; leagues?: SummaryLeague[] };
 
-export function getTrendSummary(league: AgentLeague): SummaryLeague | null {
-  const data = loadJson<SummaryFile>("latest-summary.json", {});
-  return (data.leagues ?? []).find(l => l.league.toUpperCase() === league) ?? null;
+export function getTrendSummary(
+  league: AgentLeague
+): (SummaryLeague & { dataWarning?: string }) | { dataWarning: string } | null {
+  const file = "latest-summary.json";
+  const loaded = loadJsonWithStatus<SummaryFile>(file, {});
+  const warn = dataWarning(file, loaded.status, loaded.ageMs);
+  const found = (loaded.data.leagues ?? []).find(l => l.league.toUpperCase() === league) ?? null;
+  if (!found) {
+    return warn ? { dataWarning: warn } : null;
+  }
+  return warn ? { ...found, dataWarning: warn } : found;
 }
 
 // ─── Tool: get_prop_projection ─────────────────────────────────────────────
@@ -398,20 +521,84 @@ export type ToolName =
   | "get_player_props"
   | "get_trend_summary"
   | "get_mlb_signals"
-  | "get_prop_projection";
+  | "get_prop_projection"
+  | "get_dream_memory"
+  | "get_team_recent_records";
 
-// Most tools take a simple { league } input. get_prop_projection takes a
-// richer payload, so the dispatch table uses `unknown` and each handler
-// narrows. The analyst loop already passes block.input verbatim.
-export const TOOL_HANDLERS: Record<ToolName, (input: unknown) => unknown> = {
-  get_odds: input => getOdds((input as { league: AgentLeague }).league),
-  get_model_probabilities: input => getModelProbabilities((input as { league: AgentLeague }).league),
-  get_injuries: input => getInjuries((input as { league: AgentLeague }).league),
-  get_player_props: input => getPlayerProps((input as { league: AgentLeague }).league),
-  get_trend_summary: input => getTrendSummary((input as { league: AgentLeague }).league),
-  get_mlb_signals: () => getMlbSignals(),
-  get_prop_projection: input => getPropProjection(input as PropProjectionInput),
+// Per-run dependencies the analyst passes in via buildToolHandlers(). Lets us
+// inject DB-backed snapshots (active memory rules, latest dream notes, per-team
+// recent results) without making the tool handlers themselves async, which
+// would force a bigger refactor of the analyst's tool-use loop.
+export type ToolDeps = {
+  activeMemories: Array<{
+    id: number;
+    type: string;
+    scope: string;
+    rule: string;
+    reasoning: string;
+    weight: number;
+  }>;
+  latestDream: {
+    startedAt: string;
+    picksReviewed: number;
+    memoriesAdded: number;
+    memoriesRetired: number;
+    notes: string | null;
+  } | null;
+  teamRecords: Array<{
+    team: string;
+    picks: Array<{
+      pickId: number;
+      selection: string;
+      oddsAmerican: number;
+      edge: number;
+      gameDate: string;
+      result: string;
+    }>;
+  }>;
 };
+
+export function buildToolHandlers(
+  deps: ToolDeps
+): Record<ToolName, (input: unknown) => unknown> {
+  return {
+    get_odds: input => getOdds((input as { league: AgentLeague }).league),
+    get_model_probabilities: input =>
+      getModelProbabilities((input as { league: AgentLeague }).league),
+    get_injuries: input => getInjuries((input as { league: AgentLeague }).league),
+    get_player_props: input => getPlayerProps((input as { league: AgentLeague }).league),
+    get_trend_summary: input => getTrendSummary((input as { league: AgentLeague }).league),
+    get_mlb_signals: () => getMlbSignals(),
+    get_prop_projection: input => getPropProjection(input as PropProjectionInput),
+    get_dream_memory: () => ({
+      // Return EVERYTHING the analyst needs from dream in one payload. The
+      // analyst is required to call this tool first thing every run (enforced
+      // in the system prompt + reasoning trace audit by the critic).
+      activeRules: deps.activeMemories,
+      latestDreamRun: deps.latestDream,
+      note: deps.activeMemories.length === 0
+        ? "No active rules yet — dream has not consolidated enough graded picks."
+        : `Rules with weight ≥ 0.5 are HARD GUARDRAILS. If a pick matches a hard rule, either drop the pick OR cite the rule id in your thesis and give a SPECIFIC, evidence-backed reason why today's data overrides it.`,
+    }),
+    get_team_recent_records: () => ({
+      teams: deps.teamRecords,
+      note:
+        deps.teamRecords.length === 0
+          ? "No team has ≥2 graded picks in the last 14d."
+          : "Teams listed here have ≥2 graded picks recently. Use this to avoid re-picking teams that are cold. If you must re-pick, explain in the thesis what's specifically different.",
+    }),
+  };
+}
+
+// Legacy export kept for callers that don't have dep injection wired (e.g.
+// older smoke scripts). Returns handlers with empty memory state — the new
+// tools will respond accurately ("no rules / no team records yet") rather
+// than throw, but the analyst won't see real memory through this path.
+export const TOOL_HANDLERS = buildToolHandlers({
+  activeMemories: [],
+  latestDream: null,
+  teamRecords: [],
+});
 
 // Anthropic tool definitions (JSON Schema format)
 export const TOOL_DEFINITIONS = [
@@ -421,7 +608,7 @@ export const TOOL_DEFINITIONS = [
       "Get today's consensus odds for all games in a league. Returns moneyline, spread, and total medians across major US books, with implied probabilities.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
       required: ["league"],
     },
   },
@@ -431,7 +618,7 @@ export const TOOL_DEFINITIONS = [
       "Get the in-house model's win probabilities for today's games. NBA model includes expected margin and net ratings; MLB model is calibrated and pitcher-aware.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
       required: ["league"],
     },
   },
@@ -441,7 +628,7 @@ export const TOOL_DEFINITIONS = [
       "Get current injury list for a league. Returns player, team, status, injury type, and expected return date when available.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
       required: ["league"],
     },
   },
@@ -451,7 +638,7 @@ export const TOOL_DEFINITIONS = [
       "Get the top-ranked player props for the league with consensus lines and the model's pick side and confidence. Currently NBA only.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
       required: ["league"],
     },
   },
@@ -461,7 +648,7 @@ export const TOOL_DEFINITIONS = [
       "Get a high-level trend summary for the league, including trend score, recent averages, and best-bet rankings.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
       required: ["league"],
     },
   },
@@ -471,7 +658,7 @@ export const TOOL_DEFINITIONS = [
       "MLB-only advanced metrics from FanGraphs. Returns: regressionCandidates (batters with xwOBA - wOBA >= 0.020 = BABIP-suppressed, hits/total-bases overs are undervalued), velocityGainers (pitchers with rising FB velocity = strikeouts overs are undervalued), closerChanges (recent role shifts saves market may not have priced). Use to find props the market hasn't caught up with.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
       required: [],
     },
   },
@@ -490,6 +677,26 @@ export const TOOL_DEFINITIONS = [
         opponent: { type: "string", description: "Opponent team displayName, used for matchup adjustment" },
       },
       required: ["league", "player", "propType", "line", "side"],
+    },
+  },
+  {
+    name: "get_dream_memory",
+    description:
+      "REQUIRED FIRST STEP of every analyst run. Returns the active AgentMemory rules (consolidated weekly by the dream agent) and the latest dream-run notes. Rules with weight ≥ 0.5 are HARD GUARDRAILS — if a pick matches a hard rule, either drop the pick or justify the override in your thesis by referencing the rule id and citing specific evidence for why today is the exception. The critic gets the same rule list and will kill picks that violate a hard rule without justification.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "get_team_recent_records",
+    description:
+      "Returns recent moneyline pick results grouped by team (last 14 days). Use this to avoid re-picking teams the agent is cold on. Surfaces only teams with ≥2 graded picks in the window so singletons don't create noise. If you decide to re-pick a team that's 0-2, your thesis MUST explain what's specifically different today (lineup, matchup, pitcher, etc.) — the critic checks this.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
     },
   },
 ];

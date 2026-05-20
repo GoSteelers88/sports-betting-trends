@@ -19,8 +19,16 @@ import { critique, applyCritiqueToPicks, type CritiqueResult } from "./critic";
 import { applyBankrollGuard, type BankrollGuardResult } from "./bankroll";
 import { notifyPicks, notifyError } from "./notify";
 import type { GradedPick } from "./grader";
-import type { AgentLeague } from "./tools";
+import { isInScope, type AgentLeague } from "./tools";
+import { getActiveMemoriesForScope } from "./memory";
 import { prisma } from "@/lib/prisma";
+
+export class OutOfScopeLeagueError extends Error {
+  constructor(league: string) {
+    super(`league ${league} is out of scope (allowed: NBA, MLB)`);
+    this.name = "OutOfScopeLeagueError";
+  }
+}
 
 export type OrchestratorTrace = {
   step: string;
@@ -58,7 +66,7 @@ Operating procedure:
 
 Map of staleReasons → ingest scripts:
 - "odds file …" → ingest:odds
-- "model file …" / "model has 0 games" → ingest:nba-efficiency + ingest:nba-model (NBA), ingest:mlb-model (MLB; also requires ingest:mlb-pitchers, ingest:mlb-bullpen, ingest:mlb-batting if those are also flagged), ingest:wnba-efficiency + ingest:wnba-model (WNBA), or ingest:nhl-efficiency + ingest:nhl-model (NHL)
+- "model file …" / "model has 0 games" → ingest:nba-efficiency + ingest:nba-model (NBA), or ingest:mlb-model (MLB; also requires ingest:mlb-pitchers, ingest:mlb-bullpen, ingest:mlb-batting if those are also flagged)
 - "injury file …" → ingest:injuries
 
 Respond with a brief plain-text summary at the end (1-3 sentences). The picks themselves are returned out-of-band — your text is just for the run log.`;
@@ -69,7 +77,7 @@ const TOOL_DEFS = [
     description: "Check freshness and sanity of odds/model/injury snapshots for a league. Pure code, no API cost.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
       required: ["league"],
     },
   },
@@ -95,7 +103,7 @@ const TOOL_DEFS = [
       "Hand off to the analyst agent. Returns the analyst's picks (already grader-checked). Call this exactly once after data is healthy.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA", "NHL", "NCAAB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
       required: ["league"],
     },
   },
@@ -104,6 +112,14 @@ const TOOL_DEFS = [
 const MAX_ITERATIONS = 8;
 
 export async function orchestrate(league: AgentLeague): Promise<OrchestratorResult> {
+  if (!isInScope(league)) {
+    await notifyError("orchestrate.outOfScope", `requested league=${league} is out of scope`, {
+      league,
+      allowed: ["NBA", "MLB"],
+    });
+    throw new OutOfScopeLeagueError(league);
+  }
+
   const client = getAnthropic();
   const runId = `orc_${crypto.randomBytes(8).toString("hex")}`;
   const trace: OrchestratorTrace[] = [];
@@ -172,12 +188,47 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
               analystToolsUsed = out.toolsUsed;
               analystTrace = out.reasoningTrace;
               rawAnalystPickCount = out.rawAnalystPickCount;
+
+              // Notify on every grader drop so silent rejections show up in
+              // Discord telemetry. Particularly important for "edge below
+              // floor" drops where the analyst's claimed edge passed but the
+              // recompute fell short — that's a model calibration signal,
+              // not a routine filter.
+              if (out.graderDropped.length > 0) {
+                trace.push({
+                  step: "grader_drops",
+                  detail: out.graderDropped.map(d => ({
+                    matchup: d.pick.matchup,
+                    market: d.pick.market,
+                    selection: d.pick.selection,
+                    claimedEdge: d.pick.edge,
+                    notes: d.notes,
+                  })),
+                  at,
+                });
+                await notifyError(
+                  "grader.drops",
+                  `analyst produced ${out.graderDropped.length} pick(s) the grader rejected`,
+                  {
+                    runId: out.runId,
+                    league: input.league,
+                    drops: out.graderDropped.map(d => ({
+                      matchup: d.pick.matchup,
+                      selection: d.pick.selection,
+                      claimedEdge: +(d.pick.edge * 100).toFixed(2),
+                      notes: d.notes.filter(n => n.startsWith("HARD:")),
+                    })),
+                  }
+                );
+              }
+
               trace.push({
                 step: "delegate_to_analyst",
                 detail: {
                   runId: out.runId,
                   rawAnalystPicks: out.rawAnalystPickCount,
                   graderKept: out.picks.length,
+                  graderDropped: out.graderDropped.length,
                   tools: out.toolsUsed,
                   iterations: out.iterations,
                 },
@@ -228,7 +279,12 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
   let finalPicks: GradedPick[] = [];
 
   if (analystPicks && analystPicks.length > 0) {
-    critique_ = await critique(league, analystPicks, analystTrace);
+    // Pass the same active memory rules to the critic so it can audit each
+    // pick against them. The analyst's reasoning trace shows whether it
+    // called get_dream_memory; the rules list lets the critic actually
+    // judge compliance.
+    const activeMemories = await getActiveMemoriesForScope(league);
+    critique_ = await critique(league, analystPicks, analystTrace, activeMemories);
     trace.push({ step: "critic", detail: critique_, at: new Date().toISOString() });
 
     // Fail-closed: if critic JSON failed to parse (parseFailed flag set, or
@@ -252,6 +308,53 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
     } else {
       const afterCritique = applyCritiqueToPicks(analystPicks, critique_.decisions);
       killed = afterCritique.killed;
+
+      // Critic floor: if the analyst produced ≥3 grader-kept picks AND the
+      // critic killed everything that survived the grader, the pipeline becomes
+      // a brick wall. On weak slates this is fine, but losing every pick across
+      // many runs in a row is more consistent with critic over-eagerness than
+      // with the slate. As a safety net we rescue the highest-edge analyst pick
+      // (only if it's at the 6%+ grader floor) at half stake, and tag it so the
+      // dashboard and Discord show it was the floor pick rather than a normal
+      // approval. Set CRITIC_FLOOR=off env var to disable. Threshold (3) chosen
+      // to avoid kicking in on 1-2 pick slates which are noisier.
+      const CRITIC_FLOOR_ENABLED = (process.env.CRITIC_FLOOR ?? "on").toLowerCase() !== "off";
+      const CRITIC_FLOOR_MIN_RAW = 3;
+      const CRITIC_FLOOR_STAKE_MULT = 0.5;
+      if (
+        CRITIC_FLOOR_ENABLED &&
+        analystPicks.length >= CRITIC_FLOOR_MIN_RAW &&
+        afterCritique.kept.length === 0 &&
+        killed.length === analystPicks.length
+      ) {
+        const rescue = [...analystPicks].sort((a, b) => b.edge - a.edge)[0];
+        if (rescue.edge >= 0.06) {
+          const floored: GradedPick = {
+            ...rescue,
+            kellyStakeUnits: +(rescue.kellyStakeUnits * CRITIC_FLOOR_STAKE_MULT).toFixed(2),
+            graderNotes: [
+              ...rescue.graderNotes,
+              `critic floor: rescued (×${CRITIC_FLOOR_STAKE_MULT}) — critic killed all ${analystPicks.length} picks`,
+            ],
+          };
+          afterCritique.kept.push(floored);
+          killed = killed.filter(k => k.pick !== rescue);
+          trace.push({
+            step: "critic_floor_engaged",
+            detail: {
+              rawPicks: analystPicks.length,
+              rescued: { matchup: rescue.matchup, selection: rescue.selection, edge: rescue.edge, stake: floored.kellyStakeUnits },
+            },
+            at: new Date().toISOString(),
+          });
+          await notifyError(
+            "critic.floorEngaged",
+            `critic killed all ${analystPicks.length} picks — rescued highest-edge pick at ${CRITIC_FLOOR_STAKE_MULT}× stake`,
+            { runId, league, matchup: rescue.matchup, selection: rescue.selection, edge: rescue.edge }
+          );
+        }
+      }
+
       const guard = applyBankrollGuard(afterCritique.kept);
       trace.push({
         step: "bankroll_guard",

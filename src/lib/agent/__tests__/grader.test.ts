@@ -2,7 +2,7 @@
 // be enforced or the analyst can ship picks below threshold.
 
 import { describe, it, expect } from "vitest";
-import { gradePicks } from "../grader";
+import { gradePicks, gradePicksWithDrops } from "../grader";
 import type { AnalystPick } from "../analyst";
 
 function pick(over: Partial<AnalystPick> = {}): AnalystPick {
@@ -70,5 +70,37 @@ describe("gradePicks", () => {
     const out = gradePicks([pick({ edge: 0.12 })]);
     expect(out).toHaveLength(1);
     expect(out[0].graderNotes.some(n => /SOFT/.test(n))).toBe(true);
+  });
+
+  describe("edge tolerance band", () => {
+    it("rescues pick at half stake when computed edge falls into [5.5%, 6%) tolerance band", () => {
+      // Analyst claimed 6.1% (passes floor), recompute lands at 5.8% (in band).
+      const out = gradePicksWithDrops([
+        pick({ edge: 0.061, modelProb: 0.608, marketProb: 0.55, kellyStakeUnits: 1.0 }),
+      ]);
+      expect(out.kept).toHaveLength(1);
+      expect(out.dropped).toHaveLength(0);
+      expect(out.kept[0].kellyStakeUnits).toBe(0.5); // half stake
+      expect(out.kept[0].graderNotes.some(n => /tolerance band/.test(n))).toBe(true);
+    });
+
+    it("hard-drops picks where computed edge falls below the tolerance band", () => {
+      // Analyst claimed 6.1% (passes floor), recompute lands at 5.0% (below band).
+      const out = gradePicksWithDrops([
+        pick({ edge: 0.061, modelProb: 0.60, marketProb: 0.55 }),
+      ]);
+      expect(out.kept).toHaveLength(0);
+      expect(out.dropped).toHaveLength(1);
+      expect(out.dropped[0].notes.some(n => /HARD: edge/.test(n))).toBe(true);
+    });
+
+    it("does not trigger tolerance when analyst's claimed edge also fails the floor", () => {
+      // Both claimed and computed at 5.8% — pre-existing rule should still drop.
+      const out = gradePicksWithDrops([
+        pick({ edge: 0.058, modelProb: 0.608, marketProb: 0.55 }),
+      ]);
+      expect(out.kept).toHaveLength(0);
+      expect(out.dropped).toHaveLength(1);
+    });
   });
 });

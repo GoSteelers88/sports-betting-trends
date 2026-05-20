@@ -10,18 +10,48 @@ export type GradedPick = AnalystPick & {
   graderNotes: string[];
 };
 
+// Each dropped pick is returned alongside `kept` picks so the orchestrator can
+// telemetry-notify on silent drops (e.g., analyst stated 6.1% edge but the
+// recompute gave 5.9% — pre-2026-05-20 this pick vanished without a Discord
+// or AgentRun trace, masking what may be a calibration drift in the model.)
+export type GraderDrop = {
+  pick: AnalystPick;
+  notes: string[];
+};
+
+export type GradeResult = {
+  kept: GradedPick[];
+  dropped: GraderDrop[];
+};
+
 // Minimum pre-vig edge required to keep a pick. Bumped from 3% → 6% to clear
 // market vig (Pinnacle ~2%, soft books 4-5%) plus a margin of safety for
 // model error. CLV-validated research: edges below the vig are net-negative
 // even when the model is right; the floor needs to leave room for the juice.
 const MIN_EDGE = 0.06; // 600 bps
+// Tolerance band below the floor. If the analyst's claimed edge passes the
+// floor but the recompute lands within `[MIN_EDGE - EDGE_TOLERANCE, MIN_EDGE)`
+// — i.e., off by <0.5pp due to rounding — we keep the pick at half stake
+// with a graderNotes warning, rather than silently dropping it. Below the
+// tolerance band it's a real model/math error and we hard-fail.
+const EDGE_TOLERANCE = 0.005; // 50 bps
+const EDGE_TOLERANCE_STAKE_MULT = 0.5;
 const MAX_KELLY_UNITS = 2.0;
 const MIN_THESIS_CHARS = 80;
 
+// Legacy entry point kept for callers that don't need the dropped-pick
+// telemetry. New callers (orchestrator) should use gradePicksWithDrops to
+// also surface what was rejected and why.
 export function gradePicks(picks: AnalystPick[]): GradedPick[] {
-  const out: GradedPick[] = [];
+  return gradePicksWithDrops(picks).kept;
+}
+
+export function gradePicksWithDrops(picks: AnalystPick[]): GradeResult {
+  const kept: GradedPick[] = [];
+  const dropped: GraderDrop[] = [];
   for (const p of picks) {
     const notes: string[] = [];
+    let edgeToleranceTriggered = false;
 
     // Hard checks
     if (!p.matchup) notes.push("HARD: missing matchup");
@@ -36,11 +66,24 @@ export function gradePicks(picks: AnalystPick[]): GradedPick[] {
     // Recompute edge ourselves to catch math errors
     if (typeof p.modelProb === "number" && typeof p.marketProb === "number") {
       const computedEdge = p.modelProb - p.marketProb;
-      if (Math.abs(computedEdge - p.edge) > 0.005) {
+      if (Math.abs(computedEdge - p.edge) > EDGE_TOLERANCE) {
         notes.push(`SOFT: claimed edge ${p.edge.toFixed(4)} disagrees with computed ${computedEdge.toFixed(4)}`);
       }
       if (computedEdge < MIN_EDGE) {
-        notes.push(`HARD: edge ${(computedEdge * 100).toFixed(2)}% below ${(MIN_EDGE * 100).toFixed(2)}% minimum`);
+        const claimedPassed = p.edge >= MIN_EDGE;
+        const withinTolerance = computedEdge >= MIN_EDGE - EDGE_TOLERANCE;
+        if (claimedPassed && withinTolerance) {
+          // Analyst rounded up; recompute lands in the tolerance band. Keep
+          // at half stake with an explicit warning rather than silently
+          // dropping. This avoids the "stated 6.1%, recomputed 5.9% → vanished"
+          // pathology.
+          notes.push(
+            `SOFT: computed edge ${(computedEdge * 100).toFixed(2)}% landed in tolerance band [${((MIN_EDGE - EDGE_TOLERANCE) * 100).toFixed(2)}%, ${(MIN_EDGE * 100).toFixed(2)}%) — keeping at ${EDGE_TOLERANCE_STAKE_MULT}× stake`
+          );
+          edgeToleranceTriggered = true;
+        } else {
+          notes.push(`HARD: edge ${(computedEdge * 100).toFixed(2)}% below ${(MIN_EDGE * 100).toFixed(2)}% minimum`);
+        }
       }
     }
 
@@ -80,14 +123,22 @@ export function gradePicks(picks: AnalystPick[]): GradedPick[] {
     }
 
     const hardFail = notes.some(n => n.startsWith("HARD:"));
-    if (hardFail) continue; // drop entirely
+    if (hardFail) {
+      dropped.push({ pick: p, notes });
+      continue;
+    }
 
-    out.push({
+    let stake = Math.min(p.kellyStakeUnits, MAX_KELLY_UNITS);
+    if (edgeToleranceTriggered) {
+      stake = +(stake * EDGE_TOLERANCE_STAKE_MULT).toFixed(2);
+    }
+
+    kept.push({
       ...p,
-      kellyStakeUnits: Math.min(p.kellyStakeUnits, MAX_KELLY_UNITS),
+      kellyStakeUnits: stake,
       graderOk: notes.length === 0,
       graderNotes: notes,
     });
   }
-  return out;
+  return { kept, dropped };
 }

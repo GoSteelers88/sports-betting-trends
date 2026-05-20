@@ -54,9 +54,11 @@ export function Sidebar({ data }: { data: DashboardData }) {
   const pnlSign = pnl > 0 ? "+" : "";
   const pnlColor = pnl > 0 ? "var(--edge)" : pnl < 0 ? "var(--kill)" : "var(--text)";
 
-  // Paper trial progress — first criterion target (sample size). Used as the
-  // visual progress mark for "are we close to deploying real capital".
-  const sampleCriterion = paperTrial.criteria.find(c => c.label.includes("Sample"));
+  // Paper trial progress — ML sample size is the primary "close to deploying"
+  // signal. Prop sample is tracked separately and isn't surfaced here.
+  const sampleCriterion = paperTrial.criteria.find(
+    c => c.track === "ml" && c.label.toLowerCase().includes("sample size")
+  );
   const sampleCur = sampleCriterion?.current ?? "0";
   const sampleTarget = sampleCriterion?.target ?? "200";
   const samplePct = Math.min(

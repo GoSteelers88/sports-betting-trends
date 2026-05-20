@@ -108,9 +108,28 @@ export type ClvCaptureResult = {
   unmatched: number;
   errors: string[];
   averageClvCents: number | null;
+  // Window the run scanned, in minutes relative to now. Useful for verifying
+  // the 5-min Vercel cron is actually hitting the right pre-game window.
+  windowMinBeforeStart: number;
+  windowMaxBeforeStart: number;
 };
 
-export async function captureClv(): Promise<ClvCaptureResult> {
+// Capture closing-line value for picks whose game is starting in the
+// `[minBeforeStart, maxBeforeStart]` minute window from now. Default window
+// is a tight pre-tip-off slot (2 to 12 min before commence_time) so we get
+// the actual closing line, not in-play prices. The Odds API still returns
+// h2h after a game starts, but the prices are live in-play odds — capturing
+// then would give a structurally negative CLV and corrupt the funding gate.
+//
+// Designed to be called every 5 minutes via Vercel Cron (`/api/cron/clv-capture`).
+// At 5-min cadence with a 10-min capture window, each pending pick has two
+// chances to be captured before going in-play.
+export async function captureClv(
+  opts: { minBeforeStart?: number; maxBeforeStart?: number } = {}
+): Promise<ClvCaptureResult> {
+  const minBeforeStart = opts.minBeforeStart ?? 2;
+  const maxBeforeStart = opts.maxBeforeStart ?? 12;
+
   const result: ClvCaptureResult = {
     ranAt: new Date().toISOString(),
     pendingChecked: 0,
@@ -118,18 +137,24 @@ export async function captureClv(): Promise<ClvCaptureResult> {
     unmatched: 0,
     errors: [],
     averageClvCents: null,
+    windowMinBeforeStart: minBeforeStart,
+    windowMaxBeforeStart: maxBeforeStart,
   };
 
-  // Pending = no CLV recorded yet, AND game time is within last 12 hours
-  // (we want the closing line, so games that have started or just started).
-  const since = new Date(Date.now() - 12 * 60 * 60 * 1000);
-  const until = new Date(Date.now() + 30 * 60 * 1000); // also catch games starting in next 30min
+  const now = Date.now();
+  const since = new Date(now + minBeforeStart * 60 * 1000);
+  const until = new Date(now + maxBeforeStart * 60 * 1000);
   let pending: Awaited<ReturnType<typeof prisma.agentPick.findMany>>;
   try {
     pending = await prisma.agentPick.findMany({
       where: {
         clvCents: null,
         gameDate: { gte: since, lte: until },
+        // Props excluded — prop markets lack the market-making liquidity
+        // that makes CLV a reliable edge signal (industry consensus). The
+        // dashboard already filters props OUT of CLV stats, so capturing
+        // them here just adds noise + Odds API quota cost for no benefit.
+        market: { not: "prop" },
       },
     });
   } catch (err) {

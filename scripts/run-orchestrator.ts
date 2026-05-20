@@ -1,23 +1,23 @@
 // Run the orchestrator end-to-end for one or more leagues.
-// Usage: npm run agent:run -- NBA   (single)
-//        npm run agent:run -- BOTH  (NBA + MLB; legacy default)
-//        npm run agent:run -- ALL   (NBA + MLB + WNBA + NHL)
-//        npm run agent:run -- WNBA  (single, opt-in)
-//        npm run agent:run -- NHL   (single, opt-in)
+// Usage: npm run agent:run -- NBA
+//        npm run agent:run -- MLB
+//        npm run agent:run -- BOTH   (NBA + MLB; default)
+//
+// Scope tightened to NBA + MLB on 2026-05-20. BOTH and ALL both expand to
+// [NBA, MLB] now; passing WNBA/NHL/NCAAB explicitly will hit the scope guard
+// in orchestrate() and throw OutOfScopeLeagueError.
 import { config } from "dotenv";
 config();
 
 import { orchestrate } from "../src/lib/agent/orchestrator";
-import type { AgentLeague } from "../src/lib/agent/tools";
+import { IN_SCOPE_LEAGUES, type AgentLeague } from "../src/lib/agent/tools";
 
 async function main() {
   const requested = (process.argv[2] ?? "BOTH").toUpperCase();
   const leagues: AgentLeague[] =
-    requested === "BOTH"
-      ? ["NBA", "MLB"]
-      : requested === "ALL"
-        ? ["NBA", "MLB", "WNBA", "NHL"]
-        : ([requested] as AgentLeague[]);
+    requested === "BOTH" || requested === "ALL"
+      ? [...IN_SCOPE_LEAGUES]
+      : ([requested] as AgentLeague[]);
 
   for (const league of leagues) {
     console.log(`\n══════════════ ${league} ORCHESTRATOR ══════════════`);

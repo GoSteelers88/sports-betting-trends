@@ -7,17 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       league:
-        description: League to analyze (NBA | MLB | WNBA | NHL | BOTH | ALL)
+        description: League to analyze (NBA | MLB | BOTH)
         required: true
-        default: ALL
+        default: BOTH
         type: choice
         options:
           - NBA
           - MLB
-          - WNBA
-          - NHL
           - BOTH
-          - ALL
   schedule:
     # Off-the-hour offsets to dodge GH Actions cron congestion at :00/:30 boundaries.
     # 14:07 UTC = 10:07 ET (morning slate scan)
@@ -103,11 +100,12 @@ jobs:
 
       - name: Run orchestrator
         # Pass LEAGUE via env, never interpolate ${{ }} into shell bodies.
-        # Scheduled runs hit `ALL` (= NBA + MLB + WNBA + NHL) so the cron
-        # picks up every active league. workflow_dispatch can override with
-        # any of the choice values, including BOTH (legacy NBA + MLB only).
+        # Scope is NBA + MLB only — WNBA / NHL / NCAAB removed 2026-05-20
+        # after they leaked into the paper trial and contaminated metrics.
+        # The scope guard in orchestrate() will throw OutOfScopeLeagueError
+        # if anything else slips in via workflow_dispatch.
         env:
-          LEAGUE: ${{ github.event.inputs.league || 'ALL' }}
+          LEAGUE: ${{ github.event.inputs.league || 'BOTH' }}
         run: npm run agent:run -- "$LEAGUE"
 
       - name: Commit refreshed data back to repo (allowlisted files only)

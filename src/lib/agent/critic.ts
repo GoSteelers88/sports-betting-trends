@@ -6,6 +6,7 @@ import { getAnthropic, MODELS } from "./client";
 import type { GradedPick } from "./grader";
 import type { AgentLeague } from "./tools";
 import type { TraceStep } from "./analyst";
+import type { ActiveMemory } from "./memory";
 
 export type CritiqueDecision = {
   pickIndex: number; // 0-based index into input array
@@ -25,13 +26,24 @@ export type CritiqueResult = {
 
 const CRITIC_SYSTEM = `You are a sharp, contrarian sports-betting analyst whose job is to KILL bad picks before they ship.
 
-You will receive an analyst's proposed picks AND, when available, the analyst's reasoning trace — the tool calls it made, what each tool returned, and any narrative it wrote between tool calls. Use the trace to audit upstream decisions, not just the final JSON:
+You will receive an analyst's proposed picks, the analyst's reasoning trace, and the list of active AgentMemory rules. Use all three to audit:
 
+═══ PROCESS AUDIT (kill on any violation) ═══
+- Did the analyst call **get_dream_memory** before producing picks? If not, kill ALL picks for process violation. This is a required first step.
+- For moneyline picks, did the analyst call **get_team_recent_records**? If not, kill all moneyline picks.
 - Did the analyst gather the right data? (e.g., picked an MLB game without checking get_injuries or get_mlb_signals)
-- Did a tool result contradict the thesis but get ignored? (e.g., get_injuries flagged a star out, thesis doesn't mention it)
+- Did a tool result contradict the thesis but get ignored?
 - Is the modelProb consistent with what get_model_probabilities or get_prop_projection returned, or did the analyst invent a number?
 - Are the bestPrice odds the analyst cited actually present in the get_odds result, or did it hallucinate?
-- Did the analyst follow active AgentMemory rules visible in the trace, or quietly violate them?
+
+═══ MEMORY RULE COMPLIANCE (this is the load-bearing check) ═══
+The active rules block in the user payload lists every AgentMemory rule the analyst was given. For each pick:
+
+1. Does the pick match any active rule? (e.g., a heavy NBA home favorite at -170 or shorter triggers a rule like "Heavy NBA home favorites with large net-rating gaps underperform")
+2. If yes, what's the rule's weight?
+   - **weight ≥ 0.5** → HARD GUARDRAIL. The thesis MUST cite the rule id and give a specific, evidence-backed override reason. Generic statements like "today is different" or "the matchup is favorable" are NOT acceptable overrides — KILL.
+   - **weight 0.3-0.5** → soft signal. Mark "weaken" with multiplier 0.5 unless the thesis explicitly addresses the rule.
+3. If the analyst re-picked a team that get_team_recent_records flagged as 0-2 or worse, kill UNLESS the thesis identifies a specific, named change (lineup, pitcher, injury return, weather, etc.).
 
 For each pick, your default position is skeptical: assume it's wrong unless the thesis is rock-solid AND the trace supports it.
 
@@ -87,7 +99,8 @@ function trimTraceToBudget(trace: TraceStep[]): TraceStep[] {
 export async function critique(
   league: AgentLeague,
   picks: GradedPick[],
-  trace?: TraceStep[]
+  trace?: TraceStep[],
+  activeMemories?: ActiveMemory[]
 ): Promise<CritiqueResult> {
   if (picks.length === 0) return { decisions: [], rawText: "", parseFailed: false };
 
@@ -98,6 +111,18 @@ export async function critique(
   const userPayload = JSON.stringify(
     {
       league,
+      activeRules: (activeMemories ?? []).map(m => ({
+        id: m.id,
+        type: m.type,
+        scope: m.scope,
+        weight: m.weight,
+        rule: m.rule,
+        reasoning: m.reasoning,
+      })),
+      activeRulesNote:
+        (activeMemories ?? []).length === 0
+          ? "no active rules — process-audit checks still apply"
+          : "Check each pick against these. Weight ≥ 0.5 = hard guardrail; thesis must cite rule id and give specific override evidence or KILL.",
       picks: picks.map((p, i) => ({
         index: i,
         matchup: p.matchup,

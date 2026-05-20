@@ -2,17 +2,21 @@ import crypto from "node:crypto";
 import { getAnthropic, MODELS } from "./client";
 import {
   TOOL_DEFINITIONS,
-  TOOL_HANDLERS,
+  buildToolHandlers,
   ToolName,
   AgentLeague,
+  isInScope,
 } from "./tools";
 import {
   getActiveMemoriesForScope,
   formatMemoriesForPrompt,
   getRecentRecord,
   formatRecordForPrompt,
+  getLatestDreamSummary,
+  getRecentResultsByTeam,
+  formatTeamRecordsForPrompt,
 } from "./memory";
-import { gradePicks, GradedPick } from "./grader";
+import { gradePicksWithDrops, GradedPick, type GraderDrop } from "./grader";
 import { prisma } from "@/lib/prisma";
 
 // ─── Pick shape returned by the analyst ────────────────────────────────────
@@ -62,6 +66,10 @@ export type AnalyzeResult = {
   // Used by the orchestrator as the denominator for critic kill rate so the
   // metric isn't biased by grader rejections.
   rawAnalystPickCount: number;
+  // Picks the grader rejected, with their failure notes. Surfaced so the
+  // orchestrator can notify on silent drops — pre-2026-05-20 these vanished
+  // without telemetry, masking model calibration drift.
+  graderDropped: GraderDrop[];
   toolsUsed: ToolName[];
   rawResponseText: string;
   reasoningTrace: TraceStep[];
@@ -70,15 +78,32 @@ export type AnalyzeResult = {
 
 // ─── Prompts ───────────────────────────────────────────────────────────────
 
-function systemPrompt(league: AgentLeague, memoryBlock: string, recordBlock: string): string {
+function systemPrompt(
+  league: AgentLeague,
+  memoryBlock: string,
+  recordBlock: string,
+  teamRecordsBlock: string,
+  dreamBlock: string
+): string {
   return `You are a sharp, disciplined sports-betting analyst working on ${league}.
 
 Your recent record:
 ${recordBlock}
 
+Per-team recent results (last 14 days, moneyline only):
+${teamRecordsBlock}
+
+Latest dream consolidation:
+${dreamBlock}
+
 Your job: produce a small ranked list of bets for today's slate, each with explicit reasoning, EV, and an invalidation level. Quality over quantity. Pass on slates with no edge.
 
-You have tools that read today's odds, in-house model probabilities, injuries, player props, league trend summaries, and a deterministic prop projector. Always start by calling tools — never invent numbers. Call multiple tools in parallel when independent.
+You have tools that read today's odds, in-house model probabilities, injuries, player props, league trend summaries, a deterministic prop projector, and your own consolidated memory from prior runs. Always start by calling tools — never invent numbers. Call multiple tools in parallel when independent.
+
+═══ REQUIRED FIRST STEP ═══
+Before any other tool call, you MUST call get_dream_memory(). This returns the active rules consolidated by your weekly dream-self plus the latest dream notes. The critic will audit your reasoning trace — if get_dream_memory is missing from your tool calls, the critic will kill ALL your picks. This is not optional.
+
+After get_dream_memory, also call get_team_recent_records() before producing any moneyline pick — it surfaces teams you've been cold on so you don't repeat the same losing read.
 
 You can produce TWO kinds of picks: moneyline picks and player-prop picks. Different rules apply to each.
 
@@ -122,8 +147,14 @@ Prop-specific risk: at most one prop per player per slate. Avoid stacking high-c
 - Round modelProb and marketProb to 4 decimals; round kellyStakeUnits to 2 decimals.
 - Always copy gameTime exactly from the get_odds tool's commenceTime for that event. This is critical for grading.
 
-Past learnings from prior dreams (apply unless they contradict today's specific data):
+═══ MEMORY RULES (HARD GUARDRAILS) ═══
+Active rules from prior weekly dream consolidations:
 ${memoryBlock}
+
+Enforcement (the critic checks this):
+- Rules with **weight ≥ 0.5** are HARD GUARDRAILS. If you produce a pick that matches a hard rule, either drop the pick OR include in your thesis: (a) the rule id you're overriding, and (b) a SPECIFIC, evidence-backed reason why today's data overrides it. Generic statements ("today is different", "the matchup is favorable") are NOT acceptable overrides — the critic will kill those picks.
+- Rules with weight 0.3-0.5 are soft signals. Weight your thesis accordingly but no override justification required.
+- If a rule references a per-team pattern (e.g. "Pistons are cold as heavy chalk") and the team-records tool confirms it, that's compound evidence — be especially careful.
 
 When you are done analyzing, return ONLY a JSON object on the final assistant turn with this exact shape — no prose, no markdown fences:
 { "picks": [ ...AnalystPick objects... ] }
@@ -136,15 +167,40 @@ const MAX_ITERATIONS = 8;
 // ─── Analyst run ───────────────────────────────────────────────────────────
 
 export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
+  if (!isInScope(league)) {
+    throw new Error(`analyze: league ${league} is out of scope (allowed: NBA, MLB)`);
+  }
+
   const client = getAnthropic();
   const runId = `run_${crypto.randomBytes(8).toString("hex")}`;
-  const memories = await getActiveMemoriesForScope(league);
-  const record = await getRecentRecord(league, 7);
+
+  // Pull all per-run state (memory rules, latest dream notes, team records,
+  // recent record) once up front. These get passed to the LLM via the system
+  // prompt AND injected into the get_dream_memory / get_team_recent_records
+  // tool handlers — so the analyst sees them in two places and the critic
+  // can audit which tools were actually called.
+  const [memories, record, latestDream, teamRecords] = await Promise.all([
+    getActiveMemoriesForScope(league),
+    getRecentRecord(league, 7),
+    getLatestDreamSummary(),
+    getRecentResultsByTeam(league, 14),
+  ]);
+
   const sys = systemPrompt(
     league,
     formatMemoriesForPrompt(memories),
-    formatRecordForPrompt(record)
+    formatRecordForPrompt(record),
+    formatTeamRecordsForPrompt(teamRecords),
+    latestDream?.notes
+      ? `Dream ${latestDream.startedAt.slice(0, 10)} reviewed ${latestDream.picksReviewed} picks (added ${latestDream.memoriesAdded}, retired ${latestDream.memoriesRetired}). Notes: ${latestDream.notes}`
+      : "(no completed dream consolidation yet)"
   );
+
+  const toolHandlers = buildToolHandlers({
+    activeMemories: memories,
+    latestDream,
+    teamRecords,
+  });
 
   const messages: Array<{
     role: "user" | "assistant";
@@ -198,7 +254,7 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
             name,
             argsSummary: JSON.stringify(block.input ?? {}).slice(0, 300),
           });
-          const handler = TOOL_HANDLERS[name];
+          const handler = toolHandlers[name];
           let result: unknown = { error: `unknown tool: ${name}` };
           if (handler) {
             try {
@@ -234,7 +290,7 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
   }
 
   const parsed = parsePicks(finalText);
-  const graded = gradePicks(parsed);
+  const graded = gradePicksWithDrops(parsed);
 
   // NOTE: persistence intentionally moved to the orchestrator's persistFinalPicks()
   // call, which runs AFTER the critic + bankroll guard. This prevents picks the
@@ -244,8 +300,9 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
     runId,
     league,
     modelId: MODELS.analyst,
-    picks: graded,
+    picks: graded.kept,
     rawAnalystPickCount: parsed.length,
+    graderDropped: graded.dropped,
     toolsUsed,
     rawResponseText: finalText,
     reasoningTrace,

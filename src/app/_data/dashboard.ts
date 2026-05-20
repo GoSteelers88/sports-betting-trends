@@ -253,9 +253,23 @@ export type PaperTrial = {
   propSampleSize: number;
   propWinRate: number | null;
   propRoi: number | null;
-  // Decision criteria (computed live)
-  ready: boolean;          // all criteria met
-  criteria: Array<{ label: string; met: boolean; current: string; target: string }>;
+  // Decision criteria (computed live).
+  //
+  // `ready` reflects the ML track only — that's what gates initial Kalshi
+  // placement. `mlReady` and `propReady` are the per-track booleans; props
+  // are placed only when propReady, independent of mlReady.
+  ready: boolean;
+  mlReady: boolean;
+  propReady: boolean;
+  criteria: Array<{
+    label: string;
+    met: boolean;
+    current: string;
+    target: string;
+    // "ml" gates Kalshi placement on moneyline (the primary venue).
+    // "prop" gates prop placement; the two tracks are independent.
+    track: "ml" | "prop";
+  }>;
 };
 
 export type DashboardData = {
@@ -677,10 +691,17 @@ async function loadPaperTrial(): Promise<PaperTrial> {
   let propRoi: number | null = null;
 
   try {
+    // ML-only outcomes for the main trial track. Props are tracked separately
+    // below — they were enabled late (2026-05) without their own shakedown
+    // period and have different variance/CLV properties (industry consensus:
+    // CLV is not reliable on props due to thin market-making). Mixing the two
+    // contaminates the Kalshi funding signal, so the headline ledger is
+    // moneyline only and props get their own sub-track.
     const outcomes = await prisma.agentOutcome.findMany({
       where: {
         gradedAt: { gte: PAPER_TRIAL_START },
         result: { in: ["win", "loss", "push"] },
+        pick: { market: { not: "prop" } },
       },
       include: { pick: true },
       orderBy: { gradedAt: "asc" },
@@ -767,53 +788,75 @@ async function loadPaperTrial(): Promise<PaperTrial> {
   //   3. Avg CLV ≥ +2¢ — must beat the closing line by enough to clear vig
   //   4. ROI ≥ +2% — was +3% (still useful but secondary to CLV)
   //   5. Critic kill rate ≥ 25% — kept; signals the critic is doing real work
-  const criteria = [
+  // Two-track structure:
+  //   ML track gates Kalshi placement on moneyline (the primary venue).
+  //   Prop track is parallel — props will only be placed when the prop track
+  //   also clears its own gates. Props enabled 2026-05 without a shakedown
+  //   period, so they need their own validation before they count.
+  const criteria: PaperTrial["criteria"] = [
     {
-      label: "Sample size ≥ 200",
+      label: "ML sample size ≥ 200",
       met: totalGraded >= 200,
       current: `${totalGraded}`,
       target: "200",
+      track: "ml",
     },
     {
-      label: "CLV beat rate ≥ 55%",
+      label: "ML CLV beat rate ≥ 55%",
       met: clvSampleSize >= 50 && clvBeatRate !== null && clvBeatRate >= 0.55,
       current: clvBeatRate !== null ? `${(clvBeatRate * 100).toFixed(1)}%` : "—",
       target: "≥ 55%",
+      track: "ml" as const,
     },
     {
-      label: "Avg CLV ≥ +2¢",
+      label: "ML avg CLV ≥ +2¢",
       met: clvSampleSize >= 50 && clvAverageCents !== null && clvAverageCents >= 2,
       current: clvAverageCents !== null ? `${clvAverageCents >= 0 ? "+" : ""}${clvAverageCents.toFixed(1)}¢` : "—",
       target: "+2¢",
+      track: "ml" as const,
     },
     {
-      label: "ROI ≥ +2%",
+      label: "ML ROI ≥ +2%",
       met: roi !== null && roi >= 0.02,
       current: roi !== null ? `${(roi * 100).toFixed(1)}%` : "—",
       target: "+2%",
+      track: "ml" as const,
     },
     {
       label: "Critic kill rate ≥ 25%",
       met: criticKillRate !== null && criticKillRate >= 0.25,
       current: criticKillRate !== null ? `${(criticKillRate * 100).toFixed(1)}%` : "—",
       target: "≥ 25%",
+      track: "ml" as const,
     },
   ];
 
-  // Prop track gets its own criteria — appended only when there's any
-  // prop activity, so the section stays hidden during ML-only stretches.
+  // Prop track — independent of ML gates. Surfaced once any prop picks
+  // have been graded so the section stays hidden during ML-only stretches.
+  // CLV isn't a usable signal on props (thin market-making), so we lean on
+  // raw win rate + ROI with a smaller sample requirement than ML (100 vs 200)
+  // because the prop slate is smaller and we need to make a decision faster.
   if (propSampleSize > 0) {
     criteria.push({
-      label: "Prop sample ≥ 100",
+      label: "Prop sample size ≥ 100",
       met: propSampleSize >= 100,
       current: `${propSampleSize}`,
       target: "100",
+      track: "prop" as const,
     });
     criteria.push({
       label: "Prop win rate ≥ 55%",
       met: propSampleSize >= 50 && propWinRate !== null && propWinRate >= 0.55,
       current: propWinRate !== null ? `${(propWinRate * 100).toFixed(1)}%` : "—",
       target: "≥ 55%",
+      track: "prop" as const,
+    });
+    criteria.push({
+      label: "Prop ROI ≥ +2%",
+      met: propSampleSize >= 50 && propRoi !== null && propRoi >= 0.02,
+      current: propRoi !== null ? `${(propRoi * 100).toFixed(1)}%` : "—",
+      target: "+2%",
+      track: "prop" as const,
     });
   }
 
@@ -836,7 +879,11 @@ async function loadPaperTrial(): Promise<PaperTrial> {
     propSampleSize,
     propWinRate,
     propRoi,
-    ready: criteria.every(c => c.met),
+    ready: criteria.filter(c => c.track === "ml").every(c => c.met),
+    mlReady: criteria.filter(c => c.track === "ml").every(c => c.met),
+    propReady:
+      criteria.some(c => c.track === "prop") &&
+      criteria.filter(c => c.track === "prop").every(c => c.met),
     criteria,
   };
 }

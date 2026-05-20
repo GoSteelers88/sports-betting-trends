@@ -18,6 +18,11 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
   const remaining = Math.max(0, TARGET_SAMPLE - data.totalGraded);
   const anyMet = data.criteria.some(c => c.met);
 
+  const mlCriteria = data.criteria.filter(c => c.track === "ml");
+  const propCriteria = data.criteria.filter(c => c.track === "prop");
+  const mlReady = mlCriteria.length > 0 && mlCriteria.every(c => c.met);
+  const propReady = propCriteria.length > 0 && propCriteria.every(c => c.met);
+
   return (
     <section className="space-y-4">
       <SectionHeader
@@ -25,15 +30,15 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
         index="01"
         label="DEPLOYMENT GATE"
         title="FUNDING LOCKED"
-        subtitle="Capital cannot deploy until all five gates clear. CLV beat rate is the leading edge signal — calendar days are irrelevant."
-        status={data.ready ? "UNLOCKED" : "LOCKED"}
-        statusColor={data.ready ? "edge" : "kill"}
+        subtitle="Capital cannot deploy until all gates on a track clear. ML and Prop tracks are independent — props were enabled later and validate on their own metrics."
+        status={mlReady ? "ML UNLOCKED" : "LOCKED"}
+        statusColor={mlReady ? "edge" : "kill"}
       />
 
-      {/* Sample-size deployment bar */}
+      {/* Sample-size deployment bar (ML only — prop sample is shown in its own track) */}
       <div className="surface p-4 sm:p-5">
         <div className="flex items-baseline justify-between mb-2">
-          <span className="eyebrow text-[var(--muted)]">SAMPLE PROGRESS</span>
+          <span className="eyebrow text-[var(--muted)]">ML SAMPLE PROGRESS</span>
           <span className="numeric text-sm">
             <span className="text-[var(--text)]">{data.totalGraded}</span>
             <span className="text-[var(--muted)]"> / {TARGET_SAMPLE}</span>
@@ -44,22 +49,65 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
             className="meter-fill"
             style={{
               width: `${samplePct}%`,
-              background: data.ready ? "var(--edge)" : "var(--signal)",
+              background: mlReady ? "var(--edge)" : "var(--signal)",
             }}
           />
         </div>
         <p className="eyebrow text-[var(--muted)]">
-          {remaining > 0 ? `${remaining} REMAINING TO DEPLOY` : "SAMPLE TARGET MET"}
+          {remaining > 0 ? `${remaining} REMAINING TO DEPLOY ML` : "ML SAMPLE TARGET MET"}
         </p>
       </div>
 
-      {/* Five gate modules */}
+      {/* ML track */}
+      <TrackGroup
+        title="MONEYLINE TRACK"
+        readyLabel={mlReady ? "UNLOCKED" : "LOCKED"}
+        readyColor={mlReady ? "var(--edge)" : "var(--kill)"}
+        criteria={mlCriteria}
+        anyMet={anyMet}
+      />
+
+      {/* Prop track — only rendered once props have started accumulating */}
+      {propCriteria.length > 0 && (
+        <TrackGroup
+          title="PROP TRACK"
+          readyLabel={propReady ? "UNLOCKED" : "LOCKED"}
+          readyColor={propReady ? "var(--edge)" : "var(--kill)"}
+          criteria={propCriteria}
+          anyMet={anyMet}
+        />
+      )}
+    </section>
+  );
+}
+
+function TrackGroup({
+  title,
+  readyLabel,
+  readyColor,
+  criteria,
+  anyMet,
+}: {
+  title: string;
+  readyLabel: string;
+  readyColor: string;
+  criteria: PaperTrialData["criteria"];
+  anyMet: boolean;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-baseline justify-between">
+        <span className="eyebrow text-[var(--muted)]">{title}</span>
+        <span className="pill" style={{ color: readyColor, borderColor: readyColor }}>
+          {readyLabel}
+        </span>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        {data.criteria.map((c, i) => (
+        {criteria.map((c, i) => (
           <GateModule key={i} criterion={c} state={gateState(c, anyMet)} />
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 

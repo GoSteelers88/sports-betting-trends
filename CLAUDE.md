@@ -3,7 +3,11 @@
 ## What This Is
 Full-stack sports betting platform with a Claude-powered agent layer. Tracks
 performance, generates picks, runs a 30-day paper trial, and (eventually)
-places bets on Kalshi. Scope: **NBA + MLB only**.
+places bets on Kalshi. Scope: **NBA + MLB only** — hard-enforced via
+`IN_SCOPE_LEAGUES` + `isInScope()` at the `orchestrate()` and `analyze()`
+boundaries. WNBA/NHL/NCAAB were stripped on 2026-05-20 after they leaked
+into the paper trial and contaminated the CLV/ROI metrics. Legacy picks
+for those leagues remain in the DB so the dashboard can still surface them.
 
 ## Stack
 - **Frontend**: Next.js 16.1.6 + React 19.2.3 + Tailwind v4 + GSAP entrance animations

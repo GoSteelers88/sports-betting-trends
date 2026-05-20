@@ -8,9 +8,9 @@ export const maxDuration = 300;
 import { NextRequest, NextResponse } from "next/server";
 import { assertServiceAuth } from "@/lib/assertServiceAuth";
 import { orchestrate } from "@/lib/agent/orchestrator";
-import type { AgentLeague } from "@/lib/agent/tools";
+import { IN_SCOPE_LEAGUES, type AgentLeague } from "@/lib/agent/tools";
 
-const ALLOWED: AgentLeague[] = ["NBA", "MLB", "NCAAB"];
+const ALLOWED: readonly AgentLeague[] = IN_SCOPE_LEAGUES;
 
 export async function POST(req: NextRequest) {
   const authError = assertServiceAuth(req);
