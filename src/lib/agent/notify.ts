@@ -120,9 +120,22 @@ export async function notifyError(component: string, err: unknown, context?: Rec
   }
 }
 
-export async function notifyPicks(league: AgentLeague, picks: GradedPick[], runId: string): Promise<void> {
+export async function notifyPicks(
+  league: AgentLeague,
+  picks: GradedPick[],
+  runId: string,
+  killedCount = 0
+): Promise<void> {
   if (picks.length === 0) {
-    await postWebhook(`📊 **${league}** — no picks today (passed the slate). \`runId=${runId}\``);
+    // Empty + nothing-killed = silent. The "no picks today" message trained
+    // the channel to be ignored; we now only post when there's actual signal
+    // (a pick to ship OR a critic kill worth seeing). Errors and critic-floor
+    // engagement still ping the error webhook separately.
+    if (killedCount > 0) {
+      await postWebhook(
+        `📊 **${league}** — analyst produced picks but the critic killed all ${killedCount}. No ship. \`runId=${runId}\``
+      );
+    }
     return;
   }
   const header = `🎯 **${league}** picks (\`${runId}\`) — ${picks.length} bet${picks.length === 1 ? "" : "s"}, ${picks

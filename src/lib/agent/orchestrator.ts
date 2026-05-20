@@ -403,7 +403,7 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
   // Discord notification: only send if persistence worked. A failed persist
   // means picks shown in chat but missing from DB → grading divergence.
   if (persistOk) {
-    await notifyPicks(league, finalPicks, runId);
+    await notifyPicks(league, finalPicks, runId, killed.length);
   } else {
     trace.push({
       step: "discord_skipped",

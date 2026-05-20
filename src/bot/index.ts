@@ -5,6 +5,7 @@ import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
 import { COMMANDS } from "./commands";
 import { handleReaction } from "./handlers/reactions";
 import { handleParlayMessage } from "./handlers/parlay";
+import { startClvTicker } from "./clv-ticker";
 
 const TOKEN = process.env.DISCORD_BOT_TOKEN;
 if (!TOKEN) {
@@ -22,8 +23,15 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
+let clvTickerHandle: NodeJS.Timeout | null = null;
+
 client.once(Events.ClientReady, c => {
   console.log(`✅ Discord bot ready as ${c.user.tag}`);
+  // Start the per-game CLV capture loop. We do this only after the gateway
+  // is up so a bad DISCORD_BOT_TOKEN doesn't leave the ticker running on a
+  // dead bot process.
+  clvTickerHandle = startClvTicker();
+  console.log(`🕐 CLV ticker started (every 5min, 2–12min pre-tip-off window)`);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
@@ -67,11 +75,13 @@ client.login(TOKEN).catch(err => {
 // Graceful shutdown
 process.on("SIGINT", () => {
   console.log("SIGINT received — shutting down");
+  if (clvTickerHandle) clearInterval(clvTickerHandle);
   client.destroy();
   process.exit(0);
 });
 process.on("SIGTERM", () => {
   console.log("SIGTERM received — shutting down");
+  if (clvTickerHandle) clearInterval(clvTickerHandle);
   client.destroy();
   process.exit(0);
 });
