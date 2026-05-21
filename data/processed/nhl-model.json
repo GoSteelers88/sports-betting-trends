@@ -1,34 +1,20 @@
 {
-  "generatedAt": "2026-05-20T23:53:43.537Z",
+  "generatedAt": "2026-05-21T16:49:46.372Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
   "recordCount": 2,
-  "errors": [
-    "unmodeled: Montreal Victoire @ Ottawa Charge (fd_35626044)"
-  ],
+  "errors": [],
   "data": {
-    "generatedAt": "2026-05-20T23:53:43.537Z",
+    "generatedAt": "2026-05-21T16:49:46.372Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 3,
+    "gameCount": 2,
     "results": [
-      {
-        "eventId": "fd_35610311",
-        "homeTeam": "Colorado Avalanche",
-        "awayTeam": "Vegas Golden Knights",
-        "homeWinProb": 0.5306,
-        "awayWinProb": 0.4694,
-        "expectedMargin": 0.41,
-        "homeNetRtg": 1.1666666666666667,
-        "awayNetRtg": 0.75,
-        "calibrated": false,
-        "startTime": "2026-05-21T00:20:47.000Z"
-      },
       {
         "eventId": "fd_35616816",
         "homeTeam": "Carolina Hurricanes",
@@ -40,6 +26,18 @@
         "awayNetRtg": 1.2666666666666666,
         "calibrated": false,
         "startTime": "2026-05-22T00:20:36.000Z"
+      },
+      {
+        "eventId": "fd_35633721",
+        "homeTeam": "Colorado Avalanche",
+        "awayTeam": "Vegas Golden Knights",
+        "homeWinProb": 0.5059,
+        "awayWinProb": 0.4941,
+        "expectedMargin": 0.08,
+        "homeNetRtg": 0.9230769230769231,
+        "awayNetRtg": 1.1666666666666667,
+        "calibrated": false,
+        "startTime": "2026-05-23T00:00:00.000Z"
       }
     ]
   }
