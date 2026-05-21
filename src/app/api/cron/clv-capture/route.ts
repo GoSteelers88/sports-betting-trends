@@ -5,18 +5,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { captureClv } from "@/lib/clv-tracker";
 import { assertCronAuth } from "@/lib/assertCronAuth";
 
-// Pre-tip-off CLV capture. Fires every 5 minutes via Vercel Cron.
+// Pre-tip-off CLV capture. Designed for ad-hoc / manual invocations.
 //
-// The Odds API still returns h2h prices after a game starts, but those are
-// in-play live prices, not the close. Capturing them gives a structurally
-// negative CLV and corrupts the funding-gate signal — so we scan a tight
-// window of "games starting in the next 2–12 minutes" and capture only
-// those. At 5-min cadence with a 10-min window, each pick has two chances
-// to be captured before going in-play.
+// The primary production path is the agent-clv.yml GitHub Action, which
+// scrapes FanDuel + Bovada immediately before each capture. This route
+// reads the same scraped files (data/processed/latest-odds-api-*.json) and
+// will warn if they're stale (>30 min old).
 //
-// Default window is captureClv's default (2–12 min). Pass ?min=&max= query
-// params to override for ad-hoc backfills (e.g. ?min=2&max=30 after a
-// scheduler outage). Default cron schedule lives in vercel.json.
+// Scraped odds become in-play prices after commence_time, which would give
+// a structurally negative CLV — so the default window is `[10, 90]` minutes
+// pre-tip-off. Pass ?min=&max= query params to override for ad-hoc backfills.
 export async function POST(req: NextRequest) {
   const authError = assertCronAuth(req);
   if (authError) return authError;

@@ -1,5 +1,13 @@
 # Sports Betting Trends
 
+## Key Files (jump table)
+- `src/lib/agent/` — agent pipeline (see nested `CLAUDE.md` for deep context)
+- `src/app/_data/dashboard.ts` — dashboard data loader, paper-trial constants
+- `prisma/schema.prisma` — DB models (AgentPick, AgentOutcome, AgentRun, AgentMemory, …)
+- `scripts/trial-status.ts` — CLI funding-criteria check
+- `NEXT_SESSION.md` — prioritized backlog
+- `.claude/` — Claude Code config (settings, slash commands, hooks)
+
 ## What This Is
 Full-stack sports betting platform with a Claude-powered agent layer. Tracks
 performance, generates picks, runs a 30-day paper trial, and (eventually)
@@ -68,7 +76,7 @@ ingest:odds + ingest:free + ingest:injuries + scrape:nba-props + scrape:mlb-prop
                                               ↓
                                          analyst (Sonnet)
                                               ↓ raw picks
-                                       grader (pure code, 3% edge minimum)
+                                       grader (pure code, 6% edge minimum)
                                               ↓
                                        critic (Sonnet, fail-closed)
                                               ↓ kept/weakened/killed
@@ -84,7 +92,7 @@ Files:
 |---|---|
 | `client.ts` | Anthropic client + MODELS map |
 | `tools/index.ts` | get_odds (consensus + bestPrice off-market), get_model_probabilities, get_injuries, get_player_props, get_trend_summary, get_mlb_signals |
-| `analyst.ts` | Main analyst LLM loop; restricted to moneyline; requires gameTime per pick |
+| `analyst.ts` | Main analyst LLM loop; moneyline + player props (NBA/MLB); requires gameTime per pick |
 | `grader.ts` | Local pick rubric (edge ≥6%, stake ≤2u, thesis ≥80 chars, NaN-safe). Floor bumped from 3% → 6% in May 2026 to clear vig + safety margin. |
 | `critic.ts` | Devil's advocate Sonnet pass; parseFailed → fail-closed |
 | `bankroll.ts` | 5u/day cap with worst edge/stake-ratio trim; same-game dedup; road-dog cluster flag |
@@ -95,6 +103,11 @@ Files:
 | `memory.ts` | AgentMemory + recent record formatter for analyst self-awareness |
 | `notify.ts` | Discord webhook posts; notifyError() to alerts channel |
 | `orchestrator.ts` | The conductor; hard-stops after delegate_to_analyst |
+| `x-formatter.ts` | X/Twitter pick formatter; not on critical path |
+
+Deeper agent-layer context: `src/lib/agent/CLAUDE.md` (auto-loads when working in that directory).
+
+Tests: `src/lib/agent/__tests__/` — Vitest (bankroll, grader, autograder-match, x-formatter).
 
 Plus standalone:
 - `src/lib/clv-tracker.ts` — captures closing line value (closingOdds vs pickedOdds)
@@ -118,7 +131,8 @@ Plus standalone:
 
 **GitHub Actions** (`.github/workflows/`):
 - `agent-run.yml` — twice daily 14:00 + 22:30 UTC. Refreshes data → orchestrator → commit data back to repo (allowlisted files + secret-grep guard)
-- `agent-grade.yml` — daily 13:00 UTC. Grades yesterday's AgentPicks + ModelPickSnapshots; CLV tracker
+- `agent-grade.yml` — daily 13:00 UTC. Grades yesterday's AgentPicks + ModelPickSnapshots; daily CLV catch-all sweep
+- `agent-clv.yml` — every 20 min during 17:00-06:00 UTC. Scrapes FD+Bovada → captures CLV for pending picks in [10, 90] min pre-tip window
 - `agent-dream.yml` — Mondays 06:00 UTC. Memory consolidation
 - `agent-backup.yml` — daily 04:00 UTC. Dumps Turso to `data/backups/turso-YYYY-MM-DD.json`, commits
 
@@ -180,6 +194,7 @@ Aesthetic: dark navy gradient, layered radial accents (violet/cyan/pink), glassm
 - `POST /api/cron/grade` — auto-grader
 - `POST /api/cron/dream` — dream
 - `POST /api/cron/ingest` — ingest dispatcher
+- `POST /api/cron/clv-capture` — CLV closing-line capture
 
 All cron routes use timing-safe bearer compare with 4KB header guard.
 
@@ -210,8 +225,11 @@ All cron routes use timing-safe bearer compare with 4KB header guard.
 - `prisma:generate`, `prisma:migrate`
 
 **Tests:**
-- `test` — Vitest run (14 tests covering bankroll + grader)
+- `test` — Vitest run (`src/lib/agent/__tests__/` — bankroll, grader, autograder-match, x-formatter)
 - `test:watch` — Vitest watch mode
+
+**Status:**
+- `trial:status` — print 5 funding criteria status against current Turso data
 
 **Legacy:**
 - `ingest:*` — same as before (NBA efficiency, MLB pitchers, free-stats, etc.)
@@ -237,6 +255,8 @@ CLV anyway. Edge floor raised from 3% → 6% to clear vig (~2-5%) plus a
 margin for model error.
 
 Live status visible at `sports-betting-trends.vercel.app` in PaperTrial widget.
+Start date constant: `PAPER_TRIAL_START` in `src/app/_data/dashboard.ts`.
+CLI status check: `npm run trial:status`.
 
 ## What's NOT Yet Built
 

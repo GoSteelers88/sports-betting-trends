@@ -59,7 +59,8 @@
     "picks:clv": "tsx scripts/run-clv-tracker.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:backup": "tsx scripts/turso-backup.ts"
+    "db:backup": "tsx scripts/turso-backup.ts",
+    "trial:status": "tsx scripts/trial-status.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",

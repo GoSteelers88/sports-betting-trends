@@ -1,0 +1,64 @@
+name: Agent — CLV capture (pre-game)
+
+# Captures closing-line value for pending picks. Scrapes FanDuel + Bovada
+# fresh on every run, then runs picks:clv to match pending picks against
+# the scraped odds inside the [10, 90] minute pre-tip-off window.
+#
+# Source matches the analyst's pick source (FD + BV best line) so CLV is
+# apples-to-apples — not the prior best-line-vs-Odds-API-consensus mismatch.
+#
+# No paid Odds API key required. No Turso writes beyond AgentPick updates.
+
+on:
+  workflow_dispatch:
+    inputs:
+      minBeforeStart:
+        description: Minutes before tip to start capturing
+        required: false
+        default: "10"
+      maxBeforeStart:
+        description: Minutes before tip to stop capturing
+        required: false
+        default: "90"
+  schedule:
+    # Peak NBA/MLB game-start window in UTC:
+    #   NBA tips ~23:00-03:00 UTC (early/late games)
+    #   MLB games run ~17:00-04:00 UTC (afternoon through late west-coast)
+    # Every 20 minutes between 17:00 and 06:00 UTC covers both sports.
+    # GHA cron is best-effort — typical delay is 0-15 min — so the 80-min
+    # window (10 to 90 min pre-tip) absorbs the jitter and each pick gets
+    # 3-4 capture chances before going in-play.
+    - cron: "*/20 17-23 * * *"
+    - cron: "*/20 0-5 * * *"
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Scrape FanDuel + Bovada odds (fresh closing lines)
+        run: npm run ingest:odds
+
+      - name: Capture CLV for pending picks
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # Mirror so Prisma's schema-time URL parser doesn't throw; libSQL
+          # adapter overrides at runtime. See agent-run.yml for context.
+          DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          MIN_BEFORE: ${{ github.event.inputs.minBeforeStart || '10' }}
+          MAX_BEFORE: ${{ github.event.inputs.maxBeforeStart || '90' }}
+        run: npm run picks:clv -- "$MIN_BEFORE" "$MAX_BEFORE"

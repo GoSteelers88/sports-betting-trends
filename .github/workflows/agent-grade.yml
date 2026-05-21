@@ -54,12 +54,15 @@ jobs:
           DAYS_BACK: ${{ github.event.inputs.daysBack || '1' }}
         run: npm run picks:grade -- "$DAYS_BACK"
 
-      - name: Run CLV tracker (capture closing lines for any pending picks)
+      # CLV capture moved to agent-clv.yml (runs every 20 min during peak
+      # game window using fresh FD+Bovada scrapes). Keeping the call here
+      # as a daily catch-all in case the per-run capture window misses a
+      # pick — uses the same wide [10, 90] minute window.
+      - name: Run CLV tracker (catch-all sweep)
         env:
-          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           # Mirror so Prisma's schema-time URL parser doesn't throw; libSQL
           # adapter overrides at runtime. See agent-run.yml for context.
           DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
-        run: npm run picks:clv || echo "clv tracker failed (non-fatal)"
+        run: npm run ingest:odds && (npm run picks:clv -- 10 90 || echo "clv tracker failed (non-fatal)")

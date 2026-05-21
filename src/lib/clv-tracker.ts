@@ -2,26 +2,34 @@
 // pending pick and stores the delta as the truest measure of edge quality.
 //
 // Closing odds are computed as the BEST PRICE across US books at close,
-// mirroring how the analyst picks (best line, not consensus). Comparing
-// best-open vs median-close produces a structurally negative CLV even when
-// the line never moves, which is what we want to avoid.
+// mirroring how the analyst picks (best line, not consensus). Same source
+// as the analyst's picks (scrape-odds.ts → FanDuel + Bovada), so CLV is
+// apples-to-apples instead of comparing a best-line pick to a consensus
+// close.
 //
 // Strategy:
 //   - Find AgentPick rows where clvCents IS NULL and gameDate is within the
-//     last 6 hours (window catches games starting ~now)
-//   - For each pick, query The Odds API for the same league and find the
-//     matching event by team name
-//   - Compute clvCents = pickedOdds - bestClosingOdds  (positive = we beat the close)
+//     configured pre-game window
+//   - Read pre-scraped FD+Bovada odds from data/processed/latest-odds-api-{sportKey}.json
+//     (refreshed by the CLV workflow immediately before each capture)
+//   - Compute clvCents = pickedOdds - bestClosingOdds (positive = we beat the close)
 //   - Update AgentPick atomically
 
+import fs from "node:fs";
+import path from "node:path";
 import { prisma } from "./prisma";
 
-const ODDS_API_BASE = "https://api.the-odds-api.com/v4/sports";
 const LEAGUE_TO_SPORT: Record<string, string> = {
   NBA: "basketball_nba",
   MLB: "baseball_mlb",
   NCAAB: "basketball_ncaab",
 };
+
+// File data is considered usable for CLV if it's been refreshed within this
+// window. Beyond it, we still capture but record the staleness so we can
+// audit later. The CLV workflow scrapes immediately before each capture, so
+// in normal operation this stays well under 2 minutes.
+const ODDS_FILE_STALE_MINUTES = 30;
 
 type RawOddsEvent = {
   id: string;
@@ -35,6 +43,13 @@ type RawOddsEvent = {
       outcomes?: Array<{ name: string; price: number }>;
     }>;
   }>;
+};
+
+type OddsFilePayload = {
+  fetchedAt: string;
+  league: string;
+  eventCount: number;
+  events: RawOddsEvent[];
 };
 
 // Token-aware match (avoids "New York" → both Yankees and Mets)
@@ -59,28 +74,38 @@ function teamMatches(needle: string, hay: string): boolean {
   return need.every(t => haveSet.has(t));
 }
 
-async function fetchClosingOdds(league: string): Promise<RawOddsEvent[]> {
-  const apiKey = process.env.THE_ODDS_API_KEY;
-  if (!apiKey) {
-    console.warn("THE_ODDS_API_KEY not set — skipping closing-odds fetch");
-    return [];
-  }
+function loadClosingOdds(
+  league: string,
+): { events: RawOddsEvent[]; ageMinutes: number | null; missing: boolean } {
   const sport = LEAGUE_TO_SPORT[league];
-  if (!sport) return [];
-  const url = `${ODDS_API_BASE}/${sport}/odds?apiKey=${apiKey}&regions=us&markets=h2h&oddsFormat=american`;
+  if (!sport) return { events: [], ageMinutes: null, missing: true };
+
+  const filePath = path.join(
+    process.cwd(),
+    "data",
+    "processed",
+    `latest-odds-api-${sport}.json`,
+  );
+
+  if (!fs.existsSync(filePath)) {
+    console.warn(`closing-odds file missing for ${league}: ${filePath}`);
+    return { events: [], ageMinutes: null, missing: true };
+  }
+
   try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": "sports-betting-trends-clv/1.0" },
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (!res.ok) {
-      console.warn(`Odds API returned ${res.status} for ${sport}`);
-      return [];
+    const raw = fs.readFileSync(filePath, "utf8");
+    const payload = JSON.parse(raw) as OddsFilePayload;
+    const fetchedAt = new Date(payload.fetchedAt).getTime();
+    const ageMinutes = (Date.now() - fetchedAt) / 60_000;
+    if (ageMinutes > ODDS_FILE_STALE_MINUTES) {
+      console.warn(
+        `closing-odds file for ${league} is ${ageMinutes.toFixed(1)} min old — capture may use stale lines`,
+      );
     }
-    return (await res.json()) as RawOddsEvent[];
+    return { events: payload.events ?? [], ageMinutes, missing: false };
   } catch (err) {
-    console.warn(`fetchClosingOdds failed for ${league}:`, err);
-    return [];
+    console.warn(`loadClosingOdds failed for ${league}:`, err);
+    return { events: [], ageMinutes: null, missing: true };
   }
 }
 
@@ -108,27 +133,25 @@ export type ClvCaptureResult = {
   unmatched: number;
   errors: string[];
   averageClvCents: number | null;
-  // Window the run scanned, in minutes relative to now. Useful for verifying
-  // the 5-min Vercel cron is actually hitting the right pre-game window.
+  // Window the run scanned, in minutes relative to now.
   windowMinBeforeStart: number;
   windowMaxBeforeStart: number;
+  // Age in minutes of the odds files we read, per league. Useful for
+  // auditing whether the scrape-then-capture pipeline is healthy.
+  oddsFileAgeMinutes: Record<string, number | null>;
 };
 
 // Capture closing-line value for picks whose game is starting in the
 // `[minBeforeStart, maxBeforeStart]` minute window from now. Default window
-// is a tight pre-tip-off slot (2 to 12 min before commence_time) so we get
-// the actual closing line, not in-play prices. The Odds API still returns
-// h2h after a game starts, but the prices are live in-play odds — capturing
-// then would give a structurally negative CLV and corrupt the funding gate.
-//
-// Designed to be called every 5 minutes via Vercel Cron (`/api/cron/clv-capture`).
-// At 5-min cadence with a 10-min capture window, each pending pick has two
-// chances to be captured before going in-play.
+// covers the last 90 minutes pre-tip-off, which lines up with the GHA-driven
+// scrape-then-capture schedule (every ~15-30 min during peak game hours).
+// Both bounds must remain positive — past commence_time, the scraped odds
+// start to show in-play prices and would corrupt the funding-gate signal.
 export async function captureClv(
   opts: { minBeforeStart?: number; maxBeforeStart?: number } = {}
 ): Promise<ClvCaptureResult> {
-  const minBeforeStart = opts.minBeforeStart ?? 2;
-  const maxBeforeStart = opts.maxBeforeStart ?? 12;
+  const minBeforeStart = opts.minBeforeStart ?? 10;
+  const maxBeforeStart = opts.maxBeforeStart ?? 90;
 
   const result: ClvCaptureResult = {
     ranAt: new Date().toISOString(),
@@ -139,6 +162,7 @@ export async function captureClv(
     averageClvCents: null,
     windowMinBeforeStart: minBeforeStart,
     windowMaxBeforeStart: maxBeforeStart,
+    oddsFileAgeMinutes: {},
   };
 
   const now = Date.now();
@@ -175,9 +199,14 @@ export async function captureClv(
   const clvDeltas: number[] = [];
 
   for (const [league, picks] of byLeague.entries()) {
-    const events = await fetchClosingOdds(league);
-    if (events.length === 0) {
-      result.errors.push(`${league}: no events from Odds API`);
+    const { events, ageMinutes, missing } = loadClosingOdds(league);
+    result.oddsFileAgeMinutes[league] = ageMinutes;
+    if (missing || events.length === 0) {
+      result.errors.push(
+        missing
+          ? `${league}: closing-odds file missing — run npm run ingest:odds before picks:clv`
+          : `${league}: closing-odds file empty`,
+      );
       result.unmatched += picks.length;
       continue;
     }
