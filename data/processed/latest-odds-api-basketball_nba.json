@@ -1,125 +1,17 @@
 {
-  "fetchedAt": "2026-05-21T23:39:30.311Z",
+  "fetchedAt": "2026-05-22T16:37:09.604Z",
   "league": "basketball_nba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 2,
   "sampleEvent": {
-    "id": "fd_35622218",
+    "id": "fd_35627211",
     "sport_key": "basketball_nba",
-    "commence_time": "2026-05-22T00:10:00.000Z",
-    "home_team": "New York Knicks",
-    "away_team": "Cleveland Cavaliers"
+    "commence_time": "2026-05-23T00:40:00.000Z",
+    "home_team": "San Antonio Spurs",
+    "away_team": "Oklahoma City Thunder"
   },
   "events": [
-    {
-      "id": "fd_35622218",
-      "sport_key": "basketball_nba",
-      "sport_title": "NBA",
-      "commence_time": "2026-05-22T00:10:00.000Z",
-      "home_team": "New York Knicks",
-      "away_team": "Cleveland Cavaliers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Cleveland Cavaliers",
-                  "price": 172
-                },
-                {
-                  "name": "New York Knicks",
-                  "price": -205
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Cleveland Cavaliers",
-                  "price": -114,
-                  "point": 5.5
-                },
-                {
-                  "name": "New York Knicks",
-                  "price": -106,
-                  "point": -5.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 215.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 215.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Cleveland Cavaliers",
-                  "price": -105,
-                  "point": 5
-                },
-                {
-                  "name": "New York Knicks",
-                  "price": -115,
-                  "point": -5
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Cleveland Cavaliers",
-                  "price": 170
-                },
-                {
-                  "name": "New York Knicks",
-                  "price": -200
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -115,
-                  "point": 215.5
-                },
-                {
-                  "name": "Under",
-                  "price": -105,
-                  "point": 215.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_35627211",
       "sport_key": "basketball_nba",
@@ -137,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Oklahoma City Thunder",
-                  "price": 100
+                  "price": 102
                 },
                 {
                   "name": "San Antonio Spurs",
-                  "price": -118
+                  "price": -120
                 }
               ]
             },
@@ -150,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "Oklahoma City Thunder",
-                  "price": -112,
+                  "price": -110,
                   "point": 1.5
                 },
                 {
                   "name": "San Antonio Spurs",
-                  "price": -108,
+                  "price": -110,
                   "point": -1.5
                 }
               ]
@@ -165,12 +57,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -108,
+                  "price": -112,
                   "point": 217.5
                 },
                 {
                   "name": "Under",
-                  "price": -112,
+                  "price": -108,
                   "point": 217.5
                 }
               ]
@@ -186,12 +78,12 @@
               "outcomes": [
                 {
                   "name": "Oklahoma City Thunder",
-                  "price": -110,
+                  "price": -115,
                   "point": 2
                 },
                 {
                   "name": "San Antonio Spurs",
-                  "price": -110,
+                  "price": -105,
                   "point": -2
                 }
               ]
@@ -201,11 +93,11 @@
               "outcomes": [
                 {
                   "name": "Oklahoma City Thunder",
-                  "price": 110
+                  "price": 105
                 },
                 {
                   "name": "San Antonio Spurs",
-                  "price": -130
+                  "price": -125
                 }
               ]
             },
@@ -215,12 +107,120 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 217.5
+                  "point": 218
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 217.5
+                  "point": 218
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35627207",
+      "sport_key": "basketball_nba",
+      "sport_title": "NBA",
+      "commence_time": "2026-05-24T00:10:00.000Z",
+      "home_team": "Cleveland Cavaliers",
+      "away_team": "New York Knicks",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New York Knicks",
+                  "price": 110
+                },
+                {
+                  "name": "Cleveland Cavaliers",
+                  "price": -130
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New York Knicks",
+                  "price": -114,
+                  "point": 2.5
+                },
+                {
+                  "name": "Cleveland Cavaliers",
+                  "price": -106,
+                  "point": -2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 213.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 213.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New York Knicks",
+                  "price": -110,
+                  "point": 2.5
+                },
+                {
+                  "name": "Cleveland Cavaliers",
+                  "price": -110,
+                  "point": -2.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New York Knicks",
+                  "price": 115
+                },
+                {
+                  "name": "Cleveland Cavaliers",
+                  "price": -135
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 214
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 214
                 }
               ]
             }
