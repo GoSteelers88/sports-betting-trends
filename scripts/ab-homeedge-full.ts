@@ -1,9 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../src/lib/prisma';
 import { computeBasketballAdvanced, type BoxScoreRow, type StandingsEntry } from '../src/lib/advanced-metrics';
 
-const prisma = new PrismaClient();
 const root = process.cwd();
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));

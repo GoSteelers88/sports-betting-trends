@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../src/lib/prisma';
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 type Row = {

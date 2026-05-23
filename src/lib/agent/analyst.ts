@@ -365,10 +365,13 @@ export async function persistFinalPicks(args: {
       });
       ids.push(created.id);
     } catch (err) {
-      // Prisma throws P2002 on unique-constraint violation — that's our
-      // idempotency working as intended. Other errors propagate.
+      // Idempotency working as intended: a duplicate pick from a re-run.
+      // Prisma's classic engine surfaces this as P2002, but the libSQL
+      // adapter often passes through the raw SQLite ConnectorError without
+      // mapping to user_facing_error — so we also string-match the message.
       const code = (err as { code?: string })?.code;
-      if (code === "P2002") {
+      const message = err instanceof Error ? err.message : String(err);
+      if (code === "P2002" || /UNIQUE constraint failed/i.test(message)) {
         skipped++;
         continue;
       }

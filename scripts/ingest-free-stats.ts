@@ -1,11 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { prisma } from "../src/lib/prisma";
 import { buildFreeStatsSummary, type FreeStatLike } from "../src/lib/free-stats-summary";
 import { normalizeAtsResult, normalizeSpread } from "../src/lib/ats";
-
-const prisma = new PrismaClient();
 const root = process.cwd();
 
 const DEFAULT_DAYS_BACK = 30;
