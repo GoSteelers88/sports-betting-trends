@@ -22,13 +22,14 @@ on:
         default: "90"
   schedule:
     # Peak NBA/MLB game-start window in UTC:
+    #   MLB day games tip ~17:00 UTC (1 PM ET) — pre-tip window opens ~15:30 UTC
+    #   MLB night games run ~22:30-04:00 UTC
     #   NBA tips ~23:00-03:00 UTC (early/late games)
-    #   MLB games run ~17:00-04:00 UTC (afternoon through late west-coast)
-    # Every 20 minutes between 17:00 and 06:00 UTC covers both sports.
+    # Every 20 minutes between 13:00 and 06:00 UTC covers all of the above.
     # GHA cron is best-effort — typical delay is 0-15 min — so the 80-min
     # window (10 to 90 min pre-tip) absorbs the jitter and each pick gets
     # 3-4 capture chances before going in-play.
-    - cron: "*/20 17-23 * * *"
+    - cron: "*/20 13-23 * * *"
     - cron: "*/20 0-5 * * *"
 
 jobs:
