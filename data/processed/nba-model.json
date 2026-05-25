@@ -1,32 +1,20 @@
 {
-  "generatedAt": "2026-05-24T23:42:17.511Z",
+  "generatedAt": "2026-05-25T16:32:45.516Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
   "recordCount": 2,
   "errors": [],
   "data": {
-    "generatedAt": "2026-05-24T23:42:17.511Z",
+    "generatedAt": "2026-05-25T16:32:45.516Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 20,
+    "teamCount": 19,
     "gameCount": 2,
     "results": [
-      {
-        "eventId": "fd_35627215",
-        "homeTeam": "San Antonio Spurs",
-        "awayTeam": "Oklahoma City Thunder",
-        "homeWinProb": 0.5215,
-        "awayWinProb": 0.4785,
-        "expectedMargin": 0.82,
-        "homeNetRtg": 11.285714285714286,
-        "awayNetRtg": 12.8,
-        "calibrated": false,
-        "startTime": "2026-05-25T00:10:00.000Z"
-      },
       {
         "eventId": "fd_35634658",
         "homeTeam": "Cleveland Cavaliers",
@@ -38,6 +26,18 @@
         "awayNetRtg": 20.5,
         "calibrated": false,
         "startTime": "2026-05-26T00:10:00.000Z"
+      },
+      {
+        "eventId": "fd_35639109",
+        "homeTeam": "Oklahoma City Thunder",
+        "awayTeam": "San Antonio Spurs",
+        "homeWinProb": 0.601,
+        "awayWinProb": 0.399,
+        "expectedMargin": 3.9,
+        "homeNetRtg": 14.333333333333334,
+        "awayNetRtg": 9,
+        "calibrated": false,
+        "startTime": "2026-05-27T00:40:00.000Z"
       }
     ]
   }

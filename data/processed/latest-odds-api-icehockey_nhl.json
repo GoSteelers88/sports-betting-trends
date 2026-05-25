@@ -1,130 +1,22 @@
 {
-  "fetchedAt": "2026-05-24T23:41:46.032Z",
+  "fetchedAt": "2026-05-25T16:31:56.717Z",
   "league": "icehockey_nhl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 2,
   "sampleEvent": {
-    "id": "fd_35641297",
+    "id": "fd_35626268",
     "sport_key": "icehockey_nhl",
-    "commence_time": "2026-05-25T00:20:00.000Z",
-    "home_team": "Vegas Golden Knights",
-    "away_team": "Colorado Avalanche"
+    "commence_time": "2026-05-26T00:20:00.000Z",
+    "home_team": "Montreal Canadiens",
+    "away_team": "Carolina Hurricanes"
   },
   "events": [
-    {
-      "id": "fd_35641297",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-05-25T00:20:00.000Z",
-      "home_team": "Vegas Golden Knights",
-      "away_team": "Colorado Avalanche",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Colorado Avalanche",
-                  "price": -152
-                },
-                {
-                  "name": "Vegas Golden Knights",
-                  "price": 126
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Colorado Avalanche",
-                  "price": 152,
-                  "point": -1.5
-                },
-                {
-                  "name": "Vegas Golden Knights",
-                  "price": -188,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 110,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": -134,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Colorado Avalanche",
-                  "price": 168,
-                  "point": -1.5
-                },
-                {
-                  "name": "Vegas Golden Knights",
-                  "price": -198,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Colorado Avalanche",
-                  "price": -155
-                },
-                {
-                  "name": "Vegas Golden Knights",
-                  "price": 133
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -115,
-                  "point": 6
-                },
-                {
-                  "name": "Under",
-                  "price": -105,
-                  "point": 6
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_35626268",
       "sport_key": "icehockey_nhl",
       "sport_title": "NHL",
-      "commence_time": "2026-05-26T00:00:00.000Z",
+      "commence_time": "2026-05-26T00:20:00.000Z",
       "home_team": "Montreal Canadiens",
       "away_team": "Carolina Hurricanes",
       "bookmakers": [
@@ -137,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Carolina Hurricanes",
-                  "price": -137
+                  "price": -142
                 },
                 {
                   "name": "Montreal Canadiens",
-                  "price": 114
+                  "price": 118
                 }
               ]
             },
@@ -186,12 +78,12 @@
               "outcomes": [
                 {
                   "name": "Carolina Hurricanes",
-                  "price": 185,
+                  "price": 180,
                   "point": -1.5
                 },
                 {
                   "name": "Montreal Canadiens",
-                  "price": -225,
+                  "price": -220,
                   "point": 1.5
                 }
               ]
@@ -214,12 +106,120 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 102,
+                  "price": 100,
                   "point": 6
                 },
                 {
                   "name": "Under",
-                  "price": -122,
+                  "price": -120,
+                  "point": 6
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35643424",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-05-27T01:00:00.000Z",
+      "home_team": "Vegas Golden Knights",
+      "away_team": "Colorado Avalanche",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Colorado Avalanche",
+                  "price": -115
+                },
+                {
+                  "name": "Vegas Golden Knights",
+                  "price": -104
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Colorado Avalanche",
+                  "price": 210,
+                  "point": -1.5
+                },
+                {
+                  "name": "Vegas Golden Knights",
+                  "price": -265,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 110,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -134,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Colorado Avalanche",
+                  "price": 215,
+                  "point": -1.5
+                },
+                {
+                  "name": "Vegas Golden Knights",
+                  "price": -260,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Colorado Avalanche",
+                  "price": -120
+                },
+                {
+                  "name": "Vegas Golden Knights",
+                  "price": 100
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 6
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
                   "point": 6
                 }
               ]

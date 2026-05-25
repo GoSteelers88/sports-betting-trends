@@ -1,9 +1,33 @@
 {
-  "fetchedAt": "2026-05-24T23:42:40.550Z",
+  "fetchedAt": "2026-05-25T16:33:15.550Z",
   "season": "2025-26",
   "source": "espn-scoreboard-empirical",
   "lookbackDays": 60,
   "teams": {
+    "Vegas Golden Knights": {
+      "netRtg": 1.36,
+      "goalsFor": 3.84,
+      "goalsAgainst": 2.48,
+      "homeNetRtg": 1.1538461538461537,
+      "homeGoalsFor": 3.8461538461538463,
+      "homeGoalsAgainst": 2.6923076923076925,
+      "awayNetRtg": 1.5833333333333333,
+      "awayGoalsFor": 3.8333333333333335,
+      "awayGoalsAgainst": 2.25,
+      "gamesPlayed": 25
+    },
+    "Colorado Avalanche": {
+      "netRtg": 0.8260869565217391,
+      "goalsFor": 3.4782608695652173,
+      "goalsAgainst": 2.652173913043478,
+      "homeNetRtg": 0.7142857142857143,
+      "homeGoalsFor": 3.642857142857143,
+      "homeGoalsAgainst": 2.9285714285714284,
+      "awayNetRtg": 1,
+      "awayGoalsFor": 3.2222222222222223,
+      "awayGoalsAgainst": 2.2222222222222223,
+      "gamesPlayed": 23
+    },
     "Carolina Hurricanes": {
       "netRtg": 1.2380952380952381,
       "goalsFor": 3.4761904761904763,
@@ -28,48 +52,24 @@
       "awayGoalsAgainst": 2.176470588235294,
       "gamesPlayed": 28
     },
-    "Colorado Avalanche": {
-      "netRtg": 0.9545454545454546,
-      "goalsFor": 3.5,
-      "goalsAgainst": 2.5454545454545454,
-      "homeNetRtg": 0.7142857142857143,
-      "homeGoalsFor": 3.642857142857143,
-      "homeGoalsAgainst": 2.9285714285714284,
-      "awayNetRtg": 1.375,
-      "awayGoalsFor": 3.25,
-      "awayGoalsAgainst": 1.875,
-      "gamesPlayed": 22
-    },
-    "Vegas Golden Knights": {
-      "netRtg": 1.3333333333333333,
-      "goalsFor": 3.7916666666666665,
-      "goalsAgainst": 2.4583333333333335,
-      "homeNetRtg": 1.0833333333333333,
-      "homeGoalsFor": 3.75,
-      "homeGoalsAgainst": 2.6666666666666665,
-      "awayNetRtg": 1.5833333333333333,
-      "awayGoalsFor": 3.8333333333333335,
-      "awayGoalsAgainst": 2.25,
-      "gamesPlayed": 24
-    },
     "Buffalo Sabres": {
-      "netRtg": 0.34782608695652173,
-      "goalsFor": 3.347826086956522,
-      "goalsAgainst": 3,
-      "homeNetRtg": -0.23076923076923078,
-      "homeGoalsFor": 2.923076923076923,
-      "homeGoalsAgainst": 3.1538461538461537,
+      "netRtg": 0.4090909090909091,
+      "goalsFor": 3.3636363636363638,
+      "goalsAgainst": 2.9545454545454546,
+      "homeNetRtg": -0.16666666666666666,
+      "homeGoalsFor": 2.9166666666666665,
+      "homeGoalsAgainst": 3.0833333333333335,
       "awayNetRtg": 1.1,
       "awayGoalsFor": 3.9,
       "awayGoalsAgainst": 2.8,
-      "gamesPlayed": 23
+      "gamesPlayed": 22
     },
     "Anaheim Ducks": {
-      "netRtg": -0.5652173913043478,
-      "goalsFor": 3.130434782608696,
+      "netRtg": -0.6086956521739131,
+      "goalsFor": 3.0869565217391304,
       "goalsAgainst": 3.6956521739130435,
-      "homeNetRtg": -0.6666666666666666,
-      "homeGoalsFor": 3.4166666666666665,
+      "homeNetRtg": -0.75,
+      "homeGoalsFor": 3.3333333333333335,
       "homeGoalsAgainst": 4.083333333333333,
       "awayNetRtg": -0.45454545454545453,
       "awayGoalsFor": 2.8181818181818183,
@@ -113,16 +113,16 @@
       "gamesPlayed": 19
     },
     "Boston Bruins": {
-      "netRtg": -0.25,
-      "goalsFor": 2.625,
-      "goalsAgainst": 2.875,
+      "netRtg": -0.3333333333333333,
+      "goalsFor": 2.533333333333333,
+      "goalsAgainst": 2.8666666666666667,
       "homeNetRtg": -0.6666666666666666,
       "homeGoalsFor": 2.3333333333333335,
       "homeGoalsAgainst": 3,
-      "awayNetRtg": 0,
-      "awayGoalsFor": 2.8,
-      "awayGoalsAgainst": 2.8,
-      "gamesPlayed": 16
+      "awayNetRtg": -0.1111111111111111,
+      "awayGoalsFor": 2.6666666666666665,
+      "awayGoalsAgainst": 2.7777777777777777,
+      "gamesPlayed": 15
     },
     "Utah Mammoth": {
       "netRtg": 0.0625,
@@ -137,15 +137,15 @@
       "gamesPlayed": 16
     },
     "Edmonton Oilers": {
-      "netRtg": 0.25,
+      "netRtg": 0.3125,
       "goalsFor": 3.3125,
-      "goalsAgainst": 3.0625,
+      "goalsAgainst": 3,
       "homeNetRtg": 1,
       "homeGoalsFor": 3.3333333333333335,
       "homeGoalsAgainst": 2.3333333333333335,
-      "awayNetRtg": -0.7142857142857143,
+      "awayNetRtg": -0.5714285714285714,
       "awayGoalsFor": 3.2857142857142856,
-      "awayGoalsAgainst": 4,
+      "awayGoalsAgainst": 3.857142857142857,
       "gamesPlayed": 16
     },
     "Pittsburgh Penguins": {
@@ -269,16 +269,16 @@
       "gamesPlayed": 12
     },
     "New York Rangers": {
-      "netRtg": 1.7,
-      "goalsFor": 3.9,
-      "goalsAgainst": 2.2,
+      "netRtg": 2,
+      "goalsFor": 4,
+      "goalsAgainst": 2,
       "homeNetRtg": 2.4285714285714284,
       "homeGoalsFor": 4.285714285714286,
       "homeGoalsAgainst": 1.8571428571428572,
-      "awayNetRtg": 0,
+      "awayNetRtg": 0.5,
       "awayGoalsFor": 3,
-      "awayGoalsAgainst": 3,
-      "gamesPlayed": 10
+      "awayGoalsAgainst": 2.5,
+      "gamesPlayed": 9
     },
     "Florida Panthers": {
       "netRtg": -0.25,
@@ -305,16 +305,16 @@
       "gamesPlayed": 11
     },
     "Toronto Maple Leafs": {
-      "netRtg": -2,
-      "goalsFor": 2.5555555555555554,
-      "goalsAgainst": 4.555555555555555,
-      "homeNetRtg": -2.3333333333333335,
-      "homeGoalsFor": 2,
-      "homeGoalsAgainst": 4.333333333333333,
+      "netRtg": -2.375,
+      "goalsFor": 2.375,
+      "goalsAgainst": 4.75,
+      "homeNetRtg": -4,
+      "homeGoalsFor": 1,
+      "homeGoalsAgainst": 5,
       "awayNetRtg": -1.8333333333333333,
       "awayGoalsFor": 2.8333333333333335,
       "awayGoalsAgainst": 4.666666666666667,
-      "gamesPlayed": 9
+      "gamesPlayed": 8
     },
     "Chicago Blackhawks": {
       "netRtg": -1.9090909090909092,
