@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-29T17:43:22.199Z",
+  "generatedAt": "2026-05-29T23:53:54.327Z",
   "ready": true,
   "recordsIngested": 853,
   "recordsCompleted": 853,
@@ -875,54 +875,59 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-05-30T02:16:00.000Z",
-      "matchup": "Philadelphia Phillies at Los Angeles Dodgers",
-      "pickTeam": "Los Angeles Dodgers",
-      "opponent": "Philadelphia Phillies",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Los Angeles Dodgers 0",
-      "score": 58,
-      "confidence": 53,
+      "gameDate": "2026-05-29T23:06:00.000Z",
+      "matchup": "Toronto Blue Jays at Baltimore Orioles",
+      "pickTeam": "Toronto Blue Jays",
+      "opponent": "Baltimore Orioles",
+      "spread": 2.5,
+      "modelSpread": 2.3,
+      "line": "Toronto Blue Jays +2.5",
+      "score": 59,
+      "confidence": 54,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
         "ATS edge +0.200",
-        "History sample Los Angeles Dodgers: 25 games (mapped Dodgers) vs Philadelphia Phillies: 27 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Los Angeles Dodgers 2d rest vs Philadelphia Phillies 3d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +2.9"
+        "History sample Toronto Blue Jays: 27 games (mapped Blue Jays) vs Baltimore Orioles: 28 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Toronto Blue Jays 2d rest vs Baltimore Orioles 2d rest",
+        "Net Rating edge: +0.7",
+        "Home SP: Trevor Rogers",
+        "MLB model: 55.8% win prob (calibrated) | Edge vs market: +31.4%"
       ],
       "momentumEdge": 0.4,
       "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.5577,
+      "mlbEdge": 0.3138,
+      "mlbCalibrated": true
     },
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-05-29T22:46:00.000Z",
-      "matchup": "San Diego Padres at Washington Nationals",
-      "pickTeam": "Washington Nationals",
-      "opponent": "San Diego Padres",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Washington Nationals 0",
-      "score": 57,
-      "confidence": 52,
+      "gameDate": "2026-05-29T23:11:00.000Z",
+      "matchup": "Miami Marlins at New York Mets",
+      "pickTeam": "Miami Marlins",
+      "opponent": "New York Mets",
+      "spread": 3.5,
+      "modelSpread": 3.2,
+      "line": "Miami Marlins +3.5",
+      "score": 58,
+      "confidence": 53,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample Washington Nationals: 26 games (mapped Nationals) vs San Diego Padres: 25 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Washington Nationals 3d rest vs San Diego Padres 3d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +1.2"
+        "ATS edge +0.400",
+        "History sample Miami Marlins: 26 games (mapped Marlins) vs New York Mets: 26 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Miami Marlins 3d rest vs New York Mets 3d rest",
+        "Net Rating edge: +1.3",
+        "Home SP: Freddy Peralta",
+        "Away SP: Max Meyer",
+        "MLB model: 55.8% win prob (calibrated) | Edge vs market: +40.6%"
       ],
       "momentumEdge": 0.4,
-      "atsEdge": 0.3,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "atsEdge": 0.4,
+      "mlbModelProb": 0.5577,
+      "mlbEdge": 0.4062,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
@@ -1651,12 +1656,20 @@
         "returnDate": "2026-06-03"
       },
       {
+        "player": "Jalen Williams",
+        "team": "Oklahoma City Thunder",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-06-03"
+      },
+      {
         "player": "Ajay Mitchell",
         "team": "Oklahoma City Thunder",
         "position": "G",
         "status": "Out",
         "injuryType": "Calf",
-        "returnDate": "2026-05-30"
+        "returnDate": "2026-06-03"
       },
       {
         "player": "Thomas Sorber",
@@ -2442,6 +2455,14 @@
         "position": "OT",
         "status": "Out",
         "injuryType": "Knee",
+        "returnDate": "2027-02-15"
+      },
+      {
+        "player": "Gunner Olszewski",
+        "team": "New York Giants",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Achilles",
         "returnDate": "2027-02-15"
       },
       {
