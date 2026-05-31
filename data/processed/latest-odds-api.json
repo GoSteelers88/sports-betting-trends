@@ -1,9 +1,9 @@
 {
-  "fetchedAt": "2026-05-31T15:40:35.571Z",
+  "fetchedAt": "2026-05-31T23:43:23.244Z",
   "leagues": "basketball_nba,basketball_wnba,baseball_mlb,icehockey_nhl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 54,
+  "eventCount": 27,
   "sampleEvent": {
     "id": "fd_35652200",
     "sport_key": "basketball_nba",
@@ -72,65 +72,6 @@
       ]
     },
     {
-      "id": "fd_35662727",
-      "sport_key": "basketball_wnba",
-      "sport_title": "WNBA",
-      "commence_time": "2026-05-31T19:30:00.000Z",
-      "home_team": "Golden State Valkyries",
-      "away_team": "Las Vegas Aces",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -142
-                },
-                {
-                  "name": "Golden State Valkyries",
-                  "price": 116
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -108,
-                  "point": -2.5
-                },
-                {
-                  "name": "Golden State Valkyries",
-                  "price": -112,
-                  "point": 2.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -112,
-                  "point": 168.5
-                },
-                {
-                  "name": "Under",
-                  "price": -108,
-                  "point": 168.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "fd_35666648",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
@@ -147,11 +88,11 @@
               "outcomes": [
                 {
                   "name": "Seattle Storm",
-                  "price": 410
+                  "price": 490
                 },
                 {
                   "name": "Dallas Wings",
-                  "price": -590
+                  "price": -750
                 }
               ]
             },
@@ -160,13 +101,13 @@
               "outcomes": [
                 {
                   "name": "Seattle Storm",
-                  "price": -112,
-                  "point": 11.5
+                  "price": -108,
+                  "point": 12.5
                 },
                 {
                   "name": "Dallas Wings",
-                  "price": -108,
-                  "point": -11.5
+                  "price": -112,
+                  "point": -12.5
                 }
               ]
             },
@@ -175,13 +116,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
-                  "point": 170.5
+                  "price": -106,
+                  "point": 169.5
                 },
                 {
                   "name": "Under",
+                  "price": -114,
+                  "point": 169.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Seattle Storm",
                   "price": -110,
-                  "point": 170.5
+                  "point": 11.5
+                },
+                {
+                  "name": "Dallas Wings",
+                  "price": -110,
+                  "point": -11.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Seattle Storm",
+                  "price": 400
+                },
+                {
+                  "name": "Dallas Wings",
+                  "price": -575
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -105,
+                  "point": 169.5
+                },
+                {
+                  "name": "Under",
+                  "price": -115,
+                  "point": 169.5
                 }
               ]
             }
@@ -206,11 +196,11 @@
               "outcomes": [
                 {
                   "name": "Minnesota Lynx",
-                  "price": -132
+                  "price": -138
                 },
                 {
                   "name": "Phoenix Mercury",
-                  "price": 108
+                  "price": 112
                 }
               ]
             },
@@ -219,13 +209,62 @@
               "outcomes": [
                 {
                   "name": "Minnesota Lynx",
+                  "price": -108,
+                  "point": -2.5
+                },
+                {
+                  "name": "Phoenix Mercury",
+                  "price": -112,
+                  "point": 2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -106,
+                  "point": 167.5
+                },
+                {
+                  "name": "Under",
+                  "price": -114,
+                  "point": 167.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Minnesota Lynx",
                   "price": -115,
-                  "point": -1.5
+                  "point": -2
                 },
                 {
                   "name": "Phoenix Mercury",
                   "price": -105,
-                  "point": 1.5
+                  "point": 2
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Minnesota Lynx",
+                  "price": -140
+                },
+                {
+                  "name": "Phoenix Mercury",
+                  "price": 120
                 }
               ]
             },
@@ -235,12 +274,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 168.5
+                  "point": 167.5
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 168.5
+                  "point": 167.5
                 }
               ]
             }
@@ -265,11 +304,11 @@
               "outcomes": [
                 {
                   "name": "Connecticut Sun",
-                  "price": 790
+                  "price": 630
                 },
                 {
                   "name": "Atlanta Dream",
-                  "price": -1500
+                  "price": -1050
                 }
               ]
             },
@@ -278,13 +317,13 @@
               "outcomes": [
                 {
                   "name": "Connecticut Sun",
-                  "price": -106,
-                  "point": 15.5
+                  "price": -110,
+                  "point": 14.5
                 },
                 {
                   "name": "Atlanta Dream",
-                  "price": -114,
-                  "point": -15.5
+                  "price": -110,
+                  "point": -14.5
                 }
               ]
             },
@@ -367,2041 +406,6 @@
       ]
     },
     {
-      "id": "fd_35666770",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-30T18:00:00.000Z",
-      "home_team": "Florida State Seminoles",
-      "away_team": "Coastal Carolina Chanticleers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Coastal Carolina Chanticleers",
-                  "price": 470
-                },
-                {
-                  "name": "Florida State Seminoles",
-                  "price": -800
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Coastal Carolina Chanticleers",
-                  "price": -168,
-                  "point": 1.5
-                },
-                {
-                  "name": "Florida State Seminoles",
-                  "price": 128,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 142,
-                  "point": 5.5
-                },
-                {
-                  "name": "Under",
-                  "price": -188,
-                  "point": 5.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669714",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T16:00:00.000Z",
-      "home_team": "West Virginia Mountaineers",
-      "away_team": "Wake Forest Demon Deacons",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Wake Forest Demon Deacons",
-                  "price": 112
-                },
-                {
-                  "name": "West Virginia Mountaineers",
-                  "price": -142
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Wake Forest Demon Deacons",
-                  "price": -166,
-                  "point": 1.5
-                },
-                {
-                  "name": "West Virginia Mountaineers",
-                  "price": 130,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 100,
-                  "point": 13.5
-                },
-                {
-                  "name": "Under",
-                  "price": -128,
-                  "point": 13.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669715",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T16:00:00.000Z",
-      "home_team": "East Carolina Pirates",
-      "away_team": "VCU Rams",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "VCU Rams",
-                  "price": 200
-                },
-                {
-                  "name": "East Carolina Pirates",
-                  "price": -265
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "VCU Rams",
-                  "price": -130,
-                  "point": 2.5
-                },
-                {
-                  "name": "East Carolina Pirates",
-                  "price": 102,
-                  "point": -2.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -115,
-                  "point": 12.5
-                },
-                {
-                  "name": "Under",
-                  "price": -111,
-                  "point": 12.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669717",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T16:00:00.000Z",
-      "home_team": "Liberty Flames",
-      "away_team": "Boston College Eagles",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Boston College Eagles",
-                  "price": -113
-                },
-                {
-                  "name": "Liberty Flames",
-                  "price": -113
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Boston College Eagles",
-                  "price": 138,
-                  "point": -1.5
-                },
-                {
-                  "name": "Liberty Flames",
-                  "price": -178,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -132,
-                  "point": 10.5
-                },
-                {
-                  "name": "Under",
-                  "price": 104,
-                  "point": 10.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669935",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T16:00:00.000Z",
-      "home_team": "Troy Trojans",
-      "away_team": "Miami Hurricanes",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Miami Hurricanes",
-                  "price": -188
-                },
-                {
-                  "name": "Troy Trojans",
-                  "price": 146
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Miami Hurricanes",
-                  "price": 102,
-                  "point": -2.5
-                },
-                {
-                  "name": "Troy Trojans",
-                  "price": -130,
-                  "point": 2.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -113,
-                  "point": 15.5
-                },
-                {
-                  "name": "Under",
-                  "price": -113,
-                  "point": 15.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666652",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T16:16:00.000Z",
-      "home_team": "Baltimore Orioles",
-      "away_team": "Toronto Blue Jays",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Toronto Blue Jays",
-                  "price": 110
-                },
-                {
-                  "name": "Baltimore Orioles",
-                  "price": -130
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Toronto Blue Jays",
-                  "price": -184,
-                  "point": 1.5
-                },
-                {
-                  "name": "Baltimore Orioles",
-                  "price": 152,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 102,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -124,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669779",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:00:00.000Z",
-      "home_team": "Northeastern Huskies",
-      "away_team": "Arkansas Razorbacks",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Arkansas Razorbacks",
-                  "price": -400
-                },
-                {
-                  "name": "Northeastern Huskies",
-                  "price": 285
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Arkansas Razorbacks",
-                  "price": -122,
-                  "point": -3.5
-                },
-                {
-                  "name": "Northeastern Huskies",
-                  "price": -104,
-                  "point": 3.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 102,
-                  "point": 12.5
-                },
-                {
-                  "name": "Under",
-                  "price": -130,
-                  "point": 12.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669780",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:00:00.000Z",
-      "home_team": "Tarleton State Texans",
-      "away_team": "UC Santa Barbara Gauchos",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "UC Santa Barbara Gauchos",
-                  "price": -215
-                },
-                {
-                  "name": "Tarleton State Texans",
-                  "price": 164
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "UC Santa Barbara Gauchos",
-                  "price": 102,
-                  "point": -2.5
-                },
-                {
-                  "name": "Tarleton State Texans",
-                  "price": -130,
-                  "point": 2.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -113,
-                  "point": 12.5
-                },
-                {
-                  "name": "Under",
-                  "price": -113,
-                  "point": 12.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669782",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:00:00.000Z",
-      "home_team": "The Citadel Bulldogs",
-      "away_team": "Oklahoma Sooners",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Oklahoma Sooners",
-                  "price": -230
-                },
-                {
-                  "name": "The Citadel Bulldogs",
-                  "price": 176
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Oklahoma Sooners",
-                  "price": -104,
-                  "point": -2.5
-                },
-                {
-                  "name": "The Citadel Bulldogs",
-                  "price": -122,
-                  "point": 2.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -111,
-                  "point": 12.5
-                },
-                {
-                  "name": "Under",
-                  "price": -115,
-                  "point": 12.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670363",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:05:00.000Z",
-      "home_team": "Rochester Red Wings",
-      "away_team": "Syracuse Mets",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Syracuse Mets",
-                  "price": 112
-                },
-                {
-                  "name": "Rochester Red Wings",
-                  "price": -142
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Syracuse Mets",
-                  "price": -166,
-                  "point": 1.5
-                },
-                {
-                  "name": "Rochester Red Wings",
-                  "price": 122,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 11.5
-                },
-                {
-                  "name": "Under",
-                  "price": -120,
-                  "point": 11.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670364",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:05:00.000Z",
-      "home_team": "Norfolk Tides",
-      "away_team": "Durham Bulls",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Durham Bulls",
-                  "price": -120
-                },
-                {
-                  "name": "Norfolk Tides",
-                  "price": -106
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Durham Bulls",
-                  "price": 126,
-                  "point": -1.5
-                },
-                {
-                  "name": "Norfolk Tides",
-                  "price": -172,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -136,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": 102,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670365",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:05:00.000Z",
-      "home_team": "Buffalo Bisons",
-      "away_team": "Lehigh Valley IronPigs",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Lehigh Valley IronPigs",
-                  "price": 124
-                },
-                {
-                  "name": "Buffalo Bisons",
-                  "price": -158
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Lehigh Valley IronPigs",
-                  "price": -164,
-                  "point": 1.5
-                },
-                {
-                  "name": "Buffalo Bisons",
-                  "price": 120,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -118,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -112,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670366",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:05:00.000Z",
-      "home_team": "Louisville Bats",
-      "away_team": "St. Paul Saints",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "St. Paul Saints",
-                  "price": -104
-                },
-                {
-                  "name": "Louisville Bats",
-                  "price": -122
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "St. Paul Saints",
-                  "price": 136,
-                  "point": -1.5
-                },
-                {
-                  "name": "Louisville Bats",
-                  "price": -186,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -120,
-                  "point": 12.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 12.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670372",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:05:00.000Z",
-      "home_team": "Charlotte Knights",
-      "away_team": "Jacksonville Jumbo Shrimp",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Jacksonville Jumbo Shrimp",
-                  "price": 100
-                },
-                {
-                  "name": "Charlotte Knights",
-                  "price": -128
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Jacksonville Jumbo Shrimp",
-                  "price": -180,
-                  "point": 1.5
-                },
-                {
-                  "name": "Charlotte Knights",
-                  "price": 132,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -112,
-                  "point": 13.5
-                },
-                {
-                  "name": "Under",
-                  "price": -118,
-                  "point": 13.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670976",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:35:00.000Z",
-      "home_team": "Scranton/Wilkes-Barre Railriders",
-      "away_team": "Worcester Red Sox",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Worcester Red Sox",
-                  "price": 100
-                },
-                {
-                  "name": "Scranton/Wilkes-Barre Railriders",
-                  "price": -128
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Worcester Red Sox",
-                  "price": -200,
-                  "point": 1.5
-                },
-                {
-                  "name": "Scranton/Wilkes-Barre Railriders",
-                  "price": 146,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -102,
-                  "point": 9.5
-                },
-                {
-                  "name": "Under",
-                  "price": -132,
-                  "point": 9.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670977",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:35:00.000Z",
-      "home_team": "Indianapolis Indians",
-      "away_team": "Iowa Cubs",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Iowa Cubs",
-                  "price": 100
-                },
-                {
-                  "name": "Indianapolis Indians",
-                  "price": -128
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Iowa Cubs",
-                  "price": -210,
-                  "point": 1.5
-                },
-                {
-                  "name": "Indianapolis Indians",
-                  "price": 152,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -112,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -118,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666660",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:36:00.000Z",
-      "home_team": "Washington Nationals",
-      "away_team": "San Diego Padres",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "San Diego Padres",
-                  "price": -110
-                },
-                {
-                  "name": "Washington Nationals",
-                  "price": -106
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "San Diego Padres",
-                  "price": 140,
-                  "point": -1.5
-                },
-                {
-                  "name": "Washington Nationals",
-                  "price": -170,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 100,
-                  "point": 9.5
-                },
-                {
-                  "name": "Under",
-                  "price": -122,
-                  "point": 9.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666663",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:36:00.000Z",
-      "home_team": "Pittsburgh Pirates",
-      "away_team": "Minnesota Twins",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Minnesota Twins",
-                  "price": 134
-                },
-                {
-                  "name": "Pittsburgh Pirates",
-                  "price": -158
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Minnesota Twins",
-                  "price": -170,
-                  "point": 1.5
-                },
-                {
-                  "name": "Pittsburgh Pirates",
-                  "price": 140,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -115,
-                  "point": 7.5
-                },
-                {
-                  "name": "Under",
-                  "price": -105,
-                  "point": 7.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666649",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:41:00.000Z",
-      "home_team": "Cincinnati Reds",
-      "away_team": "Atlanta Braves",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Atlanta Braves",
-                  "price": -126
-                },
-                {
-                  "name": "Cincinnati Reds",
-                  "price": 108
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Atlanta Braves",
-                  "price": 130,
-                  "point": -1.5
-                },
-                {
-                  "name": "Cincinnati Reds",
-                  "price": -156,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -120,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -102,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666651",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:41:00.000Z",
-      "home_team": "New York Mets",
-      "away_team": "Miami Marlins",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Miami Marlins",
-                  "price": 140
-                },
-                {
-                  "name": "New York Mets",
-                  "price": -166
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Miami Marlins",
-                  "price": -152,
-                  "point": 1.5
-                },
-                {
-                  "name": "New York Mets",
-                  "price": 126,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -124,
-                  "point": 7.5
-                },
-                {
-                  "name": "Under",
-                  "price": 102,
-                  "point": 7.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666656",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:41:00.000Z",
-      "home_team": "Cleveland Guardians",
-      "away_team": "Boston Red Sox",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Boston Red Sox",
-                  "price": -102
-                },
-                {
-                  "name": "Cleveland Guardians",
-                  "price": -116
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Boston Red Sox",
-                  "price": 180,
-                  "point": -1.5
-                },
-                {
-                  "name": "Cleveland Guardians",
-                  "price": -220,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 100,
-                  "point": 7
-                },
-                {
-                  "name": "Under",
-                  "price": -122,
-                  "point": 7
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666662",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T17:41:00.000Z",
-      "home_team": "Tampa Bay Rays",
-      "away_team": "Los Angeles Angels",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Los Angeles Angels",
-                  "price": 176
-                },
-                {
-                  "name": "Tampa Bay Rays",
-                  "price": -210
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Los Angeles Angels",
-                  "price": -125,
-                  "point": 1.5
-                },
-                {
-                  "name": "Tampa Bay Rays",
-                  "price": 104,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -105,
-                  "point": 8
-                },
-                {
-                  "name": "Under",
-                  "price": -115,
-                  "point": 8
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669220",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T18:00:00.000Z",
-      "home_team": "Northern Illinois Huskies",
-      "away_team": "St. John's Red Storm",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "St. John's Red Storm",
-                  "price": -148
-                },
-                {
-                  "name": "Northern Illinois Huskies",
-                  "price": 116
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "St. John's Red Storm",
-                  "price": 100,
-                  "point": -1.5
-                },
-                {
-                  "name": "Northern Illinois Huskies",
-                  "price": -128,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -108,
-                  "point": 13.5
-                },
-                {
-                  "name": "Under",
-                  "price": -118,
-                  "point": 13.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670980",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T18:05:00.000Z",
-      "home_team": "Toledo Mud Hens",
-      "away_team": "Columbus Clippers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Columbus Clippers",
-                  "price": 106
-                },
-                {
-                  "name": "Toledo Mud Hens",
-                  "price": -134
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Columbus Clippers",
-                  "price": -192,
-                  "point": 1.5
-                },
-                {
-                  "name": "Toledo Mud Hens",
-                  "price": 142,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -120,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670981",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T18:05:00.000Z",
-      "home_team": "Nashville Sounds",
-      "away_team": "Gwinnett Stripers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Gwinnett Stripers",
-                  "price": 114
-                },
-                {
-                  "name": "Nashville Sounds",
-                  "price": -146
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Gwinnett Stripers",
-                  "price": -174,
-                  "point": 1.5
-                },
-                {
-                  "name": "Nashville Sounds",
-                  "price": 128,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -126,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -106,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670987",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T18:05:00.000Z",
-      "home_team": "Round Rock Express",
-      "away_team": "Salt Lake Bees",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Salt Lake Bees",
-                  "price": -112
-                },
-                {
-                  "name": "Round Rock Express",
-                  "price": -112
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Salt Lake Bees",
-                  "price": 130,
-                  "point": -1.5
-                },
-                {
-                  "name": "Round Rock Express",
-                  "price": -176,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -126,
-                  "point": 9.5
-                },
-                {
-                  "name": "Under",
-                  "price": -106,
-                  "point": 9.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666657",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T18:11:00.000Z",
-      "home_team": "Houston Astros",
-      "away_team": "Milwaukee Brewers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Milwaukee Brewers",
-                  "price": -200
-                },
-                {
-                  "name": "Houston Astros",
-                  "price": 168
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Milwaukee Brewers",
-                  "price": -111,
-                  "point": -1.5
-                },
-                {
-                  "name": "Houston Astros",
-                  "price": -108,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -108,
-                  "point": 7.5
-                },
-                {
-                  "name": "Under",
-                  "price": -112,
-                  "point": 7.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666661",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T18:11:00.000Z",
-      "home_team": "Chicago White Sox",
-      "away_team": "Detroit Tigers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Detroit Tigers",
-                  "price": 110
-                },
-                {
-                  "name": "Chicago White Sox",
-                  "price": -130
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Detroit Tigers",
-                  "price": -205,
-                  "point": 1.5
-                },
-                {
-                  "name": "Chicago White Sox",
-                  "price": 168,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 8
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 8
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666650",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T18:36:00.000Z",
-      "home_team": "Texas Rangers",
-      "away_team": "Kansas City Royals",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Kansas City Royals",
-                  "price": -102
-                },
-                {
-                  "name": "Texas Rangers",
-                  "price": -116
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Kansas City Royals",
-                  "price": 172,
-                  "point": -1.5
-                },
-                {
-                  "name": "Texas Rangers",
-                  "price": -210,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 7.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 7.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669937",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T19:00:00.000Z",
-      "home_team": "Usc Upstate Spartans",
-      "away_team": "Oklahoma State Cowboys",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Oklahoma State Cowboys",
-                  "price": -265
-                },
-                {
-                  "name": "Usc Upstate Spartans",
-                  "price": 200
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Oklahoma State Cowboys",
-                  "price": 102,
-                  "point": -3.5
-                },
-                {
-                  "name": "Usc Upstate Spartans",
-                  "price": -130,
-                  "point": 3.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -132,
-                  "point": 14.5
-                },
-                {
-                  "name": "Under",
-                  "price": 104,
-                  "point": 14.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669946",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T19:00:00.000Z",
-      "home_team": "Auburn Tigers",
-      "away_team": "Ucf Knights",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Ucf Knights",
-                  "price": 265
-                },
-                {
-                  "name": "Auburn Tigers",
-                  "price": -370
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Ucf Knights",
-                  "price": -128,
-                  "point": 3.5
-                },
-                {
-                  "name": "Auburn Tigers",
-                  "price": 100,
-                  "point": -3.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -104,
-                  "point": 13.5
-                },
-                {
-                  "name": "Under",
-                  "price": -122,
-                  "point": 13.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670943",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T19:00:00.000Z",
-      "home_team": "Texas",
-      "away_team": "Nebraska",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Nebraska",
-                  "price": 108
-                },
-                {
-                  "name": "Texas",
-                  "price": -138
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670993",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T19:05:00.000Z",
-      "home_team": "Sugar Land Space Cowboys",
-      "away_team": "Oklahoma City Comets",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Oklahoma City Comets",
-                  "price": -152
-                },
-                {
-                  "name": "Sugar Land Space Cowboys",
-                  "price": 120
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Oklahoma City Comets",
-                  "price": 100,
-                  "point": -1.5
-                },
-                {
-                  "name": "Sugar Land Space Cowboys",
-                  "price": -132,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -102,
-                  "point": 9.5
-                },
-                {
-                  "name": "Under",
-                  "price": -130,
-                  "point": 9.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666655",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T19:11:00.000Z",
-      "home_team": "Colorado Rockies",
-      "away_team": "San Francisco Giants",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "San Francisco Giants",
-                  "price": -112
-                },
-                {
-                  "name": "Colorado Rockies",
-                  "price": -104
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "San Francisco Giants",
-                  "price": 136,
-                  "point": -1.5
-                },
-                {
-                  "name": "Colorado Rockies",
-                  "price": -164,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 11
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 11
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35671000",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T19:35:00.000Z",
-      "home_team": "Albuquerque Isotopes",
-      "away_team": "El Paso Chihuahuas",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "El Paso Chihuahuas",
-                  "price": 110
-                },
-                {
-                  "name": "Albuquerque Isotopes",
-                  "price": -140
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "El Paso Chihuahuas",
-                  "price": -160,
-                  "point": 1.5
-                },
-                {
-                  "name": "Albuquerque Isotopes",
-                  "price": 118,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -124,
-                  "point": 13.5
-                },
-                {
-                  "name": "Under",
-                  "price": -108,
-                  "point": 13.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "fd_35669947",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
@@ -2418,11 +422,11 @@
               "outcomes": [
                 {
                   "name": "UCLA Bruins",
-                  "price": -770
+                  "price": -215
                 },
                 {
                   "name": "Saint Mary's Gaels",
-                  "price": 470
+                  "price": 162
                 }
               ]
             },
@@ -2431,72 +435,13 @@
               "outcomes": [
                 {
                   "name": "UCLA Bruins",
-                  "price": -120,
-                  "point": -5.5
+                  "price": 158,
+                  "point": -1.5
                 },
                 {
                   "name": "Saint Mary's Gaels",
-                  "price": -106,
-                  "point": 5.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -104,
-                  "point": 13.5
-                },
-                {
-                  "name": "Under",
-                  "price": -122,
-                  "point": 13.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669948",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T20:00:00.000Z",
-      "home_team": "Jacksonville State Gamecocks",
-      "away_team": "Virginia Cavaliers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Virginia Cavaliers",
-                  "price": 126
-                },
-                {
-                  "name": "Jacksonville State Gamecocks",
-                  "price": -162
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Virginia Cavaliers",
-                  "price": -148,
+                  "price": -210,
                   "point": 1.5
-                },
-                {
-                  "name": "Jacksonville State Gamecocks",
-                  "price": 116,
-                  "point": -1.5
                 }
               ]
             },
@@ -2505,13 +450,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -125,
-                  "point": 13.5
+                  "price": 102,
+                  "point": 10.5
                 },
                 {
                   "name": "Under",
-                  "price": -102,
-                  "point": 13.5
+                  "price": -132,
+                  "point": 10.5
                 }
               ]
             }
@@ -2536,11 +481,11 @@
               "outcomes": [
                 {
                   "name": "Usc Trojans",
-                  "price": -250
+                  "price": -1000000
                 },
                 {
                   "name": "Texas State Bobcats",
-                  "price": 190
+                  "price": 7500
                 }
               ]
             },
@@ -2549,11 +494,365 @@
               "outcomes": [
                 {
                   "name": "Usc Trojans",
-                  "price": -118,
-                  "point": -2.5
+                  "price": 100,
+                  "point": -7.5
                 },
                 {
                   "name": "Texas State Bobcats",
+                  "price": -130,
+                  "point": 7.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -1600,
+                  "point": 13.5
+                },
+                {
+                  "name": "Under",
+                  "price": 710,
+                  "point": 13.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35672321",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-05-31T21:00:00.000Z",
+      "home_team": "Troy Trojans",
+      "away_team": "Florida Gators",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Florida Gators",
+                  "price": 7500
+                },
+                {
+                  "name": "Troy Trojans",
+                  "price": -100000
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Florida Gators",
+                  "price": 100,
+                  "point": 3.5
+                },
+                {
+                  "name": "Troy Trojans",
+                  "price": -130,
+                  "point": -3.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -1600,
+                  "point": 13.5
+                },
+                {
+                  "name": "Under",
+                  "price": 710,
+                  "point": 13.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35672329",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-05-31T21:00:00.000Z",
+      "home_team": "Kentucky Wildcats",
+      "away_team": "West Virginia Mountaineers",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "West Virginia Mountaineers",
+                  "price": 100
+                },
+                {
+                  "name": "Kentucky Wildcats",
+                  "price": -130
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "West Virginia Mountaineers",
+                  "price": 175,
+                  "point": -1.5
+                },
+                {
+                  "name": "Kentucky Wildcats",
+                  "price": -235,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 104,
+                  "point": 20.5
+                },
+                {
+                  "name": "Under",
+                  "price": -135,
+                  "point": 20.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35672330",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-05-31T21:00:00.000Z",
+      "home_team": "North Carolina Tar Heels",
+      "away_team": "East Carolina Pirates",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "East Carolina Pirates",
+                  "price": 7500
+                },
+                {
+                  "name": "North Carolina Tar Heels",
+                  "price": -100000
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "East Carolina Pirates",
+                  "price": -140,
+                  "point": 6.5
+                },
+                {
+                  "name": "North Carolina Tar Heels",
+                  "price": 108,
+                  "point": -6.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -1600,
+                  "point": 11.5
+                },
+                {
+                  "name": "Under",
+                  "price": 710,
+                  "point": 11.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35672357",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-05-31T21:00:00.000Z",
+      "home_team": "Georgia Bulldogs",
+      "away_team": "Liberty Flames",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Liberty Flames",
+                  "price": 1600
+                },
+                {
+                  "name": "Georgia Bulldogs",
+                  "price": -10000
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Liberty Flames",
+                  "price": -120,
+                  "point": 2.5
+                },
+                {
+                  "name": "Georgia Bulldogs",
+                  "price": -108,
+                  "point": -2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 100,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": -130,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669946",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-05-31T21:06:00.000Z",
+      "home_team": "Auburn Tigers",
+      "away_team": "Ucf Knights",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Ucf Knights",
+                  "price": 144
+                },
+                {
+                  "name": "Auburn Tigers",
+                  "price": -190
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Ucf Knights",
+                  "price": -144,
+                  "point": 1.5
+                },
+                {
+                  "name": "Auburn Tigers",
+                  "price": 110,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 14.5
+                },
+                {
+                  "name": "Under",
+                  "price": -118,
+                  "point": 14.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35672481",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-05-31T22:00:00.000Z",
+      "home_team": "UC Santa Barbara Gauchos",
+      "away_team": "Texas Longhorns",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Texas Longhorns",
+                  "price": -395
+                },
+                {
+                  "name": "UC Santa Barbara Gauchos",
+                  "price": 275
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Texas Longhorns",
+                  "price": -120,
+                  "point": -2.5
+                },
+                {
+                  "name": "UC Santa Barbara Gauchos",
                   "price": -108,
                   "point": 2.5
                 }
@@ -2564,72 +863,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -113,
-                  "point": 13.5
-                },
-                {
-                  "name": "Under",
-                  "price": -113,
-                  "point": 13.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35671001",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T20:05:00.000Z",
-      "home_team": "Reno Aces",
-      "away_team": "Sacramento River Cats",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Sacramento River Cats",
-                  "price": -134
-                },
-                {
-                  "name": "Reno Aces",
-                  "price": 106
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Sacramento River Cats",
-                  "price": 106,
-                  "point": -1.5
-                },
-                {
-                  "name": "Reno Aces",
-                  "price": -138,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -122,
-                  "point": 11.5
+                  "price": -118,
+                  "point": 8.5
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 11.5
+                  "point": 8.5
                 }
               ]
             }
@@ -2638,12 +878,12 @@
       ]
     },
     {
-      "id": "fd_35666653",
+      "id": "fd_35672508",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
-      "commence_time": "2026-05-31T20:06:00.000Z",
-      "home_team": "Athletics",
-      "away_team": "New York Yankees",
+      "commence_time": "2026-05-31T22:00:00.000Z",
+      "home_team": "Arkansas Razorbacks",
+      "away_team": "Kansas Jayhawks",
       "bookmakers": [
         {
           "key": "fanduel",
@@ -2653,12 +893,12 @@
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "New York Yankees",
-                  "price": -166
+                  "name": "Kansas Jayhawks",
+                  "price": 106
                 },
                 {
-                  "name": "Athletics",
-                  "price": 140
+                  "name": "Arkansas Razorbacks",
+                  "price": -138
                 }
               ]
             },
@@ -2666,14 +906,14 @@
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "New York Yankees",
-                  "price": -113,
-                  "point": -1.5
-                },
-                {
-                  "name": "Athletics",
-                  "price": -106,
+                  "name": "Kansas Jayhawks",
+                  "price": -220,
                   "point": 1.5
+                },
+                {
+                  "name": "Arkansas Razorbacks",
+                  "price": 165,
+                  "point": -1.5
                 }
               ]
             },
@@ -2682,337 +922,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -102,
-                  "point": 10.5
-                },
-                {
-                  "name": "Under",
-                  "price": -120,
-                  "point": 10.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35669953",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T20:06:00.000Z",
-      "home_team": "Washington State Cougars",
-      "away_team": "Oregon State Beavers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Oregon State Beavers",
-                  "price": -360
-                },
-                {
-                  "name": "Washington State Cougars",
-                  "price": 260
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Oregon State Beavers",
-                  "price": -111,
-                  "point": -3.5
-                },
-                {
-                  "name": "Washington State Cougars",
-                  "price": -115,
-                  "point": 3.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 102,
-                  "point": 12.5
+                  "price": 100,
+                  "point": 20.5
                 },
                 {
                   "name": "Under",
                   "price": -130,
-                  "point": 12.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666654",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T20:11:00.000Z",
-      "home_team": "Los Angeles Dodgers",
-      "away_team": "Philadelphia Phillies",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Philadelphia Phillies",
-                  "price": 194
-                },
-                {
-                  "name": "Los Angeles Dodgers",
-                  "price": -235
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Philadelphia Phillies",
-                  "price": -110,
-                  "point": 1.5
-                },
-                {
-                  "name": "Los Angeles Dodgers",
-                  "price": -110,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -104,
-                  "point": 9
-                },
-                {
-                  "name": "Under",
-                  "price": -118,
-                  "point": 9
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35666658",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T20:11:00.000Z",
-      "home_team": "Seattle Mariners",
-      "away_team": "Arizona Diamondbacks",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Arizona Diamondbacks",
-                  "price": 124
-                },
-                {
-                  "name": "Seattle Mariners",
-                  "price": -146
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Arizona Diamondbacks",
-                  "price": -178,
-                  "point": 1.5
-                },
-                {
-                  "name": "Seattle Mariners",
-                  "price": 146,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -106,
-                  "point": 7.5
-                },
-                {
-                  "name": "Under",
-                  "price": -114,
-                  "point": 7.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35671004",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T20:35:00.000Z",
-      "home_team": "Tacoma Rainiers",
-      "away_team": "Las Vegas Aviators",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aviators",
-                  "price": -112
-                },
-                {
-                  "name": "Tacoma Rainiers",
-                  "price": -112
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aviators",
-                  "price": 138,
-                  "point": -1.5
-                },
-                {
-                  "name": "Tacoma Rainiers",
-                  "price": -190,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -106,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -126,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670986",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T22:05:00.000Z",
-      "home_team": "Omaha Storm Chasers",
-      "away_team": "Memphis Redbirds",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Memphis Redbirds",
-                  "price": -140
-                },
-                {
-                  "name": "Omaha Storm Chasers",
-                  "price": 110
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Memphis Redbirds",
-                  "price": 104,
-                  "point": -1.5
-                },
-                {
-                  "name": "Omaha Storm Chasers",
-                  "price": -136,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -118,
-                  "point": 10.5
-                },
-                {
-                  "name": "Under",
-                  "price": -112,
-                  "point": 10.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35670942",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-05-31T23:00:00.000Z",
-      "home_team": "UCLA",
-      "away_team": "Texas Tech",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Texas Tech",
-                  "price": -113
-                },
-                {
-                  "name": "UCLA",
-                  "price": -113
+                  "point": 20.5
                 }
               ]
             }
@@ -3037,11 +953,11 @@
               "outcomes": [
                 {
                   "name": "Chicago Cubs",
-                  "price": -102
+                  "price": 250
                 },
                 {
                   "name": "St. Louis Cardinals",
-                  "price": -116
+                  "price": -340
                 }
               ]
             },
@@ -3050,12 +966,484 @@
               "outcomes": [
                 {
                   "name": "Chicago Cubs",
+                  "price": -144,
+                  "point": 2.5
+                },
+                {
+                  "name": "St. Louis Cardinals",
+                  "price": 108,
+                  "point": -2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 9.5
+                },
+                {
+                  "name": "Under",
+                  "price": -120,
+                  "point": 9.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35672760",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-01T00:00:00.000Z",
+      "home_team": "Oklahoma State Cowboys",
+      "away_team": "Alabama Crimson Tide",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Alabama Crimson Tide",
+                  "price": -215
+                },
+                {
+                  "name": "Oklahoma State Cowboys",
+                  "price": 164
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Alabama Crimson Tide",
+                  "price": -106,
+                  "point": -2.5
+                },
+                {
+                  "name": "Oklahoma State Cowboys",
+                  "price": -120,
+                  "point": 2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 14.5
+                },
+                {
+                  "name": "Under",
+                  "price": -104,
+                  "point": 14.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35672782",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-01T00:00:00.000Z",
+      "home_team": "Ole Miss Rebels",
+      "away_team": "Arizona State Sun Devils",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Arizona State Sun Devils",
+                  "price": 146
+                },
+                {
+                  "name": "Ole Miss Rebels",
+                  "price": -188
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Arizona State Sun Devils",
+                  "price": -122,
+                  "point": 1.5
+                },
+                {
+                  "name": "Ole Miss Rebels",
+                  "price": -104,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -128,
+                  "point": 13.5
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
+                  "point": 13.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669991",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-01T22:41:00.000Z",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Detroit Tigers",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Detroit Tigers",
+                  "price": 142
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": -168
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Detroit Tigers",
+                  "price": -160,
+                  "point": 1.5
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": 132,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -122,
+                  "point": 7.5
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669994",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-01T22:46:00.000Z",
+      "home_team": "Washington Nationals",
+      "away_team": "Miami Marlins",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Miami Marlins",
+                  "price": 120
+                },
+                {
+                  "name": "Washington Nationals",
+                  "price": -142
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Miami Marlins",
+                  "price": -182,
+                  "point": 1.5
+                },
+                {
+                  "name": "Washington Nationals",
+                  "price": 150,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -115,
+                  "point": 8.5
+                },
+                {
+                  "name": "Under",
+                  "price": -105,
+                  "point": 8.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669993",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-01T23:11:00.000Z",
+      "home_team": "Cincinnati Reds",
+      "away_team": "Kansas City Royals",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Kansas City Royals",
+                  "price": 146
+                },
+                {
+                  "name": "Cincinnati Reds",
+                  "price": -174
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Kansas City Royals",
+                  "price": -142,
+                  "point": 1.5
+                },
+                {
+                  "name": "Cincinnati Reds",
+                  "price": 118,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -118,
+                  "point": 8.5
+                },
+                {
+                  "name": "Under",
+                  "price": -104,
+                  "point": 8.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669986",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-01T23:41:00.000Z",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "San Francisco Giants",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "San Francisco Giants",
+                  "price": 114
+                },
+                {
+                  "name": "Milwaukee Brewers",
+                  "price": -134
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "San Francisco Giants",
+                  "price": -200,
+                  "point": 1.5
+                },
+                {
+                  "name": "Milwaukee Brewers",
                   "price": 164,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 7.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669992",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-01T23:41:00.000Z",
+      "home_team": "Minnesota Twins",
+      "away_team": "Chicago White Sox",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Chicago White Sox",
+                  "price": 144
+                },
+                {
+                  "name": "Minnesota Twins",
+                  "price": -172
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Chicago White Sox",
+                  "price": -150,
+                  "point": 1.5
+                },
+                {
+                  "name": "Minnesota Twins",
+                  "price": 125,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 8
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 8
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669997",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-01T23:46:00.000Z",
+      "home_team": "St. Louis Cardinals",
+      "away_team": "Texas Rangers",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Texas Rangers",
+                  "price": -124
+                },
+                {
+                  "name": "St. Louis Cardinals",
+                  "price": 106
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Texas Rangers",
+                  "price": 140,
                   "point": -1.5
                 },
                 {
                   "name": "St. Louis Cardinals",
-                  "price": -200,
+                  "price": -170,
                   "point": 1.5
                 }
               ]
@@ -3065,13 +1453,190 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -106,
+                  "price": -105,
+                  "point": 8
+                },
+                {
+                  "name": "Under",
+                  "price": -115,
+                  "point": 8
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669998",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-02T01:39:00.000Z",
+      "home_team": "Los Angeles Angels",
+      "away_team": "Colorado Rockies",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Colorado Rockies",
+                  "price": 168
+                },
+                {
+                  "name": "Los Angeles Angels",
+                  "price": -200
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Colorado Rockies",
+                  "price": -126,
+                  "point": 1.5
+                },
+                {
+                  "name": "Los Angeles Angels",
+                  "price": 105,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
                   "point": 8.5
                 },
                 {
                   "name": "Under",
-                  "price": -114,
+                  "price": -110,
                   "point": 8.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669995",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-02T01:41:00.000Z",
+      "home_team": "Arizona Diamondbacks",
+      "away_team": "Los Angeles Dodgers",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": -154
+                },
+                {
+                  "name": "Arizona Diamondbacks",
+                  "price": 130
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": 110,
+                  "point": -1.5
+                },
+                {
+                  "name": "Arizona Diamondbacks",
+                  "price": -132,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -105,
+                  "point": 9
+                },
+                {
+                  "name": "Under",
+                  "price": -115,
+                  "point": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35669996",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-06-02T01:41:00.000Z",
+      "home_team": "Seattle Mariners",
+      "away_team": "New York Mets",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New York Mets",
+                  "price": 110
+                },
+                {
+                  "name": "Seattle Mariners",
+                  "price": -130
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New York Mets",
+                  "price": -205,
+                  "point": 1.5
+                },
+                {
+                  "name": "Seattle Mariners",
+                  "price": 168,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 7
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 7
                 }
               ]
             }
@@ -3145,12 +1710,12 @@
               "outcomes": [
                 {
                   "name": "Vegas Golden Knights",
-                  "price": -205,
+                  "price": -200,
                   "point": 1.5
                 },
                 {
                   "name": "Carolina Hurricanes",
-                  "price": 173,
+                  "price": 170,
                   "point": -1.5
                 }
               ]

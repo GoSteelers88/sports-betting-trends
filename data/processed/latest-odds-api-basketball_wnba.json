@@ -1,76 +1,17 @@
 {
-  "fetchedAt": "2026-05-31T15:40:24.218Z",
+  "fetchedAt": "2026-05-31T23:43:23.130Z",
   "league": "basketball_wnba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 5,
+  "eventCount": 4,
   "sampleEvent": {
-    "id": "fd_35662727",
+    "id": "fd_35666648",
     "sport_key": "basketball_wnba",
-    "commence_time": "2026-05-31T19:30:00.000Z",
-    "home_team": "Golden State Valkyries",
-    "away_team": "Las Vegas Aces"
+    "commence_time": "2026-06-02T00:00:00.000Z",
+    "home_team": "Dallas Wings",
+    "away_team": "Seattle Storm"
   },
   "events": [
-    {
-      "id": "fd_35662727",
-      "sport_key": "basketball_wnba",
-      "sport_title": "WNBA",
-      "commence_time": "2026-05-31T19:30:00.000Z",
-      "home_team": "Golden State Valkyries",
-      "away_team": "Las Vegas Aces",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -142
-                },
-                {
-                  "name": "Golden State Valkyries",
-                  "price": 116
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -108,
-                  "point": -2.5
-                },
-                {
-                  "name": "Golden State Valkyries",
-                  "price": -112,
-                  "point": 2.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -112,
-                  "point": 168.5
-                },
-                {
-                  "name": "Under",
-                  "price": -108,
-                  "point": 168.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_35666648",
       "sport_key": "basketball_wnba",
@@ -88,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Seattle Storm",
-                  "price": 410
+                  "price": 490
                 },
                 {
                   "name": "Dallas Wings",
-                  "price": -590
+                  "price": -750
                 }
               ]
             },
@@ -101,13 +42,13 @@
               "outcomes": [
                 {
                   "name": "Seattle Storm",
-                  "price": -112,
-                  "point": 11.5
+                  "price": -108,
+                  "point": 12.5
                 },
                 {
                   "name": "Dallas Wings",
-                  "price": -108,
-                  "point": -11.5
+                  "price": -112,
+                  "point": -12.5
                 }
               ]
             },
@@ -116,13 +57,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
-                  "point": 170.5
+                  "price": -106,
+                  "point": 169.5
                 },
                 {
                   "name": "Under",
+                  "price": -114,
+                  "point": 169.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Seattle Storm",
                   "price": -110,
-                  "point": 170.5
+                  "point": 11.5
+                },
+                {
+                  "name": "Dallas Wings",
+                  "price": -110,
+                  "point": -11.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Seattle Storm",
+                  "price": 400
+                },
+                {
+                  "name": "Dallas Wings",
+                  "price": -575
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -105,
+                  "point": 169.5
+                },
+                {
+                  "name": "Under",
+                  "price": -115,
+                  "point": 169.5
                 }
               ]
             }
@@ -147,11 +137,11 @@
               "outcomes": [
                 {
                   "name": "Minnesota Lynx",
-                  "price": -132
+                  "price": -138
                 },
                 {
                   "name": "Phoenix Mercury",
-                  "price": 108
+                  "price": 112
                 }
               ]
             },
@@ -160,13 +150,62 @@
               "outcomes": [
                 {
                   "name": "Minnesota Lynx",
+                  "price": -108,
+                  "point": -2.5
+                },
+                {
+                  "name": "Phoenix Mercury",
+                  "price": -112,
+                  "point": 2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -106,
+                  "point": 167.5
+                },
+                {
+                  "name": "Under",
+                  "price": -114,
+                  "point": 167.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Minnesota Lynx",
                   "price": -115,
-                  "point": -1.5
+                  "point": -2
                 },
                 {
                   "name": "Phoenix Mercury",
                   "price": -105,
-                  "point": 1.5
+                  "point": 2
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Minnesota Lynx",
+                  "price": -140
+                },
+                {
+                  "name": "Phoenix Mercury",
+                  "price": 120
                 }
               ]
             },
@@ -176,12 +215,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 168.5
+                  "point": 167.5
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 168.5
+                  "point": 167.5
                 }
               ]
             }
@@ -206,11 +245,11 @@
               "outcomes": [
                 {
                   "name": "Connecticut Sun",
-                  "price": 790
+                  "price": 630
                 },
                 {
                   "name": "Atlanta Dream",
-                  "price": -1500
+                  "price": -1050
                 }
               ]
             },
@@ -219,13 +258,13 @@
               "outcomes": [
                 {
                   "name": "Connecticut Sun",
-                  "price": -106,
-                  "point": 15.5
+                  "price": -110,
+                  "point": 14.5
                 },
                 {
                   "name": "Atlanta Dream",
-                  "price": -114,
-                  "point": -15.5
+                  "price": -110,
+                  "point": -14.5
                 }
               ]
             },
