@@ -1,5 +1,39 @@
 # Next Session — Backlog
 
+## 2026-06-01 — MLB model rebuilt, then stood down (evidence-based)
+
+Investigated "MLB is the only league under .500." Root cause was negative CLV
+(no real edge), not bad luck. Rebuilt the MLB model with forward-looking
+Statcast inputs (xERA/xwOBA) + log5/Pythagorean + market shrinkage, replacing
+the LightGBM Python sidecar. Built a leak-free as-of-date CLV backtest harness.
+
+**Verdict: no demonstrated edge.** Two backtests (~688 games) + adversarially-
+verified deep research (peer-reviewed *Management Science* Simon 2024; an
+independent production bot that reached the same conclusion) confirm full-game
+MLB ML is too efficient for public-data fundamentals. F5/totals/props as "more
+beatable" were REFUTED. Default shrinkage set to **w=0.3** (model defers to the
+line); **MLB stays at floor stakes** (the bankroll guard was right all along).
+Work committed to branch `mlb-model-rebuild` (not pushed — merge is a deploy call).
+
+**The big takeaway is system-wide, not just MLB:** overall trial CLV is also
+failing (~20% beat, n=10), so the "fundamentals beat the market" premise is the
+limiter for NBA too. The research's prescription: build fair value from a
+**de-vigged SHARP book** (Pinnacle/Circa) as the primary signal and only bet
+when you beat it. **Binding constraint = no free sharp-book feed.**
+
+### Recommended next campaign (replaces chasing more bet-types)
+1. **Acquire a sharp reference line** — the highest-value unlock. Options to
+   scope: Pinnacle/Circa via odds screens, a free odds-API tier, or Kalshi's
+   own book as the anchor. Without this, no amount of modeling beats the wall.
+2. **Re-architect pick-gen around de-vigged-sharp fair value** (applies to NBA
+   *and* MLB): edge = our_price vs de-vigged_sharp_close; margin of safety ∝
+   market efficiency; LLM/model becomes a secondary input, not the price.
+3. Only then revisit the one credible edge (line-movement *overreaction*, in
+   lopsided/weekend-day games) — needs line-movement capture (`line_movement`
+   is currently hardcoded 0) and likely still won't clear vig.
+
+Kalshi placement remains correctly gated (5 criteria not met; CLV failing).
+
 ## Where we left off (2026-05-07, ~07:00 UTC)
 
 The full trial-phase build shipped overnight. **System is autonomous.**
