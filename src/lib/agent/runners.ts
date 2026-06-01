@@ -36,6 +36,7 @@ export const ALLOWED_SCRIPTS = [
   "ingest:mlb-pitchers",
   "ingest:mlb-bullpen",
   "ingest:mlb-batting",
+  "ingest:mlb-statcast",
   "ingest:mlb-model",
 ] as const;
 

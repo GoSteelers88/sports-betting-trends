@@ -92,6 +92,10 @@ jobs:
           npm run ingest:wnba-model || echo "wnba model build failed (non-fatal — likely offseason)"
           npm run ingest:nhl-efficiency || echo "nhl efficiency refresh failed (non-fatal — likely offseason)"
           npm run ingest:nhl-model || echo "nhl model build failed (non-fatal — likely offseason)"
+          # Forward-looking pitching (Statcast xERA/xwOBA). Season-long stats,
+          # independent of today's slate — safe to refresh here so mlb-model
+          # (rebuilt by the orchestrator's run_ingest) reads current numbers.
+          npm run ingest:mlb-statcast || echo "mlb statcast pull failed (non-fatal)"
           npm run scrape:nba-props || echo "nba props scrape failed (non-fatal)"
           npm run scrape:mlb-props || echo "mlb props scrape failed (non-fatal)"
           npm run scrape:mlb-signals || echo "mlb signals scrape failed (non-fatal)"
@@ -139,6 +143,7 @@ jobs:
             "data/processed/mlb-pitchers-today.json"
             "data/processed/mlb-bullpen.json"
             "data/processed/mlb-batting.json"
+            "data/processed/statcast-pitching.json"
           )
           # Pre-commit secret scan — refuse to commit if any allowlisted file
           # contains a recognizable secret pattern. Defense in depth.
