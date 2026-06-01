@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-05-31T23:43:22.802Z",
+  "fetchedAt": "2026-06-01T19:25:10.335Z",
   "league": "basketball_nba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
@@ -42,13 +42,13 @@
               "outcomes": [
                 {
                   "name": "New York Knicks",
-                  "price": -118,
-                  "point": 5.5
+                  "price": -104,
+                  "point": 4.5
                 },
                 {
                   "name": "San Antonio Spurs",
-                  "price": -104,
-                  "point": -5.5
+                  "price": -118,
+                  "point": -4.5
                 }
               ]
             },
@@ -57,12 +57,61 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -108,
+                  "price": -106,
                   "point": 218.5
                 },
                 {
                   "name": "Under",
-                  "price": -112,
+                  "price": -114,
+                  "point": 218.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New York Knicks",
+                  "price": -110,
+                  "point": 5
+                },
+                {
+                  "name": "San Antonio Spurs",
+                  "price": -110,
+                  "point": -5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New York Knicks",
+                  "price": 165
+                },
+                {
+                  "name": "San Antonio Spurs",
+                  "price": -195
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 218.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
                   "point": 218.5
                 }
               ]

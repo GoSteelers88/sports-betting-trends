@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-05-31T23:44:09.624Z",
+  "generatedAt": "2026-06-01T19:25:55.281Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 4,
+  "recordCount": 6,
   "errors": [],
   "data": {
-    "generatedAt": "2026-05-31T23:44:09.624Z",
+    "generatedAt": "2026-06-01T19:25:55.281Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 4,
+    "gameCount": 6,
     "results": [
       {
         "eventId": "fd_35666648",
@@ -62,6 +62,30 @@
         "awayNetRtg": 3.2,
         "calibrated": false,
         "startTime": "2026-06-02T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35669988",
+        "homeTeam": "Golden State Valkyries",
+        "awayTeam": "Portland Fire",
+        "homeWinProb": 0.6019,
+        "awayWinProb": 0.3981,
+        "expectedMargin": 3.94,
+        "homeNetRtg": 5.166666666666667,
+        "awayNetRtg": -0.25,
+        "calibrated": false,
+        "startTime": "2026-06-03T02:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35669989",
+        "homeTeam": "Los Angeles Sparks",
+        "awayTeam": "Las Vegas Aces",
+        "homeWinProb": 0.4196,
+        "awayWinProb": 0.5804,
+        "expectedMargin": -3.09,
+        "homeNetRtg": -3.2,
+        "awayNetRtg": 7,
+        "calibrated": false,
+        "startTime": "2026-06-03T02:00:00.000Z"
       }
     ]
   }
