@@ -3,7 +3,6 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 
 // ---------------------------------------------------------------------------
 // Team name normalization: raw ESPN data uses short city-less names ("Tigers"),
@@ -129,37 +128,21 @@ type BullpenData = {
   teams: Record<string, TeamBullpen>;
 };
 
-type BattingEntry = {
-  ops: number | null;
-  obp: number | null;
-  slg: number | null;
-  avg: number | null;
-  gamesPlayed: number;
-};
-
-type BattingData = {
-  fetchedAt: string;
-  teams: Record<string, BattingEntry>;
-};
-
-type StandingsEntry = {
-  team: string;
-  abbreviation: string;
-  wins: number;
-  losses: number;
-  winPct: number;
-  pointDiff?: number;
-};
-
 export type MlbModelResult = {
   eventId: string;
   homeTeam: string;
   awayTeam: string;
-  homeWinProb: number;
+  homeWinProb: number;      // final, after shrinkage toward market
   awayWinProb: number;
   calibrated: boolean;
   homePitcherName: string | null;
   awayPitcherName: string | null;
+  // Transparency / backtest fields (optional; structured model only):
+  modelHomeProbRaw?: number;   // pre-shrinkage structured prob
+  marketHomeProb?: number;     // no-vig implied prob used as shrink anchor
+  homeExpRuns?: number;        // expected runs (structured)
+  awayExpRuns?: number;
+  shrinkWeight?: number;       // w used to blend model vs market
 };
 
 export type MlbModelOutput = {
@@ -169,34 +152,11 @@ export type MlbModelOutput = {
 
 // Feature defaults
 const LEAGUE_AVG_ERA = 4.50;
-const LEAGUE_AVG_WHIP = 1.30;
 const LEAGUE_AVG_RPG = 4.5;
 
 // Helper: fuzzy team match
 function normalize(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim();
-}
-
-function findTeamInStandings(team: string, standings: StandingsEntry[]): StandingsEntry | null {
-  const normTarget = normalize(team);
-  let best: StandingsEntry | null = null;
-  let bestScore = 0;
-  for (const s of standings) {
-    const normTeam = normalize(s.team);
-    const normAbbr = normalize(s.abbreviation);
-    if (normTeam === normTarget || normAbbr === normTarget) return s;
-    // token overlap
-    const tWords = new Set(normTarget.split(/\s+/));
-    const sWords = new Set(normTeam.split(/\s+/));
-    const inter = [...tWords].filter((w) => sWords.has(w)).length;
-    const union = new Set([...tWords, ...sWords]).size;
-    const score = union > 0 ? inter / union : 0;
-    if (score > bestScore) {
-      bestScore = score;
-      best = s;
-    }
-  }
-  return bestScore >= 0.3 ? best : null;
 }
 
 function findTeamInBullpen(team: string, bullpen: Record<string, TeamBullpen>): TeamBullpen | null {
@@ -235,26 +195,6 @@ function computeRpg(team: string, rows: RawRow[], daysBack: number): number | nu
   });
   if (!matching.length) return null;
   return matching.reduce((s, r) => s + r.points, 0) / matching.length;
-}
-
-function computeRunDiffPg(team: string, rows: RawRow[], daysBack: number): number | null {
-  const shortName = resolveShortName(team);
-  const cutoff = Date.now() - daysBack * 24 * 3600 * 1000;
-  const matching = rows.filter((r) => {
-    const ms = new Date(r.gameDate).getTime();
-    return normalize(r.team) === shortName && ms >= cutoff && ms < Date.now() && r.opponentPoints != null;
-  });
-  if (!matching.length) return null;
-  return matching.reduce((s, r) => s + r.points - (r.opponentPoints ?? 0), 0) / matching.length;
-}
-
-function computeRestDays(team: string, rows: RawRow[], gameTimeMs: number): number | null {
-  const shortName = resolveShortName(team);
-  const past = rows
-    .filter((r) => normalize(r.team) === shortName && new Date(r.gameDate).getTime() < gameTimeMs)
-    .sort((a, b) => new Date(b.gameDate).getTime() - new Date(a.gameDate).getTime());
-  if (!past.length) return null;
-  return Math.round((gameTimeMs - new Date(past[0].gameDate).getTime()) / 86400000);
 }
 
 // ---------------------------------------------------------------------------
@@ -341,6 +281,24 @@ type PitcherSeasonData = {
 };
 
 // ---------------------------------------------------------------------------
+// Forward-looking Statcast pitching (ingest_statcast_pitching.py output).
+// xERA is Statcast's contact-quality ERA estimator — the predictive replacement
+// for lagging season ERA. xwobaAgainst is expected wOBA allowed.
+// ---------------------------------------------------------------------------
+type StatcastPitcher = {
+  xera: number | null;
+  xwobaAgainst: number | null;
+  pa: number | null;
+};
+
+type StatcastPitchingData = {
+  fetchedAt: string;
+  season: number;
+  pitcherCount: number;
+  pitchers: Record<string, StatcastPitcher>;
+};
+
+// ---------------------------------------------------------------------------
 // Weather data from ingest_mlb_weather.py output.
 // ---------------------------------------------------------------------------
 type WeatherGameEntry = {
@@ -364,47 +322,23 @@ export function runMlbModel(
 ): MlbModelOutput {
   const pitcherPath = path.join(rootDir, "data/processed/mlb-pitchers-today.json");
   const bullpenPath = path.join(rootDir, "data/processed/mlb-bullpen.json");
-  const standingsPath = path.join(rootDir, "data/processed/standings-mlb.json");
   const rawPath = path.join(rootDir, "data/raw/mlb/latest_espn_mlb.json");
   const oddsPath = path.join(rootDir, "data/processed/latest-odds-api-baseball_mlb.json");
-  const battingPath = path.join(rootDir, "data/processed/mlb-batting.json");
   const pitcherStatsPath = path.join(rootDir, "data/processed/pitcher-stats-season.json");
+  const statcastPath = path.join(rootDir, "data/processed/statcast-pitching.json");
   const weatherPath = path.join(rootDir, "data/processed/mlb-weather.json");
   const modelInputPath = path.join(rootDir, "data/processed/mlb-model-input.json");
   const modelOutputPath = path.join(rootDir, "data/processed/mlb-model-output.json");
-  const pythonScript = path.join(rootDir, "scripts/python/mlb_model.py");
 
   const loadJson = <T>(p: string, def: T): T => fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf-8")) : def;
   const pitcherData: PitcherData = loadJson(pitcherPath, { fetchedAt: "", games: [] });
   const bullpenData: BullpenData = loadJson(bullpenPath, { fetchedAt: "", teams: {} });
-  const standings: StandingsEntry[] = loadJson(standingsPath, []);
   const rawRows: RawRow[] = loadJson(rawPath, []);
   const oddsData: OddsData = loadJson(oddsPath, { events: [] });
-  const battingData: BattingData = loadJson(battingPath, { fetchedAt: "", teams: {} });
   // Season stats from baseball-reference — fall back to ESPN probable entry if available, then to league avg defaults
   const pitcherSeasonData: PitcherSeasonData = loadJson(pitcherStatsPath, { fetchedAt: "", pitcherCount: 0, pitchers: {} });
+  const statcastData: StatcastPitchingData = loadJson(statcastPath, { fetchedAt: "", season: 0, pitcherCount: 0, pitchers: {} });
   const weatherData: WeatherData = loadJson(weatherPath, { fetchedAt: "", games: {} });
-
-  // Batting lookup helper: match full team name to mlb-batting.json entry
-  function findTeamBatting(teamName: string): BattingEntry | null {
-    const normTarget = normalize(teamName);
-    // Exact match first
-    if (battingData.teams[teamName]) return battingData.teams[teamName];
-    // Normalized key match
-    for (const [key, val] of Object.entries(battingData.teams)) {
-      if (normalize(key) === normTarget) return val;
-      // Token overlap: accept if last word (nickname) matches
-      const keyWords = normalize(key).split(/\s+/);
-      const targetWords = normTarget.split(/\s+/);
-      if (
-        keyWords[keyWords.length - 1] === targetWords[targetWords.length - 1] ||
-        targetWords[targetWords.length - 1] === keyWords[keyWords.length - 1]
-      ) {
-        return val;
-      }
-    }
-    return null;
-  }
 
   // Build pitcher lookup by eventId
   const pitcherByEventId = new Map<string, PitcherGameEntry>();
@@ -434,6 +368,25 @@ export function runMlbModel(
     return null;
   }
 
+  // Statcast pitcher lookup: exact → normalized → last-name fallback (mirrors season lookup)
+  const statcastPitchers = statcastData.pitchers ?? {};
+  function lookupStatcast(name: string | null | undefined): StatcastPitcher | null {
+    if (!name) return null;
+    if (statcastPitchers[name]) return statcastPitchers[name];
+    const normName = name.toLowerCase().trim();
+    for (const [key, val] of Object.entries(statcastPitchers)) {
+      if (key.toLowerCase().trim() === normName) return val;
+    }
+    const lastName = normName.split(/\s+/).pop() ?? "";
+    if (lastName.length >= 3) {
+      for (const [key, val] of Object.entries(statcastPitchers)) {
+        const keyLastName = key.toLowerCase().trim().split(/\s+/).pop() ?? "";
+        if (keyLastName === lastName) return val;
+      }
+    }
+    return null;
+  }
+
   // Weather lookup: by home team name
   function lookupWeather(homeTeam: string): WeatherGameEntry | null {
     if (weatherData.games[homeTeam]) return weatherData.games[homeTeam];
@@ -446,168 +399,166 @@ export function runMlbModel(
     return null;
   }
 
-  const featureVectors: Array<Record<string, number | string | null>> = [];
+  // -------------------------------------------------------------------------
+  // Structured win-probability model (replaces the LightGBM sidecar for MLB).
+  //
+  // Per game:
+  //   1. Expected runs ALLOWED from forward-looking pitching: starter xERA
+  //      (Statcast contact-quality) for its expected innings + bullpen ERA for
+  //      the rest, park/wind adjusted.
+  //   2. Expected runs SCORED via a multiplicative (log5-style) blend of the
+  //      offense's recent run rate and the opponent's run prevention.
+  //   3. Pythagorean expectation (exp 1.83) → each team's win prob; add HFA.
+  //   4. SHRINK toward the no-vig market prob — the core CLV fix.
+  //
+  // Shrinkage: final = w·model + (1-w)·market. We deviate from the line only in
+  // proportion to w, so a phantom model edge can't blow past the grader floor.
+  //
+  // Default w=0.3 (heavy shrinkage) is deliberate: two leak-free CLV backtests
+  // (2026-06-01, ~688 games) found NO demonstrated edge vs the MLB moneyline
+  // market — 26-45% CLV beat-rate at meaningful n, ROI ~0 to negative. MLB ML is
+  // too efficient to beat with free data, so we mostly defer to the line. See
+  // memory project_sports_betting_mlb_model. Raise w (env MLB_SHRINK_W) only if a
+  // future backtest clears ≥55% CLV beat-rate at n≥50.
+  // -------------------------------------------------------------------------
+  const MIN_XERA_PA = 40;            // batters faced before we trust a starter's xERA
+  const LEAGUE_AVG_XERA = 4.10;      // ~2026 league xERA
+  const PYTHAG_EXP = 1.83;           // Pythagorean exponent for MLB
+  const HOME_FIELD_WINPROB = 0.025;  // MLB home teams win ~52.5%
+  const SHRINK_W = (() => {
+    const env = Number(process.env.MLB_SHRINK_W);
+    return Number.isFinite(env) && env > 0 && env <= 1 ? env : 0.3;
+  })();
+
+  const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
+
+  // Starter run-prevention (RA/9): prefer Statcast xERA (forward-looking) when the
+  // sample is real, else baseball-ref season ERA, else recent ERA, else league avg.
+  function starterRa9(
+    pitcher: PitcherInfo,
+    season: PitcherSeasonStats | null,
+    statcast: StatcastPitcher | null,
+  ): number {
+    if (statcast?.xera != null && (statcast.pa ?? 0) >= MIN_XERA_PA) return statcast.xera;
+    if (season?.era != null) return season.era;
+    if (pitcher?.recentEra != null) return pitcher.recentEra;
+    return LEAGUE_AVG_XERA;
+  }
+
+  // Full-game RA/9: starter for its expected innings, bullpen for the remainder.
+  function teamRa9(starterRa: number, starterIp: number, bullpenEra: number): number {
+    const ip = clamp(starterIp, 3, 7);
+    return starterRa * (ip / 9) + bullpenEra * ((9 - ip) / 9);
+  }
+
+  const results: MlbModelResult[] = [];
+  const inputRecord: Array<Record<string, number | string | null>> = [];
 
   for (const game of games) {
-    const { eventId, homeTeam, awayTeam, commenceTimeMs } = game;
+    const { eventId, homeTeam, awayTeam } = game;
     const pitcherGame = pitcherByEventId.get(eventId) ?? null;
-
     const homePitcher = pitcherGame?.homePitcher ?? null;
     const awayPitcher = pitcherGame?.awayPitcher ?? null;
 
-    // Look up season stats from baseball-reference for each pitcher.
-    // Season stats from baseball-reference, fall back to ESPN probable entry if available, then to league avg defaults.
+    // Pitcher run-prevention inputs: Statcast xERA → season ERA → recent ERA → league avg.
     const homePitcherSeason = lookupPitcherSeason(homePitcher?.name);
     const awayPitcherSeason = lookupPitcherSeason(awayPitcher?.name);
+    const homeStatcast = lookupStatcast(homePitcher?.name);
+    const awayStatcast = lookupStatcast(awayPitcher?.name);
 
-    const homeStandings = findTeamInStandings(homeTeam, standings);
-    const awayStandings = findTeamInStandings(awayTeam, standings);
     const homeBullpen = findTeamInBullpen(homeTeam, bullpenData.teams);
     const awayBullpen = findTeamInBullpen(awayTeam, bullpenData.teams);
 
+    // Offense: recent run rate (14d), fallback to league avg.
     const homeRpg = computeRpg(homeTeam, rawRows, 14) ?? LEAGUE_AVG_RPG;
     const awayRpg = computeRpg(awayTeam, rawRows, 14) ?? LEAGUE_AVG_RPG;
-    const homeRunDiff = computeRunDiffPg(homeTeam, rawRows, 14) ?? 0;
-    const awayRunDiff = computeRunDiffPg(awayTeam, rawRows, 14) ?? 0;
-    const homeRestDays = computeRestDays(homeTeam, rawRows, commenceTimeMs) ?? 3;
-    const awayRestDays = computeRestDays(awayTeam, rawRows, commenceTimeMs) ?? 3;
 
-    // Market probability: no-vig implied home win prob from best available bookmaker.
-    // Falls back to 0.5 if the game isn't found in odds data (e.g. odds file is stale).
+    // No-vig implied home win prob (shrink anchor). 0.5 if game not matched in odds.
     const marketHomeProb = extractMarketProb(homeTeam, awayTeam, oddsData);
 
-    // Park factor: static lookup by home team. Defaults to 1.0 if not mapped.
-    // Source: multi-year park factor averages; updated manually as needed.
+    // Game environment: static park factor × wind factor (Open-Meteo).
     const parkFactor = getParkFactor(homeTeam);
-
-    // home_ops / away_ops: from MLB Stats API batting data (mlb-batting.json)
-    const homeBatting = findTeamBatting(homeTeam);
-    const awayBatting = findTeamBatting(awayTeam);
-    const homeOps = homeBatting?.ops ?? null;
-    const awayOps = awayBatting?.ops ?? null;
-
-    // is_home_favorite: derive from market odds rather than defaulting to 1.
-    const isHomeFavorite = marketHomeProb >= 0.5 ? 1 : 0;
-
-    // Weather: wind_factor from mlb-weather.json (ingest_mlb_weather.py).
-    // 1.08 = blowing out to CF > 15mph, 0.92 = blowing in > 15mph, 1.0 = neutral/unknown.
     const weatherEntry = lookupWeather(homeTeam);
     const windFactor = weatherEntry?.windFactor ?? 1.0;
 
-    // ERA/WHIP/IP resolution order:
-    //   1. ESPN probables (recentEra/recentWhip/lastStartIp) — most recent, game-specific
-    //   2. Baseball-reference season stats (pitcher-stats-season.json) — full season aggregate
-    //   3. League average defaults
-    const homeEra  = homePitcher?.recentEra  ?? homePitcherSeason?.era  ?? LEAGUE_AVG_ERA;
-    const awayEra  = awayPitcher?.recentEra  ?? awayPitcherSeason?.era  ?? LEAGUE_AVG_ERA;
-    const homeWhip = homePitcher?.recentWhip ?? homePitcherSeason?.whip ?? LEAGUE_AVG_WHIP;
-    const awayWhip = awayPitcher?.recentWhip ?? awayPitcherSeason?.whip ?? LEAGUE_AVG_WHIP;
-    const homeIp   = homePitcher?.lastStartIp ?? (homePitcherSeason?.ip != null ? Math.min(homePitcherSeason.ip / Math.max(homePitcherSeason.gs, 1), 7) : 5.5);
-    const awayIp   = awayPitcher?.lastStartIp ?? (awayPitcherSeason?.ip != null ? Math.min(awayPitcherSeason.ip / Math.max(awayPitcherSeason.gs, 1), 7) : 5.5);
+    // Expected innings per starter: last start IP → season IP/GS → 5.5.
+    const homeIp = homePitcher?.lastStartIp ?? (homePitcherSeason?.ip != null ? Math.min(homePitcherSeason.ip / Math.max(homePitcherSeason.gs, 1), 7) : 5.5);
+    const awayIp = awayPitcher?.lastStartIp ?? (awayPitcherSeason?.ip != null ? Math.min(awayPitcherSeason.ip / Math.max(awayPitcherSeason.gs, 1), 7) : 5.5);
 
-    featureVectors.push({
+    // Run prevention (RA/9) — the forward-looking upgrade lives here.
+    const homeStarterRa = starterRa9(homePitcher, homePitcherSeason, homeStatcast);
+    const awayStarterRa = starterRa9(awayPitcher, awayPitcherSeason, awayStatcast);
+    const homeRa9 = teamRa9(homeStarterRa, homeIp, homeBullpen?.bullpenEra ?? LEAGUE_AVG_ERA);
+    const awayRa9 = teamRa9(awayStarterRa, awayIp, awayBullpen?.bullpenEra ?? LEAGUE_AVG_ERA);
+
+    // Multiplicative (log5-style) expected runs: offense strength × opponent's run
+    // prevention, scaled to league average, adjusted for the game environment.
+    const homeOff = homeRpg / LEAGUE_AVG_RPG;
+    const awayOff = awayRpg / LEAGUE_AVG_RPG;
+    const homePrev = homeRa9 / LEAGUE_AVG_RPG;  // <1 suppresses opponent runs
+    const awayPrev = awayRa9 / LEAGUE_AVG_RPG;
+    const envFactor = parkFactor * windFactor;
+    const homeExpRuns = clamp(LEAGUE_AVG_RPG * homeOff * awayPrev * envFactor, 1.5, 9);
+    const awayExpRuns = clamp(LEAGUE_AVG_RPG * awayOff * homePrev * envFactor, 1.5, 9);
+
+    // Pythagorean win expectation + home-field advantage.
+    const hPow = Math.pow(homeExpRuns, PYTHAG_EXP);
+    const aPow = Math.pow(awayExpRuns, PYTHAG_EXP);
+    const pythagHome = hPow / (hPow + aPow);
+    const modelHome = clamp(pythagHome + HOME_FIELD_WINPROB, 0.02, 0.98);
+
+    // Shrink toward the market — the CLV discipline.
+    const finalHome = clamp(SHRINK_W * modelHome + (1 - SHRINK_W) * marketHomeProb, 0.01, 0.99);
+
+    results.push({
+      eventId,
+      homeTeam,
+      awayTeam,
+      homeWinProb: finalHome,
+      awayWinProb: 1 - finalHome,
+      calibrated: true,
+      homePitcherName: homePitcher?.name ?? null,
+      awayPitcherName: awayPitcher?.name ?? null,
+      modelHomeProbRaw: modelHome,
+      marketHomeProb,
+      homeExpRuns,
+      awayExpRuns,
+      shrinkWeight: SHRINK_W,
+    });
+
+    inputRecord.push({
       game_id: eventId,
       home_team: homeTeam,
       away_team: awayTeam,
-      home_rpg: homeRpg,
-      away_rpg: awayRpg,
-      // home_ops / away_ops from MLB Stats API season batting stats
-      home_ops: homeOps,
-      away_ops: awayOps,
-      // ERA/WHIP/IP: ESPN probables → baseball-reference season stats → league avg defaults
-      home_era: homeEra,
-      away_era: awayEra,
-      home_whip: homeWhip,
-      away_whip: awayWhip,
-      home_pitcher_ip: homeIp,
-      away_pitcher_ip: awayIp,
-      home_bullpen_era: homeBullpen?.bullpenEra ?? LEAGUE_AVG_ERA,
-      away_bullpen_era: awayBullpen?.bullpenEra ?? LEAGUE_AVG_ERA,
-      home_bullpen_fatigue: homeBullpen?.fatigueScore ?? 0,
-      away_bullpen_fatigue: awayBullpen?.fatigueScore ?? 0,
-      home_rest_days: homeRestDays,
-      away_rest_days: awayRestDays,
-      home_win_pct: homeStandings?.winPct ?? 0.5,
-      away_win_pct: awayStandings?.winPct ?? 0.5,
-      home_run_diff_pg: homeRunDiff,
-      away_run_diff_pg: awayRunDiff,
-      is_home_favorite: isHomeFavorite,
-      // No-vig implied probability from OddsAPI h2h moneylines (best available book).
-      // Falls back to 0.5 only if odds file is missing or game not matched.
-      market_home_prob: marketHomeProb,
-      // line_movement: not yet implemented — would require opening line snapshot vs current.
-      line_movement: 0,
-      // Park factor: static lookup, home team ballpark. See PARK_FACTORS map above.
+      home_starter: homePitcher?.name ?? null,
+      away_starter: awayPitcher?.name ?? null,
+      home_starter_xera: homeStatcast?.xera ?? null,
+      away_starter_xera: awayStatcast?.xera ?? null,
+      home_starter_xera_pa: homeStatcast?.pa ?? null,
+      away_starter_xera_pa: awayStatcast?.pa ?? null,
+      home_starter_ra9_used: +homeStarterRa.toFixed(3),
+      away_starter_ra9_used: +awayStarterRa.toFixed(3),
+      home_ra9: +homeRa9.toFixed(3),
+      away_ra9: +awayRa9.toFixed(3),
+      home_rpg: +homeRpg.toFixed(3),
+      away_rpg: +awayRpg.toFixed(3),
+      home_exp_runs: +homeExpRuns.toFixed(3),
+      away_exp_runs: +awayExpRuns.toFixed(3),
       park_factor: parkFactor,
-      // wind_factor: 1.08 (blowing out >15mph), 0.92 (blowing in >15mph), 1.0 (neutral/unknown).
-      // Source: ingest_mlb_weather.py → mlb-weather.json via Open-Meteo API.
       wind_factor: windFactor,
-      // pitcher names for enriching output
-      home_pitcher_name: homePitcher?.name ?? null,
-      away_pitcher_name: awayPitcher?.name ?? null,
+      market_home_prob: +marketHomeProb.toFixed(4),
+      model_home_prob_raw: +modelHome.toFixed(4),
+      final_home_prob: +finalHome.toFixed(4),
+      shrink_w: SHRINK_W,
     });
   }
 
-  // Write input for Python sidecar
-  fs.writeFileSync(modelInputPath, JSON.stringify({ games: featureVectors }, null, 2));
-
-  // Call Python sidecar
-  const pythonResult = spawnSync(
-    "python",
-    [pythonScript, "--input", modelInputPath, "--output", modelOutputPath],
-    { encoding: "utf-8", timeout: 60000 },
-  );
-
-  if (pythonResult.status !== 0) {
-    console.warn("[mlb-model] Python sidecar failed:", pythonResult.stderr?.slice(0, 500));
-    // Return heuristic fallback (50/50)
-    return {
-      generatedAt: new Date().toISOString(),
-      results: games.map((g) => ({
-        eventId: g.eventId,
-        homeTeam: g.homeTeam,
-        awayTeam: g.awayTeam,
-        homeWinProb: 0.54, // slight home advantage prior
-        awayWinProb: 0.46,
-        calibrated: false,
-        homePitcherName: pitcherByEventId.get(g.eventId)?.homePitcher?.name ?? null,
-        awayPitcherName: pitcherByEventId.get(g.eventId)?.awayPitcher?.name ?? null,
-      })),
-    };
-  }
-
-  if (!fs.existsSync(modelOutputPath)) {
-    console.warn("[mlb-model] Python sidecar produced no output file");
-    return { generatedAt: new Date().toISOString(), results: [] };
-  }
-
-  const raw = JSON.parse(fs.readFileSync(modelOutputPath, "utf-8")) as {
-    results: Array<{
-      game_id: string;
-      home_win_prob: number;
-      away_win_prob: number;
-      calibrated: boolean;
-    }>;
-  };
-
-  const resultMap = new Map(raw.results.map((r) => [r.game_id, r]));
+  // Persist structured inputs for transparency / backtest auditing.
+  fs.writeFileSync(modelInputPath, JSON.stringify({ generatedAt: new Date().toISOString(), games: inputRecord }, null, 2));
 
   const output: MlbModelOutput = {
     generatedAt: new Date().toISOString(),
-    results: games.map((g) => {
-      const r = resultMap.get(g.eventId);
-      const pitcherGame = pitcherByEventId.get(g.eventId);
-      return {
-        eventId: g.eventId,
-        homeTeam: g.homeTeam,
-        awayTeam: g.awayTeam,
-        homeWinProb: r?.home_win_prob ?? 0.54,
-        awayWinProb: r?.away_win_prob ?? 0.46,
-        calibrated: r?.calibrated ?? false,
-        homePitcherName: pitcherGame?.homePitcher?.name ?? null,
-        awayPitcherName: pitcherGame?.awayPitcher?.name ?? null,
-      };
-    }),
+    results,
   };
 
   // Persist for consumption by free-stats-summary
