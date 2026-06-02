@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T19:25:40.898Z",
+  "generatedAt": "2026-06-01T23:56:22.778Z",
   "ready": true,
   "recordsIngested": 849,
   "recordsCompleted": 849,
@@ -827,28 +827,31 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-06-02T01:41:00.000Z",
-      "matchup": "Los Angeles Dodgers at Arizona Diamondbacks",
-      "pickTeam": "Los Angeles Dodgers",
-      "opponent": "Arizona Diamondbacks",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Los Angeles Dodgers -1.5",
-      "score": 59,
-      "confidence": 54,
+      "gameDate": "2026-06-01T23:11:00.000Z",
+      "matchup": "Kansas City Royals at Cincinnati Reds",
+      "pickTeam": "Cincinnati Reds",
+      "opponent": "Kansas City Royals",
+      "spread": 3.5,
+      "modelSpread": 3.2,
+      "line": "Cincinnati Reds +3.5",
+      "score": 65,
+      "confidence": 61,
       "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.400",
-        "History sample Los Angeles Dodgers: 26 games (mapped Dodgers) vs Arizona Diamondbacks: 26 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Los Angeles Dodgers 2d rest vs Arizona Diamondbacks 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +2.5"
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Cincinnati Reds: 25 games (mapped Reds) vs Kansas City Royals: 26 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Cincinnati Reds 2d rest vs Kansas City Royals 2d rest",
+        "Net Rating edge: +3.4",
+        "Home SP: Lyon Richardson",
+        "Away SP: Luinder Avila",
+        "MLB model: 63.9% win prob (calibrated) | Edge vs market: +41.7%"
       ],
-      "momentumEdge": 0.4,
-      "atsEdge": 0.4,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "momentumEdge": 0.8,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.639,
+      "mlbEdge": 0.4168,
+      "mlbCalibrated": true
     },
     {
       "league": "MLB",
@@ -860,53 +863,30 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Washington Nationals -1.5",
-      "score": 58,
-      "confidence": 53,
+      "score": 64,
+      "confidence": 60,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
         "ATS edge +0.400",
         "History sample Washington Nationals: 26 games (mapped Nationals) vs Miami Marlins: 27 games",
         "Home court (+1 pt adjustment)",
         "Rest: Washington Nationals 2d rest vs Miami Marlins 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +3.2"
+        "Net Rating edge: +3.2",
+        "Home SP: Cade Cavalli",
+        "Away SP: Sandy Alcantara",
+        "MLB model: 76.1% win prob (calibrated) | Edge vs market: -6.0%"
       ],
       "momentumEdge": 0.4,
       "atsEdge": 0.4,
-      "mlbModelProb": null,
-      "mlbEdge": null
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-06-02T01:39:00.000Z",
-      "matchup": "Colorado Rockies at Los Angeles Angels",
-      "pickTeam": "Los Angeles Angels",
-      "opponent": "Colorado Rockies",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Los Angeles Angels -1.5",
-      "score": 57,
-      "confidence": 52,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Los Angeles Angels: 26 games (mapped Angels) vs Colorado Rockies: 26 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Los Angeles Angels 2d rest vs Colorado Rockies 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.6"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.7615,
+      "mlbEdge": -0.0599,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-06-01",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 3 eligible games found on 2026-06-01 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 2 eligible games found on 2026-06-01 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -2375,6 +2355,14 @@
         "returnDate": "2026-08-01"
       },
       {
+        "player": "Julian Hill",
+        "team": "New England Patriots",
+        "position": "TE",
+        "status": "Injured Reserve",
+        "injuryType": "Undisclosed",
+        "returnDate": "2027-02-15"
+      },
+      {
         "player": "Quintayvious Hutchins",
         "team": "New England Patriots",
         "position": "LB",
@@ -2412,14 +2400,6 @@
         "position": "OT",
         "status": "Out",
         "injuryType": "Knee",
-        "returnDate": "2027-02-15"
-      },
-      {
-        "player": "Gunner Olszewski",
-        "team": "New York Giants",
-        "position": "WR",
-        "status": "Out",
-        "injuryType": "Achilles",
         "returnDate": "2027-02-15"
       },
       {
@@ -2477,14 +2457,6 @@
         "status": "Questionable",
         "injuryType": "Abdomen",
         "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Kobe King",
-        "team": "New York Jets",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-01"
       },
       {
         "player": "Cade York",
