@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-03T18:33:06.911Z",
+  "fetchedAt": "2026-06-04T00:18:35.566Z",
   "league": "basketball_nba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
@@ -29,50 +29,14 @@
               "outcomes": [
                 {
                   "name": "New York Knicks",
-                  "price": 156
+                  "price": 154
                 },
                 {
                   "name": "San Antonio Spurs",
-                  "price": -186
+                  "price": -184
                 }
               ]
             },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "New York Knicks",
-                  "price": -106,
-                  "point": 4.5
-                },
-                {
-                  "name": "San Antonio Spurs",
-                  "price": -114,
-                  "point": -4.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -108,
-                  "point": 217.5
-                },
-                {
-                  "name": "Under",
-                  "price": -112,
-                  "point": 217.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
             {
               "key": "spreads",
               "outcomes": [
@@ -89,15 +53,51 @@
               ]
             },
             {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 217.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 217.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New York Knicks",
+                  "price": -110,
+                  "point": 5
+                },
+                {
+                  "name": "San Antonio Spurs",
+                  "price": -110,
+                  "point": -5
+                }
+              ]
+            },
+            {
               "key": "h2h",
               "outcomes": [
                 {
                   "name": "New York Knicks",
-                  "price": 170
+                  "price": 160
                 },
                 {
                   "name": "San Antonio Spurs",
-                  "price": -200
+                  "price": -185
                 }
               ]
             },
