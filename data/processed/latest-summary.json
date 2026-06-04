@@ -1,41 +1,105 @@
 {
-  "generatedAt": "2026-06-04T00:19:00.865Z",
+  "generatedAt": "2026-06-04T17:21:38.889Z",
   "ready": true,
-  "recordsIngested": 815,
-  "recordsCompleted": 815,
+  "recordsIngested": 837,
+  "recordsCompleted": 837,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 754,
+      "games": 776,
       "conferences": [
-        "NL East",
-        "AL East",
-        "AL Central",
+        "NL Central",
         "Unknown",
         "AL West",
-        "NL Central",
-        "NL West"
+        "NL West",
+        "NL East",
+        "AL East",
+        "AL Central"
       ],
-      "avgPoints": 4.347480106100796,
+      "avgPoints": 4.353092783505154,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 3.3,
+      "recentAvgPoints": 5.6,
       "recentAvgYards": null,
-      "trendScore": 39,
+      "trendScore": 42,
       "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 754,
+        "games": 776,
         "rpg": 4.35,
         "oppRpg": 4.35,
-        "hitsPerGame": 7.96,
+        "hitsPerGame": 7.99,
         "errorsPerGame": 0.52,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Cubs": {
+          "games": 26,
+          "rpg": 3.69,
+          "oppRpg": 4.73,
+          "hitsPerGame": 7.08,
+          "errorsPerGame": 0.38,
+          "sos": 0.52
+        },
+        "Athletics": {
+          "games": 26,
+          "rpg": 4.19,
+          "oppRpg": 4.73,
+          "hitsPerGame": 8.23,
+          "errorsPerGame": 0.65,
+          "sos": null
+        },
+        "Astros": {
+          "games": 26,
+          "rpg": 4.04,
+          "oppRpg": 4.35,
+          "hitsPerGame": 7.19,
+          "errorsPerGame": 0.38,
+          "sos": null
+        },
+        "Pirates": {
+          "games": 26,
+          "rpg": 5.38,
+          "oppRpg": 4.96,
+          "hitsPerGame": 9.31,
+          "errorsPerGame": 0.69,
+          "sos": null
+        },
+        "Angels": {
+          "games": 26,
+          "rpg": 4.38,
+          "oppRpg": 5.58,
+          "hitsPerGame": 7.96,
+          "errorsPerGame": 0.62,
+          "sos": 0.52
+        },
+        "Rockies": {
+          "games": 27,
+          "rpg": 4.44,
+          "oppRpg": 6.63,
+          "hitsPerGame": 8.22,
+          "errorsPerGame": 0.7,
+          "sos": null
+        },
+        "Diamondbacks": {
+          "games": 27,
+          "rpg": 4.22,
+          "oppRpg": 3.3,
+          "hitsPerGame": 7.74,
+          "errorsPerGame": 0.26,
+          "sos": null
+        },
+        "Dodgers": {
+          "games": 26,
+          "rpg": 5.54,
+          "oppRpg": 2.96,
+          "hitsPerGame": 8.46,
+          "errorsPerGame": 0.35,
+          "sos": null
+        },
         "Nationals": {
           "games": 27,
           "rpg": 5.48,
@@ -100,180 +164,116 @@
           "errorsPerGame": 0.63,
           "sos": null
         },
-        "Cubs": {
-          "games": 25,
-          "rpg": 3.68,
-          "oppRpg": 4.72,
-          "hitsPerGame": 7,
-          "errorsPerGame": 0.4,
-          "sos": 0.52
-        },
-        "Athletics": {
-          "games": 25,
-          "rpg": 4.16,
-          "oppRpg": 4.76,
-          "hitsPerGame": 8.16,
-          "errorsPerGame": 0.68,
-          "sos": null
-        },
-        "Astros": {
-          "games": 25,
-          "rpg": 3.76,
-          "oppRpg": 4.16,
-          "hitsPerGame": 6.92,
-          "errorsPerGame": 0.4,
-          "sos": null
-        },
-        "Pirates": {
-          "games": 25,
-          "rpg": 5.24,
-          "oppRpg": 4.72,
-          "hitsPerGame": 9.2,
-          "errorsPerGame": 0.64,
-          "sos": null
-        },
-        "Angels": {
-          "games": 25,
-          "rpg": 4.12,
-          "oppRpg": 5.64,
-          "hitsPerGame": 7.64,
-          "errorsPerGame": 0.64,
-          "sos": 0.52
-        },
-        "Rockies": {
-          "games": 26,
-          "rpg": 4.46,
-          "oppRpg": 6.46,
-          "hitsPerGame": 8.27,
-          "errorsPerGame": 0.69,
-          "sos": null
-        },
-        "Diamondbacks": {
-          "games": 26,
-          "rpg": 4.38,
-          "oppRpg": 3.15,
-          "hitsPerGame": 7.96,
-          "errorsPerGame": 0.23,
-          "sos": null
-        },
-        "Dodgers": {
-          "games": 25,
-          "rpg": 5.48,
-          "oppRpg": 3.08,
-          "hitsPerGame": 8.16,
-          "errorsPerGame": 0.32,
-          "sos": null
-        },
         "Phillies": {
-          "games": 24,
-          "rpg": 3.83,
-          "oppRpg": 3.46,
-          "hitsPerGame": 7.13,
-          "errorsPerGame": 0.33,
+          "games": 25,
+          "rpg": 3.8,
+          "oppRpg": 3.4,
+          "hitsPerGame": 7.16,
+          "errorsPerGame": 0.32,
           "sos": 0.52
         },
         "Padres": {
-          "games": 24,
-          "rpg": 3,
-          "oppRpg": 3.42,
+          "games": 25,
+          "rpg": 2.96,
+          "oppRpg": 3.4,
           "hitsPerGame": 6.08,
-          "errorsPerGame": 0.42,
+          "errorsPerGame": 0.4,
           "sos": 0.52
         },
         "Red Sox": {
-          "games": 23,
-          "rpg": 3.83,
-          "oppRpg": 3.65,
-          "hitsPerGame": 8.61,
-          "errorsPerGame": 0.52,
+          "games": 24,
+          "rpg": 4,
+          "oppRpg": 3.54,
+          "hitsPerGame": 8.88,
+          "errorsPerGame": 0.5,
           "sos": null
         },
         "Orioles": {
-          "games": 25,
-          "rpg": 4.6,
-          "oppRpg": 4.48,
-          "hitsPerGame": 8.24,
-          "errorsPerGame": 0.32,
+          "games": 26,
+          "rpg": 4.46,
+          "oppRpg": 4.62,
+          "hitsPerGame": 8.27,
+          "errorsPerGame": 0.31,
           "sos": 0.52
         },
         "Yankees": {
-          "games": 24,
-          "rpg": 4.58,
-          "oppRpg": 4,
-          "hitsPerGame": 8.08,
-          "errorsPerGame": 0.38,
+          "games": 25,
+          "rpg": 4.56,
+          "oppRpg": 4.04,
+          "hitsPerGame": 7.96,
+          "errorsPerGame": 0.36,
           "sos": 0.52
         },
         "Guardians": {
-          "games": 25,
-          "rpg": 4.28,
-          "oppRpg": 3.68,
-          "hitsPerGame": 7.8,
-          "errorsPerGame": 0.4,
+          "games": 26,
+          "rpg": 4.31,
+          "oppRpg": 3.69,
+          "hitsPerGame": 7.85,
+          "errorsPerGame": 0.38,
           "sos": null
         },
         "Reds": {
-          "games": 24,
-          "rpg": 4.79,
-          "oppRpg": 5.38,
-          "hitsPerGame": 8.33,
-          "errorsPerGame": 0.42,
+          "games": 25,
+          "rpg": 4.68,
+          "oppRpg": 5.36,
+          "hitsPerGame": 8.32,
+          "errorsPerGame": 0.44,
           "sos": null
         },
         "Royals": {
-          "games": 25,
-          "rpg": 3.28,
-          "oppRpg": 4.96,
-          "hitsPerGame": 7.48,
-          "errorsPerGame": 0.56,
+          "games": 26,
+          "rpg": 3.35,
+          "oppRpg": 4.85,
+          "hitsPerGame": 7.54,
+          "errorsPerGame": 0.54,
           "sos": null
         },
         "Braves": {
-          "games": 24,
-          "rpg": 4.5,
-          "oppRpg": 3.29,
-          "hitsPerGame": 7.96,
-          "errorsPerGame": 0.5,
+          "games": 25,
+          "rpg": 4.6,
+          "oppRpg": 3.28,
+          "hitsPerGame": 8,
+          "errorsPerGame": 0.48,
           "sos": null
         },
         "Blue Jays": {
-          "games": 25,
-          "rpg": 4,
-          "oppRpg": 3.56,
-          "hitsPerGame": 7.72,
-          "errorsPerGame": 0.6,
+          "games": 26,
+          "rpg": 3.96,
+          "oppRpg": 3.69,
+          "hitsPerGame": 7.73,
+          "errorsPerGame": 0.62,
           "sos": null
         },
         "Brewers": {
-          "games": 24,
-          "rpg": 4.88,
-          "oppRpg": 2.75,
-          "hitsPerGame": 8.58,
-          "errorsPerGame": 0.42,
+          "games": 25,
+          "rpg": 4.68,
+          "oppRpg": 2.68,
+          "hitsPerGame": 8.36,
+          "errorsPerGame": 0.4,
           "sos": null
         },
         "Giants": {
-          "games": 25,
-          "rpg": 4.92,
-          "oppRpg": 6.08,
-          "hitsPerGame": 9.52,
-          "errorsPerGame": 0.92,
+          "games": 26,
+          "rpg": 4.77,
+          "oppRpg": 5.85,
+          "hitsPerGame": 9.46,
+          "errorsPerGame": 0.88,
           "sos": 0.52
         },
         "Cardinals": {
-          "games": 24,
-          "rpg": 3.33,
-          "oppRpg": 4.04,
-          "hitsPerGame": 7.83,
-          "errorsPerGame": 0.5,
+          "games": 25,
+          "rpg": 3.4,
+          "oppRpg": 4,
+          "hitsPerGame": 7.96,
+          "errorsPerGame": 0.52,
           "sos": 0.52
         },
         "Rangers": {
-          "games": 26,
-          "rpg": 4.42,
-          "oppRpg": 3.85,
-          "hitsPerGame": 7.65,
-          "errorsPerGame": 0.5,
+          "games": 27,
+          "rpg": 4.37,
+          "oppRpg": 3.89,
+          "hitsPerGame": 7.59,
+          "errorsPerGame": 0.52,
           "sos": null
         }
       }
@@ -591,16 +591,16 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "NL East",
-      "gameDate": "2026-06-03T00:00:00.000Z",
-      "team": "Nationals",
-      "opponent": "Marlins",
-      "points": 1,
-      "opponentPoints": 4,
+      "conference": "NL Central",
+      "gameDate": "2026-06-04T00:00:00.000Z",
+      "team": "Cubs",
+      "opponent": "Athletics",
+      "points": 4,
+      "opponentPoints": 5,
       "rebounds": null,
       "assists": null,
       "yards": null,
-      "spread": 1.5,
+      "spread": -1.5,
       "atsResult": "L",
       "won": false,
       "teamRank": null,
@@ -629,10 +629,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 3,
-      "errors": 1,
+      "hits": 9,
+      "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401815608",
+      "sourceEventId": "401815611",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -799,42 +799,11 @@
     "Unknown",
     "Western"
   ],
-  "bestBets": [
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-06-04T01:39:00.000Z",
-      "matchup": "Colorado Rockies at Los Angeles Angels",
-      "pickTeam": "Los Angeles Angels",
-      "opponent": "Colorado Rockies",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Los Angeles Angels -1.5",
-      "score": 71,
-      "confidence": 67,
-      "rationaleSignals": [
-        "Momentum edge +0.20 (last-10 trend proxy)",
-        "ATS edge +0.000",
-        "History sample Los Angeles Angels: 25 games (mapped Angels) vs Colorado Rockies: 26 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Los Angeles Angels B2B vs Colorado Rockies B2B",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +3.0",
-        "Home SP: Walbert Ureña",
-        "Away SP: Michael Lorenzen",
-        "MLB model: 79.4% win prob (calibrated) | Edge vs market: +20.4%"
-      ],
-      "momentumEdge": 0.2,
-      "atsEdge": 0,
-      "mlbModelProb": 0.7937,
-      "mlbEdge": 0.2044,
-      "mlbCalibrated": true
-    }
-  ],
+  "bestBets": [],
   "topBestBetsTarget": 5,
-  "topBestBetsDateEt": "2026-06-03",
+  "topBestBetsDateEt": "2026-06-04",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-06-03 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 0 eligible games found on 2026-06-04 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1855,6 +1824,14 @@
     ],
     "nfl": [
       {
+        "player": "James Conner",
+        "team": "Arizona Cardinals",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Foot",
+        "returnDate": "2026-06-15"
+      },
+      {
         "player": "Valentin Senn",
         "team": "Arizona Cardinals",
         "position": "OT",
@@ -1999,14 +1976,6 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Jedrick Wills Jr.",
-        "team": "Chicago Bears",
-        "position": "OT",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-07-01"
-      },
-      {
         "player": "Erick All Jr.",
         "team": "Cincinnati Bengals",
         "position": "TE",
@@ -2079,6 +2048,14 @@
         "returnDate": "2026-07-01"
       },
       {
+        "player": "Kendrick Law",
+        "team": "Detroit Lions",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Knee",
+        "returnDate": "2027-02-15"
+      },
+      {
         "player": "Penei Sewell",
         "team": "Detroit Lions",
         "position": "OT",
@@ -2092,7 +2069,7 @@
         "position": "DE",
         "status": "Questionable",
         "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-01"
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Zach Tom",
@@ -2263,11 +2240,19 @@
         "returnDate": "2026-07-01"
       },
       {
-        "player": "De'Von Achane",
+        "player": "Caleb Douglas",
         "team": "Miami Dolphins",
-        "position": "RB",
+        "position": "WR",
         "status": "Questionable",
-        "injuryType": "Shoulder",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-06-15"
+      },
+      {
+        "player": "Austin Jackson",
+        "team": "Miami Dolphins",
+        "position": "OT",
+        "status": "Questionable",
+        "injuryType": "Foot",
         "returnDate": "2026-07-01"
       },
       {
@@ -2279,11 +2264,11 @@
         "returnDate": "2026-07-01"
       },
       {
-        "player": "Austin Jackson",
+        "player": "De'Von Achane",
         "team": "Miami Dolphins",
-        "position": "OT",
+        "position": "RB",
         "status": "Questionable",
-        "injuryType": "Foot",
+        "injuryType": "Shoulder",
         "returnDate": "2026-07-01"
       },
       {
@@ -2311,19 +2296,19 @@
         "returnDate": "2026-08-01"
       },
       {
+        "player": "Julian Hill",
+        "team": "New England Patriots",
+        "position": "TE",
+        "status": "Injured Reserve",
+        "injuryType": "Knee",
+        "returnDate": "2027-02-15"
+      },
+      {
         "player": "Quintayvious Hutchins",
         "team": "New England Patriots",
         "position": "LB",
         "status": "Questionable",
         "injuryType": "Undisclosed",
-        "returnDate": "2026-07-01"
-      },
-      {
-        "player": "Alvin Kamara",
-        "team": "New Orleans Saints",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Knee - MCL",
         "returnDate": "2026-07-01"
       },
       {
@@ -2355,6 +2340,14 @@
         "team": "New York Giants",
         "position": "DT",
         "status": "Out",
+        "injuryType": "Achilles",
+        "returnDate": "2027-02-15"
+      },
+      {
+        "player": "Gunner Olszewski",
+        "team": "New York Giants",
+        "position": "WR",
+        "status": "Injured Reserve",
         "injuryType": "Achilles",
         "returnDate": "2027-02-15"
       },
@@ -2405,6 +2398,14 @@
         "status": "Questionable",
         "injuryType": "Abdomen",
         "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Kobe King",
+        "team": "New York Jets",
+        "position": "LB",
+        "status": "Injured Reserve",
+        "injuryType": "Undisclosed",
+        "returnDate": "2027-02-15"
       },
       {
         "player": "Cade York",
