@@ -1,71 +1,199 @@
 {
-  "generatedAt": "2026-06-06T15:38:49.791Z",
+  "generatedAt": "2026-06-06T23:41:46.225Z",
   "ready": true,
-  "recordsIngested": 829,
-  "recordsCompleted": 829,
+  "recordsIngested": 849,
+  "recordsCompleted": 849,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 774,
+      "games": 794,
       "conferences": [
-        "AL West",
-        "Unknown",
-        "NL Central",
         "AL Central",
+        "AL West",
+        "NL Central",
         "NL West",
+        "AL East",
         "NL East",
-        "AL East"
+        "Unknown"
       ],
-      "avgPoints": 4.392764857881137,
+      "avgPoints": 4.385390428211587,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 4.8,
+      "recentAvgPoints": 3.5,
       "recentAvgYards": null,
-      "trendScore": 51,
-      "trendSignal": "flat",
+      "trendScore": 33,
+      "trendSignal": "down",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 774,
+        "games": 794,
         "rpg": 4.39,
         "oppRpg": 4.39,
-        "hitsPerGame": 8.06,
+        "hitsPerGame": 8.05,
         "errorsPerGame": 0.53,
         "sos": 0.52
       },
       "teamAdvanced": {
-        "Astros": {
+        "Tigers": {
           "games": 27,
-          "rpg": 4.04,
-          "oppRpg": 3.96,
+          "rpg": 3.33,
+          "oppRpg": 4.48,
           "hitsPerGame": 7.3,
-          "errorsPerGame": 0.41,
+          "errorsPerGame": 0.33,
+          "sos": null
+        },
+        "Mariners": {
+          "games": 27,
+          "rpg": 4.48,
+          "oppRpg": 3.52,
+          "hitsPerGame": 8.3,
+          "errorsPerGame": 0.44,
           "sos": 0.52
         },
-        "Athletics": {
-          "games": 26,
-          "rpg": 3.88,
-          "oppRpg": 4.92,
-          "hitsPerGame": 7.92,
-          "errorsPerGame": 0.62,
+        "Twins": {
+          "games": 28,
+          "rpg": 4.29,
+          "oppRpg": 4.75,
+          "hitsPerGame": 7.93,
+          "errorsPerGame": 0.86,
+          "sos": null
+        },
+        "Royals": {
+          "games": 27,
+          "rpg": 3.52,
+          "oppRpg": 4.74,
+          "hitsPerGame": 7.7,
+          "errorsPerGame": 0.56,
           "sos": null
         },
         "Cardinals": {
-          "games": 24,
-          "rpg": 3.79,
-          "oppRpg": 4,
-          "hitsPerGame": 8.33,
-          "errorsPerGame": 0.54,
+          "games": 25,
+          "rpg": 3.88,
+          "oppRpg": 4.04,
+          "hitsPerGame": 8.48,
+          "errorsPerGame": 0.56,
           "sos": 0.52
         },
         "Reds": {
+          "games": 25,
+          "rpg": 4.64,
+          "oppRpg": 5.4,
+          "hitsPerGame": 8.28,
+          "errorsPerGame": 0.6,
+          "sos": null
+        },
+        "Cubs": {
+          "games": 27,
+          "rpg": 3.48,
+          "oppRpg": 5.19,
+          "hitsPerGame": 7.19,
+          "errorsPerGame": 0.3,
+          "sos": 0.52
+        },
+        "Giants": {
+          "games": 28,
+          "rpg": 5.54,
+          "oppRpg": 5.79,
+          "hitsPerGame": 10.25,
+          "errorsPerGame": 0.86,
+          "sos": 0.52
+        },
+        "Blue Jays": {
+          "games": 28,
+          "rpg": 4.25,
+          "oppRpg": 4,
+          "hitsPerGame": 8.32,
+          "errorsPerGame": 0.57,
+          "sos": null
+        },
+        "Orioles": {
+          "games": 27,
+          "rpg": 4.85,
+          "oppRpg": 4.56,
+          "hitsPerGame": 8.44,
+          "errorsPerGame": 0.3,
+          "sos": 0.52
+        },
+        "Phillies": {
+          "games": 26,
+          "rpg": 4.04,
+          "oppRpg": 3.31,
+          "hitsPerGame": 7.19,
+          "errorsPerGame": 0.38,
+          "sos": null
+        },
+        "White Sox": {
+          "games": 27,
+          "rpg": 5.56,
+          "oppRpg": 4.52,
+          "hitsPerGame": 8.63,
+          "errorsPerGame": 0.48,
+          "sos": null
+        },
+        "Braves": {
+          "games": 27,
+          "rpg": 4.74,
+          "oppRpg": 3.41,
+          "hitsPerGame": 8.07,
+          "errorsPerGame": 0.44,
+          "sos": null
+        },
+        "Pirates": {
+          "games": 27,
+          "rpg": 5.41,
+          "oppRpg": 5.19,
+          "hitsPerGame": 9.19,
+          "errorsPerGame": 0.67,
+          "sos": null
+        },
+        "Marlins": {
+          "games": 27,
+          "rpg": 4.11,
+          "oppRpg": 4.74,
+          "hitsPerGame": 7.78,
+          "errorsPerGame": 0.74,
+          "sos": null
+        },
+        "Rays": {
           "games": 24,
-          "rpg": 4.63,
-          "oppRpg": 5.38,
-          "hitsPerGame": 8.25,
-          "errorsPerGame": 0.58,
+          "rpg": 4.79,
+          "oppRpg": 5.17,
+          "hitsPerGame": 8.63,
+          "errorsPerGame": 0.63,
+          "sos": null
+        },
+        "Astros": {
+          "games": 28,
+          "rpg": 4.36,
+          "oppRpg": 3.89,
+          "hitsPerGame": 7.54,
+          "errorsPerGame": 0.39,
+          "sos": 0.52
+        },
+        "Athletics": {
+          "games": 27,
+          "rpg": 3.81,
+          "oppRpg": 5.22,
+          "hitsPerGame": 7.85,
+          "errorsPerGame": 0.63,
+          "sos": null
+        },
+        "Diamondbacks": {
+          "games": 28,
+          "rpg": 4.18,
+          "oppRpg": 3.79,
+          "hitsPerGame": 7.89,
+          "errorsPerGame": 0.21,
+          "sos": null
+        },
+        "Nationals": {
+          "games": 27,
+          "rpg": 5.41,
+          "oppRpg": 4.74,
+          "hitsPerGame": 8.63,
+          "errorsPerGame": 0.78,
           "sos": null
         },
         "Rangers": {
@@ -82,22 +210,6 @@
           "oppRpg": 3.65,
           "hitsPerGame": 7.54,
           "errorsPerGame": 0.38,
-          "sos": null
-        },
-        "Twins": {
-          "games": 27,
-          "rpg": 4.37,
-          "oppRpg": 4.81,
-          "hitsPerGame": 8.07,
-          "errorsPerGame": 0.85,
-          "sos": null
-        },
-        "Royals": {
-          "games": 26,
-          "rpg": 3.54,
-          "oppRpg": 4.85,
-          "hitsPerGame": 7.69,
-          "errorsPerGame": 0.58,
           "sos": null
         },
         "Rockies": {
@@ -132,22 +244,6 @@
           "errorsPerGame": 0.65,
           "sos": null
         },
-        "Diamondbacks": {
-          "games": 27,
-          "rpg": 4.3,
-          "oppRpg": 3.7,
-          "hitsPerGame": 8.11,
-          "errorsPerGame": 0.22,
-          "sos": null
-        },
-        "Nationals": {
-          "games": 26,
-          "rpg": 5.38,
-          "oppRpg": 4.88,
-          "hitsPerGame": 8.65,
-          "errorsPerGame": 0.77,
-          "sos": null
-        },
         "Dodgers": {
           "games": 27,
           "rpg": 5,
@@ -164,54 +260,6 @@
           "errorsPerGame": 0.65,
           "sos": 0.52
         },
-        "Cubs": {
-          "games": 26,
-          "rpg": 3.5,
-          "oppRpg": 5.31,
-          "hitsPerGame": 7.15,
-          "errorsPerGame": 0.31,
-          "sos": 0.52
-        },
-        "Giants": {
-          "games": 27,
-          "rpg": 5.67,
-          "oppRpg": 5.89,
-          "hitsPerGame": 10.44,
-          "errorsPerGame": 0.85,
-          "sos": 0.52
-        },
-        "Phillies": {
-          "games": 25,
-          "rpg": 4.08,
-          "oppRpg": 3.2,
-          "hitsPerGame": 7.28,
-          "errorsPerGame": 0.4,
-          "sos": null
-        },
-        "White Sox": {
-          "games": 26,
-          "rpg": 5.54,
-          "oppRpg": 4.58,
-          "hitsPerGame": 8.58,
-          "errorsPerGame": 0.5,
-          "sos": null
-        },
-        "Tigers": {
-          "games": 26,
-          "rpg": 3.46,
-          "oppRpg": 4.5,
-          "hitsPerGame": 7.5,
-          "errorsPerGame": 0.35,
-          "sos": null
-        },
-        "Mariners": {
-          "games": 26,
-          "rpg": 4.5,
-          "oppRpg": 3.65,
-          "hitsPerGame": 8.23,
-          "errorsPerGame": 0.46,
-          "sos": 0.52
-        },
         "Yankees": {
           "games": 25,
           "rpg": 4.36,
@@ -226,54 +274,6 @@
           "oppRpg": 3.67,
           "hitsPerGame": 9,
           "errorsPerGame": 0.58,
-          "sos": null
-        },
-        "Blue Jays": {
-          "games": 27,
-          "rpg": 4.19,
-          "oppRpg": 4,
-          "hitsPerGame": 8.19,
-          "errorsPerGame": 0.59,
-          "sos": null
-        },
-        "Orioles": {
-          "games": 26,
-          "rpg": 4.88,
-          "oppRpg": 4.5,
-          "hitsPerGame": 8.54,
-          "errorsPerGame": 0.31,
-          "sos": 0.52
-        },
-        "Marlins": {
-          "games": 26,
-          "rpg": 4.12,
-          "oppRpg": 4.81,
-          "hitsPerGame": 7.69,
-          "errorsPerGame": 0.73,
-          "sos": null
-        },
-        "Rays": {
-          "games": 23,
-          "rpg": 4.87,
-          "oppRpg": 5.22,
-          "hitsPerGame": 8.78,
-          "errorsPerGame": 0.61,
-          "sos": null
-        },
-        "Braves": {
-          "games": 26,
-          "rpg": 4.69,
-          "oppRpg": 3.42,
-          "hitsPerGame": 8.04,
-          "errorsPerGame": 0.46,
-          "sos": null
-        },
-        "Pirates": {
-          "games": 26,
-          "rpg": 5.5,
-          "oppRpg": 5.15,
-          "hitsPerGame": 9.23,
-          "errorsPerGame": 0.65,
           "sos": null
         }
       }
@@ -591,18 +591,18 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "AL West",
+      "conference": "AL Central",
       "gameDate": "2026-06-06T00:00:00.000Z",
-      "team": "Astros",
-      "opponent": "Athletics",
-      "points": 5,
-      "opponentPoints": 1,
+      "team": "Tigers",
+      "opponent": "Mariners",
+      "points": 0,
+      "opponentPoints": 4,
       "rebounds": null,
       "assists": null,
       "yards": null,
       "spread": 1.5,
-      "atsResult": "W",
-      "won": true,
+      "atsResult": "L",
+      "won": false,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -629,10 +629,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 6,
+      "hits": 2,
       "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401815634",
+      "sourceEventId": "401815647",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -803,6 +803,65 @@
     {
       "league": "MLB",
       "conference": null,
+      "gameDate": "2026-06-07T01:11:00.000Z",
+      "matchup": "Milwaukee Brewers at Colorado Rockies",
+      "pickTeam": "Milwaukee Brewers",
+      "opponent": "Colorado Rockies",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Milwaukee Brewers -1.5",
+      "score": 65,
+      "confidence": 61,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample Milwaukee Brewers: 26 games (mapped Brewers) vs Colorado Rockies: 26 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Milwaukee Brewers B2B vs Colorado Rockies B2B",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +4.2",
+        "Away SP: Jacob Misiorowski",
+        "MLB model: 72.2% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.7217,
+      "mlbEdge": 0.0333,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-07T02:11:00.000Z",
+      "matchup": "Los Angeles Angels at Los Angeles Dodgers",
+      "pickTeam": "Los Angeles Dodgers",
+      "opponent": "Los Angeles Angels",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Los Angeles Dodgers -1.5",
+      "score": 65,
+      "confidence": 61,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample Los Angeles Dodgers: 27 games (mapped Dodgers) vs Los Angeles Angels: 26 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Los Angeles Dodgers B2B vs Los Angeles Angels B2B",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +1.6",
+        "Home SP: Yoshinobu Yamamoto",
+        "Away SP: Jack Kochanowicz",
+        "MLB model: 71.3% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.7127,
+      "mlbEdge": -0.0095,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
       "gameDate": "2026-06-07T02:11:00.000Z",
       "matchup": "New York Mets at San Diego Padres",
       "pickTeam": "New York Mets",
@@ -810,8 +869,8 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "New York Mets -1.5",
-      "score": 67,
-      "confidence": 63,
+      "score": 62,
+      "confidence": 58,
       "rationaleSignals": [
         "Momentum edge +1.00 (last-10 trend proxy)",
         "ATS edge +0.300",
@@ -820,51 +879,21 @@
         "Rest: New York Mets B2B vs San Diego Padres B2B",
         "2 books: avg -1.5, variance 0 (tight consensus)",
         "Net Rating edge: +3.4",
-        "Home SP: Michael King",
-        "Away SP: Christian Scott",
-        "MLB model: 70.6% win prob (calibrated) | Edge vs market: +15.4%"
+        "Home SP: Griffin Canning",
+        "Away SP: Nolan McLean",
+        "MLB model: 62.1% win prob (calibrated) | Edge vs market: +9.0%"
       ],
       "momentumEdge": 1,
       "atsEdge": 0.3,
-      "mlbModelProb": 0.7064,
-      "mlbEdge": 0.1538,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-06-06T20:11:00.000Z",
-      "matchup": "Washington Nationals at Arizona Diamondbacks",
-      "pickTeam": "Washington Nationals",
-      "opponent": "Arizona Diamondbacks",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "Washington Nationals +1.5",
-      "score": 59,
-      "confidence": 54,
-      "rationaleSignals": [
-        "Momentum edge +0.20 (last-10 trend proxy)",
-        "ATS edge +0.000",
-        "History sample Washington Nationals: 26 games (mapped Nationals) vs Arizona Diamondbacks: 27 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Washington Nationals B2B vs Arizona Diamondbacks B2B",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +3.7",
-        "Home SP: Merrill Kelly",
-        "Away SP: Foster Griffin",
-        "MLB model: 59.4% win prob (calibrated) | Edge vs market: +14.9%"
-      ],
-      "momentumEdge": 0.2,
-      "atsEdge": 0,
-      "mlbModelProb": 0.5938,
-      "mlbEdge": 0.1493,
+      "mlbModelProb": 0.6213,
+      "mlbEdge": 0.0896,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-06-06",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 2 eligible games found on 2026-06-06 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 3 eligible games found on 2026-06-06 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -2073,7 +2102,7 @@
         "team": "Cleveland Browns",
         "position": "DT",
         "status": "Questionable",
-        "injuryType": "Leg",
+        "injuryType": "Knee",
         "returnDate": "2026-07-01"
       },
       {
