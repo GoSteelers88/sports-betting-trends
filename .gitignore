@@ -65,6 +65,12 @@ data/processed/latest-odds-api*.json
 # file, leaving the dashboard's loadOdds("WNBA") empty.
 !data/processed/latest-odds-api-basketball_wnba.json
 
+# De-vigged-sharp pivot: transient line snapshots are caches (re-scraped each
+# tick) — ignore them. The CLV-proof LOG is accumulating evidence and must be
+# tracked so it survives across ephemeral cron runners.
+data/processed/latest-sharp-pinnacle-*.json
+data/processed/latest-softbooks-*.json
+
 # Compiled script output
 scripts/*.js
 

@@ -1,0 +1,113 @@
+name: CLV proof — sharp-vs-soft capture
+
+# Accumulates evidence for the de-vigged-sharp thesis WITHOUT placing any bet.
+# Each tick:
+#   1. ingest:sharp      — de-vigged Pinnacle fair value (free guest API)
+#   2. ingest:odds       — FanDuel + Bovada best prices (free)
+#   3. ingest:softbooks  — The Odds API US books (DK/MGM/ESPN BET/BetRivers/…)
+#   4. clv:proof         — lock entry prices early, refresh closes, settle started
+#                          games; append to data/processed/clv-proof-log.json
+#
+# Then commits the proof LOG back (only that one file is allowlisted). The
+# transient line snapshots are gitignored — they regenerate every tick.
+#
+# Touches NO database and places NO orders. After ~1-2 weeks of game days the
+# report (`npm run clv:proof report`) shows whether taking the best soft price
+# beats the sharp close (beat-close ≥55% + avg CLV >0 = the timing edge is real).
+#
+# Quota: regions=us → 1 credit per sport per tick (2/tick). 6 ticks/day ≈ 360
+# credits/month, under the 500 free-tier cap. Bump to us,us2 via dispatch input
+# for a one-off deep run (4 credits/tick). NOTE: scheduled runs only fire from
+# the repo's DEFAULT branch — this must be merged to master to start ticking.
+
+on:
+  workflow_dispatch:
+    inputs:
+      regions:
+        description: The Odds API regions (us | us,us2)
+        required: false
+        default: "us"
+  schedule:
+    # UTC ticks spread across the MLB/NBA game window so games get an early
+    # ENTRY and a late CLOSE. Off-the-hour offsets dodge cron congestion.
+    - cron: "32 17 * * *"  # 1:32 PM ET — afternoon entries
+    - cron: "32 21 * * *"  # 5:32 PM ET — pre-game entries
+    - cron: "47 23 * * *"  # 7:47 PM ET — early-night closes / entries
+    - cron: "17 0 * * *"   # closes for ~00 UTC starts
+    - cron: "32 1 * * *"   # closes for ~01 UTC starts + late entries
+    - cron: "2 3 * * *"    # late-NBA closes
+
+permissions:
+  contents: write   # push the proof log back to the repo
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+      THE_ODDS_REGIONS: ${{ github.event.inputs.regions || 'us' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Pull sharp (Pinnacle) + soft (FD/Bovada) + multi-book (Odds API)
+        run: |
+          npm run ingest:sharp || echo "pinnacle pull failed (non-fatal)"
+          npm run ingest:odds || echo "fd/bovada pull failed (non-fatal)"
+          npm run ingest:softbooks || echo "odds-api pull failed (non-fatal)"
+
+      - name: Run CLV-proof tick (capture/refresh/settle)
+        run: npm run clv:proof
+
+      - name: Commit proof log back (allowlisted file only)
+        if: success()
+        run: |
+          git config user.name "clv-proof-bot"
+          git config user.email "clv-proof-bot@users.noreply.github.com"
+          ALLOWED=( "data/processed/clv-proof-log.json" )
+          # Defense in depth: refuse to commit if the log ever contains a
+          # recognizable secret (it never should — it's pure odds data).
+          SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|[Aa]uthorization":\s*"Bearer'
+          for f in "${ALLOWED[@]}"; do
+            [ -f "$f" ] || continue
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
+              exit 1
+            fi
+          done
+          git add "${ALLOWED[@]}" 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no proof-log changes to commit"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
+          git commit -m "clv-proof: tick ${DATE_TAG}"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin master && git push origin master && break
+            echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            git stash drop 2>/dev/null || true
+            sleep 5
+          done
+
+      - name: Upload snapshots as artifacts (audit trail)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clv-proof-${{ github.run_id }}
+          path: |
+            data/processed/clv-proof-log.json
+            data/processed/latest-sharp-pinnacle-*.json
+            data/processed/latest-softbooks-*.json
+          retention-days: 14
