@@ -2,6 +2,7 @@ import { getDashboardData } from "./_data/dashboard";
 import { Sidebar } from "./_components/Sidebar";
 import { TickerMarquee } from "./_components/TickerMarquee";
 import { Hero } from "./_components/Hero";
+import { DevigPaperBook } from "./_components/DevigPaperBook";
 import { DeploymentGate } from "./_components/DeploymentGate";
 import { OverallLedger } from "./_components/OverallLedger";
 import { EdgeReactor } from "./_components/EdgeReactor";
@@ -29,6 +30,11 @@ export default async function Home() {
           <div className="px-5 sm:px-10 lg:px-14 max-w-[1400px]">
             {/* Hero — full-viewport editorial moment */}
             <Hero data={data} />
+
+            {/* De-vigged-sharp +EV $10k paper book — flagship live experiment */}
+            <div className="pt-8">
+              <DevigPaperBook />
+            </div>
 
             {/* Games track — runs first, the agent's main competence */}
             <div className="space-y-24 sm:space-y-32 pb-24">

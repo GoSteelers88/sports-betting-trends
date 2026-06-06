@@ -70,12 +70,15 @@ jobs:
       - name: Run CLV-proof tick (capture/refresh/settle)
         run: npm run clv:proof
 
-      - name: Commit proof log back (allowlisted file only)
+      - name: Run de-vig paper book cycle (settle finals + open +EV plays)
+        run: npm run paper:devig
+
+      - name: Commit proof log + paper book back (allowlisted files only)
         if: success()
         run: |
           git config user.name "clv-proof-bot"
           git config user.email "clv-proof-bot@users.noreply.github.com"
-          ALLOWED=( "data/processed/clv-proof-log.json" )
+          ALLOWED=( "data/processed/clv-proof-log.json" "data/processed/devig-paper-book.json" )
           # Defense in depth: refuse to commit if the log ever contains a
           # recognizable secret (it never should — it's pure odds data).
           SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|[Aa]uthorization":\s*"Bearer'
