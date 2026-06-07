@@ -1,44 +1,20 @@
 {
-  "generatedAt": "2026-06-06T23:42:03.929Z",
+  "generatedAt": "2026-06-07T15:43:18.003Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 4,
+  "recordCount": 5,
   "errors": [],
   "data": {
-    "generatedAt": "2026-06-06T23:42:03.929Z",
+    "generatedAt": "2026-06-07T15:43:18.003Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 4,
+    "gameCount": 5,
     "results": [
-      {
-        "eventId": "fd_35684519",
-        "homeTeam": "Atlanta Dream",
-        "awayTeam": "Washington Mystics",
-        "homeWinProb": 0.6021,
-        "awayWinProb": 0.3979,
-        "expectedMargin": 3.95,
-        "homeNetRtg": 4.6,
-        "awayNetRtg": -0.8333333333333334,
-        "calibrated": false,
-        "startTime": "2026-06-06T22:04:00.000Z"
-      },
-      {
-        "eventId": "fd_35684520",
-        "homeTeam": "New York Liberty",
-        "awayTeam": "Indiana Fever",
-        "homeWinProb": 0.5216,
-        "awayWinProb": 0.4784,
-        "expectedMargin": 0.83,
-        "homeNetRtg": 0.75,
-        "awayNetRtg": 2.25,
-        "calibrated": false,
-        "startTime": "2026-06-07T00:00:00.000Z"
-      },
       {
         "eventId": "fd_35687975",
         "homeTeam": "Toronto Tempo",
@@ -62,6 +38,42 @@
         "awayNetRtg": -3.8,
         "calibrated": false,
         "startTime": "2026-06-07T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35691296",
+        "homeTeam": "Washington Mystics",
+        "awayTeam": "Indiana Fever",
+        "homeWinProb": 0.5281,
+        "awayWinProb": 0.4719,
+        "expectedMargin": 1.07,
+        "homeNetRtg": -0.75,
+        "awayNetRtg": 0.2,
+        "calibrated": false,
+        "startTime": "2026-06-08T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35691299",
+        "homeTeam": "Connecticut Sun",
+        "awayTeam": "New York Liberty",
+        "homeWinProb": 0.3266,
+        "awayWinProb": 0.6734,
+        "expectedMargin": -6.89,
+        "homeNetRtg": -10.4,
+        "awayNetRtg": 8.25,
+        "calibrated": false,
+        "startTime": "2026-06-08T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35691300",
+        "homeTeam": "Las Vegas Aces",
+        "awayTeam": "Seattle Storm",
+        "homeWinProb": 0.6237,
+        "awayWinProb": 0.3763,
+        "expectedMargin": 4.81,
+        "homeNetRtg": -4.5,
+        "awayNetRtg": -11.857142857142858,
+        "calibrated": false,
+        "startTime": "2026-06-09T02:00:00.000Z"
       }
     ]
   }
