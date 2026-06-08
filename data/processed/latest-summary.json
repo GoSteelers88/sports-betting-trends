@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-08T17:29:17.650Z",
+  "generatedAt": "2026-06-08T23:51:33.704Z",
   "ready": true,
   "recordsIngested": 823,
   "recordsCompleted": 823,
@@ -799,11 +799,72 @@
     "Unknown",
     "Western"
   ],
-  "bestBets": [],
+  "bestBets": [
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-09T02:06:00.000Z",
+      "matchup": "Milwaukee Brewers at Athletics",
+      "pickTeam": "Milwaukee Brewers",
+      "opponent": "Athletics",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Milwaukee Brewers -1.5",
+      "score": 61,
+      "confidence": 57,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample Milwaukee Brewers: 26 games (mapped Brewers) vs Athletics: 26 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Milwaukee Brewers 2d rest vs Athletics 2d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +5.3",
+        "Home SP: Jeffrey Springs",
+        "Away SP: Kyle Harrison",
+        "MLB model: 64.7% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.6468,
+      "mlbEdge": 0.0367,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-09T01:46:00.000Z",
+      "matchup": "Washington Nationals at San Francisco Giants",
+      "pickTeam": "San Francisco Giants",
+      "opponent": "Washington Nationals",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "San Francisco Giants -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample San Francisco Giants: 27 games (mapped Giants) vs Washington Nationals: 26 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: San Francisco Giants B2B vs Washington Nationals 2d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: -0.1",
+        "Home SP: Logan Webb",
+        "Away SP: Miles Mikolas",
+        "MLB model: 61.8% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.2,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.6175,
+      "mlbEdge": 0.0191,
+      "mlbCalibrated": true
+    }
+  ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-06-08",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 0 eligible games found on 2026-06-08 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 2 eligible games found on 2026-06-08 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -2232,6 +2293,14 @@
         "returnDate": "2026-08-01"
       },
       {
+        "player": "Chris Rodriguez Jr.",
+        "team": "Jacksonville Jaguars",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Foot",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Keith Taylor",
         "team": "Jacksonville Jaguars",
         "position": "CB",
@@ -2416,6 +2485,30 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Abdul Carter",
+        "team": "New York Giants",
+        "position": "LB",
+        "status": "Questionable",
+        "injuryType": "Ankle",
+        "returnDate": "2026-07-01"
+      },
+      {
+        "player": "Beaux Collins",
+        "team": "New York Giants",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Concussion",
+        "returnDate": "2026-07-01"
+      },
+      {
+        "player": "Cam Skattebo",
+        "team": "New York Giants",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Ankle",
+        "returnDate": "2026-07-01"
+      },
+      {
         "player": "Roy Robertson-Harris",
         "team": "New York Giants",
         "position": "DT",
@@ -2456,14 +2549,6 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Cam Skattebo",
-        "team": "New York Giants",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Ankle",
-        "returnDate": "2026-07-01"
-      },
-      {
         "player": "Thaddeus Dixon",
         "team": "New York Giants",
         "position": "CB",
@@ -2485,7 +2570,7 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Undisclosed",
-        "returnDate": "2026-07-01"
+        "returnDate": "2027-02-15"
       },
       {
         "player": "Kobe King",
@@ -2653,14 +2738,6 @@
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Leg",
-        "returnDate": "2026-07-01"
-      },
-      {
-        "player": "Calvin Ridley",
-        "team": "Tennessee Titans",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Lower Leg",
         "returnDate": "2026-07-01"
       },
       {
