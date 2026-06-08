@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, JetBrains_Mono, Inter } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 
-// Editorial display face — italic by default. Used for big headline numbers,
-// section titles, and any moment that wants to feel "magazine layout" instead
-// of "trading terminal". Inspired by Studio Namma (Awwwards SOTD 2026-05).
-const instrumentSerif = Instrument_Serif({
+// Display face — bold modern grotesque. Big, tight, high-contrast headlines
+// in the technology-first studio idiom (Utsubo, Awwwards). Replaces the warm
+// serif-italic editorial face: this reads "interface", not "magazine".
+const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "700"],
 });
 
 const interSans = Inter({
@@ -36,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${interSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${interSans.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
       </body>

@@ -1,29 +1,29 @@
 @import "tailwindcss";
 
 /* ───────────────────────────────────────────────────────────────────────────
-   EDITORIAL DARK — design system inspired by Studio Namma (Awwwards SOTD).
-   Restraint over density. Black canvas. One warm accent. Serif italic for
-   typographic moments, mono for data. Hairline borders. No scanlines, no
-   radial gradients, no grids. The dashboard reads like a financial monthly.
+   DEEP NAVY — technology-first design system inspired by Utsubo (Awwwards).
+   Near-monochrome: near-black canvas, deep navy elevations, one electric
+   accent. High contrast, generous negative space, mono for data. Hairline
+   borders, circular accents. Cool and sophisticated, not warm-editorial.
    ─────────────────────────────────────────────────────────────────────── */
 
 @theme inline {
-  /* canvas */
-  --color-background: #08070A;        /* near-black with the faintest warmth */
-  --color-surface: #0F0E12;           /* one tone above bg — used sparingly */
-  --color-surface-elevated: #16151A;
-  --color-text-primary: #F2EFE6;      /* warm cream, not cold white */
-  --color-text-muted: #686266;        /* dusk grey */
-  --color-text-faint: #3A3538;        /* metadata grey */
+  /* canvas — Utsubo near-black → deep navy ladder */
+  --color-background: #020509;        /* near-black, the faintest navy */
+  --color-surface: #081523;           /* deep navy panel — used sparingly */
+  --color-surface-elevated: #0C2946;  /* Utsubo navy — top elevation */
+  --color-text-primary: #EAF1F8;      /* cool near-white */
+  --color-text-muted: #5E7186;        /* cool slate grey */
+  --color-text-faint: #2A3848;        /* navy metadata grey */
 
-  /* accents — kept minimal. One warm ember, one cold red for kills only. */
-  --color-edge: #D97A3D;              /* warm ember — survived/edge */
-  --color-warn: #C9A35F;              /* aged brass — caution */
-  --color-kill: #B23A48;              /* oxblood — kills, losses, failures */
-  --color-signal: #6E8FAE;            /* muted slate-blue — model signals */
+  /* accents — one electric highlight, one bright red for kills only. */
+  --color-edge: #4FB7FF;              /* electric sky — survived/edge/win */
+  --color-warn: #E0B65C;              /* warm brass — caution (cool-palette foil) */
+  --color-kill: #FF4D6D;              /* bright rose — kills, losses, failures */
+  --color-signal: #7FA8D9;            /* periwinkle — model signals */
 
-  --color-border: rgba(242, 239, 230, 0.08);
-  --color-border-strong: rgba(242, 239, 230, 0.18);
+  --color-border: rgba(234, 241, 248, 0.08);
+  --color-border-strong: rgba(234, 241, 248, 0.18);
 
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
@@ -31,18 +31,18 @@
 }
 
 :root {
-  --bg: #08070A;
-  --surface: #0F0E12;
-  --surface-elev: #16151A;
-  --text: #F2EFE6;
-  --muted: #686266;
-  --faint: #3A3538;
-  --edge: #D97A3D;
-  --warn: #C9A35F;
-  --kill: #B23A48;
-  --signal: #6E8FAE;
-  --border: rgba(242, 239, 230, 0.08);
-  --border-strong: rgba(242, 239, 230, 0.18);
+  --bg: #020509;
+  --surface: #081523;
+  --surface-elev: #0C2946;
+  --text: #EAF1F8;
+  --muted: #5E7186;
+  --faint: #2A3848;
+  --edge: #4FB7FF;
+  --warn: #E0B65C;
+  --kill: #FF4D6D;
+  --signal: #7FA8D9;
+  --border: rgba(234, 241, 248, 0.08);
+  --border-strong: rgba(234, 241, 248, 0.18);
 }
 
 html, body {
@@ -52,32 +52,36 @@ html, body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Display face (Space Grotesk) ships no italic. Disable synthetic italic so
+     legacy `font-style: italic` callers render upright bold, not a fake slant.
+     This is what flips the whole site from serif-editorial to grotesque. */
+  font-synthesis: weight;
 }
 
 body {
-  /* The whole point is calm — flat canvas, one barely-visible vignette. */
+  /* Calm canvas — one barely-visible electric vignette bleeding from the top. */
   background:
-    radial-gradient(900px 600px at 50% -200px, rgba(217, 122, 61, 0.04), transparent 70%),
+    radial-gradient(900px 600px at 50% -200px, rgba(79, 183, 255, 0.06), transparent 70%),
     var(--bg);
   background-attachment: fixed;
 }
 
 /* ─── Typography ────────────────────────────────────────────────────────── */
 
-/* Display: Instrument Serif italic by default — editorial face. Use the
-   `.display-italic` modifier or the implicit italic style for the magazine
-   feel. Roman is also available for unitalic moments. */
+/* Display: Space Grotesk — bold modern grotesque. Big, tight, high-contrast.
+   The technology-first studio idiom: headlines read as interface, not
+   magazine. Roman variant kept as an alias for callers that asked for it. */
 .font-display {
-  font-family: var(--font-display), "Cormorant Garamond", "Times New Roman", serif;
-  font-style: italic;
-  letter-spacing: -0.01em;
-  font-weight: 400;
+  font-family: var(--font-display), "Space Grotesk", "Archivo", system-ui, sans-serif;
+  font-style: normal;
+  letter-spacing: -0.03em;
+  font-weight: 700;
 }
 .font-display-roman {
-  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-family: var(--font-display), "Space Grotesk", "Archivo", system-ui, sans-serif;
   font-style: normal;
-  letter-spacing: -0.01em;
-  font-weight: 400;
+  letter-spacing: -0.03em;
+  font-weight: 500;
 }
 
 .font-mono {
@@ -103,24 +107,25 @@ body {
   text-transform: uppercase;
 }
 
-/* Editorial section title — Instrument Serif italic, large, tight tracking. */
+/* Section title — Space Grotesk, bold, UPPERCASE, very tight. Reads as a
+   strong interface label, not an editorial flourish. */
 .section-head {
-  font-family: var(--font-display), serif;
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.025em;
-  line-height: 0.95;
-  text-transform: none;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+  text-transform: uppercase;
 }
 
-/* Massive display numeral — used for graphic section numbers (00, 01...).
-   Kept roman (not italic) so the numeral reads as a graphic element. */
+/* Massive display numeral — graphic section numbers (00, 01...). Bold
+   grotesque, hairline outline feel via the faint colour. */
 .numeral-mark {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 700;
   font-feature-settings: "lnum";
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
   line-height: 1;
   color: var(--faint);
 }
@@ -154,19 +159,19 @@ body {
 }
 .surface-edge {
   background: transparent;
-  border: 1px solid rgba(217, 122, 61, 0.35);
+  border: 1px solid rgba(79, 183, 255, 0.35);
 }
 .surface-kill {
   background: transparent;
-  border: 1px solid rgba(178, 58, 72, 0.35);
+  border: 1px solid rgba(255, 77, 109, 0.35);
 }
 .surface-warn {
   background: transparent;
-  border: 1px solid rgba(201, 163, 95, 0.35);
+  border: 1px solid rgba(224, 182, 92, 0.35);
 }
 .surface-signal {
   background: transparent;
-  border: 1px solid rgba(110, 143, 174, 0.35);
+  border: 1px solid rgba(127, 168, 217, 0.35);
 }
 
 /* Filled surface — used only when we need contrast (autopsy modal, etc). */
@@ -269,12 +274,14 @@ body {
 /* ─── Section number block ─────────────────────────────────────────────── */
 
 .section-numeral {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 700;
   font-feature-settings: "lnum";
-  letter-spacing: -0.04em;
-  line-height: 0.85;
-  color: var(--faint);
-  font-size: clamp(3rem, 8vw, 6rem);
+  letter-spacing: -0.06em;
+  line-height: 0.8;
+  /* Outlined numeral — reads as a big graphic mark in the Utsubo idiom. */
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--border-strong);
+  font-size: clamp(3.5rem, 9vw, 7.5rem);
 }
