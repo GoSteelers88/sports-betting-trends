@@ -132,8 +132,8 @@ function GateModule({
       className="p-4 sm:p-5 surface flex flex-col gap-3"
       style={{
         borderColor:
-          state === "passed" ? "rgba(217,122,61,0.35)"
-          : state === "failed" ? "rgba(178,58,72,0.35)"
+          state === "passed" ? "rgba(79,183,255,0.35)"
+          : state === "failed" ? "rgba(255,77,109,0.35)"
           : "var(--border)",
       }}
     >

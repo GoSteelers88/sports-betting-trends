@@ -30,7 +30,7 @@ export function SectionHeader({
 
         <div className="min-w-0">
           <p className="eyebrow mb-3">{label}</p>
-          <h2 className="section-head text-3xl sm:text-5xl text-[var(--text)]">
+          <h2 className="section-head text-4xl sm:text-6xl lg:text-7xl text-[var(--text)]">
             {title}
           </h2>
           {subtitle && (

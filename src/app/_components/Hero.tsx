@@ -87,16 +87,15 @@ function HeadlinePick({ pick }: { pick: SlatePick }) {
     <div>
       <p className="eyebrow mb-6">Tonight's headline · {pick.league}</p>
       <h2
-        className="font-display leading-[0.95] text-[var(--text)]"
+        className="font-display uppercase leading-[0.9] text-[var(--text)]"
         style={{
-          fontStyle: "italic",
-          fontSize: "clamp(3rem, 8vw, 7.5rem)",
-          letterSpacing: "-0.025em",
+          fontSize: "clamp(3rem, 8.5vw, 8rem)",
+          letterSpacing: "-0.045em",
         }}
       >
         {isProp ? pick.player : pick.matchup}
       </h2>
-      <p className="mt-4 font-display text-2xl sm:text-3xl text-[var(--edge)]" style={{ fontStyle: "italic" }}>
+      <p className="mt-4 font-display text-2xl sm:text-3xl text-[var(--edge)]" style={{ fontWeight: 500 }}>
         {isProp ? (
           <>
             {pick.side?.toUpperCase()} {pick.line} {propLabel(pick.propType)}{" "}
@@ -121,11 +120,10 @@ function NoEdgeHeadline({ slateCount }: { slateCount: number }) {
     <div>
       <p className="eyebrow mb-6">Tonight's verdict</p>
       <h2
-        className="font-display leading-[0.95] text-[var(--text)]"
+        className="font-display uppercase leading-[0.9] text-[var(--text)]"
         style={{
-          fontStyle: "italic",
-          fontSize: "clamp(3rem, 8vw, 7.5rem)",
-          letterSpacing: "-0.025em",
+          fontSize: "clamp(3rem, 8.5vw, 8rem)",
+          letterSpacing: "-0.045em",
         }}
       >
         No&nbsp;edge<br />found.
@@ -154,7 +152,7 @@ function Stat({
       <p className="eyebrow">{label}</p>
       <p
         className="font-display text-3xl sm:text-4xl leading-none"
-        style={{ fontStyle: "italic", color: valueColor ?? "var(--text)" }}
+        style={{ color: valueColor ?? "var(--text)" }}
       >
         {value}
       </p>
