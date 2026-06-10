@@ -114,3 +114,11 @@ jobs:
             data/processed/latest-sharp-pinnacle-*.json
             data/processed/latest-softbooks-*.json
           retention-days: 14
+
+      # Optional dead-man's switch: create a check at healthchecks.io and set
+      # the HC_PING_CLV secret to its ping URL. Skips silently when unset.
+      - name: Heartbeat ping
+        if: success()
+        env:
+          PING: ${{ secrets.HC_PING_CLV }}
+        run: '[ -z "$PING" ] || curl -fsS -m 10 --retry 3 "$PING" > /dev/null || true'

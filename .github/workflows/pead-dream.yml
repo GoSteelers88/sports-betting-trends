@@ -74,3 +74,11 @@ jobs:
             git stash drop 2>/dev/null || true
             sleep 5
           done
+
+      # Optional dead-man's switch: create a check at healthchecks.io and set
+      # the HC_PING_PEAD_DREAM secret to its ping URL. Skips silently when unset.
+      - name: Heartbeat ping
+        if: success()
+        env:
+          PING: ${{ secrets.HC_PING_PEAD_DREAM }}
+        run: '[ -z "$PING" ] || curl -fsS -m 10 --retry 3 "$PING" > /dev/null || true'
