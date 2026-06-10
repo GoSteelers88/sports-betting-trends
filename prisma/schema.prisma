@@ -271,6 +271,10 @@ model KalshiPaperPosition {
   openedAt    String  // ISO
   closedAt    String? // ISO
   closeTime   String  // market close time, ISO
+  // Fill-reality tracking: the engine assumes every resting bid fills; these
+  // record whether the bid verifiably traded through on the candle path.
+  fillCheckedAt   String? // ISO — how far the entry→close window has been checked
+  fillConfirmedAt String? // ISO — first trade-through of the entry bid, if any
 }
 
 model KalshiPaperLedgerSnapshot {

@@ -45,11 +45,26 @@ const DDL = [
   `CREATE INDEX IF NOT EXISTS "idx_kpls_ts" ON "KalshiPaperLedgerSnapshot" ("ts")`,
 ];
 
+// Additive column migrations — each is tried and skipped if already applied
+// (SQLite has no ADD COLUMN IF NOT EXISTS).
+const ALTERS = [
+  `ALTER TABLE "KalshiPaperPosition" ADD COLUMN "fillCheckedAt" TEXT`,
+  `ALTER TABLE "KalshiPaperPosition" ADD COLUMN "fillConfirmedAt" TEXT`,
+];
+
 async function main() {
   const target = process.env.TURSO_DATABASE_URL ? "Turso" : "local sqlite";
   console.log(`[paper-migrate] applying DDL to ${target}...`);
   for (const stmt of DDL) {
     await prisma.$executeRawUnsafe(stmt);
+  }
+  for (const stmt of ALTERS) {
+    try {
+      await prisma.$executeRawUnsafe(stmt);
+      console.log(`[paper-migrate] applied: ${stmt}`);
+    } catch (e) {
+      if (!/duplicate column/i.test(String(e))) throw e;
+    }
   }
   // Verify
   const posCount = await prisma.kalshiPaperPosition.count();

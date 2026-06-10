@@ -73,6 +73,53 @@ export async function KalshiPaperTrail() {
         />
       </div>
 
+      {/* Fill reality — the engine assumes every resting bid fills; this strip
+          reports which assumed fills verifiably traded through on the candle
+          path, vs the adverse-selection backtest's 73.6% / 85.4% / 97.7%. */}
+      {stats.fillTracking.confirmed + stats.fillTracking.missed > 0 && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-rule border-b border-rule">
+          <Tile
+            label="Verified fill rate"
+            value={
+              stats.fillTracking.fillRatePct != null
+                ? `${stats.fillTracking.fillRatePct.toFixed(1)}%`
+                : "—"
+            }
+            sub={`${stats.fillTracking.confirmed} of ${stats.fillTracking.confirmed + stats.fillTracking.missed} settled · backtest 73.6%`}
+          />
+          <Tile
+            label="Win% · filled"
+            value={
+              stats.fillTracking.winRateConfirmedPct != null
+                ? `${stats.fillTracking.winRateConfirmedPct.toFixed(1)}%`
+                : "—"
+            }
+            sub={`${stats.fillTracking.confirmedWins}–${stats.fillTracking.confirmedLosses} · backtest 85.4%`}
+          />
+          <Tile
+            label="Win% · missed"
+            value={
+              stats.fillTracking.winRateMissedPct != null
+                ? `${stats.fillTracking.winRateMissedPct.toFixed(1)}%`
+                : "—"
+            }
+            sub={`${stats.fillTracking.missedWins}–${stats.fillTracking.missedLosses} · backtest 97.7%`}
+          />
+          <Tile
+            label="Filled-only P&L"
+            value={`${stats.fillTracking.realizedPnlConfirmedUsd >= 0 ? "+" : ""}${fmtUsd2(stats.fillTracking.realizedPnlConfirmedUsd)}`}
+            tone={
+              stats.fillTracking.realizedPnlConfirmedUsd > 0
+                ? "var(--win)"
+                : stats.fillTracking.realizedPnlConfirmedUsd < 0
+                  ? "var(--loss)"
+                  : "var(--ink-3)"
+            }
+            sub={`vs ${fmtUsd2(stats.realizedPnlUsd)} assumed${stats.fillTracking.pending > 0 ? ` · ${stats.fillTracking.pending} unchecked` : ""}`}
+          />
+        </div>
+      )}
+
       {hasSettles ? (
         <>
           {/* Equity curve — only once real settles exist */}
@@ -96,16 +143,24 @@ export async function KalshiPaperTrail() {
               <tbody>
                 {closed.slice(0, 15).map(p => {
                   const won = p.result === "yes";
+                  const fillNote =
+                    p.fill === "confirmed" ? "fill ✓" : p.fill === "missed" ? "no fill" : "fill ?";
                   return (
                     <tr key={p.ticker}>
                       <td className="max-w-[340px] text-sm text-ink">
                         <span className="block leading-snug break-words line-clamp-2">{p.title}</span>
                         <span className="num text-[0.65rem] text-ink-3 sm:hidden">
-                          entry {(p.entryPrice * 100).toFixed(0)}¢
+                          entry {(p.entryPrice * 100).toFixed(0)}¢ · {fillNote}
                         </span>
                       </td>
                       <td className="num text-xs text-right text-ink-2 hidden sm:table-cell">
                         {(p.entryPrice * 100).toFixed(0)}¢
+                        <span
+                          className="block text-[0.6rem]"
+                          style={{ color: p.fill === "missed" ? "var(--hold)" : "var(--ink-3)" }}
+                        >
+                          {fillNote}
+                        </span>
                       </td>
                       <td className="text-right">
                         <span className="tag" style={{ color: won ? "var(--win)" : "var(--loss)" }}>
@@ -179,8 +234,10 @@ export async function KalshiPaperTrail() {
 
       <p className="eyebrow text-ink-3 leading-relaxed px-4 sm:px-5 py-2.5 border-t border-rule">
         Simulated · not financial advice. Fills assume a resting limit order at the bid is filled
-        (maker); real fills depend on order flow. Edge basis: Bürgi–Deng–Whelan (2026) &amp; Le
-        (2026) — favorite-longshot bias.
+        (maker); each assumed fill is then verified against the hourly candle path (ask-low or
+        trade-low ≤ bid). Backtest on 23,382 settled markets: only 73.6% of resting bids fill, and
+        filled favorites win 85.4% vs 97.7% for missed — realized maker EV ≈ 0. Edge basis:
+        Bürgi–Deng–Whelan (2026) &amp; Le (2026) — favorite-longshot bias.
       </p>
     </article>
   );

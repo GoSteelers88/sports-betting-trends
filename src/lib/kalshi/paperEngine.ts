@@ -15,7 +15,18 @@
  * bid, not the ask) but optimistic on fill probability — surfaced on the site.
  */
 import { prisma } from "@/lib/prisma";
-import { fetchOpenMarkets, fetchMarketStates, type KalshiMarket } from "@/lib/kalshi/marketData";
+import {
+  fetchOpenMarkets,
+  fetchMarketStates,
+  fetchCandles,
+  type KalshiMarket,
+} from "@/lib/kalshi/marketData";
+import {
+  firstTradeThrough,
+  fillVerdict,
+  fillWindowEndMs,
+  type FillVerdict,
+} from "@/lib/kalshi/fillLogic";
 
 export const PAPER_CONFIG = {
   startingBankrollUsd: 10_000,
@@ -32,6 +43,21 @@ export const PAPER_CONFIG = {
   fillAtBid: true,
 };
 
+export interface FillTracking {
+  confirmed: number; // settled positions whose bid verifiably traded through
+  missed: number; // settled, full window checked, never traded through
+  pending: number; // settled but check incomplete
+  fillRatePct: number | null; // confirmed / (confirmed + missed) — backtest: 73.6%
+  confirmedWins: number;
+  confirmedLosses: number;
+  winRateConfirmedPct: number | null; // backtest: 85.4%
+  missedWins: number;
+  missedLosses: number;
+  winRateMissedPct: number | null; // backtest: 97.7%
+  realizedPnlConfirmedUsd: number; // the book if only verified fills count
+  openConfirmed: number; // open positions already traded through
+}
+
 export interface PaperStats {
   startingBankrollUsd: number;
   equityUsd: number;
@@ -44,6 +70,7 @@ export interface PaperStats {
   wins: number;
   losses: number;
   winRatePct: number | null;
+  fillTracking: FillTracking;
 }
 
 function isoNow(): string {
@@ -61,6 +88,33 @@ export async function computeStats(): Promise<PaperStats> {
   const cashUsd = equityUsd - exposureUsd;
   const wins = closed.filter((p) => p.result === "yes").length;
   const losses = closed.filter((p) => p.result === "no").length;
+
+  // Fill reality — split settled positions by whether the assumed maker fill
+  // verifiably traded through (see fillLogic.ts / flb-adverse-selection.ts).
+  const byVerdict = (v: FillVerdict) => closed.filter((p) => fillVerdict(p) === v);
+  const confirmed = byVerdict("confirmed");
+  const missed = byVerdict("missed");
+  const pendingFills = byVerdict("pending");
+  const cWins = confirmed.filter((p) => p.result === "yes").length;
+  const cLosses = confirmed.filter((p) => p.result === "no").length;
+  const mWins = missed.filter((p) => p.result === "yes").length;
+  const mLosses = missed.filter((p) => p.result === "no").length;
+  const decided = confirmed.length + missed.length;
+  const fillTracking: FillTracking = {
+    confirmed: confirmed.length,
+    missed: missed.length,
+    pending: pendingFills.length,
+    fillRatePct: decided > 0 ? (confirmed.length / decided) * 100 : null,
+    confirmedWins: cWins,
+    confirmedLosses: cLosses,
+    winRateConfirmedPct: cWins + cLosses > 0 ? (cWins / (cWins + cLosses)) * 100 : null,
+    missedWins: mWins,
+    missedLosses: mLosses,
+    winRateMissedPct: mWins + mLosses > 0 ? (mWins / (mWins + mLosses)) * 100 : null,
+    realizedPnlConfirmedUsd: confirmed.reduce((s, p) => s + (p.pnlUsd ?? 0), 0),
+    openConfirmed: open.filter((p) => p.fillConfirmedAt != null).length,
+  };
+
   return {
     startingBankrollUsd: PAPER_CONFIG.startingBankrollUsd,
     equityUsd,
@@ -73,7 +127,78 @@ export async function computeStats(): Promise<PaperStats> {
     wins,
     losses,
     winRatePct: wins + losses > 0 ? (wins / (wins + losses)) * 100 : null,
+    fillTracking,
   };
+}
+
+const FILL_RECHECK_OVERLAP_MS = 60 * 60 * 1000; // re-cover the last candle
+const MAX_FILL_CHECKS_PER_CYCLE = 150; // bound API calls / runtime per cron run
+const FILL_CHECK_DELAY_MS = 120; // stay well inside Kalshi rate limits
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Verify assumed maker fills against the real candle path: for every position
+ * not yet confirmed, fetch hourly candles for the unchecked part of its
+ * entry→close window and look for a trade-through of the entry bid
+ * (criterion identical to the adverse-selection backtest). Incremental —
+ * fillCheckedAt records how far the window has been covered.
+ */
+export async function trackFills(): Promise<{
+  checked: number;
+  newlyConfirmed: number;
+  errors: number;
+}> {
+  const unconfirmed = await prisma.kalshiPaperPosition.findMany({
+    where: { fillConfirmedAt: null },
+    orderBy: { id: "asc" },
+  });
+  const now = Date.now();
+  const due = unconfirmed
+    .filter((p) => {
+      const windowEnd = Math.min(now, fillWindowEndMs(p) ?? now);
+      return !p.fillCheckedAt || Date.parse(p.fillCheckedAt) < windowEnd;
+    })
+    .slice(0, MAX_FILL_CHECKS_PER_CYCLE);
+
+  let newlyConfirmed = 0;
+  let errors = 0;
+  for (const p of due) {
+    const windowEndMs = Math.min(now, fillWindowEndMs(p) ?? now);
+    const openedMs = Date.parse(p.openedAt);
+    const startMs = Math.max(
+      openedMs,
+      p.fillCheckedAt ? Date.parse(p.fillCheckedAt) - FILL_RECHECK_OVERLAP_MS : openedMs,
+    );
+    if (!Number.isFinite(startMs) || windowEndMs <= startMs) {
+      await prisma.kalshiPaperPosition.update({
+        where: { id: p.id },
+        data: { fillCheckedAt: new Date(windowEndMs).toISOString() },
+      });
+      continue;
+    }
+    try {
+      const candles = await fetchCandles(
+        p.eventTicker,
+        p.ticker,
+        Math.floor(startMs / 1000),
+        Math.ceil(windowEndMs / 1000),
+      );
+      const hitTs = firstTradeThrough(candles, p.entryPrice);
+      await prisma.kalshiPaperPosition.update({
+        where: { id: p.id },
+        data: {
+          fillCheckedAt: new Date(windowEndMs).toISOString(),
+          ...(hitTs ? { fillConfirmedAt: new Date(hitTs * 1000).toISOString() } : {}),
+        },
+      });
+      if (hitTs) newlyConfirmed++;
+    } catch {
+      errors++; // leave fillCheckedAt as-is — window gets re-covered next cycle
+    }
+    await sleep(FILL_CHECK_DELAY_MS);
+  }
+  return { checked: due.length, newlyConfirmed, errors };
 }
 
 /** Settle any open positions whose markets have resolved. Returns count closed. */
@@ -194,17 +319,30 @@ export async function writeSnapshot(): Promise<PaperStats> {
   return s;
 }
 
-/** One full cycle: settle resolved positions → open new ones → snapshot. */
+/** One full cycle: settle → verify fills → open new ones → snapshot. */
 export async function runPaperCycle(): Promise<{
   settled: number;
   opened: number;
   scanned: number;
+  fillsChecked: number;
+  fillsConfirmed: number;
+  fillErrors: number;
   stats: PaperStats;
 }> {
   const settled = await settleOpenPositions();
+  // After settling so freshly-closed positions get their final-window check.
+  const fills = await trackFills();
   const { opened, scanned } = await openNewPositions();
   const stats = await writeSnapshot();
-  return { settled, opened, scanned, stats };
+  return {
+    settled,
+    opened,
+    scanned,
+    fillsChecked: fills.checked,
+    fillsConfirmed: fills.newlyConfirmed,
+    fillErrors: fills.errors,
+    stats,
+  };
 }
 
 export interface LedgerView {
@@ -219,6 +357,7 @@ export interface LedgerView {
     costUsd: number;
     closeTime: string;
     openedAt: string;
+    fillConfirmed: boolean;
   }>;
   closed: Array<{
     ticker: string;
@@ -228,6 +367,7 @@ export interface LedgerView {
     result: string | null;
     pnlUsd: number | null;
     closedAt: string | null;
+    fill: FillVerdict;
   }>;
   equityCurve: Array<{ ts: string; equityUsd: number; realizedPnlUsd: number }>;
   generatedAt: string;
@@ -258,6 +398,7 @@ export async function getLedgerView(): Promise<LedgerView> {
       costUsd: p.costUsd,
       closeTime: p.closeTime,
       openedAt: p.openedAt,
+      fillConfirmed: p.fillConfirmedAt != null,
     })),
     closed: closed.map((p) => ({
       ticker: p.ticker,
@@ -267,6 +408,7 @@ export async function getLedgerView(): Promise<LedgerView> {
       result: p.result,
       pnlUsd: p.pnlUsd,
       closedAt: p.closedAt,
+      fill: fillVerdict(p),
     })),
     equityCurve: snaps
       .reverse()

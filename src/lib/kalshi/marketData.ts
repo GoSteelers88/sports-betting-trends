@@ -13,6 +13,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { seriesFromEventTicker, type FillCandle } from "@/lib/kalshi/fillLogic";
 
 const BASE = "https://api.elections.kalshi.com/trade-api/v2";
 const PATH_PREFIX = "/trade-api/v2";
@@ -147,6 +148,42 @@ export async function fetchOpenMarkets(maxPages = 30): Promise<KalshiMarket[]> {
     if (!cursor || events.length === 0) break;
   }
   return out;
+}
+
+function parseCandles(raw: any): FillCandle[] {
+  return ((raw.candlesticks ?? []) as any[]).map((c) => ({
+    endTs: Number(c.end_period_ts ?? 0),
+    askLow: num(c.yes_ask?.low_dollars),
+    tradeLow: num(c.price?.low_dollars),
+  }));
+}
+
+/**
+ * Hourly candles for a market over [startTs, endTs] (unix seconds) — used to
+ * verify whether an assumed maker fill actually traded through. The series
+ * ticker is derived from the event ticker; if Kalshi rejects the derived
+ * series we resolve the real one via /events/{eventTicker} and retry once.
+ */
+export async function fetchCandles(
+  eventTicker: string,
+  ticker: string,
+  startTs: number,
+  endTs: number,
+): Promise<FillCandle[]> {
+  const params = {
+    start_ts: String(startTs),
+    end_ts: String(endTs),
+    period_interval: "60",
+  };
+  const derived = seriesFromEventTicker(eventTicker);
+  try {
+    return parseCandles(await kfetch(`/series/${derived}/markets/${ticker}/candlesticks`, params));
+  } catch (err) {
+    const ev = await kfetch(`/events/${eventTicker}`, {}).catch(() => null);
+    const series = String(ev?.event?.series_ticker ?? "");
+    if (!series || series === derived) throw err;
+    return parseCandles(await kfetch(`/series/${series}/markets/${ticker}/candlesticks`, params));
+  }
 }
 
 export interface MarketState {
