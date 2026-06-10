@@ -77,18 +77,26 @@ export async function getAsset(
 }
 
 export async function latestTradePrice(symbol: string): Promise<number | null> {
-  const r = await afetch(DATA_BASE, `/stocks/${encodeURIComponent(symbol)}/trades/latest?feed=iex`);
-  const p = Number(r?.trade?.p);
+  const r = await afetch(
+    DATA_BASE,
+    `/stocks/trades/latest?symbols=${encodeURIComponent(symbol)}&feed=iex`,
+  );
+  const p = Number(r?.trades?.[symbol]?.p);
   return Number.isFinite(p) && p > 0 ? p : null;
 }
 
 /** Average daily dollar volume over the last `days` sessions (IEX feed). */
 export async function avgDollarVolume(symbol: string, days = 5): Promise<number | null> {
+  // start is required in practice: it defaults to TODAY, which yields at most
+  // one partial bar. sort=desc + limit takes the most recent sessions (asc
+  // would truncate to the oldest bars in the window).
+  const start = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
   const r = await afetch(
     DATA_BASE,
-    `/stocks/${encodeURIComponent(symbol)}/bars?timeframe=1Day&limit=${days}&feed=iex&adjustment=split`,
+    `/stocks/bars?symbols=${encodeURIComponent(symbol)}&timeframe=1Day` +
+      `&start=${encodeURIComponent(start)}&limit=${days}&feed=iex&adjustment=split&sort=desc`,
   );
-  const bars: any[] = r?.bars ?? [];
+  const bars: any[] = r?.bars?.[symbol] ?? [];
   if (bars.length === 0) return null;
   const dv = bars.map((b) => Number(b.c) * Number(b.v)).filter(Number.isFinite);
   return dv.length > 0 ? dv.reduce((s, x) => s + x, 0) / dv.length : null;
@@ -139,8 +147,10 @@ export async function waitForFill(
   timeoutMs = 45_000,
 ): Promise<{ qty: number; price: number } | null> {
   const deadline = Date.now() + timeoutMs;
+  let last: AlpacaOrder | null = null;
   while (Date.now() < deadline) {
     const o = await getOrder(orderId);
+    if (o) last = o;
     if (o?.status === "filled") {
       const qty = Number(o.filled_qty);
       const price = Number(o.filled_avg_price);
@@ -148,6 +158,14 @@ export async function waitForFill(
     }
     if (o && ["canceled", "expired", "rejected"].includes(o.status)) return null;
     await sleep(2_000);
+  }
+  // Alpaca paper randomly simulates partial fills (~10% of orders). If the
+  // remainder is still working at the deadline, book what actually filled —
+  // the rows record reality, not the order's intent.
+  if (last?.status === "partially_filled") {
+    const qty = Number(last.filled_qty);
+    const price = Number(last.filled_avg_price);
+    if (qty > 0 && price > 0) return { qty, price };
   }
   return null;
 }

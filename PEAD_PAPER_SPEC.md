@@ -52,6 +52,11 @@ no market impact, so treat results as an upper bound.
 - Daily cron means entries are ~30–90 min after the open, not at the open —
   the measured effect is therefore drift *net of the open gap*, which is the
   conservative side of the literature.
+- Alpaca Basic-plan REST prices (IEX) can lag up to 15 minutes; this noises
+  the price gate and the SPY benchmark legs symmetrically. Over a 28-day
+  hold the effect on excess return is negligible.
+- Alpaca paper randomly simulates partial fills (~10% of orders); the book
+  records the actually-filled quantity, not the order's intent.
 
 ## Operations
 
