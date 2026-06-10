@@ -88,6 +88,11 @@ async function postWebhook(payload: string | WebhookPayload): Promise<void> {
   return postToWebhook(process.env.DISCORD_WEBHOOK_URL?.trim(), payload);
 }
 
+/** Weekly PEAD research memo — routine, main channel. */
+export async function notifyPeadMemo(content: string): Promise<void> {
+  return postWebhook(content);
+}
+
 /** PEAD watchdog digest — issues go to the alerts channel, routine notes to the main one. */
 export async function notifyPeadWatchdog(content: string, hasIssues: boolean): Promise<void> {
   if (hasIssues) {

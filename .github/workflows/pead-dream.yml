@@ -1,0 +1,76 @@
+name: PEAD — weekly research memo
+
+# Quarantined hypothesis factory for Experiment No. 3 (PEAD_PAPER_SPEC.md):
+# computes cohort splits from the book of record, has Claude write a research
+# memo with candidate pre-registrations for FUTURE experiments, commits the
+# memo to data/processed/pead-memos/, posts to Discord. It cannot touch the
+# frozen trading rule — output is a markdown file and a webhook post only.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Mondays 12:00 UTC — after the weekend settles, before the market opens.
+    - cron: "0 12 * * 1"
+
+permissions:
+  contents: write # push the memo back to the repo
+
+jobs:
+  dream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Write weekly memo
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: npm run paper:pead:dream
+
+      - name: Commit memo back (allowlisted directory only)
+        if: success()
+        run: |
+          git config user.name "pead-dream-bot"
+          git config user.email "pead-dream-bot@users.noreply.github.com"
+          # Defense in depth: refuse to commit if a memo ever contains a
+          # recognizable secret (it never should — it's prose over aggregates).
+          SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|[Aa]uthorization":\s*"Bearer'
+          for f in data/processed/pead-memos/*.md; do
+            [ -f "$f" ] || continue
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
+              exit 1
+            fi
+          done
+          git add data/processed/pead-memos/*.md 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no memo to commit"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%d")
+          git commit -m "pead-dream: weekly memo ${DATE_TAG}"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin master && git push origin master && break
+            echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            git stash drop 2>/dev/null || true
+            sleep 5
+          done
