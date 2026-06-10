@@ -50,6 +50,8 @@ const DDL = [
 const ALTERS = [
   `ALTER TABLE "KalshiPaperPosition" ADD COLUMN "fillCheckedAt" TEXT`,
   `ALTER TABLE "KalshiPaperPosition" ADD COLUMN "fillConfirmedAt" TEXT`,
+  `ALTER TABLE "KalshiPaperPosition" ADD COLUMN "askAtEntry" REAL`,
+  `ALTER TABLE "KalshiPaperPosition" ADD COLUMN "feeType" TEXT`,
 ];
 
 async function main() {

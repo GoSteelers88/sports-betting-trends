@@ -7,6 +7,11 @@ import {
   seriesFromEventTicker,
   fillVerdict,
   fillWindowEndMs,
+  fillTiming,
+  takerFeeUsd,
+  makerFeeUsd,
+  median,
+  MAKER_FEE_TYPE,
   type FillCandle,
 } from "../kalshi/fillLogic";
 
@@ -97,5 +102,57 @@ describe("fillVerdict", () => {
     };
     expect(fillWindowEndMs(early)).toBe(Date.parse("2026-06-08T04:00:00.000Z"));
     expect(fillVerdict({ ...early, fillCheckedAt: "2026-06-08T04:00:00.000Z" })).toBe("missed");
+  });
+});
+
+describe("fees", () => {
+  it("computes the taker fee with ceil-to-cent rounding", () => {
+    // 0.07 × 100 × 0.85 × 0.15 = 0.8925 → $0.90
+    expect(takerFeeUsd(0.85, 100)).toBeCloseTo(0.9);
+  });
+
+  it("charges maker fees only on maker-fee series, at the quarter rate", () => {
+    // 0.0175 × 100 × 0.85 × 0.15 = 0.223125 → $0.23
+    expect(makerFeeUsd(0.85, 100, MAKER_FEE_TYPE)).toBeCloseTo(0.23);
+    expect(makerFeeUsd(0.85, 100, "quadratic")).toBe(0);
+    expect(makerFeeUsd(0.85, 100, null)).toBe(0);
+  });
+
+  it("returns zero for degenerate prices and quantities", () => {
+    expect(takerFeeUsd(0, 100)).toBe(0);
+    expect(takerFeeUsd(1, 100)).toBe(0);
+    expect(takerFeeUsd(0.85, 0)).toBe(0);
+  });
+});
+
+describe("fillTiming", () => {
+  const pos = {
+    openedAt: "2026-06-01T00:00:00.000Z",
+    closeTime: "2026-06-05T00:00:00.000Z", // 96h window
+    closedAt: null,
+    fillConfirmedAt: "2026-06-01T12:00:00.000Z", // 12h in
+  };
+
+  it("computes hours-to-fill and window fraction", () => {
+    const t = fillTiming(pos)!;
+    expect(t.hours).toBeCloseTo(12);
+    expect(t.fraction).toBeCloseTo(12 / 96);
+  });
+
+  it("flags a fill late in the window with a high fraction", () => {
+    const t = fillTiming({ ...pos, fillConfirmedAt: "2026-06-04T12:00:00.000Z" })!;
+    expect(t.fraction).toBeGreaterThan(0.75);
+  });
+
+  it("returns null without a confirmed fill", () => {
+    expect(fillTiming({ ...pos, fillConfirmedAt: null })).toBeNull();
+  });
+});
+
+describe("median", () => {
+  it("handles odd, even, and empty inputs", () => {
+    expect(median([3, 1, 2])).toBe(2);
+    expect(median([4, 1, 2, 3])).toBe(2.5);
+    expect(median([])).toBeNull();
   });
 });

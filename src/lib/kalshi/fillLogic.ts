@@ -63,3 +63,61 @@ export function fillVerdict(p: FillVerdictInput): FillVerdict {
   if (windowEnd === null) return "pending";
   return Date.parse(p.fillCheckedAt) >= windowEnd ? "missed" : "pending";
 }
+
+// ── Fees (Kalshi fee schedule, verified via series fee_type 2026-06-10) ─────
+// Trading fee = ceil-to-cent(rate × C × P × (1−P)). Takers pay rate 0.07 on
+// "quadratic" series; makers pay 0 there. Series tagged
+// "quadratic_with_maker_fees" (Fed/CPI/payrolls/GDP-type) charge makers at
+// the quarter rate 0.0175.
+
+const TAKER_RATE = 0.07;
+const MAKER_RATE = 0.0175;
+export const MAKER_FEE_TYPE = "quadratic_with_maker_fees";
+
+function quadraticFeeUsd(rate: number, price: number, contracts: number): number {
+  if (!(price > 0 && price < 1) || contracts <= 0) return 0;
+  return Math.ceil(rate * contracts * price * (1 - price) * 100) / 100;
+}
+
+export function takerFeeUsd(price: number, contracts: number): number {
+  return quadraticFeeUsd(TAKER_RATE, price, contracts);
+}
+
+/** Maker fee for an entry — zero unless the series charges maker fees. */
+export function makerFeeUsd(price: number, contracts: number, feeType: string | null): number {
+  if (feeType !== MAKER_FEE_TYPE) return 0;
+  return quadraticFeeUsd(MAKER_RATE, price, contracts);
+}
+
+// ── Fill timing — the adverse-selection fingerprint ─────────────────────────
+// Early fills at stable prices are benign; fills late in the window (price
+// collapsing through the bid en route to NO) are the adverse signature.
+
+export interface FillTiming {
+  hours: number; // entry → first trade-through
+  fraction: number; // position of the fill inside the entry→close window, 0..1
+}
+
+export function fillTiming(
+  p: Pick<FillVerdictInput, "closeTime" | "closedAt" | "fillConfirmedAt"> & { openedAt: string },
+): FillTiming | null {
+  if (!p.fillConfirmedAt) return null;
+  const opened = Date.parse(p.openedAt);
+  const filled = Date.parse(p.fillConfirmedAt);
+  const windowEnd = fillWindowEndMs(p);
+  if (!Number.isFinite(opened) || !Number.isFinite(filled) || windowEnd === null) return null;
+  const span = windowEnd - opened;
+  return {
+    hours: Math.max(0, (filled - opened) / 3_600_000),
+    fraction: span > 0 ? Math.min(1, Math.max(0, (filled - opened) / span)) : 0,
+  };
+}
+
+export const LATE_FILL_FRACTION = 0.75; // fills in the last quarter of the window
+
+export function median(xs: number[]): number | null {
+  if (xs.length === 0) return null;
+  const s = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 === 1 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+}

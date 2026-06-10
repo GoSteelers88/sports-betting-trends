@@ -275,6 +275,9 @@ model KalshiPaperPosition {
   // record whether the bid verifiably traded through on the candle path.
   fillCheckedAt   String? // ISO — how far the entry→close window has been checked
   fillConfirmedAt String? // ISO — first trade-through of the entry bid, if any
+  // Verdict instrumentation (KALSHI_PAPER_SPEC.md) — additive, rule untouched.
+  askAtEntry      Float?  // yes_ask at entry → taker counterfactual at settle
+  feeType         String? // series fee_type — "quadratic" (maker free) | "quadratic_with_maker_fees"
 }
 
 // ── PEAD stock paper book (Experiment No. 3, $10k virtual) ─────────────────

@@ -186,6 +186,24 @@ export async function fetchCandles(
   }
 }
 
+// Series fee_type ("quadratic" = maker-free, "quadratic_with_maker_fees" =
+// makers pay the quarter rate). Cached per process — fee types are static.
+const feeTypeCache = new Map<string, string | null>();
+
+export async function fetchSeriesFeeType(eventTicker: string): Promise<string | null> {
+  const series = seriesFromEventTicker(eventTicker);
+  if (feeTypeCache.has(series)) return feeTypeCache.get(series) ?? null;
+  let feeType: string | null = null;
+  try {
+    const j = await kfetch(`/series/${series}`, {});
+    feeType = j?.series?.fee_type ? String(j.series.fee_type) : null;
+  } catch {
+    /* leave null — retried next entry in this series */
+  }
+  feeTypeCache.set(series, feeType);
+  return feeType;
+}
+
 export interface MarketState {
   status: string;
   result: string | null;

@@ -187,6 +187,101 @@ export async function KalshiPaperTrail() {
         </p>
       )}
 
+      {/* Verdict diagnostics — observed, never gating (KALSHI_PAPER_SPEC.md) */}
+      {stats.closedCount > 0 && (
+        <details className="group">
+          <summary className="px-4 sm:px-5 py-2.5 cursor-pointer list-none flex items-baseline justify-between hover:bg-paper-3/60 transition-colors border-b border-rule">
+            <span className="eyebrow">Verdict diagnostics</span>
+            <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+            <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+          </summary>
+          <div className="px-4 sm:px-5 py-3 border-b border-rule space-y-2">
+            <p className="num text-[0.7rem] text-ink-2 leading-relaxed">
+              <span className="eyebrow text-ink-3">Fees · </span>
+              {stats.diagnostics.fees.makerFeeRows} positions sit in maker-fee series; modeled
+              maker fees on settles {fmtUsd2(stats.diagnostics.fees.makerFeesPaidUsd)} → realized
+              P&L net of fees{" "}
+              <span
+                style={{
+                  color:
+                    stats.diagnostics.fees.realizedPnlNetFeesUsd >= 0 ? "var(--win)" : "var(--loss)",
+                }}
+              >
+                {stats.diagnostics.fees.realizedPnlNetFeesUsd >= 0 ? "+" : ""}
+                {fmtUsd2(stats.diagnostics.fees.realizedPnlNetFeesUsd)}
+              </span>
+            </p>
+            <p className="num text-[0.7rem] text-ink-2 leading-relaxed">
+              <span className="eyebrow text-ink-3">Fill timing · </span>
+              wins: median {stats.diagnostics.fillTimingByResult.wins.medianHours ?? "—"}h to fill,{" "}
+              {stats.diagnostics.fillTimingByResult.wins.lateSharePct ?? "—"}% late-window (n=
+              {stats.diagnostics.fillTimingByResult.wins.n}) · losses: median{" "}
+              {stats.diagnostics.fillTimingByResult.losses.medianHours ?? "—"}h,{" "}
+              {stats.diagnostics.fillTimingByResult.losses.lateSharePct ?? "—"}% late-window (n=
+              {stats.diagnostics.fillTimingByResult.losses.n}). Late fills on losses = the
+              adverse-selection fingerprint.
+            </p>
+            {stats.diagnostics.takerCounterfactual.n > 0 ? (
+              <p className="num text-[0.7rem] text-ink-2 leading-relaxed">
+                <span className="eyebrow text-ink-3">Taker counterfactual · </span>
+                same {stats.diagnostics.takerCounterfactual.n} settles bought at the ask with taker
+                fees: {stats.diagnostics.takerCounterfactual.takerPnlUsd >= 0 ? "+" : ""}
+                {fmtUsd2(stats.diagnostics.takerCounterfactual.takerPnlUsd)} vs maker{" "}
+                {stats.diagnostics.takerCounterfactual.makerPnlSameSubsetUsd >= 0 ? "+" : ""}
+                {fmtUsd2(stats.diagnostics.takerCounterfactual.makerPnlSameSubsetUsd)}
+              </p>
+            ) : (
+              <p className="num text-[0.7rem] text-ink-3 leading-relaxed">
+                <span className="eyebrow">Taker counterfactual · </span>accrues from entries after
+                2026-06-10 (ask captured at entry)
+              </p>
+            )}
+            {stats.diagnostics.byCategory.length > 0 && (
+              <table className="ledger-table mt-1">
+                <caption className="sr-only">Settled P&L by category</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Category</th>
+                    <th scope="col" className="text-right">W–L</th>
+                    <th scope="col" className="text-right">P&L</th>
+                    <th scope="col" className="text-right hidden sm:table-cell">Filled-only</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.diagnostics.byCategory.map(c => (
+                    <tr key={c.category}>
+                      <td className="text-sm text-ink">{c.category}</td>
+                      <td className="num text-xs text-right text-ink-2">
+                        {c.wins}–{c.losses}
+                      </td>
+                      <td
+                        className="num text-sm text-right"
+                        style={{ color: c.pnlUsd >= 0 ? "var(--win)" : "var(--loss)" }}
+                      >
+                        {c.pnlUsd >= 0 ? "+" : ""}
+                        {fmtUsd2(c.pnlUsd)}
+                      </td>
+                      <td
+                        className="num text-xs text-right hidden sm:table-cell"
+                        style={{ color: c.confirmedPnlUsd >= 0 ? "var(--win)" : "var(--loss)" }}
+                      >
+                        {c.confirmedPnlUsd >= 0 ? "+" : ""}
+                        {fmtUsd2(c.confirmedPnlUsd)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <p className="eyebrow text-ink-3 leading-relaxed">
+              Verdict at n=100 fill-checked settles: filled-only EV ≤ 0 kills; &gt; 0 with t ≥ 2 and
+              fill rate ≥ 85% validates the filtered-universe maker edge. Pre-registered
+              2026-06-10.
+            </p>
+          </div>
+        </details>
+      )}
+
       {/* Open book — printed disclosure */}
       {open.length > 0 && (
         <details className="group">

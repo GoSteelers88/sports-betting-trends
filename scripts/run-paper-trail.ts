@@ -27,6 +27,14 @@ async function main() {
       `win%% filled=${ft.winRateConfirmedPct?.toFixed(1) ?? "—"} missed=${ft.winRateMissedPct?.toFixed(1) ?? "—"} | ` +
       `confirmed-only P&L=$${ft.realizedPnlConfirmedUsd.toFixed(2)}`,
   );
+  const d = stats.diagnostics;
+  console.log(
+    `[paper-trail] diagnostics: maker-fee rows=${d.fees.makerFeeRows} fees=$${d.fees.makerFeesPaidUsd.toFixed(2)} ` +
+      `net-P&L=$${d.fees.realizedPnlNetFeesUsd.toFixed(2)} | ` +
+      `timing wins ${d.fillTimingByResult.wins.medianHours ?? "—"}h/${d.fillTimingByResult.wins.lateSharePct ?? "—"}% late, ` +
+      `losses ${d.fillTimingByResult.losses.medianHours ?? "—"}h/${d.fillTimingByResult.losses.lateSharePct ?? "—"}% late | ` +
+      `taker cf n=${d.takerCounterfactual.n} $${d.takerCounterfactual.takerPnlUsd.toFixed(2)}`,
+  );
   await prisma.$disconnect();
 }
 

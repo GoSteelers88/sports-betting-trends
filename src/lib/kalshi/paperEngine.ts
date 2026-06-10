@@ -19,12 +19,19 @@ import {
   fetchOpenMarkets,
   fetchMarketStates,
   fetchCandles,
+  fetchSeriesFeeType,
   type KalshiMarket,
 } from "@/lib/kalshi/marketData";
 import {
   firstTradeThrough,
   fillVerdict,
   fillWindowEndMs,
+  fillTiming,
+  makerFeeUsd,
+  takerFeeUsd,
+  median,
+  LATE_FILL_FRACTION,
+  MAKER_FEE_TYPE,
   type FillVerdict,
 } from "@/lib/kalshi/fillLogic";
 
@@ -58,6 +65,35 @@ export interface FillTracking {
   openConfirmed: number; // open positions already traded through
 }
 
+// Verdict instrumentation (KALSHI_PAPER_SPEC.md) — all additive diagnostics.
+export interface TimingSide {
+  n: number;
+  medianHours: number | null;
+  lateSharePct: number | null; // fills in the last quarter of the window
+}
+
+export interface KalshiDiagnostics {
+  fees: {
+    makerFeeRows: number; // positions in maker-fee series (open + closed)
+    makerFeesPaidUsd: number; // modeled entry fees on CLOSED positions
+    realizedPnlNetFeesUsd: number;
+  };
+  fillTimingByResult: { wins: TimingSide; losses: TimingSide };
+  takerCounterfactual: {
+    n: number; // closed positions that captured askAtEntry
+    takerPnlUsd: number; // same contracts, bought at ask, taker fee applied
+    makerPnlSameSubsetUsd: number; // the assumed-maker book on those same rows
+  };
+  byCategory: Array<{
+    category: string;
+    n: number;
+    wins: number;
+    losses: number;
+    pnlUsd: number;
+    confirmedPnlUsd: number; // verified-fills-only P&L for the category
+  }>;
+}
+
 export interface PaperStats {
   startingBankrollUsd: number;
   equityUsd: number;
@@ -71,6 +107,7 @@ export interface PaperStats {
   losses: number;
   winRatePct: number | null;
   fillTracking: FillTracking;
+  diagnostics: KalshiDiagnostics;
 }
 
 function isoNow(): string {
@@ -115,6 +152,64 @@ export async function computeStats(): Promise<PaperStats> {
     openConfirmed: open.filter((p) => p.fillConfirmedAt != null).length,
   };
 
+  // ── Verdict diagnostics (KALSHI_PAPER_SPEC.md) ────────────────────────────
+  const makerFeeRows = positions.filter((p) => p.feeType === MAKER_FEE_TYPE);
+  const makerFeesPaidUsd = +closed
+    .reduce((s, p) => s + makerFeeUsd(p.entryPrice, p.contracts, p.feeType), 0)
+    .toFixed(2);
+
+  const timingSide = (rows: typeof closed): TimingSide => {
+    const timings = rows
+      .map((p) => fillTiming(p))
+      .filter((t): t is NonNullable<typeof t> => t != null);
+    const late = timings.filter((t) => t.fraction >= LATE_FILL_FRACTION).length;
+    return {
+      n: timings.length,
+      medianHours: median(timings.map((t) => +t.hours.toFixed(1))),
+      lateSharePct: timings.length > 0 ? +((late / timings.length) * 100).toFixed(1) : null,
+    };
+  };
+
+  const withAsk = closed.filter((p) => p.askAtEntry != null && p.askAtEntry > 0);
+  const takerPnlUsd = +withAsk
+    .reduce((s, p) => {
+      const payout = (p.result === "yes" ? 1 : 0) * p.contracts;
+      return s + payout - p.askAtEntry! * p.contracts - takerFeeUsd(p.askAtEntry!, p.contracts);
+    }, 0)
+    .toFixed(2);
+
+  const categories = [...new Set(closed.map((p) => p.category))].sort();
+  const byCategory = categories.map((category) => {
+    const rows = closed.filter((p) => p.category === category);
+    const catConfirmed = rows.filter((p) => fillVerdict(p) === "confirmed");
+    return {
+      category,
+      n: rows.length,
+      wins: rows.filter((p) => p.result === "yes").length,
+      losses: rows.filter((p) => p.result === "no").length,
+      pnlUsd: +rows.reduce((s, p) => s + (p.pnlUsd ?? 0), 0).toFixed(2),
+      confirmedPnlUsd: +catConfirmed.reduce((s, p) => s + (p.pnlUsd ?? 0), 0).toFixed(2),
+    };
+  });
+
+  const diagnostics: KalshiDiagnostics = {
+    fees: {
+      makerFeeRows: makerFeeRows.length,
+      makerFeesPaidUsd,
+      realizedPnlNetFeesUsd: +(realizedPnlUsd - makerFeesPaidUsd).toFixed(2),
+    },
+    fillTimingByResult: {
+      wins: timingSide(closed.filter((p) => p.result === "yes")),
+      losses: timingSide(closed.filter((p) => p.result === "no")),
+    },
+    takerCounterfactual: {
+      n: withAsk.length,
+      takerPnlUsd,
+      makerPnlSameSubsetUsd: +withAsk.reduce((s, p) => s + (p.pnlUsd ?? 0), 0).toFixed(2),
+    },
+    byCategory,
+  };
+
   return {
     startingBankrollUsd: PAPER_CONFIG.startingBankrollUsd,
     equityUsd,
@@ -128,6 +223,7 @@ export async function computeStats(): Promise<PaperStats> {
     losses,
     winRatePct: wins + losses > 0 ? (wins / (wins + losses)) * 100 : null,
     fillTracking,
+    diagnostics,
   };
 }
 
@@ -272,6 +368,8 @@ export async function openNewPositions(): Promise<{ opened: number; scanned: num
     if (costUsd > cashAvail) continue; // not enough virtual cash
 
     try {
+      // Verdict instrumentation — recorded, never used by the entry rule.
+      const feeType = await fetchSeriesFeeType(m.eventTicker);
       await prisma.kalshiPaperPosition.create({
         data: {
           ticker: m.ticker,
@@ -285,6 +383,8 @@ export async function openNewPositions(): Promise<{ opened: number; scanned: num
           status: "open",
           openedAt: isoNow(),
           closeTime: m.closeTime,
+          askAtEntry: m.yesAsk,
+          feeType,
         },
       });
     } catch {
