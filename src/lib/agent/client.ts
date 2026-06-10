@@ -13,6 +13,9 @@ export function getAnthropic(): Anthropic {
 export const MODELS = {
   analyst: "claude-sonnet-4-6",
   dream: "claude-opus-4-7",
+  // PEAD entry annotator — label-only classification of 0-3 rows/day;
+  // never on the trading path, so the cheapest tier is appropriate.
+  annotator: "claude-haiku-4-5",
 } as const;
 
 export type ModelKey = keyof typeof MODELS;

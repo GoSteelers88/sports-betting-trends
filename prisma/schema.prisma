@@ -304,6 +304,13 @@ model StockPaperPosition {
   closedAt     String? // ISO
   entryOrderId String?
   exitOrderId  String?
+  // Revenue legs from the same Finnhub report — captured so the verdict can
+  // split drift by revenue-confirmed beats (the documented PEAD moderator).
+  revEstimate  Float?
+  revActual    Float?
+  // Watchdog annotation (JSON string): artifact risk, revenue confirmation,
+  // note. Label-only — never used by the trading rule.
+  annotation   String?
 
   @@unique([symbol, reportDate])
 }

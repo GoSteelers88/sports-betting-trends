@@ -56,5 +56,7 @@ export async function earningsCalendar(from: string, to: string): Promise<Earnin
     date: String(r.date ?? ""),
     epsEstimate: num(r.epsEstimate),
     epsActual: num(r.epsActual),
+    revenueEstimate: num(r.revenueEstimate),
+    revenueActual: num(r.revenueActual),
   }));
 }

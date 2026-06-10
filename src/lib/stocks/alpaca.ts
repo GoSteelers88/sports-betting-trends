@@ -142,6 +142,14 @@ export async function getOrder(id: string): Promise<AlpacaOrder | null> {
   return afetch(TRADE_BASE, `/orders/${id}`);
 }
 
+/** All open paper positions (symbol + signed qty). */
+export async function listPositions(): Promise<Array<{ symbol: string; qty: number }>> {
+  const positions = await afetch(TRADE_BASE, "/positions");
+  return ((positions ?? []) as any[])
+    .map((p) => ({ symbol: String(p.symbol ?? ""), qty: Number(p.qty) }))
+    .filter((p) => p.symbol && Number.isFinite(p.qty) && p.qty !== 0);
+}
+
 /** Current paper position qty for a symbol, or null when flat. */
 export async function getPositionQty(symbol: string): Promise<number | null> {
   const p = await afetch(TRADE_BASE, `/positions/${encodeURIComponent(symbol)}`);

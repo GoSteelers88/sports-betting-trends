@@ -41,3 +41,18 @@ jobs:
           ALPACA_PAPER_SECRET: ${{ secrets.ALPACA_PAPER_SECRET }}
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
         run: npx tsx scripts/run-pead-paper.ts
+
+      # Health check + entry annotation — runs even if the cycle failed, since
+      # a broken cycle is exactly when the book-vs-broker reconcile matters.
+      - name: Watchdog + annotate
+        if: always()
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          ALPACA_PAPER_KEY_ID: ${{ secrets.ALPACA_PAPER_KEY_ID }}
+          ALPACA_PAPER_SECRET: ${{ secrets.ALPACA_PAPER_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_ERROR_WEBHOOK_URL: ${{ secrets.DISCORD_ERROR_WEBHOOK_URL }}
+        run: npx tsx scripts/pead-watchdog.ts

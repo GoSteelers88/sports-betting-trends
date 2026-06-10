@@ -180,6 +180,8 @@ export async function openNewPositions(
           openedAt,
           exitDue: exitDueISO(openedAt),
           entryOrderId: order.id,
+          revEstimate: r.revenueEstimate,
+          revActual: r.revenueActual,
         },
       });
       played.add(`${r.symbol}|${r.date}`);

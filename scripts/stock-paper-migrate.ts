@@ -48,11 +48,27 @@ const DDL = [
   `CREATE INDEX IF NOT EXISTS "idx_sps_ts" ON "StockPaperSnapshot" ("ts")`,
 ];
 
+// Additive column migrations — tried and skipped if already applied
+// (SQLite has no ADD COLUMN IF NOT EXISTS).
+const ALTERS = [
+  `ALTER TABLE "StockPaperPosition" ADD COLUMN "revEstimate" REAL`,
+  `ALTER TABLE "StockPaperPosition" ADD COLUMN "revActual" REAL`,
+  `ALTER TABLE "StockPaperPosition" ADD COLUMN "annotation" TEXT`,
+];
+
 async function main() {
   const target = process.env.TURSO_DATABASE_URL ? "Turso" : "local sqlite";
   console.log(`[stock-migrate] applying DDL to ${target}...`);
   for (const stmt of DDL) {
     await prisma.$executeRawUnsafe(stmt);
+  }
+  for (const stmt of ALTERS) {
+    try {
+      await prisma.$executeRawUnsafe(stmt);
+      console.log(`[stock-migrate] applied: ${stmt}`);
+    } catch (e) {
+      if (!/duplicate column/i.test(String(e))) throw e;
+    }
   }
   const posCount = await prisma.stockPaperPosition.count();
   const snapCount = await prisma.stockPaperSnapshot.count();

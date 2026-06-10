@@ -29,6 +29,8 @@ export interface EarningsReport {
   date: string; // YYYY-MM-DD
   epsEstimate: number | null;
   epsActual: number | null;
+  revenueEstimate: number | null;
+  revenueActual: number | null;
 }
 
 /** Does a report qualify for the long-PEAD entry signal? (price/liquidity gated later) */
