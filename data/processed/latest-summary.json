@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T16:44:03.121Z",
+  "generatedAt": "2026-06-09T23:58:08.314Z",
   "ready": true,
   "recordsIngested": 807,
   "recordsCompleted": 807,
@@ -41,7 +41,7 @@
           "rpg": 4.54,
           "oppRpg": 5.62,
           "hitsPerGame": 7.88,
-          "errorsPerGame": 0.77,
+          "errorsPerGame": 0.73,
           "sos": 0.52
         },
         "Astros": {
@@ -56,7 +56,7 @@
           "games": 25,
           "rpg": 3.08,
           "oppRpg": 3.76,
-          "hitsPerGame": 6.44,
+          "hitsPerGame": 6.4,
           "errorsPerGame": 0.4,
           "sos": 0.52
         },
@@ -618,7 +618,7 @@
       "timeOfPossession": null,
       "homeAway": "home",
       "hits": 8,
-      "errors": 2,
+      "errors": 1,
       "source": "espn-public-api",
       "sourceEventId": "401815678",
       "gameStatus": "Final",
@@ -791,59 +791,30 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-06-09T23:08:00.000Z",
-      "matchup": "Philadelphia Phillies at Toronto Blue Jays",
-      "pickTeam": "Philadelphia Phillies",
-      "opponent": "Toronto Blue Jays",
+      "gameDate": "2026-06-09T22:41:00.000Z",
+      "matchup": "New York Yankees at Cleveland Guardians",
+      "pickTeam": "New York Yankees",
+      "opponent": "Cleveland Guardians",
       "spread": -1.5,
       "modelSpread": -1.4,
-      "line": "Philadelphia Phillies -1.5",
-      "score": 74,
-      "confidence": 70,
+      "line": "New York Yankees -1.5",
+      "score": 61,
+      "confidence": 57,
       "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.100",
-        "History sample Philadelphia Phillies: 25 games (mapped Phillies) vs Toronto Blue Jays: 27 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Philadelphia Phillies 2d rest vs Toronto Blue Jays 2d rest",
-        "Net Rating edge: +1.4",
-        "Home SP: Patrick Corbin",
-        "Away SP: Cristopher Sánchez",
-        "MLB model: 85.1% win prob (calibrated) | Edge vs market: +33.7%"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.1,
-      "mlbModelProb": 0.8512,
-      "mlbEdge": 0.3366,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-06-10T02:06:00.000Z",
-      "matchup": "Milwaukee Brewers at Athletics",
-      "pickTeam": "Milwaukee Brewers",
-      "opponent": "Athletics",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Milwaukee Brewers -1.5",
-      "score": 65,
-      "confidence": 61,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
+        "Momentum edge +0.40 (last-10 trend proxy)",
         "ATS edge +0.000",
-        "History sample Milwaukee Brewers: 26 games (mapped Brewers) vs Athletics: 26 games",
+        "History sample New York Yankees: 24 games (mapped Yankees) vs Cleveland Guardians: 26 games",
         "Away (+-1 pt adjustment)",
-        "Rest: Milwaukee Brewers B2B vs Athletics B2B",
-        "Net Rating edge: +4.6",
-        "Home SP: Jeffrey Springs",
-        "Away SP: Kyle Harrison",
-        "MLB model: 66.0% win prob (calibrated) | Edge vs market: +15.0%"
+        "Rest: New York Yankees 2d rest vs Cleveland Guardians 2d rest",
+        "Net Rating edge: +3.0",
+        "Home SP: Slade Cecconi",
+        "Away SP: Gerrit Cole",
+        "MLB model: 61.4% win prob (calibrated) | Edge vs market: +5.3%"
       ],
-      "momentumEdge": 0.6,
+      "momentumEdge": 0.4,
       "atsEdge": 0,
-      "mlbModelProb": 0.6598,
-      "mlbEdge": 0.15,
+      "mlbModelProb": 0.6143,
+      "mlbEdge": 0.0529,
       "mlbCalibrated": true
     },
     {
@@ -853,23 +824,56 @@
       "matchup": "St. Louis Cardinals at New York Mets",
       "pickTeam": "New York Mets",
       "opponent": "St. Louis Cardinals",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "New York Mets -1.5",
-      "score": 57,
-      "confidence": 52,
+      "spread": 3.5,
+      "modelSpread": 3.2,
+      "line": "New York Mets +3.5",
+      "score": 61,
+      "confidence": 57,
       "rationaleSignals": [
         "Momentum edge +0.20 (last-10 trend proxy)",
         "ATS edge +0.100",
         "History sample New York Mets: 25 games (mapped Mets) vs St. Louis Cardinals: 23 games",
         "Home court (+1 pt adjustment)",
         "Rest: New York Mets 3d rest vs St. Louis Cardinals 3d rest",
-        "Net Rating edge: +1.9"
+        "Net Rating edge: +1.9",
+        "Home SP: Freddy Peralta",
+        "Away SP: Dustin May",
+        "MLB model: 56.3% win prob (calibrated) | Edge vs market: +39.6%"
       ],
       "momentumEdge": 0.2,
       "atsEdge": 0.1,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.5628,
+      "mlbEdge": 0.3961,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-09T22:41:00.000Z",
+      "matchup": "Boston Red Sox at Tampa Bay Rays",
+      "pickTeam": "Boston Red Sox",
+      "opponent": "Tampa Bay Rays",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Boston Red Sox +1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.000",
+        "History sample Boston Red Sox: 24 games (mapped Red Sox) vs Tampa Bay Rays: 24 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Boston Red Sox 2d rest vs Tampa Bay Rays 2d rest",
+        "Net Rating edge: +1.3",
+        "Home SP: Nick Martinez",
+        "Away SP: Payton Tolle",
+        "MLB model: 58.7% win prob (calibrated) | Edge vs market: +41.2%"
+      ],
+      "momentumEdge": 0,
+      "atsEdge": 0,
+      "mlbModelProb": 0.5874,
+      "mlbEdge": 0.412,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
@@ -2000,14 +2004,6 @@
         "returnDate": "2026-07-01"
       },
       {
-        "player": "Tetairoa McMillan",
-        "team": "Carolina Panthers",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Foot",
-        "returnDate": "2026-07-01"
-      },
-      {
         "player": "Trevin Wallace",
         "team": "Carolina Panthers",
         "position": "LB",
@@ -2048,14 +2044,6 @@
         "returnDate": "2026-07-01"
       },
       {
-        "player": "T.J. Edwards",
-        "team": "Chicago Bears",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Lower Leg",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Erick All Jr.",
         "team": "Cincinnati Bengals",
         "position": "TE",
@@ -2077,6 +2065,22 @@
         "position": "DT",
         "status": "Questionable",
         "injuryType": "Ankle",
+        "returnDate": "2026-07-01"
+      },
+      {
+        "player": "Mason Graham",
+        "team": "Cleveland Browns",
+        "position": "DT",
+        "status": "Questionable",
+        "injuryType": "Lower Leg",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Harold Fannin Jr.",
+        "team": "Cleveland Browns",
+        "position": "TE",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
         "returnDate": "2026-07-01"
       },
       {
@@ -2110,6 +2114,30 @@
         "status": "Questionable",
         "injuryType": "Knee",
         "returnDate": "2026-07-01"
+      },
+      {
+        "player": "Jonathan Mingo",
+        "team": "Dallas Cowboys",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Groin",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Jalen Thompson",
+        "team": "Dallas Cowboys",
+        "position": "S",
+        "status": "Questionable",
+        "injuryType": "Pectoral",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Matt Hennessy",
+        "team": "Dallas Cowboys",
+        "position": "C",
+        "status": "Questionable",
+        "injuryType": "Neck",
+        "returnDate": "2026-08-01"
       },
       {
         "player": "Donovan Ezeiruaku",
@@ -2205,7 +2233,7 @@
         "position": "DE",
         "status": "Questionable",
         "injuryType": "Leg",
-        "returnDate": "2026-07-01"
+        "returnDate": "2026-08-01"
       },
       {
         "player": "Marlin Klein",
@@ -2262,6 +2290,14 @@
         "status": "Questionable",
         "injuryType": "Thumb",
         "returnDate": "2026-07-01"
+      },
+      {
+        "player": "Charvarius Ward",
+        "team": "Indianapolis Colts",
+        "position": "CB",
+        "status": "Questionable",
+        "injuryType": "Back",
+        "returnDate": "2026-08-01"
       },
       {
         "player": "Sauce Gardner",
@@ -2464,6 +2500,14 @@
         "returnDate": "2026-08-01"
       },
       {
+        "player": "Gabe Jacas",
+        "team": "New England Patriots",
+        "position": "LB",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Julian Hill",
         "team": "New England Patriots",
         "position": "TE",
@@ -2517,14 +2561,6 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Concussion",
-        "returnDate": "2026-07-01"
-      },
-      {
-        "player": "Cam Skattebo",
-        "team": "New York Giants",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Ankle",
         "returnDate": "2026-07-01"
       },
       {
