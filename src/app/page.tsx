@@ -8,6 +8,7 @@ import { OverallLedger } from "./_components/OverallLedger";
 import { KillRoom } from "./_components/KillRoom";
 import { KalshiPaperTrail } from "./_components/KalshiPaperTrail";
 import { DevigPaperBook } from "./_components/DevigPaperBook";
+import { StockPaperBook } from "./_components/StockPaperBook";
 import { MarketFeed } from "./_components/MarketFeed";
 import { PropsDesk } from "./_components/PropsDesk";
 import { SystemMemory } from "./_components/SystemMemory";
@@ -55,14 +56,15 @@ export default async function Home() {
             <SectionHeader
               id="experiments"
               index="06"
-              label="THE EXPERIMENTS · TWO PAPER BOOKS"
+              label="THE EXPERIMENTS · THREE PAPER BOOKS"
               title="Side bets, on paper"
-              subtitle="Two independent $10k simulated books testing published market inefficiencies. Each compresses to a card until its first settle — charts print only when there is something to chart."
-              status="2 books live"
+              subtitle="Three independent $10k simulated books testing published market inefficiencies. Each compresses to a card until its first settle — charts print only when there is something to chart."
+              status="3 books live"
               statusTone="blue"
             />
             <KalshiPaperTrail />
             <DevigPaperBook />
+            <StockPaperBook />
           </section>
 
           {/* FOL. 07 — the board (agate) */}

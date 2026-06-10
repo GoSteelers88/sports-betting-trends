@@ -1,0 +1,43 @@
+name: PEAD — stock paper book
+
+# One cycle of the $10k PEAD paper book (Experiment No. 3, PEAD_PAPER_SPEC.md):
+#   settle 28-day holds → enter new extreme EPS surprises → ledger snapshot.
+# Orders go to Alpaca PAPER only — no real money can move. State lives in
+# Turso; the dashboard reads it.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekdays 15:05 UTC — inside US regular trading hours year-round
+    # (11:05 ET in DST, 10:05 ET in winter), ~35-95 min after the open.
+    - cron: "5 15 * * 1-5"
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Run PEAD paper cycle
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # Mirror so Prisma's schema-time URL parser doesn't throw; the libSQL
+          # adapter overrides at runtime (same pattern as kalshi-paper.yml).
+          DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          ALPACA_PAPER_KEY_ID: ${{ secrets.ALPACA_PAPER_KEY_ID }}
+          ALPACA_PAPER_SECRET: ${{ secrets.ALPACA_PAPER_SECRET }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: npx tsx scripts/run-pead-paper.ts

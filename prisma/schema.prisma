@@ -277,6 +277,49 @@ model KalshiPaperPosition {
   fillConfirmedAt String? // ISO — first trade-through of the entry bid, if any
 }
 
+// ── PEAD stock paper book (Experiment No. 3, $10k virtual) ─────────────────
+// Long extreme positive EPS surprises, hold 28d, benchmark vs SPY.
+// Orders simulated on Alpaca paper; this table is the book of record for
+// dates, surprises, and the SPY benchmark legs. ISO-string timestamps for
+// the same Turso plain-DDL reason as the Kalshi tables.
+model StockPaperPosition {
+  id           Int     @id @default(autoincrement())
+  symbol       String
+  reportDate   String  // YYYY-MM-DD of the earnings report
+  epsEstimate  Float
+  epsActual    Float
+  surprisePct  Float
+  side         String  // "long" (v1)
+  qty          Float
+  entryPrice   Float
+  costUsd      Float
+  entrySpy     Float?
+  exitPrice    Float?
+  exitSpy      Float?
+  pnlUsd       Float?
+  excessRetPct Float?  // vs SPY over the identical window — THE metric
+  status       String  // open | closed
+  openedAt     String  // ISO
+  exitDue      String  // ISO — openedAt + hold period
+  closedAt     String? // ISO
+  entryOrderId String?
+  exitOrderId  String?
+
+  @@unique([symbol, reportDate])
+}
+
+model StockPaperSnapshot {
+  id              Int     @id @default(autoincrement())
+  ts              String  // ISO
+  equityUsd       Float
+  cashUsd         Float
+  exposureUsd     Float
+  realizedPnlUsd  Float
+  openCount       Int
+  closedCount     Int
+  avgExcessRetPct Float?
+}
+
 model KalshiPaperLedgerSnapshot {
   id             Int    @id @default(autoincrement())
   ts             String // ISO
