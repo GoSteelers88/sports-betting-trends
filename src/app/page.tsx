@@ -1,17 +1,18 @@
 import { getDashboardData } from "./_data/dashboard";
-import { Sidebar } from "./_components/Sidebar";
-import { TickerMarquee } from "./_components/TickerMarquee";
+import { CommandHeader } from "./_components/CommandHeader";
+import { VerdictTape } from "./_components/VerdictTape";
 import { Hero } from "./_components/Hero";
+import { TonightsPlay } from "./_components/SurvivorBrief";
 import { DeploymentGate } from "./_components/DeploymentGate";
 import { OverallLedger } from "./_components/OverallLedger";
-import { EdgeReactor } from "./_components/EdgeReactor";
-import { SurvivorBrief } from "./_components/SurvivorBrief";
-import { LastNightLedger } from "./_components/LastNightLedger";
 import { KillRoom } from "./_components/KillRoom";
-import { PropSignals } from "./_components/PropSignals";
+import { KalshiPaperTrail } from "./_components/KalshiPaperTrail";
+import { DevigPaperBook } from "./_components/DevigPaperBook";
 import { MarketFeed } from "./_components/MarketFeed";
+import { PropsDesk } from "./_components/PropsDesk";
 import { SystemMemory } from "./_components/SystemMemory";
 import { VolatilityInputs } from "./_components/VolatilityInputs";
+import { SectionHeader } from "./_components/SectionHeader";
 import { Footer } from "./_components/Footer";
 
 export const dynamic = "force-dynamic";
@@ -22,42 +23,68 @@ export default async function Home() {
 
   return (
     <>
-      <TickerMarquee data={data} />
-      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
-        <Sidebar data={data} />
-        <main className="relative min-w-0">
-          <div className="px-5 sm:px-10 lg:px-14 max-w-[1400px]">
-            {/* Hero — full-viewport editorial moment */}
-            <Hero data={data} />
+      {/* Desk strip — telemetry + folio index (1:1 with the folios below) */}
+      <CommandHeader data={data} />
 
-            {/* Games track — runs first, the agent's main competence */}
-            <div className="space-y-24 sm:space-y-32 pb-24">
-              <OverallLedger data={data.overallRecord.games} kind="games" />
-              <EdgeReactor data={data.pipelineStatus} />
-              <SurvivorBrief picks={data.picks.games} kind="games" />
-              <LastNightLedger data={data.lastNight.games} kind="games" />
-              <DeploymentGate data={data.paperTrial} />
-              <MarketFeed games={data.slate} />
+      {/* The verdict tape — settled picks travel with their results */}
+      <VerdictTape data={data} />
 
-              {/* Props track — entirely separate visual band */}
-              <div className="border-t border-[var(--border)] pt-24 sm:pt-32 space-y-24 sm:space-y-32">
-                <SurvivorBrief picks={data.picks.props} kind="props" />
-                <LastNightLedger data={data.lastNight.props} kind="props" />
-                <OverallLedger data={data.overallRecord.props} kind="props" />
-                <PropSignals props={data.playerProps} />
-              </div>
+      <main className="px-5 sm:px-10 max-w-[1280px] mx-auto">
+        {/* FOL. 01 — the front page: last night's verdict, the gate, tonight's teaser */}
+        <Hero data={data} />
 
-              {/* Back of the book — supporting context */}
-              <div className="border-t border-[var(--border)] pt-24 sm:pt-32 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-                <KillRoom data={data.killStats} />
-                <SystemMemory data={data.agentMemory} />
-              </div>
-              <VolatilityInputs injuries={data.injuries} />
-              <Footer generatedAt={data.generatedAt} />
-            </div>
+        <div className="margin-rule space-y-16 sm:space-y-24 pb-20">
+          {/* FOL. 02 — tonight's play (the merged hero/survivor brief) */}
+          <TonightsPlay picks={data.picks.games} />
+
+          {/* FOL. 03 — the funding gate (canonical trial-to-date numbers) */}
+          <DeploymentGate data={data.paperTrial} />
+
+          {/* FOL. 04 — the account */}
+          <OverallLedger data={data.overallRecord.games} />
+
+          {/* FOL. 05 — the kill room (pipeline + prosecution, one funnel, 14d) */}
+          <KillRoom
+            pipeline={data.pipelineStatus}
+            kills={data.killStats}
+            trialKillRate={data.paperTrial.criticKillRate}
+          />
+
+          {/* FOL. 06 — the experiments, compressed to ledger cards until first settle */}
+          <section className="space-y-5">
+            <SectionHeader
+              id="experiments"
+              index="06"
+              label="THE EXPERIMENTS · TWO PAPER BOOKS"
+              title="Side bets, on paper"
+              subtitle="Two independent $10k simulated books testing published market inefficiencies. Each compresses to a card until its first settle — charts print only when there is something to chart."
+              status="2 books live"
+              statusTone="blue"
+            />
+            <KalshiPaperTrail />
+            <DevigPaperBook />
+          </section>
+
+          {/* FOL. 07 — the board (agate) */}
+          <MarketFeed games={data.slate} />
+
+          {/* FOL. 08 — the props desk (the entire props track, one folio) */}
+          <PropsDesk
+            picks={data.picks.props}
+            lastNight={data.lastNight.props}
+            record={data.overallRecord.props}
+            signals={data.playerProps}
+          />
+
+          {/* Back of the book — agate */}
+          <div id="back-of-book" className="space-y-14 pt-8" style={{ borderTop: "3px double var(--rule-strong)" }}>
+            <SystemMemory data={data.agentMemory} />
+            <VolatilityInputs injuries={data.injuries} />
           </div>
-        </main>
-      </div>
+
+          <Footer generatedAt={data.generatedAt} />
+        </div>
+      </main>
     </>
   );
 }

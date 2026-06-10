@@ -1,6 +1,17 @@
-// Editorial section header — oversized roman numeral as graphic element,
-// serif-italic title for typographic moment, eyebrow above. Inspired by
-// magazine layouts (Studio Namma SOTD) rather than OS chrome.
+// Ledger section heading — folio mark and eyebrow over a double rule,
+// Fraunces headline, optional status set as plain tracked smallcaps (the
+// bordered stamp is reserved for the three true-stamp moments). `dense`
+// renders the agate variant for back-of-book folios.
+
+export type StampTone = "win" | "loss" | "hold" | "blue" | "mute";
+
+const TONE: Record<StampTone, string> = {
+  win: "var(--win)",
+  loss: "var(--loss)",
+  hold: "var(--hold)",
+  blue: "var(--blue)",
+  mute: "var(--ink-3)",
+};
 
 export function SectionHeader({
   id,
@@ -9,47 +20,42 @@ export function SectionHeader({
   title,
   subtitle,
   status,
-  statusColor,
+  statusTone = "mute",
+  dense = false,
 }: {
   id: string;
-  index: string;       // "01" "02" — rendered as a massive serif numeral
-  label: string;       // eyebrow short tag, e.g. "SURVIVOR BRIEF · GAMES"
-  title: string;       // headline e.g. "EDGE REACTOR"
+  index: string; // folio number — "04"
+  label: string; // tracked-out mono tag, e.g. "TONIGHT'S PLAY"
+  title: string; // serif headline
   subtitle?: string;
   status?: string;
-  statusColor?: "edge" | "warn" | "kill" | "signal" | "muted";
+  statusTone?: StampTone;
+  dense?: boolean;
 }) {
-  const sColor = statusColor ? `var(--${statusColor})` : "var(--text)";
   return (
-    <header id={id} className="pt-10 sm:pt-16">
-      <div className="grid grid-cols-[auto_1fr_auto] gap-6 sm:gap-10 items-end">
-        {/* Massive editorial numeral — graphic element, not navigation */}
-        <span className="section-numeral select-none" aria-hidden>
-          {index}
-        </span>
-
-        <div className="min-w-0">
-          <p className="eyebrow mb-3">{label}</p>
-          <h2 className="section-head text-4xl sm:text-6xl lg:text-7xl text-[var(--text)]">
+    <header id={id} className={dense ? "pt-10 sm:pt-12" : "pt-14 sm:pt-20"}>
+      <div className="flex items-baseline justify-between gap-4 pb-2">
+        <p className="eyebrow">{label}</p>
+        <p className="folio shrink-0">Fol. {index}</p>
+      </div>
+      <div className="rule-double" />
+      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+        <div className="min-w-0 max-w-3xl">
+          <h2 className={`headline text-ink ${dense ? "text-xl sm:text-2xl" : "text-3xl sm:text-5xl"}`}>
             {title}
           </h2>
           {subtitle && (
-            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] max-w-2xl font-sans">
+            <p className={`mt-2 leading-relaxed text-ink-2 max-w-2xl ${dense ? "text-xs" : "text-sm"}`}>
               {subtitle}
             </p>
           )}
         </div>
-
         {status && (
-          <span
-            className="pill shrink-0 self-start mt-2"
-            style={{ color: sColor, borderColor: sColor }}
-          >
+          <span className="tag shrink-0" style={{ color: TONE[statusTone] }}>
             {status}
           </span>
         )}
       </div>
-      <div className="mt-6 sm:mt-8 hairline" />
     </header>
   );
 }

@@ -1,53 +1,28 @@
+// Folio 04 — the account. One oversized cumulative-units figure (counted
+// into place), a vertical stat rail, then the by-league table with in-scope
+// leagues (NBA/MLB) first and legacy out-of-scope leagues demoted below an
+// agate rule. ROI prints only where the graded sample clears n=20 — display
+// type is not lent to noise.
+
 import type { OverallRecord } from "../_data/dashboard";
 import { SectionHeader } from "./SectionHeader";
+import { Tally } from "./motion";
 
-function fmtUnits(n: number): string {
-  const sign = n > 0 ? "+" : "";
-  return `${sign}${n.toFixed(2)}U`;
-}
+const ROI_MIN_N = 20;
 
 function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    timeZone: "America/New_York",
-    month: "short",
-    day: "numeric",
-  }).toUpperCase();
+  return new Date(iso)
+    .toLocaleDateString("en-US", {
+      timeZone: "America/New_York",
+      month: "short",
+      day: "numeric",
+    })
+    .toUpperCase();
 }
 
-const STREAK_COLOR: Record<string, string> = {
-  W: "var(--edge)",
-  L: "var(--kill)",
-  P: "var(--muted)",
-  "—": "var(--muted)",
-};
+const IN_SCOPE = ["NBA", "MLB"];
 
-const OVERALL_LABELS = {
-  games: {
-    anchor: "ledger",
-    index: "10",
-    eyebrow: "ALL-TIME LEDGER · GAMES",
-    subtitlePrefix: "Every game pick (ML/spread/total) the agent has shipped",
-    emptyTitle: "NO GAME PICKS RECORDED",
-    emptyBody: "The agent has not shipped a game pick yet.",
-  },
-  props: {
-    anchor: "prop-ledger",
-    index: "12",
-    eyebrow: "ALL-TIME LEDGER · PROPS",
-    subtitlePrefix: "Every player-prop pick the agent has shipped",
-    emptyTitle: "NO PROP PICKS RECORDED",
-    emptyBody: "The agent hasn't shipped a player prop yet — the projector hasn't found a qualifying edge.",
-  },
-} as const;
-
-export function OverallLedger({
-  data,
-  kind = "games",
-}: {
-  data: OverallRecord;
-  kind?: "games" | "props";
-}) {
-  const labels = OVERALL_LABELS[kind];
+export function OverallLedger({ data }: { data: OverallRecord }) {
   const {
     startDate, totalPicks, graded, pending,
     wins, losses, pushes, pnl, totalStake, roi, winRate,
@@ -57,202 +32,226 @@ export function OverallLedger({
 
   if (totalPicks === 0) {
     return (
-      <section className="space-y-4">
+      <section>
         <SectionHeader
-          id={labels.anchor}
-          index={labels.index}
-          label={labels.eyebrow}
-          title={labels.emptyTitle}
-          status="STANDBY"
-          statusColor="muted"
+          id="ledger"
+          index="04"
+          label="THE ACCOUNT · TRIAL TO DATE"
+          title="No game picks recorded"
+          status="Standby"
+          statusTone="mute"
         />
-        <div className="surface p-6">
-          <p className="font-mono text-sm text-[var(--muted)]">
-            ▸ {labels.emptyBody}
-          </p>
-        </div>
+        <p className="tag text-ink-3 mt-4">The agent has not shipped a game pick yet</p>
       </section>
     );
   }
 
   const wlRecord = `${wins}-${losses}${pushes > 0 ? `-${pushes}` : ""}`;
-  const pnlColor = pnl > 0 ? "var(--edge)" : pnl < 0 ? "var(--kill)" : "var(--text)";
-  const roiColor = roi !== null && roi > 0 ? "edge" : roi !== null && roi < 0 ? "kill" : "muted";
+  const pnlColor = pnl > 0 ? "var(--win)" : pnl < 0 ? "var(--loss)" : "var(--ink)";
 
-  const leagues = Object.entries(byLeague).sort((a, b) => (b[1].pnl ?? 0) - (a[1].pnl ?? 0));
+  const entries = Object.entries(byLeague);
+  const inScope = entries
+    .filter(([lg]) => IN_SCOPE.includes(lg))
+    .sort((a, b) => IN_SCOPE.indexOf(a[0]) - IN_SCOPE.indexOf(b[0]));
+  const legacy = entries
+    .filter(([lg]) => !IN_SCOPE.includes(lg))
+    .sort((a, b) => (b[1].pnl ?? 0) - (a[1].pnl ?? 0));
 
   return (
-    <section id={labels.anchor} className="space-y-10">
-      {/* Editorial banner — no SectionHeader chrome. Tag + record on one
-          baseline, then the massive number takes the page. */}
-      <div className="flex items-baseline justify-between flex-wrap gap-3 pb-3 border-b border-[var(--border)]">
-        <p className="eyebrow">{labels.eyebrow}</p>
-        <p className="eyebrow text-[var(--faint)]">
-          since {fmtDate(startDate)} · {totalPicks} shipped · {graded} graded · {pending} pending
-        </p>
-      </div>
+    <section className="space-y-10">
+      <SectionHeader
+        id="ledger"
+        index="04"
+        label="THE ACCOUNT · GAMES · TRIAL TO DATE"
+        title="The account, in units"
+        subtitle={`Since ${fmtDate(startDate)} · ${totalPicks} shipped · ${graded} graded · ${pending} pending.`}
+        status={pnl > 0 ? "In profit" : pnl < 0 ? "In red ink" : "Flat"}
+        statusTone={pnl > 0 ? "win" : pnl < 0 ? "loss" : "mute"}
+      />
 
-      {/* Hero number — spans wide, italic serif, single dominant element */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-16 items-start">
-        <div>
-          <p className="eyebrow mb-4">Cumulative units</p>
-          <p
-            className="font-display leading-[0.85]"
+      {/* The figure — 5/7 split, number dominates */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
+        <div className="lg:col-span-7">
+          <p className="eyebrow mb-3">Cumulative units · trial</p>
+          <Tally
+            value={pnl}
+            decimals={2}
+            signed
+            suffix="u"
+            className="num-display block"
             style={{
-              fontStyle: "italic",
-              fontSize: "clamp(5.5rem, 16vw, 14rem)",
               color: pnlColor,
-              letterSpacing: "-0.05em",
+              fontSize: "clamp(4.5rem, 13vw, 11rem)",
             }}
-          >
-            {pnl > 0 ? "+" : ""}{pnl.toFixed(2)}
-            <span
-              className="text-[var(--muted)]"
-              style={{ fontStyle: "normal", fontSize: "0.4em", marginLeft: "0.1em" }}
-            >
-              u
-            </span>
-          </p>
-          <p className="mt-6 font-sans text-base text-[var(--text)] max-w-lg leading-relaxed">
-            <span style={{ color: pnlColor }}>●</span>{" "}
-            <span className="numeric font-medium" style={{ color: pnlColor }}>{wlRecord}</span>{" "}
-            <span className="text-[var(--muted)]">record on </span>
-            <span className="numeric text-[var(--text)]">{totalStake.toFixed(2)}u</span>{" "}
-            <span className="text-[var(--muted)]">staked since paper trial began.</span>
+          />
+          <p className="mt-5 text-base text-ink-2 max-w-lg leading-relaxed">
+            <span className="num font-semibold" style={{ color: pnlColor }}>{wlRecord}</span>{" "}
+            record on <span className="num text-ink">{totalStake.toFixed(2)}u</span> staked
+            since the paper trial opened.
           </p>
         </div>
 
-        {/* Right rail — vertical stat list, editorial-table style */}
-        <dl className="grid grid-cols-2 gap-x-8 gap-y-10 lg:border-l lg:border-[var(--border)] lg:pl-12 pt-6">
-          <StatBlock
+        <dl className="lg:col-span-5 lg:border-l lg:border-rule lg:pl-10 grid grid-cols-2 gap-x-8 gap-y-8">
+          <RailStat
             label="Win rate"
             value={winRate !== null ? `${(winRate * 100).toFixed(1)}%` : "—"}
-            color={winRate !== null && winRate >= 0.55 ? "edge" : winRate !== null && winRate >= 0.5 ? "signal" : "muted"}
+            tone={winRate !== null && winRate >= 0.55 ? "var(--win)" : winRate !== null && winRate >= 0.5 ? "var(--blue)" : "var(--ink-2)"}
           />
-          <StatBlock
-            label="ROI"
-            value={roi !== null ? `${roi > 0 ? "+" : ""}${(roi * 100).toFixed(1)}%` : "—"}
-            color={roiColor}
+          <RailStat
+            label={graded >= ROI_MIN_N ? "ROI" : "ROI (n<20)"}
+            value={
+              graded >= ROI_MIN_N && roi !== null
+                ? `${roi > 0 ? "+" : ""}${(roi * 100).toFixed(1)}%`
+                : "—"
+            }
+            tone={
+              graded >= ROI_MIN_N && roi !== null
+                ? roi > 0 ? "var(--win)" : roi < 0 ? "var(--loss)" : "var(--ink-2)"
+                : "var(--ink-3)"
+            }
           />
-          <StatBlock
+          <RailStat
             label="Streak"
             value={currentStreak.length > 0 ? `${currentStreak.kind}${currentStreak.length}` : "—"}
-            color={currentStreak.kind === "W" ? "edge" : currentStreak.kind === "L" ? "kill" : "muted"}
+            tone={currentStreak.kind === "W" ? "var(--win)" : currentStreak.kind === "L" ? "var(--loss)" : "var(--ink-2)"}
           />
-          <StatBlock
-            label="Peak · Trough"
-            value={`W${longestWinStreak} · L${longestLossStreak}`}
-          />
+          <RailStat label="Peak · Trough" value={`W${longestWinStreak} · L${longestLossStreak}`} tone="var(--ink)" />
         </dl>
       </div>
 
-      {/* By-league breakdown + best/worst */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
-        <div className="surface">
-          <div className="px-4 py-2 border-b border-[var(--border)]">
-            <p className="eyebrow text-[var(--muted)]">BY LEAGUE</p>
-          </div>
-          <ul>
-            {leagues.map(([league, lg], i) => {
-              const pnlSign = lg.pnl > 0 ? "+" : "";
-              return (
-                <li
-                  key={league}
-                  className={`grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-[var(--border)]" : ""}`}
-                >
-                  <span className="pill" style={{ color: "var(--signal)", borderColor: "var(--signal)" }}>
-                    {league}
-                  </span>
-                  <span className="font-mono text-xs text-[var(--muted)]">
-                    {lg.wins}-{lg.losses}{lg.pushes > 0 ? `-${lg.pushes}` : ""}
-                    {lg.pending > 0 ? ` · ${lg.pending} PEND` : ""}
-                  </span>
-                  <span className="numeric text-xs text-[var(--muted)] hidden sm:inline">
-                    {lg.totalStake.toFixed(2)}U STAKED
-                  </span>
-                  <span
-                    className="numeric text-sm"
-                    style={{ color: lg.pnl > 0 ? "var(--edge)" : lg.pnl < 0 ? "var(--kill)" : "var(--text)" }}
-                  >
-                    {pnlSign}{lg.pnl.toFixed(2)}U
-                  </span>
-                  <span
-                    className="numeric text-xs w-16 text-right"
-                    style={{ color: lg.roi !== null && lg.roi > 0 ? "var(--edge)" : lg.roi !== null && lg.roi < 0 ? "var(--kill)" : "var(--muted)" }}
-                  >
-                    {lg.roi !== null ? `${lg.roi > 0 ? "+" : ""}${(lg.roi * 100).toFixed(0)}%` : "—"}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+      {/* By-league table + best/worst clippings */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 panel overflow-x-auto">
+          <table className="ledger-table">
+            <caption className="sr-only">All-time record by league</caption>
+            <thead>
+              <tr>
+                <th scope="col">League</th>
+                <th scope="col">Record</th>
+                <th scope="col" className="text-right hidden sm:table-cell">Staked</th>
+                <th scope="col" className="text-right">Units</th>
+                <th scope="col" className="text-right">ROI</th>
+              </tr>
+            </thead>
+            <tbody>
+              {inScope.map(([league, lg]) => (
+                <LeagueRow key={league} league={league} lg={lg} />
+              ))}
+              {legacy.length > 0 && (
+                <tr>
+                  <td colSpan={5} className="!py-1.5" style={{ background: "var(--paper-3)" }}>
+                    <span className="tag text-ink-3">Legacy · out of scope since May 20</span>
+                  </td>
+                </tr>
+              )}
+              {legacy.map(([league, lg]) => (
+                <LeagueRow key={league} league={league} lg={lg} legacy />
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        <div className="grid grid-rows-2 gap-3 min-w-[260px]">
-          <BestWorstCard label="BEST PICK" pick={best} color="edge" />
-          <BestWorstCard label="WORST PICK" pick={worst} color="kill" />
+        <div className="lg:col-span-4 grid grid-rows-2 gap-4">
+          <Clipping label="Best pick" pick={best} tone="var(--win)" />
+          <Clipping label="Worst pick" pick={worst} tone="var(--loss)" />
         </div>
       </div>
     </section>
   );
 }
 
-function StatBlock({
+function LeagueRow({
+  league,
+  lg,
+  legacy = false,
+}: {
+  league: string;
+  lg: OverallRecord["byLeague"][string];
+  legacy?: boolean;
+}) {
+  const lgGraded = lg.wins + lg.losses + lg.pushes;
+  const lgColor = lg.pnl > 0 ? "var(--win)" : lg.pnl < 0 ? "var(--loss)" : "var(--ink)";
+  const showRoi = lgGraded >= ROI_MIN_N && lg.roi !== null;
+  return (
+    <tr style={legacy ? { opacity: 0.72 } : undefined}>
+      <td>
+        <span className="tag text-ink">{league}</span>
+      </td>
+      <td className="num text-xs text-ink-2">
+        {lg.wins}-{lg.losses}
+        {lg.pushes > 0 ? `-${lg.pushes}` : ""}
+        {lg.pending > 0 ? ` · ${lg.pending} pend` : ""}
+      </td>
+      <td className="num text-xs text-ink-2 text-right hidden sm:table-cell">
+        {lg.totalStake.toFixed(2)}u
+      </td>
+      <td className="num text-sm text-right font-medium" style={{ color: lgColor }}>
+        {lg.pnl > 0 ? "+" : ""}
+        {lg.pnl.toFixed(2)}u
+      </td>
+      <td
+        className="num text-xs text-right"
+        style={{
+          color: showRoi
+            ? lg.roi! > 0 ? "var(--win)" : lg.roi! < 0 ? "var(--loss)" : "var(--ink-3)"
+            : "var(--ink-3)",
+        }}
+        title={showRoi ? undefined : `ROI suppressed — ${lgGraded} graded < ${ROI_MIN_N}`}
+      >
+        {showRoi ? `${lg.roi! > 0 ? "+" : ""}${(lg.roi! * 100).toFixed(0)}%` : `n=${lgGraded}`}
+      </td>
+    </tr>
+  );
+}
+
+function RailStat({
   label,
   value,
-  color = "text",
+  tone,
 }: {
   label: string;
   value: string;
-  color?: "edge" | "warn" | "kill" | "signal" | "muted" | "text";
+  tone: string;
 }) {
   return (
-    <div>
-      <p className="eyebrow mb-3">{label}</p>
-      <p
-        className="font-display leading-none"
-        style={{
-          fontStyle: "italic",
-          fontSize: "clamp(2.25rem, 4.5vw, 3.5rem)",
-          letterSpacing: "-0.02em",
-          color: `var(--${color === "muted" ? "muted" : color})`,
-        }}
-      >
+    <div className="border-b border-rule pb-3">
+      <dt className="eyebrow mb-2">{label}</dt>
+      <dd className="num-display text-3xl sm:text-4xl" style={{ color: tone }}>
         {value}
-      </p>
+      </dd>
     </div>
   );
 }
 
-function BestWorstCard({
+function Clipping({
   label,
   pick,
-  color,
+  tone,
 }: {
   label: string;
   pick: OverallRecord["best"];
-  color: "edge" | "kill";
+  tone: string;
 }) {
-  if (!pick) {
-    return (
-      <div className="surface px-4 py-3">
-        <p className="eyebrow text-[var(--muted)]">{label}</p>
-        <p className="font-mono text-xs text-[var(--muted)] mt-1">—</p>
-      </div>
-    );
-  }
   return (
-    <div className="surface px-4 py-3">
-      <div className="flex items-baseline justify-between">
-        <p className="eyebrow" style={{ color: `var(--${color})` }}>{label}</p>
-        <p className="numeric text-sm" style={{ color: `var(--${color})` }}>
-          {pick.unitsPnl > 0 ? "+" : ""}{pick.unitsPnl.toFixed(2)}U
+    <article className="panel p-4 flex flex-col">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="eyebrow" style={{ color: tone }}>{label}</p>
+        <p className="num text-base font-semibold" style={{ color: tone }}>
+          {pick ? `${pick.unitsPnl > 0 ? "+" : ""}${pick.unitsPnl.toFixed(2)}u` : "—"}
         </p>
       </div>
-      <p className="font-sans text-sm mt-1 truncate text-[var(--text)]">{pick.matchup}</p>
-      <p className="font-mono text-xs text-[var(--muted)] truncate">
-        {pick.league} · {pick.selection}
-      </p>
-    </div>
+      {pick ? (
+        <>
+          <p className="font-display font-semibold text-base mt-2 text-ink truncate">
+            {pick.matchup}
+          </p>
+          <p className="num text-xs text-ink-2 truncate mt-0.5">
+            {pick.league} · {pick.selection}
+          </p>
+        </>
+      ) : (
+        <p className="num text-xs text-ink-3 mt-2">Nothing graded yet.</p>
+      )}
+    </article>
   );
 }

@@ -1,16 +1,26 @@
 "use client";
 
+// The autopsy sheet — a pulled case file for one pick. Full lifecycle from
+// detection through CLV capture, grading, and memory feedback, on a raised
+// sheet of paper over an ink scrim.
+
 import { useEffect } from "react";
 import type { SlatePick } from "../_data/dashboard";
+import { fmtAmerican } from "./format";
 
-function fmtAmerican(n: number): string {
-  return n > 0 ? `+${n}` : `${n}`;
-}
 function fmtPct(n: number, d = 1): string {
   return `${(n * 100).toFixed(d)}%`;
 }
 
-type StageKey = "detected" | "modeled" | "graded" | "critic" | "shipped" | "clv" | "result" | "memory";
+type StageKey =
+  | "detected"
+  | "modeled"
+  | "graded"
+  | "critic"
+  | "shipped"
+  | "clv"
+  | "result"
+  | "memory";
 
 type Stage = {
   key: StageKey;
@@ -68,15 +78,23 @@ function buildLifecycle(pick: SlatePick): Stage[] {
       detail: isProp
         ? "CLV not tracked for props — prop markets lack the market-making liquidity for closing line to be a reliable edge signal."
         : clvDone
-        ? `Closed at ${fmtAmerican(pick.closingOddsAmerican ?? 0)} → CLV ${pick.clvCents! > 0 ? "+" : ""}${pick.clvCents}¢.`
+        ? `Closed at ${fmtAmerican(pick.closingOddsAmerican)} → CLV ${pick.clvCents! > 0 ? "+" : ""}${pick.clvCents}¢.`
         : "Awaiting closing line capture (12h pre-game to 30min post-start window).",
     },
     {
       key: "result",
       label: "RESULT GRADED",
-      status: resultDone ? (pick.outcome?.result === "win" ? "done" : pick.outcome?.result === "loss" ? "killed" : "done") : "future",
+      status: resultDone
+        ? pick.outcome?.result === "loss"
+          ? "killed"
+          : "done"
+        : "future",
       detail: resultDone
-        ? `${pick.outcome!.result.toUpperCase()} — ${pick.outcome!.unitsPnl ? (pick.outcome!.unitsPnl > 0 ? "+" : "") + pick.outcome!.unitsPnl.toFixed(2) + "u" : ""}`
+        ? `${pick.outcome!.result.toUpperCase()} — ${
+            pick.outcome!.unitsPnl
+              ? (pick.outcome!.unitsPnl > 0 ? "+" : "") + pick.outcome!.unitsPnl.toFixed(2) + "u"
+              : ""
+          }`
         : "Awaiting ESPN final.",
     },
     {
@@ -90,6 +108,13 @@ function buildLifecycle(pick: SlatePick): Stage[] {
   ];
 }
 
+const STAGE_TONE: Record<Stage["status"], string> = {
+  done: "var(--win)",
+  active: "var(--hold)",
+  future: "var(--ink-3)",
+  killed: "var(--loss)",
+};
+
 export function PickAutopsy({
   pick,
   onClose,
@@ -99,7 +124,9 @@ export function PickAutopsy({
 }) {
   useEffect(() => {
     if (!pick) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -111,107 +138,100 @@ export function PickAutopsy({
 
   if (!pick) return null;
   const stages = buildLifecycle(pick);
+  const result = pick.outcome?.result ?? null;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label={`Autopsy: ${pick.matchup}`}
-      className="fixed inset-0 z-[9999] flex items-stretch sm:items-center justify-end sm:justify-center"
+      className="fixed inset-0 z-[9999] flex items-stretch sm:items-center justify-center"
     >
       <button
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0"
+        style={{ background: "rgba(31, 27, 22, 0.55)" }}
       />
 
       <div
-        className="relative w-full sm:max-w-2xl h-full sm:h-auto sm:max-h-[92vh] overflow-y-auto surface-elev"
-        style={{ animation: "modal-rise 0.25s ease-out" }}
+        className="relative w-full sm:max-w-2xl h-full sm:h-auto sm:max-h-[92vh] overflow-y-auto bg-paper border border-rule-strong"
+        style={{ animation: "sheet-rise 0.25s ease-out", boxShadow: "8px 8px 0 rgba(31,27,22,0.25)" }}
       >
-        {/* Header */}
-        <header className="sticky top-0 z-10 backdrop-blur-md bg-[var(--surface-elev)]/95 border-b border-[var(--border)] px-5 py-4 flex items-start justify-between gap-3">
+        {/* Sheet header */}
+        <header className="sticky top-0 z-10 bg-paper border-b border-rule-strong px-5 py-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="eyebrow text-[var(--muted)]">PICK #{pick.id} · AUTOPSY</span>
+            <div className="flex items-center gap-3 mb-1.5">
+              <span className="folio">Case file · Pick #{pick.id}</span>
               <span
-                className="pill"
+                className={result === "win" || result === "loss" ? "stamp-row" : "tag"}
                 style={{
-                  color: pick.outcome?.result === "win" ? "var(--edge)" : pick.outcome?.result === "loss" ? "var(--kill)" : "var(--signal)",
-                  borderColor: pick.outcome?.result === "win" ? "var(--edge)" : pick.outcome?.result === "loss" ? "var(--kill)" : "var(--signal)",
+                  color:
+                    result === "win"
+                      ? "var(--win)"
+                      : result === "loss"
+                      ? "var(--loss)"
+                      : "var(--hold)",
                 }}
               >
-                {pick.outcome?.result?.toUpperCase() ?? "PENDING"}
+                {result ?? "pending"}
               </span>
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl leading-tight truncate">
-              {pick.matchup}
-            </h2>
-            <p className="font-mono text-sm text-[var(--edge)]">
-              {pick.selection} @ {fmtAmerican(pick.oddsAmerican)} · {fmtPct(pick.edge, 2)} EDGE
+            <h2 className="headline text-2xl sm:text-3xl text-ink truncate">{pick.matchup}</h2>
+            <p className="num text-sm mt-1" style={{ color: "var(--win)" }}>
+              {pick.selection} @ {fmtAmerican(pick.oddsAmerican)} · {fmtPct(pick.edge, 2)} edge
             </p>
           </div>
           <button
             type="button"
             aria-label="Close autopsy"
             onClick={onClose}
-            className="shrink-0 w-9 h-9 surface flex items-center justify-center hover:border-[var(--kill)] hover:text-[var(--kill)]"
+            className="shrink-0 w-9 h-9 border border-rule flex items-center justify-center num text-lg text-ink-2 hover:border-loss hover:text-loss transition-colors"
           >
             ×
           </button>
         </header>
 
-        <div className="p-5 space-y-6">
-          {/* Top numeric brief */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-[var(--border)]">
-            <Mini label="MODEL" value={fmtPct(pick.modelProb)} color="signal" />
-            <Mini label="MARKET" value={fmtPct(pick.marketProb)} color="muted" />
-            <Mini label="STAKE" value={`${pick.kellyStakeUnits.toFixed(2)}U`} />
+        <div className="p-5 space-y-7">
+          {/* Numeric brief */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 border border-rule divide-x divide-y sm:divide-y-0 divide-rule bg-paper-2">
+            <Mini label="Model" value={fmtPct(pick.modelProb)} tone="var(--blue)" />
+            <Mini label="Market" value={fmtPct(pick.marketProb)} tone="var(--ink-2)" />
+            <Mini label="Stake" value={`${pick.kellyStakeUnits.toFixed(2)}u`} tone="var(--ink)" />
             <Mini
               label="CLV"
               value={
                 pick.market === "prop"
-                  ? "N/A"
-                  : pick.clvCents !== null ? `${pick.clvCents > 0 ? "+" : ""}${pick.clvCents}¢` : "PEND"
+                  ? "n/a"
+                  : pick.clvCents !== null
+                  ? `${pick.clvCents > 0 ? "+" : ""}${pick.clvCents}¢`
+                  : "pend"
               }
-              color={
+              tone={
                 pick.market === "prop"
-                  ? "muted"
-                  : pick.clvCents !== null && pick.clvCents > 0 ? "edge"
-                  : pick.clvCents !== null && pick.clvCents < 0 ? "kill"
-                  : "muted"
+                  ? "var(--ink-3)"
+                  : pick.clvCents !== null && pick.clvCents > 0
+                  ? "var(--win)"
+                  : pick.clvCents !== null && pick.clvCents < 0
+                  ? "var(--loss)"
+                  : "var(--hold)"
               }
             />
           </div>
 
-          {/* Lifecycle stages */}
+          {/* Lifecycle */}
           <section>
-            <p className="eyebrow text-[var(--muted)] mb-2">LIFECYCLE</p>
-            <ol className="space-y-0">
-              {stages.map((s, i) => (
-                <li
-                  key={s.key}
-                  className={`flex items-start gap-3 py-2.5 ${i > 0 ? "border-t border-[var(--border)]" : ""}`}
-                >
-                  <StageGlyph status={s.status} index={i} />
+            <p className="eyebrow mb-2">Lifecycle</p>
+            <ol className="border-t border-rule">
+              {stages.map(s => (
+                <li key={s.key} className="flex items-start gap-3 py-2.5 border-b border-rule">
+                  <StageGlyph status={s.status} />
                   <div className="flex-1 min-w-0">
-                    <p
-                      className="eyebrow"
-                      style={{
-                        color:
-                          s.status === "killed"
-                            ? "var(--kill)"
-                            : s.status === "active"
-                            ? "var(--warn)"
-                            : s.status === "future"
-                            ? "var(--muted)"
-                            : "var(--edge)",
-                      }}
-                    >
+                    <p className="eyebrow" style={{ color: STAGE_TONE[s.status] }}>
                       {s.label}
                     </p>
-                    <p className="text-sm text-[var(--text)] leading-snug mt-0.5">{s.detail}</p>
+                    <p className="text-sm text-ink leading-snug mt-0.5">{s.detail}</p>
                   </div>
                 </li>
               ))}
@@ -220,32 +240,42 @@ export function PickAutopsy({
 
           {/* Thesis + invalidation */}
           <section>
-            <p className="eyebrow text-[var(--edge)] mb-1.5">WHY IT SHIPPED</p>
-            <p className="text-sm text-[var(--text)] leading-relaxed">{pick.thesis}</p>
+            <p className="eyebrow mb-1.5" style={{ color: "var(--win)" }}>
+              Why it shipped
+            </p>
+            <p className="deck text-base text-ink leading-relaxed">{pick.thesis}</p>
           </section>
           {pick.invalidation && (
             <section>
-              <p className="eyebrow text-[var(--warn)] mb-1.5">WHAT WOULD KILL IT</p>
-              <p className="text-sm text-[var(--text)] leading-relaxed">{pick.invalidation}</p>
+              <p className="eyebrow mb-1.5" style={{ color: "var(--loss)" }}>
+                What would kill it
+              </p>
+              <p className="text-sm text-ink leading-relaxed">{pick.invalidation}</p>
             </section>
           )}
 
           {/* Line journey */}
           <section>
-            <p className="eyebrow text-[var(--signal)] mb-1.5">LINE JOURNEY</p>
-            <div className="surface p-4 flex items-center justify-between gap-4">
+            <p className="eyebrow mb-1.5" style={{ color: "var(--blue)" }}>
+              Line journey
+            </p>
+            <div className="panel p-4 flex items-center justify-between gap-4">
               <div>
-                <p className="eyebrow text-[var(--muted)]">PICKED AT</p>
-                <p className="numeric text-xl mt-0.5">{fmtAmerican(pick.oddsAmerican)}</p>
+                <p className="eyebrow text-ink-3">Picked at</p>
+                <p className="num-display text-xl mt-1 text-ink">
+                  {fmtAmerican(pick.oddsAmerican)}
+                </p>
               </div>
-              <div className="flex-1 h-px bg-[var(--border)]" />
+              <div className="flex-1 border-t border-dashed border-rule-strong" aria-hidden />
               <div className="text-right">
-                <p className="eyebrow text-[var(--muted)]">CLOSED AT</p>
+                <p className="eyebrow text-ink-3">Closed at</p>
                 <p
-                  className="numeric text-xl mt-0.5"
-                  style={{ color: pick.closingOddsAmerican !== null ? "var(--text)" : "var(--muted)" }}
+                  className="num-display text-xl mt-1"
+                  style={{ color: pick.closingOddsAmerican !== null ? "var(--ink)" : "var(--ink-3)" }}
                 >
-                  {pick.closingOddsAmerican !== null ? fmtAmerican(pick.closingOddsAmerican) : "PEND"}
+                  {pick.closingOddsAmerican !== null
+                    ? fmtAmerican(pick.closingOddsAmerican)
+                    : "pend"}
                 </p>
               </div>
             </div>
@@ -259,35 +289,31 @@ export function PickAutopsy({
 function Mini({
   label,
   value,
-  color = "text",
+  tone,
 }: {
   label: string;
   value: string;
-  color?: "edge" | "warn" | "kill" | "signal" | "muted" | "text";
+  tone: string;
 }) {
   return (
-    <div className="px-3 py-2.5 border-r border-[var(--border)] last:border-r-0">
-      <p className="eyebrow text-[var(--muted)]">{label}</p>
-      <p className="numeric text-lg mt-0.5" style={{ color: `var(--${color})` }}>{value}</p>
+    <div className="px-3 py-2.5">
+      <p className="eyebrow text-ink-3">{label}</p>
+      <p className="num-display text-lg mt-1" style={{ color: tone }}>
+        {value}
+      </p>
     </div>
   );
 }
 
-function StageGlyph({ status, index }: { status: Stage["status"]; index: number }) {
-  const color =
-    status === "killed"
-      ? "var(--kill)"
-      : status === "active"
-      ? "var(--warn)"
-      : status === "future"
-      ? "var(--muted)"
-      : "var(--edge)";
-  const glyph = status === "killed" ? "×" : status === "future" ? "○" : status === "active" ? "◐" : "●";
+function StageGlyph({ status }: { status: Stage["status"] }) {
+  const tone = STAGE_TONE[status];
+  const glyph =
+    status === "killed" ? "×" : status === "future" ? "○" : status === "active" ? "◐" : "●";
   return (
     <span
       aria-hidden="true"
-      className="shrink-0 w-7 h-7 font-mono text-sm flex items-center justify-center border"
-      style={{ color, borderColor: color, opacity: status === "future" ? 0.5 : 1 }}
+      className="shrink-0 w-7 h-7 num text-sm flex items-center justify-center border"
+      style={{ color: tone, borderColor: tone, opacity: status === "future" ? 0.5 : 1 }}
     >
       {glyph}
     </span>

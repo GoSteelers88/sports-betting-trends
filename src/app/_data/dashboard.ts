@@ -233,6 +233,10 @@ export type PaperTrial = {
   dayNumber: number;       // 1..30
   daysRemaining: number;   // 0..29
   totalGraded: number;
+  // Per-pick graded outcomes in gradedAt order — drives the Fol. 03 punch
+  // card. Length === totalGraded; W/L/P split always matches wins/losses/
+  // pushes below because both are derived from the same outcome rows.
+  gradedSequence: Array<"win" | "loss" | "push">;
   wins: number;
   losses: number;
   pushes: number;

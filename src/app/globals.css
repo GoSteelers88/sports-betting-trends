@@ -1,235 +1,305 @@
 @import "tailwindcss";
 
 /* ───────────────────────────────────────────────────────────────────────────
-   DEEP NAVY — technology-first design system inspired by Utsubo (Awwwards).
-   Near-monochrome: near-black canvas, deep navy elevations, one electric
-   accent. High contrast, generous negative space, mono for data. Hairline
-   borders, circular accents. Cool and sophisticated, not warm-editorial.
+   THE PAPER TRIAL — a quant desk's betting ledger, printed in ink on bone.
+   The agent bets on paper until it earns real money, so the interface IS
+   the paper: warm bone ground, warm-black ink, hairline + double rules,
+   rubber-stamp verdicts. Red ink for losses and kills (the bloodthirst),
+   green ink for profit, ledger-blue ink for model signals. Words are set
+   in Fraunces; every number is IBM Plex Mono with tabular figures.
    ─────────────────────────────────────────────────────────────────────── */
 
+:root {
+  --paper: #f2ede3;        /* bone — dominant ground */
+  --paper-2: #faf7ef;      /* raised sheet / panel */
+  --paper-3: #e8e1d1;      /* recessed band / table head */
+  --ink: #1f1b16;          /* warm near-black ink */
+  --ink-2: #5c5547;        /* muted annotation ink */
+  --ink-3: #9c9181;        /* faint metadata ink */
+  --rule: rgba(31, 27, 22, 0.16);
+  --rule-strong: rgba(31, 27, 22, 0.55);
+  --win: #1d6a45;          /* green ink — profit, passed, survived */
+  --loss: #b42d1c;         /* red ink — losses, kills, locked. THE accent. */
+  --hold: #8a6614;         /* ochre ink — pending, caution */
+  --blue: #2c4e9e;         /* ledger-blue ink — model / signal / info */
+  --win-wash: rgba(29, 106, 69, 0.07);
+  --loss-wash: rgba(180, 45, 28, 0.06);
+  --hold-wash: rgba(138, 102, 20, 0.08);
+}
+
 @theme inline {
-  /* canvas — Utsubo near-black → deep navy ladder */
-  --color-background: #020509;        /* near-black, the faintest navy */
-  --color-surface: #081523;           /* deep navy panel — used sparingly */
-  --color-surface-elevated: #0C2946;  /* Utsubo navy — top elevation */
-  --color-text-primary: #EAF1F8;      /* cool near-white */
-  --color-text-muted: #5E7186;        /* cool slate grey */
-  --color-text-faint: #2A3848;        /* navy metadata grey */
-
-  /* accents — one electric highlight, one bright red for kills only. */
-  --color-edge: #4FB7FF;              /* electric sky — survived/edge/win */
-  --color-warn: #E0B65C;              /* warm brass — caution (cool-palette foil) */
-  --color-kill: #FF4D6D;              /* bright rose — kills, losses, failures */
-  --color-signal: #7FA8D9;            /* periwinkle — model signals */
-
-  --color-border: rgba(234, 241, 248, 0.08);
-  --color-border-strong: rgba(234, 241, 248, 0.18);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-win: var(--win);
+  --color-loss: var(--loss);
+  --color-hold: var(--hold);
+  --color-blue: var(--blue);
 
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
   --font-mono: var(--font-mono);
 }
 
-:root {
-  --bg: #020509;
-  --surface: #081523;
-  --surface-elev: #0C2946;
-  --text: #EAF1F8;
-  --muted: #5E7186;
-  --faint: #2A3848;
-  --edge: #4FB7FF;
-  --warn: #E0B65C;
-  --kill: #FF4D6D;
-  --signal: #7FA8D9;
-  --border: rgba(234, 241, 248, 0.08);
-  --border-strong: rgba(234, 241, 248, 0.18);
-}
-
-html, body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), "Archivo", sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* Display face (Space Grotesk) ships no italic. Disable synthetic italic so
-     legacy `font-style: italic` callers render upright bold, not a fake slant.
-     This is what flips the whole site from serif-editorial to grotesque. */
-  font-synthesis: weight;
 }
 
-body {
-  /* Calm canvas — one barely-visible electric vignette bleeding from the top. */
-  background:
-    radial-gradient(900px 600px at 50% -200px, rgba(79, 183, 255, 0.06), transparent 70%),
-    var(--bg);
-  background-attachment: fixed;
+/* Paper grain — one fixed pass of turbulence over everything. Subtle enough
+   to disappear, present enough that the page feels printed.
+   NO mix-blend-mode here: a blend mode on a fixed overlay forces the browser
+   to flatten the entire document into a single rasterized layer, and past
+   the GPU max-texture-size the page simply stops painting (white tail —
+   earlier on mobile, where limits are smaller). Grayscale + low opacity
+   reads the same without the compositing trap. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9990;
+  opacity: 0.045;
+  filter: grayscale(100%);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: var(--loss);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* Anchored sections clear the sticky desk strip. */
+[id] {
+  scroll-margin-top: 84px;
 }
 
 /* ─── Typography ────────────────────────────────────────────────────────── */
 
-/* Display: Space Grotesk — bold modern grotesque. Big, tight, high-contrast.
-   The technology-first studio idiom: headlines read as interface, not
-   magazine. Roman variant kept as an alias for callers that asked for it. */
+/* Display: Fraunces — wonky editorial serif with teeth. Words only;
+   numbers never set in it. */
 .font-display {
-  font-family: var(--font-display), "Space Grotesk", "Archivo", system-ui, sans-serif;
-  font-style: normal;
-  letter-spacing: -0.03em;
-  font-weight: 700;
-}
-.font-display-roman {
-  font-family: var(--font-display), "Space Grotesk", "Archivo", system-ui, sans-serif;
-  font-style: normal;
-  letter-spacing: -0.03em;
-  font-weight: 500;
+  font-family: var(--font-display), "Fraunces", Georgia, serif;
+  letter-spacing: -0.015em;
 }
 
 .font-mono {
-  font-family: var(--font-mono), "JetBrains Mono", "IBM Plex Mono", "Courier New", monospace;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Every number on the page. */
+.num {
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums lining-nums;
   letter-spacing: -0.01em;
 }
 
-/* Eyebrow — small caps mono used for section labels and column heads. */
+/* Oversized ledger figure — still mono, heavier, tighter. */
+.num-display {
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+}
+
+/* Tracked-out mono micro-label — column heads, eyebrows, metadata. */
 .eyebrow {
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.26em;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--ink-2);
 }
 
-.tagline {
+/* Folio mark — section numbering furniture: "FOL. 04". */
+.folio {
   font-family: var(--font-mono), monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-3);
 }
 
-/* Section title — Space Grotesk, bold, UPPERCASE, very tight. Reads as a
-   strong interface label, not an editorial flourish. */
-.section-head {
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-style: normal;
-  font-weight: 700;
+/* Headline word-setting — tight, black, serif. */
+.headline {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
   letter-spacing: -0.03em;
   line-height: 0.92;
-  text-transform: uppercase;
 }
 
-/* Massive display numeral — graphic section numbers (00, 01...). Bold
-   grotesque, hairline outline feel via the faint colour. */
-.numeral-mark {
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-style: normal;
+/* Deck / standfirst — serif text-weight intro under a headline. */
+.deck {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 1.45;
+}
+
+/* ─── Rules & panels ────────────────────────────────────────────────────── */
+
+/* Classic ledger double rule. */
+.rule-double {
+  border-top: 3px double var(--rule-strong);
+}
+
+.rule-x {
+  border-bottom: 1px solid var(--rule);
+}
+
+/* A bordered sheet of paper-2 — the only "card". Hairline, square. */
+.panel {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+
+.panel-dim {
+  background: var(--paper-3);
+  border: 1px solid var(--rule);
+}
+
+/* ─── The rubber stamp — the signature element ──────────────────────────────
+   The TRUE stamp appears at exactly three moments: the lead verdict, the
+   funding-gate seal, and WIN/LOSS on settled rows. Everything else that
+   used to be a stamp is now a .tag — plain tracked smallcaps, no border. */
+
+.stamp-true {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  padding: 0.42em 0.85em;
+  border: 2.5px solid currentColor;
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(1.05rem, 2.4vw, 1.6rem);
   font-weight: 700;
-  font-feature-settings: "lnum";
-  letter-spacing: -0.05em;
-  line-height: 1;
-  color: var(--faint);
+  letter-spacing: 0.3em;
+  text-indent: 0.3em; /* optically recenters the tracked text */
+  text-transform: uppercase;
+  line-height: 1.25;
+  transform: rotate(-2deg);
+  /* ink-bleed edge — the rubber pressed a little too hard */
+  box-shadow:
+    0 0 1.5px currentColor,
+    inset 0 0 2px currentColor;
+  text-shadow: 0 0 1px currentColor;
 }
 
-.numeric {
+/* Settled-row scale of the true stamp — same double ring + bleed, agate size. */
+.stamp-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3em 0.6em;
+  border: 1.5px solid currentColor;
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
   font-family: var(--font-mono), monospace;
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  transform: rotate(-2deg);
+  box-shadow: 0 0 1px currentColor, inset 0 0 1px currentColor;
+  text-shadow: 0 0 0.5px currentColor;
 }
 
-/* Headline numeric — for the big P&L / streak numbers. Mono-ish base but
-   bigger and with a touch of weight. */
-.numeric-display {
+/* Demoted chip — tracked smallcaps text, no border. The stamp's civilian
+   clothes. Lives in the components layer so text-* utilities and inline
+   styles can recolor it; defaults to annotation ink. */
+@layer components {
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    line-height: 1.4;
+    color: var(--ink-2);
+  }
+}
+
+/* ─── Ledger tables ─────────────────────────────────────────────────────── */
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ledger-table thead th {
   font-family: var(--font-mono), monospace;
-  font-variant-numeric: tabular-nums lining-nums;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  text-align: left;
+  padding: 0.45rem 0.65rem;
+  border-bottom: 3px double var(--rule-strong);
+  white-space: nowrap;
+}
+.ledger-table tbody td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: baseline;
+}
+.ledger-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.ledger-table tbody tr:hover {
+  background: rgba(31, 27, 22, 0.025);
 }
 
-/* ─── Surfaces ──────────────────────────────────────────────────────────── */
+/* ─── Meters ────────────────────────────────────────────────────────────── */
 
-/* Default surface is hairline-only — no fill. Cards look like clippings
-   from a newspaper, not OS panels. */
-.surface {
-  background: transparent;
-  border: 1px solid var(--border);
-}
-.surface-elev {
-  background: var(--surface);
-  border: 1px solid var(--border);
-}
-.surface-edge {
-  background: transparent;
-  border: 1px solid rgba(79, 183, 255, 0.35);
-}
-.surface-kill {
-  background: transparent;
-  border: 1px solid rgba(255, 77, 109, 0.35);
-}
-.surface-warn {
-  background: transparent;
-  border: 1px solid rgba(224, 182, 92, 0.35);
-}
-.surface-signal {
-  background: transparent;
-  border: 1px solid rgba(127, 168, 217, 0.35);
-}
-
-/* Filled surface — used only when we need contrast (autopsy modal, etc). */
-.surface-filled {
-  background: var(--surface);
-  border: 1px solid var(--border);
-}
-
-/* Hairline divider */
-.hairline {
-  border-bottom: 1px solid var(--border);
-}
-
-/* Vertical hairline for column dividers */
-.hairline-v {
-  border-right: 1px solid var(--border);
-}
-
-/* Studio-Namma-style "Scroll" indicator — a thin vertical mark */
-.scroll-indicator {
+.meter {
   position: relative;
-  width: 1px;
-  background: var(--border-strong);
+  height: 4px;
+  background: rgba(31, 27, 22, 0.1);
+  overflow: hidden;
 }
-
-/* ─── Status pills ──────────────────────────────────────────────────────── */
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.18rem 0.6rem;
-  border: 1px solid currentColor;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  line-height: 1.5;
-  border-radius: 999px;          /* the only piece of softness */
+.meter-fill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  background: var(--ink);
 }
-.pill-solid {
-  padding: 0.18rem 0.6rem;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  background: currentColor;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-}
-.pill-solid > span { color: var(--bg); }
 
 /* ─── Status dots ───────────────────────────────────────────────────────── */
 
-@keyframes pulse-signal {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.45; transform: scale(1.4); }
+@keyframes pulse-ink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.35);
+  }
 }
 .dot {
   display: inline-block;
@@ -239,49 +309,68 @@ body {
   background: currentColor;
 }
 .dot-pulse {
-  animation: pulse-signal 2.2s ease-in-out infinite;
+  animation: pulse-ink 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot-pulse {
+    animation: none;
+  }
 }
 
-/* ─── Bar meters ────────────────────────────────────────────────────────── */
+/* ─── The tape — ticker band ────────────────────────────────────────────── */
 
-.meter {
-  position: relative;
-  height: 2px;          /* hairline meters, not chunky bars */
-  background: var(--border);
-  overflow: hidden;
+@keyframes tape-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.333%);
+  }
 }
-.meter-fill {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  background: var(--edge);
+.tape-track {
+  animation: tape-scroll 80s linear infinite;
+  will-change: transform;
+}
+.tape-track:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tape-track {
+    animation: none;
+  }
 }
 
 /* ─── Modal rise ────────────────────────────────────────────────────────── */
 
-@keyframes modal-rise {
-  from { transform: translateY(12px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+@keyframes sheet-rise {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="sheet-rise"] {
+    animation: none !important;
+  }
 }
 
-/* ─── Reactor active marker (kept for compatibility) ────────────────────── */
+/* ─── Red margin rule — the ledger's left margin line ───────────────────── */
 
-.reactor-active {
-  display: inline-block;
-  font-size: 0.7em;
+.margin-rule {
+  position: relative;
 }
-
-/* ─── Section number block ─────────────────────────────────────────────── */
-
-.section-numeral {
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-style: normal;
-  font-weight: 700;
-  font-feature-settings: "lnum";
-  letter-spacing: -0.06em;
-  line-height: 0.8;
-  /* Outlined numeral — reads as a big graphic mark in the Utsubo idiom. */
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--border-strong);
-  font-size: clamp(3.5rem, 9vw, 7.5rem);
+@media (min-width: 1100px) {
+  .margin-rule::before {
+    content: "";
+    position: absolute;
+    left: -1.75rem;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(180, 45, 28, 0.3);
+  }
 }

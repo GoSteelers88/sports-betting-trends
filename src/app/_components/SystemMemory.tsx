@@ -1,5 +1,9 @@
 "use client";
 
+// Back of the book — house rules. Constraints the weekly Dream agent writes
+// into the desk's rulebook, set in agate: dense, small type, no stamps.
+// Each rule is a numbered clause; click to read the Dream's reasoning.
+
 import { useState } from "react";
 import type { AgentMemorySummary } from "../_data/dashboard";
 import { SectionHeader } from "./SectionHeader";
@@ -13,12 +17,12 @@ function rel(iso: string): string {
   return `${Math.floor(d / 7)}W`;
 }
 
-function ruleImpact(type: string, weight: number): { label: string; color: string } {
+function ruleImpact(type: string, weight: number): { label: string; tone: string } {
   const w = Math.round(weight * 100);
-  if (type === "correction") return { label: "BLOCKS BLIND FOLLOW", color: "var(--warn)" };
-  if (type === "bias") return { label: "ACTIVE CONSTRAINT", color: "var(--kill)" };
-  if (type === "pattern") return { label: `WEIGHT ${w}`, color: "var(--signal)" };
-  return { label: `WEIGHT ${w}`, color: "var(--edge)" };
+  if (type === "correction") return { label: "BLOCKS BLIND FOLLOW", tone: "var(--hold)" };
+  if (type === "bias") return { label: "ACTIVE CONSTRAINT", tone: "var(--loss)" };
+  if (type === "pattern") return { label: `WEIGHT ${w}`, tone: "var(--blue)" };
+  return { label: `WEIGHT ${w}`, tone: "var(--win)" };
 }
 
 export function SystemMemory({ data }: { data: AgentMemorySummary }) {
@@ -32,30 +36,35 @@ export function SystemMemory({ data }: { data: AgentMemorySummary }) {
   const scopes = ["ALL_SCOPES", ...Object.keys(data.byScope).sort()];
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5">
       <SectionHeader
         id="system-memory"
-        index="08"
-        label="SYSTEM MEMORY"
-        title={`${data.totalActive} ACTIVE RULES`}
-        subtitle="Living constraints written by the weekly Dream agent. The system is self-correcting — when picks fail in predictable ways, new rules block the analyst from repeating them."
-        status={data.lastDreamAt ? `DREAM ${rel(data.lastDreamAt)}` : "NO DREAM YET"}
-        statusColor="signal"
+        index="—"
+        dense
+        label="BACK OF BOOK · HOUSE RULES"
+        title={`${data.totalActive} standing rules`}
+        subtitle="Living constraints written by the weekly Dream agent. When picks fail in predictable ways, a new clause blocks the analyst from repeating the mistake."
+        status={data.lastDreamAt ? `Dream ${rel(data.lastDreamAt)}` : "No dream yet"}
+        statusTone="blue"
       />
 
       {data.lastDreamNotes && (
-        <div className="surface-signal p-4">
-          <p className="eyebrow text-[var(--signal)] mb-1.5">
-            DREAM TRANSCRIPT
+        <figure className="panel p-4" style={{ borderLeft: "3px solid var(--blue)" }}>
+          <figcaption className="eyebrow mb-2" style={{ color: "var(--blue)" }}>
+            Dream transcript
             {data.lastDreamPicksReviewed !== null && (
-              <> · REVIEWED {data.lastDreamPicksReviewed} PICKS</>
+              <> · reviewed {data.lastDreamPicksReviewed} picks</>
             )}
             {data.lastDreamAddedRetired && (
-              <> · +{data.lastDreamAddedRetired.added}/−{data.lastDreamAddedRetired.retired}</>
+              <>
+                {" "}· +{data.lastDreamAddedRetired.added}/−{data.lastDreamAddedRetired.retired} rules
+              </>
             )}
-          </p>
-          <p className="text-sm text-[var(--text)] leading-relaxed">{data.lastDreamNotes}</p>
-        </div>
+          </figcaption>
+          <blockquote className="deck text-sm sm:text-base text-ink leading-relaxed">
+            {data.lastDreamNotes}
+          </blockquote>
+        </figure>
       )}
 
       {scopes.length > 1 && (
@@ -69,10 +78,11 @@ export function SystemMemory({ data }: { data: AgentMemorySummary }) {
                 key={s}
                 type="button"
                 onClick={() => setScope(s)}
+                aria-pressed={active}
                 className={`eyebrow px-2 py-1 border transition-colors ${
                   active
-                    ? "border-[var(--text)] text-[var(--text)] bg-white/5"
-                    : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)]"
+                    ? "border-rule-strong text-ink bg-paper-2"
+                    : "border-rule text-ink-3 hover:text-ink"
                 }`}
               >
                 {label}
@@ -83,58 +93,54 @@ export function SystemMemory({ data }: { data: AgentMemorySummary }) {
       )}
 
       {filtered.length === 0 ? (
-        <div className="surface p-6 text-center">
-          <p className="eyebrow text-[var(--muted)]">NO RULES IN SCOPE</p>
-        </div>
+        <p className="tag text-ink-3">No rules in this scope</p>
       ) : (
-        <ul className="surface divide-y divide-[var(--border)]">
-          {filtered.map(r => {
+        <ol className="panel">
+          {filtered.map((r, i) => {
             const isOpen = openId === r.id;
             const impact = ruleImpact(r.type, r.weight);
             return (
-              <li key={r.id}>
+              <li key={r.id} className={i > 0 ? "border-t border-rule" : ""}>
                 <button
                   type="button"
                   onClick={() => setOpenId(isOpen ? null : r.id)}
                   aria-expanded={isOpen}
-                  className="w-full text-left p-4 hover:bg-white/[0.02]"
+                  className="w-full text-left p-3.5 hover:bg-paper-3/60 transition-colors"
                 >
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span
-                      className="pill"
-                      style={{ color: impact.color, borderColor: impact.color }}
-                    >
-                      {r.type.toUpperCase()}
+                    <span className="num text-xs text-ink-3">
+                      §{String(i + 1).padStart(2, "0")}
                     </span>
-                    <span className="pill" style={{ color: "var(--muted)", borderColor: "var(--border-strong)" }}>
-                      {r.scope}
+                    <span className="tag" style={{ color: impact.tone }}>
+                      {r.type}
                     </span>
+                    <span className="eyebrow text-ink-3">{r.scope}</span>
                     {r.isFresh && (
-                      <span className="pill" style={{ color: "var(--edge)", borderColor: "var(--edge)" }}>
-                        NEW
+                      <span className="tag" style={{ color: "var(--win)" }}>
+                        New
                       </span>
                     )}
-                    <span className="ml-auto eyebrow text-[var(--muted)]">
-                      {impact.label} · UPDATED {rel(r.updatedAt)}
+                    <span className="ml-auto eyebrow text-ink-3">
+                      {impact.label} · updated {rel(r.updatedAt)}
                     </span>
                   </div>
-                  <p className="font-display text-lg leading-snug text-[var(--text)]">
+                  <p className="font-display font-semibold text-base leading-snug text-ink">
                     {r.rule}
                   </p>
-                  <div className="mt-3 flex items-center gap-3">
-                    <div className="flex-1 meter">
+                  <div className="mt-2.5 flex items-center gap-3">
+                    <div className="flex-1 meter" style={{ height: 3 }}>
                       <div
                         className="meter-fill"
-                        style={{ width: `${Math.round(r.weight * 100)}%`, background: impact.color }}
+                        style={{ width: `${Math.round(r.weight * 100)}%`, background: impact.tone }}
                       />
                     </div>
-                    <span className="numeric text-xs text-[var(--muted)]">
-                      W={r.weight.toFixed(2)}
-                    </span>
+                    <span className="num text-xs text-ink-2">w={r.weight.toFixed(2)}</span>
                   </div>
                   {isOpen && (
-                    <p className="mt-3 pt-3 border-t border-[var(--border)] text-sm text-[var(--muted)] leading-relaxed">
-                      <span className="eyebrow text-[var(--signal)]">DREAM REASONING ▸ </span>
+                    <p className="mt-3 pt-3 border-t border-rule text-sm text-ink-2 leading-relaxed">
+                      <span className="eyebrow mr-2" style={{ color: "var(--blue)" }}>
+                        Dream reasoning ▸
+                      </span>
                       {r.reasoning}
                     </p>
                   )}
@@ -142,7 +148,7 @@ export function SystemMemory({ data }: { data: AgentMemorySummary }) {
               </li>
             );
           })}
-        </ul>
+        </ol>
       )}
     </section>
   );

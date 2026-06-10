@@ -1,30 +1,34 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono, Inter } from "next/font/google";
+import { Fraunces, Archivo, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-// Display face — bold modern grotesque. Big, tight, high-contrast headlines
-// in the technology-first studio idiom (Utsubo, Awwwards). Replaces the warm
-// serif-italic editorial face: this reads "interface", not "magazine".
-const spaceGrotesk = Space_Grotesk({
+// Display face — Fraunces. A wonky, sharp editorial serif: the voice of a
+// betting ledger's front page. Words only — numbers are never set in it.
+const fraunces = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "600", "900"],
+  style: ["normal", "italic"],
 });
 
-const interSans = Inter({
+// Text face — Archivo, a plain-spoken grotesque for UI copy and body text.
+const archivo = Archivo({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
+// Data face — IBM Plex Mono. Every number on the page, tabular figures.
+const plexMono = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "NATESTACKS — Edge Ledger",
+  title: "NATESTACKS — The Paper Trial",
   description:
-    "An autonomous betting intelligence system. Watch an AI prosecute the market in real time.",
+    "A quant desk that bets on sports — on paper, until it earns the right to real money. Picks, closing-line value, critic kills, and the funding gate, in ink.",
 };
 
 export default function RootLayout({
@@ -35,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${interSans.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${archivo.variable} ${fraunces.variable} ${plexMono.variable} antialiased`}
       >
         {children}
       </body>
