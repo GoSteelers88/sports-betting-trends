@@ -33,9 +33,19 @@ function loadEnvOnce(): void {
 
 function creds(): { key: string; secret: string } {
   loadEnvOnce();
+  // Accept the official Alpaca CLI's env names too (ALPACA_API_KEY /
+  // ALPACA_SECRET_KEY) so one credential set drives both the CLI and us.
   return {
-    key: process.env.ALPACA_PAPER_KEY_ID ?? process.env.APCA_API_KEY_ID ?? "",
-    secret: process.env.ALPACA_PAPER_SECRET ?? process.env.APCA_API_SECRET_KEY ?? "",
+    key:
+      process.env.ALPACA_PAPER_KEY_ID ??
+      process.env.ALPACA_API_KEY ??
+      process.env.APCA_API_KEY_ID ??
+      "",
+    secret:
+      process.env.ALPACA_PAPER_SECRET ??
+      process.env.ALPACA_SECRET_KEY ??
+      process.env.APCA_API_SECRET_KEY ??
+      "",
   };
 }
 
