@@ -1,0 +1,74 @@
+name: Convergence — Kalshi vs Polymarket
+
+# Snapshots curated Kalshi↔Polymarket market pairs (venue-pairs.json,
+# human-curated — settlement-rule mismatch is the trap) and appends the
+# spread series to convergence-log.json. Measurement only; Exp 4 candidate.
+# 2h cadence measures PERSISTENT divergence, not fast arb windows.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "25 */2 * * *" # every 2h, off the hour to dodge cron congestion
+
+permissions:
+  contents: write # push the convergence log back
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Snapshot pairs
+        env:
+          KALSHI_API_KEY_ID: ${{ secrets.KALSHI_API_KEY_ID }}
+        run: npm run convergence:tick
+
+      - name: Commit log back (allowlisted file only)
+        if: success()
+        run: |
+          git config user.name "convergence-bot"
+          git config user.email "convergence-bot@users.noreply.github.com"
+          ALLOWED=( "data/processed/convergence-log.json" )
+          SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|[Aa]uthorization":\s*"Bearer'
+          for f in "${ALLOWED[@]}"; do
+            [ -f "$f" ] || continue
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
+              exit 1
+            fi
+          done
+          git add "${ALLOWED[@]}" 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no convergence-log changes to commit"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
+          git commit -m "convergence: tick ${DATE_TAG}"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin master && git push origin master && break
+            echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            git stash drop 2>/dev/null || true
+            sleep 5
+          done
+
+      # Optional dead-man's switch: create a check at healthchecks.io and set
+      # the HC_PING_CONVERGENCE secret to its ping URL. Skips silently when unset.
+      - name: Heartbeat ping
+        if: success()
+        env:
+          PING: ${{ secrets.HC_PING_CONVERGENCE }}
+        run: '[ -z "$PING" ] || curl -fsS -m 10 --retry 3 "$PING" > /dev/null || true'
