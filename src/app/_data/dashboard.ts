@@ -680,6 +680,7 @@ async function loadPaperTrial(): Promise<PaperTrial> {
   const daysRemaining = Math.max(0, PAPER_TRIAL_DAYS - dayNumber);
 
   let totalGraded = 0;
+  let gradedSequence: Array<"win" | "loss" | "push"> = [];
   let wins = 0;
   let losses = 0;
   let pushes = 0;
@@ -711,6 +712,7 @@ async function loadPaperTrial(): Promise<PaperTrial> {
       orderBy: { gradedAt: "asc" },
     });
     totalGraded = outcomes.length;
+    gradedSequence = outcomes.map(o => o.result as "win" | "loss" | "push");
     let curStreak = 0;
     for (const o of outcomes) {
       if (o.result === "win") {
@@ -869,6 +871,7 @@ async function loadPaperTrial(): Promise<PaperTrial> {
     dayNumber,
     daysRemaining,
     totalGraded,
+    gradedSequence,
     wins,
     losses,
     pushes,
