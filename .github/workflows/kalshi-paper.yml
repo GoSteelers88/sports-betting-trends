@@ -1,0 +1,48 @@
+name: Kalshi — favorite-longshot paper trail
+
+# Runs one cycle of the $10k Kalshi favorite-longshot paper book:
+#   settle resolved positions → open new favorites → write a ledger snapshot.
+# Places NO real orders. State lives in Turso; the dashboard reads it.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every 4 hours — frequent enough to catch settlements and redeploy freed
+    # cash, sparse enough to keep a clean equity curve (6 snapshots/day).
+    - cron: "15 */4 * * *"
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Write Kalshi RSA private key
+        env:
+          KALSHI_PRIVATE_KEY_PEM: ${{ secrets.KALSHI_PRIVATE_KEY_PEM }}
+        run: |
+          printf '%s' "$KALSHI_PRIVATE_KEY_PEM" > .kalshi-key.pem
+          chmod 600 .kalshi-key.pem
+
+      - name: Run paper-trail cycle
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # Mirror so Prisma's schema-time URL parser doesn't throw; the libSQL
+          # adapter overrides at runtime (same pattern as agent-clv.yml).
+          DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          KALSHI_API_KEY_ID: ${{ secrets.KALSHI_API_KEY_ID }}
+          KALSHI_PRIVATE_KEY_PEM_PATH: .kalshi-key.pem
+        run: npm run paper:run
