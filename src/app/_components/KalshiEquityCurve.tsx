@@ -1,7 +1,7 @@
 "use client";
 
-// Equity curve for the de-vig +EV paper book — ink line on paper over the
-// dashed red $10k baseline. Data logic untouched.
+// Equity curve for the Kalshi paper trail — ink line on paper, baseline
+// drawn as a dashed red rule at the $10k start. Data/fetch logic untouched.
 
 import {
   Area,
@@ -13,7 +13,7 @@ import {
   ReferenceLine,
 } from "recharts";
 
-export function DevigEquityCurve({
+export function KalshiEquityCurve({
   data,
   baseline,
 }: {
@@ -23,7 +23,9 @@ export function DevigEquityCurve({
   if (!data || data.length < 2) {
     return (
       <div className="flex h-[180px] items-center justify-center border border-dashed border-rule">
-        <span className="eyebrow text-ink-3">Equity curve builds as bets settle</span>
+        <span className="eyebrow text-ink-3">
+          Equity curve builds as snapshots accumulate
+        </span>
       </div>
     );
   }
@@ -35,14 +37,17 @@ export function DevigEquityCurve({
   const last = values[values.length - 1];
   const lineColor = last >= baseline ? "var(--win)" : "var(--loss)";
 
-  const chart = data.map(d => ({ t: new Date(d.ts).getTime(), equity: d.equityUsd }));
+  const chart = data.map(d => ({
+    t: new Date(d.ts).getTime(),
+    equity: d.equityUsd,
+  }));
 
   return (
     <div className="h-[180px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chart} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
           <defs>
-            <linearGradient id="dvEquity" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="kpEquity" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={lineColor} stopOpacity={0.18} />
               <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
             </linearGradient>
@@ -83,7 +88,7 @@ export function DevigEquityCurve({
             dataKey="equity"
             stroke={lineColor}
             strokeWidth={2}
-            fill="url(#dvEquity)"
+            fill="url(#kpEquity)"
             isAnimationActive={false}
           />
         </AreaChart>

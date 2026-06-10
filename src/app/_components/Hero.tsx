@@ -1,8 +1,13 @@
-import type { DashboardData, SlatePick } from "../_data/dashboard";
+// The front page — folio 01. A morning edition: the nameplate over the
+// dateline, then the lead story answers "how did we do last night?" with
+// the verdict stamp (true stamp moment No. 1), the settled net units, gate
+// progress, and a one-line teaser for tonight's play. The settled book
+// prints below the fold. Server component; motion via motion.tsx.
 
-function fmtAmerican(n: number): string {
-  return n > 0 ? `+${n}` : `${n}`;
-}
+import type { DashboardData, SlatePick } from "../_data/dashboard";
+import { Reveal, StampIn } from "./motion";
+import { SettledTable } from "./LastNightLedger";
+import { fmtAmerican, isInScopeGame, propLabel } from "./format";
 
 function fmtDate(d: Date): string {
   return d
@@ -11,199 +16,201 @@ function fmtDate(d: Date): string {
       weekday: "long",
       month: "long",
       day: "numeric",
+      year: "numeric",
     })
     .toUpperCase();
 }
 
-// Full-viewport editorial hero — magazine style. Bottom-aligned big title,
-// at-a-glance stats on the right rail, no SectionHeader chrome. The first
-// thing you see when the dashboard loads.
+type Verdict = { label: "WIN" | "LOSS" | "PUSH" | "PENDING"; tone: string };
+
+function verdictOf(pnl: number, graded: number, pending: number): Verdict {
+  if (graded > 0) {
+    if (pnl > 0) return { label: "WIN", tone: "var(--win)" };
+    if (pnl < 0) return { label: "LOSS", tone: "var(--loss)" };
+    return { label: "PUSH", tone: "var(--ink-3)" };
+  }
+  void pending;
+  return { label: "PENDING", tone: "var(--hold)" };
+}
+
+function teaserFor(games: SlatePick[], props: SlatePick[]): string | null {
+  const top =
+    [...games].sort((a, b) => b.edge - a.edge)[0] ??
+    [...props].sort((a, b) => b.edge - a.edge)[0] ??
+    null;
+  if (!top) return null;
+  const what =
+    top.market === "prop" && top.player
+      ? `${top.player} ${top.side?.toUpperCase()} ${top.line} ${propLabel(top.propType)}`
+      : `${top.selection}`;
+  return `${top.league} · ${what} @ ${fmtAmerican(top.oddsAmerican)} · ${(top.edge * 100).toFixed(1)}% edge`;
+}
+
 export function Hero({ data }: { data: DashboardData }) {
-  const games = data.picks.games;
-  const props = data.picks.props;
-  const headline = pickHeadline(games, props);
-  const slate = data.slate;
-  const todayPnl = data.status.todayPnl;
+  const { paperTrial } = data;
+  const lnG = data.lastNight.games;
+  const lnP = data.lastNight.props;
+
+  // Last night, whole book — games + props
+  const lnPnl = +(lnG.pnl + lnP.pnl).toFixed(2);
+  const lnWins = lnG.wins + lnP.wins;
+  const lnLosses = lnG.losses + lnP.losses;
+  const lnPushes = lnG.pushes + lnP.pushes;
+  const lnGraded = lnG.graded + lnP.graded;
+  const lnPending = lnG.pending + lnP.pending;
+  const lnRecord = `${lnWins}-${lnLosses}${lnPushes > 0 ? `-${lnPushes}` : ""}`;
+  const verdict = verdictOf(lnPnl, lnGraded, lnPending);
   const pnlColor =
-    todayPnl > 0 ? "var(--edge)" : todayPnl < 0 ? "var(--kill)" : "var(--text)";
+    lnGraded === 0 ? "var(--ink)" : lnPnl > 0 ? "var(--win)" : lnPnl < 0 ? "var(--loss)" : "var(--ink)";
+
+  // Gate progress — ML track is the canonical gate
+  const mlCriteria = paperTrial.criteria.filter(c => c.track === "ml");
+  const gatesMet = mlCriteria.filter(c => c.met).length;
+  const gateLine = `${gatesMet}/${mlCriteria.length} · ${paperTrial.totalGraded}/200 graded`;
+
+  // Tonight
+  const shipped = data.picks.games.length + data.picks.props.length;
+  const teaser = teaserFor(data.picks.games, data.picks.props);
+
+  // Slate — in-scope (real NBA + real MLB) only
+  const inScopeSlate = data.slate.filter(isInScopeGame).length;
 
   return (
-    <section
-      id="hero"
-      className="min-h-[88vh] flex flex-col justify-between py-12 sm:py-16 relative"
-    >
-      {/* Top rail — eyebrow + date */}
-      <div className="flex items-baseline justify-between flex-wrap gap-3">
-        <p className="eyebrow">Edition · {fmtDate(new Date())}</p>
-        <p className="eyebrow text-[var(--faint)]">No. {data.paperTrial.dayNumber.toString().padStart(3, "0")}</p>
+    <section id="front-page" className="pt-8 sm:pt-10">
+      {/* Nameplate — shrunk to give the lead the room */}
+      <div className="text-center">
+        <p className="eyebrow">Vol. 2026 · NBA + MLB Desk · Picks twice daily</p>
+        <Reveal className="mt-2">
+          <h1
+            className="headline text-ink"
+            style={{ fontSize: "clamp(2.3rem, 6.6vw, 6rem)" }}
+          >
+            The Paper Trial
+          </h1>
+        </Reveal>
+        <div className="mt-4 rule-double" />
+        <div className="flex items-baseline justify-between py-2 flex-wrap gap-2">
+          <p className="eyebrow">{fmtDate(new Date())}</p>
+          <p className="eyebrow text-ink-3 hidden sm:block">
+            An agent bets on paper until it earns real money
+          </p>
+          <p className="folio">No. {String(paperTrial.dayNumber).padStart(3, "0")}</p>
+        </div>
+        <div className="border-b border-rule-strong" />
       </div>
 
-      {/* Center — massive editorial headline */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12 lg:gap-16 items-end py-12">
-        <div>
-          {headline ? (
-            <HeadlinePick pick={headline} />
-          ) : (
-            <NoEdgeHeadline slateCount={slate.length} />
-          )}
+      {/* Lead story — the morning verdict, asymmetric 7/5 */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 pt-8 sm:pt-12 pb-8">
+        <div className="lg:col-span-7 lg:pr-12">
+          <article>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-3 mb-4">
+              <p className="eyebrow">Morning edition · last night&rsquo;s verdict</p>
+            </div>
+
+            {/* True stamp moment No. 1 — the verdict over the lead */}
+            <StampIn className="mb-5">
+              <span className="stamp-true" style={{ color: verdict.tone }}>
+                {verdict.label}
+              </span>
+            </StampIn>
+
+            <Reveal className="mt-4">
+              <h2 className="headline text-ink" style={{ fontSize: "clamp(2.1rem, 4.6vw, 3.9rem)" }}>
+                {lnGraded > 0 ? (
+                  <>
+                    Last night settled{" "}
+                    <span className="num" style={{ color: pnlColor, letterSpacing: "-0.04em" }}>
+                      {lnPnl > 0 ? "+" : ""}
+                      {lnPnl.toFixed(2)}u
+                    </span>{" "}
+                    on <span className="num">{lnRecord}</span>.
+                  </>
+                ) : lnPending > 0 ? (
+                  <>
+                    {lnPending} pick{lnPending === 1 ? "" : "s"} await the grader.
+                  </>
+                ) : (
+                  <>The book sat out last night.</>
+                )}
+              </h2>
+            </Reveal>
+
+            <p className="num text-sm sm:text-base text-ink-2 mt-5">
+              <span className="tag text-ink-3 mr-2">Gate</span>
+              <span className="font-semibold text-ink">{gateLine}</span>
+              <span className="text-ink-3"> · funding {paperTrial.mlReady ? "unlocked" : "locked"}</span>
+            </p>
+
+            <p className="num text-sm sm:text-base mt-2">
+              <span className="tag text-ink-3 mr-2">Tonight</span>
+              {teaser ? (
+                <a href="#tonights-play" className="text-ink hover:text-loss transition-colors font-semibold">
+                  {teaser}
+                </a>
+              ) : (
+                <span className="text-ink-2">no pick cleared the 6% floor — capital held</span>
+              )}
+            </p>
+          </article>
         </div>
 
-        {/* Right rail — at-a-glance stats grid */}
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-8 font-mono lg:border-l lg:border-[var(--border)] lg:pl-10">
-          <Stat label="Slate" value={`${slate.length}`} sub="games tonight" />
-          <Stat label="Picks" value={`${games.length + props.length}`} sub={`${games.length} game · ${props.length} prop`} />
-          <Stat
-            label="Today P&L"
-            value={`${todayPnl > 0 ? "+" : ""}${todayPnl.toFixed(2)}u`}
-            sub={pnlColorLabel(todayPnl)}
-            valueColor={pnlColor}
-          />
-          <Stat
-            label="Run"
-            value={data.status.lastAgentRunAt ? relCompact(data.status.lastAgentRunAt) : "—"}
-            sub="last analyst pass"
-          />
-        </dl>
+        {/* Stats rail — bordered ledger strip */}
+        <aside className="lg:col-span-5 lg:border-l lg:border-rule lg:pl-12">
+          <p className="eyebrow pb-2">At a glance</p>
+          <dl className="rule-double">
+            <RailRow
+              label="Last night"
+              value={lnGraded > 0 ? `${lnPnl > 0 ? "+" : ""}${lnPnl.toFixed(2)}u` : "—"}
+              sub={lnGraded > 0 ? `${lnRecord} settled` : lnPending > 0 ? `${lnPending} pending` : "no picks"}
+              tone={pnlColor}
+            />
+            <RailRow label="Gate" value={`${gatesMet}/${mlCriteria.length}`} sub={`${paperTrial.totalGraded}/200 graded`} />
+            <RailRow
+              label="Tonight"
+              value={`${shipped}`}
+              sub={`${data.picks.games.length} game · ${data.picks.props.length} prop shipped`}
+            />
+            <RailRow label="Slate" value={`${inScopeSlate}`} sub="NBA + MLB games tonight" />
+          </dl>
+        </aside>
       </div>
 
-      {/* Bottom — scroll hint */}
-      <div className="flex items-baseline justify-between">
-        <a
-          href="#ledger"
-          className="eyebrow text-[var(--muted)] hover:text-[var(--text)] inline-flex items-center gap-3 transition-colors"
-        >
-          <span className="w-8 h-px bg-current" />
-          Continue to ledger
-        </a>
-        <p className="eyebrow text-[var(--faint)] hidden sm:block">↓ Scroll</p>
-      </div>
+      {/* The settled book — last night's game picks, stamped in ink
+          (true stamp moment No. 3 lives on these rows) */}
+      {lnG.picks.length > 0 ? (
+        <div className="pb-10">
+          <p className="eyebrow mb-2">
+            Settled since last edition · {lnG.graded} graded{lnG.pending > 0 ? ` · ${lnG.pending} pending` : ""}
+          </p>
+          <SettledTable picks={lnG.picks} caption="Game picks resolved in the last 36 hours" />
+        </div>
+      ) : (
+        <p className="tag text-ink-3 pb-10">No game picks resolved in the last 36 hours</p>
+      )}
     </section>
   );
 }
 
-function HeadlinePick({ pick }: { pick: SlatePick }) {
-  const isProp = pick.market === "prop" && pick.player;
-  return (
-    <div>
-      <p className="eyebrow mb-6">Tonight's headline · {pick.league}</p>
-      <h2
-        className="font-display uppercase leading-[0.9] text-[var(--text)]"
-        style={{
-          fontSize: "clamp(3rem, 8.5vw, 8rem)",
-          letterSpacing: "-0.045em",
-        }}
-      >
-        {isProp ? pick.player : pick.matchup}
-      </h2>
-      <p className="mt-4 font-display text-2xl sm:text-3xl text-[var(--edge)]" style={{ fontWeight: 500 }}>
-        {isProp ? (
-          <>
-            {pick.side?.toUpperCase()} {pick.line} {propLabel(pick.propType)}{" "}
-            <span className="numeric text-[var(--text)]" style={{ fontStyle: "normal" }}>@ {fmtAmerican(pick.oddsAmerican)}</span>
-          </>
-        ) : (
-          <>
-            {pick.selection}{" "}
-            <span className="numeric text-[var(--text)]" style={{ fontStyle: "normal" }}>@ {fmtAmerican(pick.oddsAmerican)}</span>
-          </>
-        )}
-      </p>
-      <p className="mt-6 max-w-2xl text-sm text-[var(--muted)] leading-relaxed line-clamp-3">
-        {pick.thesis}
-      </p>
-    </div>
-  );
-}
-
-function NoEdgeHeadline({ slateCount }: { slateCount: number }) {
-  return (
-    <div>
-      <p className="eyebrow mb-6">Tonight's verdict</p>
-      <h2
-        className="font-display uppercase leading-[0.9] text-[var(--text)]"
-        style={{
-          fontSize: "clamp(3rem, 8.5vw, 8rem)",
-          letterSpacing: "-0.045em",
-        }}
-      >
-        No&nbsp;edge<br />found.
-      </h2>
-      <p className="mt-6 max-w-xl text-base text-[var(--muted)] leading-relaxed">
-        The analyst worked through {slateCount} games tonight. None cleared the 6% edge floor after the critic
-        pass. Discipline beats action — capital stays on the bench.
-      </p>
-    </div>
-  );
-}
-
-function Stat({
+function RailRow({
   label,
   value,
   sub,
-  valueColor,
+  tone,
 }: {
   label: string;
   value: string;
   sub: string;
-  valueColor?: string;
+  tone?: string;
 }) {
   return (
-    <div className="space-y-2">
-      <p className="eyebrow">{label}</p>
-      <p
-        className="font-display text-3xl sm:text-4xl leading-none"
-        style={{ color: valueColor ?? "var(--text)" }}
-      >
-        {value}
-      </p>
-      <p className="eyebrow text-[var(--faint)]">{sub}</p>
+    <div className="flex items-baseline justify-between gap-4 py-3 border-b border-rule">
+      <dt className="eyebrow">{label}</dt>
+      <dd className="text-right">
+        <span className="num-display text-3xl sm:text-4xl" style={{ color: tone ?? "var(--ink)" }}>
+          {value}
+        </span>
+        <p className="eyebrow text-ink-3 mt-1">{sub}</p>
+      </dd>
     </div>
   );
-}
-
-function pickHeadline(games: SlatePick[], props: SlatePick[]): SlatePick | null {
-  const all = [...games, ...props];
-  if (all.length === 0) return null;
-  return [...all].sort((a, b) => b.edge - a.edge)[0];
-}
-
-function pnlColorLabel(pnl: number): string {
-  if (pnl === 0) return "no resolution yet";
-  if (pnl > 0) return "in profit";
-  return "in red";
-}
-
-function relCompact(iso: string): string {
-  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (m < 1) return "now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
-
-const PROP_LABELS: Record<string, string> = {
-  player_points: "pts",
-  player_rebounds: "reb",
-  player_assists: "ast",
-  player_threes: "3PM",
-  player_blocks: "blk",
-  player_steals: "stl",
-  player_points_rebounds_assists: "PRA",
-  player_points_rebounds: "P+R",
-  player_points_assists: "P+A",
-  player_rebounds_assists: "R+A",
-  player_blocks_steals: "B+S",
-  batter_hits: "hits",
-  batter_home_runs: "HR",
-  batter_rbis: "RBI",
-  batter_runs_scored: "runs",
-  batter_total_bases: "TB",
-  pitcher_strikeouts: "K",
-  pitcher_earned_runs: "ER",
-};
-
-function propLabel(propType: string | null): string {
-  if (!propType) return "";
-  return PROP_LABELS[propType] ?? propType.replace(/^player_|^batter_|^pitcher_/, "");
 }

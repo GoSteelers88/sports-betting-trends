@@ -1,5 +1,12 @@
+// Folio 03 — the funding gate. The contract the agent must satisfy before a
+// real dollar moves, and the CANONICAL trial-to-date numbers: every figure
+// in these tables is the full paper-trial window (since May 6). The big
+// FUNDING seal across the folio is true-stamp moment No. 2. Row verdicts
+// are plain tags — the bordered stamp stays exclusive.
+
 import type { PaperTrial as PaperTrialData } from "../_data/dashboard";
 import { SectionHeader } from "./SectionHeader";
+import { StampIn } from "./motion";
 
 const TARGET_SAMPLE = 200;
 
@@ -8,10 +15,16 @@ type GateState = "passed" | "failed" | "pending" | "locked";
 function gateState(c: PaperTrialData["criteria"][number], anyMet: boolean): GateState {
   if (c.met) return "passed";
   if (!anyMet) return "locked";
-  // "failed" if it has a measurable current that fell short; "pending" otherwise
   if (c.current === "—" || c.current === "" || /^0$/.test(c.current)) return "pending";
   return "failed";
 }
+
+const STATE_TONE: Record<GateState, { color: string; label: string }> = {
+  passed: { color: "var(--win)", label: "passed" },
+  failed: { color: "var(--loss)", label: "failed" },
+  pending: { color: "var(--hold)", label: "pending" },
+  locked: { color: "var(--ink-3)", label: "locked" },
+};
 
 export function DeploymentGate({ data }: { data: PaperTrialData }) {
   const samplePct = Math.min(100, (data.totalGraded / TARGET_SAMPLE) * 100);
@@ -22,57 +35,84 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
   const propCriteria = data.criteria.filter(c => c.track === "prop");
   const mlReady = mlCriteria.length > 0 && mlCriteria.every(c => c.met);
   const propReady = propCriteria.length > 0 && propCriteria.every(c => c.met);
+  const gatesMet = mlCriteria.filter(c => c.met).length;
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-6 relative">
+      {/* True stamp moment No. 2 — the seal. At narrow widths it stamps
+          in flow ABOVE the kicker on ink-free paper (same rotation, same
+          size); from sm up it seats over the rules as before. */}
+      <div className="sm:hidden flex justify-end -mb-10 pointer-events-none">
+        <StampIn>
+          <span
+            className="stamp-true"
+            style={{ color: mlReady ? "var(--win)" : "var(--loss)", transform: "rotate(-4deg)" }}
+          >
+            Funding · {mlReady ? "Unlocked" : "Locked"}
+          </span>
+        </StampIn>
+      </div>
+
       <SectionHeader
         id="deployment-gate"
-        index="01"
-        label="DEPLOYMENT GATE"
-        title="FUNDING LOCKED"
-        subtitle="Capital cannot deploy until all gates on a track clear. ML and Prop tracks are independent — props were enabled later and validate on their own metrics."
-        status={mlReady ? "ML UNLOCKED" : "LOCKED"}
-        statusColor={mlReady ? "edge" : "kill"}
+        index="03"
+        label="THE FUNDING GATE · TRIAL TO DATE"
+        title={mlReady ? "Terms satisfied" : "Real money stays locked"}
+        subtitle="Canonical trial-to-date numbers — every figure below covers the full paper trial since May 6. Capital cannot deploy until every gate on a track clears. ML and prop tracks are independent."
+        status={`${gatesMet}/${mlCriteria.length} ML criteria clear`}
+        statusTone={mlReady ? "win" : "loss"}
       />
 
-      {/* Sample-size deployment bar (ML only — prop sample is shown in its own track) */}
-      <div className="surface p-4 sm:p-5">
-        <div className="flex items-baseline justify-between mb-2">
-          <span className="eyebrow text-[var(--muted)]">ML SAMPLE PROGRESS</span>
-          <span className="numeric text-sm">
-            <span className="text-[var(--text)]">{data.totalGraded}</span>
-            <span className="text-[var(--muted)]"> / {TARGET_SAMPLE}</span>
+      {/* The same seal, absolute over the rule at sm+ (crit-approved at 1280/1800) */}
+      <div className="hidden sm:block absolute right-0 top-2 z-10 pointer-events-none">
+        <StampIn>
+          <span
+            className="stamp-true"
+            style={{ color: mlReady ? "var(--win)" : "var(--loss)", transform: "rotate(-4deg)" }}
+          >
+            Funding · {mlReady ? "Unlocked" : "Locked"}
+          </span>
+        </StampIn>
+      </div>
+
+      {/* Sample progress — ML only; prop sample reads on its own line item */}
+      <div className="panel p-5">
+        <div className="flex items-baseline justify-between mb-3">
+          <span className="eyebrow">ML sample progress · trial</span>
+          <span className="num text-sm">
+            <span className="text-ink font-semibold">{data.totalGraded}</span>
+            <span className="text-ink-3"> / {TARGET_SAMPLE} graded</span>
           </span>
         </div>
-        <div className="meter h-2 mb-2">
+        <div className="meter" style={{ height: 6 }}>
           <div
             className="meter-fill"
             style={{
               width: `${samplePct}%`,
-              background: mlReady ? "var(--edge)" : "var(--signal)",
+              background: mlReady ? "var(--win)" : "var(--ink)",
             }}
           />
         </div>
-        <p className="eyebrow text-[var(--muted)]">
-          {remaining > 0 ? `${remaining} REMAINING TO DEPLOY ML` : "ML SAMPLE TARGET MET"}
+        <p className="eyebrow text-ink-3 mt-3">
+          {remaining > 0
+            ? `${remaining} graded picks remaining before ML can deploy`
+            : "ML sample target met"}
         </p>
       </div>
 
-      {/* ML track */}
-      <TrackGroup
-        title="MONEYLINE TRACK"
-        readyLabel={mlReady ? "UNLOCKED" : "LOCKED"}
-        readyColor={mlReady ? "var(--edge)" : "var(--kill)"}
+      <GateTable
+        title="Moneyline track"
+        sub="Gates initial Kalshi placement — the primary venue. Window: trial to date."
+        ready={mlReady}
         criteria={mlCriteria}
         anyMet={anyMet}
       />
 
-      {/* Prop track — only rendered once props have started accumulating */}
       {propCriteria.length > 0 && (
-        <TrackGroup
-          title="PROP TRACK"
-          readyLabel={propReady ? "UNLOCKED" : "LOCKED"}
-          readyColor={propReady ? "var(--edge)" : "var(--kill)"}
+        <GateTable
+          title="Prop track"
+          sub="Gates prop placement; validated by win rate, not CLV. Window: trial to date."
+          ready={propReady}
           criteria={propCriteria}
           anyMet={anyMet}
         />
@@ -81,90 +121,82 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
   );
 }
 
-function TrackGroup({
+function GateTable({
   title,
-  readyLabel,
-  readyColor,
+  sub,
+  ready,
   criteria,
   anyMet,
 }: {
   title: string;
-  readyLabel: string;
-  readyColor: string;
+  sub: string;
+  ready: boolean;
   criteria: PaperTrialData["criteria"];
   anyMet: boolean;
 }) {
+  const passed = criteria.filter(c => c.met).length;
   return (
-    <div className="space-y-3">
-      <div className="flex items-baseline justify-between">
-        <span className="eyebrow text-[var(--muted)]">{title}</span>
-        <span className="pill" style={{ color: readyColor, borderColor: readyColor }}>
-          {readyLabel}
-        </span>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        {criteria.map((c, i) => (
-          <GateModule key={i} criterion={c} state={gateState(c, anyMet)} />
-        ))}
+    <div className="panel">
+      <header
+        className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
+        style={{ borderBottom: "3px double var(--rule-strong)" }}
+      >
+        <div>
+          <h3 className="font-display font-semibold text-lg text-ink leading-tight">{title}</h3>
+          <p className="eyebrow text-ink-3 mt-0.5">{sub}</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="num text-sm text-ink-2">
+            {passed}/{criteria.length} clear
+          </span>
+          <span className="tag" style={{ color: ready ? "var(--win)" : "var(--loss)" }}>
+            {ready ? "Unlocked" : "Locked"}
+          </span>
+        </div>
+      </header>
+      <div className="overflow-x-auto">
+        <table className="ledger-table">
+          <caption className="sr-only">{title} funding criteria</caption>
+          <thead>
+            {/* No TARGET column — every target is already restated in the
+                criterion label ("ML sample size ≥ 200"); printing it twice
+                was dead ink and pushed the table off-canvas at 360. */}
+            <tr>
+              <th scope="col">Verdict</th>
+              <th scope="col">Criterion</th>
+              <th scope="col" className="text-right">Current · trial</th>
+            </tr>
+          </thead>
+          <tbody>
+            {criteria.map((c, i) => {
+              const state = gateState(c, anyMet);
+              const tone = STATE_TONE[state];
+              return (
+                <tr
+                  key={i}
+                  style={
+                    state === "failed"
+                      ? { background: "var(--loss-wash)" }
+                      : state === "passed"
+                      ? { background: "var(--win-wash)" }
+                      : undefined
+                  }
+                >
+                  <td>
+                    <span className="tag" style={{ color: tone.color }}>
+                      {tone.label}
+                    </span>
+                  </td>
+                  <td className="text-sm text-ink font-medium">{c.label}</td>
+                  <td className="num text-sm text-right font-semibold" style={{ color: tone.color }}>
+                    {c.current}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
-  );
-}
-
-function GateModule({
-  criterion,
-  state,
-}: {
-  criterion: PaperTrialData["criteria"][number];
-  state: GateState;
-}) {
-  const palette =
-    state === "passed"
-      ? { color: "var(--edge)", label: "PASSED", glyph: "✓" }
-      : state === "failed"
-      ? { color: "var(--kill)", label: "FAILED", glyph: "×" }
-      : state === "pending"
-      ? { color: "var(--warn)", label: "PENDING", glyph: "○" }
-      : { color: "var(--muted)", label: "LOCKED", glyph: "⊘" };
-
-  return (
-    <article
-      className="p-4 sm:p-5 surface flex flex-col gap-3"
-      style={{
-        borderColor:
-          state === "passed" ? "rgba(79,183,255,0.35)"
-          : state === "failed" ? "rgba(255,77,109,0.35)"
-          : "var(--border)",
-      }}
-    >
-      <div className="flex items-center justify-between">
-        <span
-          className="font-mono text-base leading-none"
-          aria-hidden="true"
-          style={{ color: palette.color }}
-        >
-          {palette.glyph}
-        </span>
-        <span
-          className="pill"
-          style={{ color: palette.color, borderColor: palette.color }}
-        >
-          {palette.label}
-        </span>
-      </div>
-      <h3 className="font-display text-lg leading-tight text-[var(--text)]">
-        {criterion.label}
-      </h3>
-      <div className="flex items-baseline justify-between mt-auto">
-        <span className="eyebrow text-[var(--muted)]">CURRENT</span>
-        <span className="numeric text-base" style={{ color: palette.color }}>
-          {criterion.current}
-        </span>
-      </div>
-      <div className="flex items-baseline justify-between">
-        <span className="eyebrow text-[var(--muted)]">TARGET</span>
-        <span className="numeric text-xs text-[var(--muted)]">{criterion.target}</span>
-      </div>
-    </article>
   );
 }

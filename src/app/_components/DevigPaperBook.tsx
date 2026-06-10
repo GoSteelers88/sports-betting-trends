@@ -1,12 +1,18 @@
+// Experiment No. 2 — the de-vigged sharp-line $10k paper book, compressed
+// to a ledger card until the first settle. Data logic untouched
+// (getDevigLedgerView). Equity chart prints only once settles exist; the
+// open book lives behind a printed disclosure.
+
 import { getDevigLedgerView } from "@/lib/devig-paper";
-import { SectionHeader } from "./SectionHeader";
 import { DevigEquityCurve } from "./DevigEquityCurve";
 
 const fmtUsd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const fmtUsd2 = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 });
-const fmtOdds = (n: number) => (n > 0 ? `+${n}` : `${n}`);
+// Invalid American prices (|n| < 100, NaN) render as em-dash — render guard only.
+const fmtOdds = (n: number) =>
+  Number.isFinite(n) && Math.abs(n) >= 100 ? (n > 0 ? `+${n}` : `${n}`) : "—";
 
 function gameTime(iso: string): string {
   const d = new Date(iso);
@@ -19,138 +25,101 @@ export function DevigPaperBook() {
   try {
     view = getDevigLedgerView();
   } catch {
-    return null; // book unavailable — hide the section
+    return null; // book unavailable — hide the card
   }
   const { stats, config, open, settled, equityCurve } = view;
 
-  const pnlColor =
-    stats.realizedPnlUsd > 0 ? "var(--edge)" : stats.realizedPnlUsd < 0 ? "var(--kill)" : "var(--muted)";
-
-  const tiles: Array<{ label: string; value: string; color?: string; sub?: string }> = [
-    { label: "EQUITY", value: fmtUsd2(stats.equityUsd), sub: `of ${fmtUsd(stats.startingBankrollUsd)} start` },
-    {
-      label: "REALIZED P&L",
-      value: `${stats.realizedPnlUsd >= 0 ? "+" : ""}${fmtUsd2(stats.realizedPnlUsd)}`,
-      color: pnlColor,
-      sub: `${stats.roiPct >= 0 ? "+" : ""}${stats.roiPct.toFixed(2)}% ROI`,
-    },
-    { label: "OPEN EXPOSURE", value: fmtUsd2(stats.exposureUsd), sub: `${stats.openCount} bet${stats.openCount === 1 ? "" : "s"}` },
-    {
-      label: "RECORD",
-      value: `${stats.wins}–${stats.losses}${stats.pushes ? `–${stats.pushes}` : ""}`,
-      sub: stats.yieldPct != null ? `${stats.yieldPct >= 0 ? "+" : ""}${stats.yieldPct}% yield` : "no settles yet",
-    },
-  ];
+  const pnlTone =
+    stats.realizedPnlUsd > 0 ? "var(--win)" : stats.realizedPnlUsd < 0 ? "var(--loss)" : "var(--ink-3)";
+  const hasSettles = settled.length > 0;
 
   return (
-    <section className="space-y-4">
-      <SectionHeader
-        id="devig-paper-book"
-        index="00"
-        label="DE-VIGGED SHARP · POSITIVE-EV"
-        title="$10K PAPER BOOK"
-        subtitle="A live, simulated $10,000 book that bets only when a soft sportsbook's price beats the de-vigged Pinnacle (sharp) fair value by ≥2% — the genuine retail edge. Best price taken at entry, quarter-Kelly stakes, settled on real game results. No real money; taker fills at posted prices (no fill assumption needed)."
-        status="PAPER · LIVE"
-        statusColor="signal"
-      />
-
-      {/* Stat tiles */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {tiles.map((t) => (
-          <article key={t.label} className="surface p-4 sm:p-5 flex flex-col gap-2">
-            <span className="eyebrow text-[var(--muted)]">{t.label}</span>
-            <span className="numeric text-2xl" style={{ color: t.color ?? "var(--text)" }}>
-              {t.value}
-            </span>
-            {t.sub && <span className="eyebrow text-[var(--muted)]">{t.sub}</span>}
-          </article>
-        ))}
-      </div>
-
-      {/* Equity curve */}
-      <div className="surface p-4 sm:p-5">
-        <div className="flex items-baseline justify-between mb-2">
-          <span className="eyebrow text-[var(--muted)]">EQUITY CURVE</span>
-          <span className="eyebrow text-[var(--muted)]">
-            +EV ≥ {(config.evFloor * 100).toFixed(0)}% · {config.kellyMultiplier}× KELLY · {config.leagues.join("/")}
-          </span>
+    <article id="devig-paper-book" className="panel">
+      <header className="px-4 sm:px-5 py-3" style={{ borderBottom: "3px double var(--rule-strong)" }}>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="font-display font-semibold text-lg text-ink leading-tight">
+            Exp. No. 2 — De-vigged sharp +EV, $10k paper
+          </h3>
+          <span className="tag" style={{ color: "var(--blue)" }}>Paper · Live</span>
         </div>
-        <DevigEquityCurve data={equityCurve} baseline={stats.startingBankrollUsd} />
+        <p className="num text-[0.7rem] text-ink-2 leading-relaxed mt-1 max-w-3xl">
+          Bets only when a soft book&rsquo;s price beats the de-vigged Pinnacle fair value by
+          ≥{(config.evFloor * 100).toFixed(0)}% ({config.leagues.join("/")}) — the genuine retail
+          edge. Best price at entry, {config.kellyMultiplier}× Kelly, settled on real results.
+        </p>
+      </header>
+
+      {/* Stat strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-rule border-b border-rule bg-paper-2">
+        <Tile label="Equity" value={fmtUsd2(stats.equityUsd)} sub={`of ${fmtUsd(stats.startingBankrollUsd)} start`} />
+        <Tile
+          label="Realized P&L"
+          value={`${stats.realizedPnlUsd >= 0 ? "+" : ""}${fmtUsd2(stats.realizedPnlUsd)}`}
+          tone={pnlTone}
+          sub={hasSettles ? `${stats.roiPct >= 0 ? "+" : ""}${stats.roiPct.toFixed(2)}% ROI` : "—"}
+        />
+        <Tile
+          label="Open exposure"
+          value={fmtUsd2(stats.exposureUsd)}
+          sub={`${stats.openCount} bet${stats.openCount === 1 ? "" : "s"}`}
+        />
+        <Tile
+          label="Record"
+          value={`${stats.wins}–${stats.losses}${stats.pushes ? `–${stats.pushes}` : ""}`}
+          sub={
+            stats.yieldPct != null
+              ? `${stats.yieldPct >= 0 ? "+" : ""}${stats.yieldPct}% yield`
+              : "awaiting first settle"
+          }
+        />
       </div>
 
-      {/* Open bets */}
-      <div className="surface p-4 sm:p-5">
-        <span className="eyebrow text-[var(--muted)]">OPEN BETS · {open.length}</span>
-        {open.length === 0 ? (
-          <p className="eyebrow text-[var(--muted)] mt-3 leading-relaxed">
-            NO OPEN BETS — THE STRATEGY ONLY FIRES ON +EV ≥ {(config.evFloor * 100).toFixed(0)}% PLAYS,
-            WHICH ARE RARE. AN EMPTY BOOK IS THE HONEST RESULT WHEN THE MARKET IS EFFICIENT.
-          </p>
-        ) : (
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full text-sm numeric">
+      {hasSettles ? (
+        <>
+          {equityCurve.length >= 2 && (
+            <figure className="p-4 border-b border-rule">
+              <figcaption className="eyebrow mb-3">Equity curve</figcaption>
+              <DevigEquityCurve data={equityCurve} baseline={stats.startingBankrollUsd} />
+            </figure>
+          )}
+          <div className="overflow-x-auto border-b border-rule">
+            <table className="ledger-table">
+              <caption className="sr-only">Recently settled de-vig paper bets</caption>
               <thead>
-                <tr className="eyebrow text-[var(--muted)] text-left">
-                  <th className="py-1 pr-3 font-normal">BET</th>
-                  <th className="py-1 px-3 font-normal text-right">PRICE</th>
-                  <th className="py-1 px-3 font-normal text-right">EV</th>
-                  <th className="py-1 px-3 font-normal text-right">STAKE</th>
-                  <th className="py-1 pl-3 font-normal text-right">GAME</th>
+                <tr>
+                  <th scope="col">Settled bet</th>
+                  <th scope="col" className="text-right hidden sm:table-cell">Price</th>
+                  <th scope="col" className="text-right">Result</th>
+                  <th scope="col" className="text-right">P&L</th>
                 </tr>
               </thead>
               <tbody>
-                {open.slice(0, 20).map((b) => (
-                  <tr key={b.id} className="border-t border-[var(--border)]">
-                    <td className="py-1.5 pr-3 max-w-[280px] truncate font-sans text-[var(--text)]" title={b.matchup}>
-                      {b.team} <span className="text-[var(--muted)] text-xs">@ {b.book}</span>
-                    </td>
-                    <td className="py-1.5 px-3 text-right text-[var(--text)]">{fmtOdds(b.oddsAmerican)}</td>
-                    <td className="py-1.5 px-3 text-right" style={{ color: "var(--edge)" }}>
-                      +{(b.evVsSharp * 100).toFixed(1)}%
-                    </td>
-                    <td className="py-1.5 px-3 text-right text-[var(--muted)]">{fmtUsd2(b.stakeUsd)}</td>
-                    <td className="py-1.5 pl-3 text-right text-[var(--muted)] text-xs">{gameTime(b.commenceTime)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {open.length > 20 && (
-              <p className="eyebrow text-[var(--muted)] mt-2">+ {open.length - 20} MORE</p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Recently settled */}
-      {settled.length > 0 && (
-        <div className="surface p-4 sm:p-5">
-          <span className="eyebrow text-[var(--muted)]">RECENTLY SETTLED</span>
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full text-sm numeric">
-              <thead>
-                <tr className="eyebrow text-[var(--muted)] text-left">
-                  <th className="py-1 pr-3 font-normal">BET</th>
-                  <th className="py-1 px-3 font-normal text-right">PRICE</th>
-                  <th className="py-1 px-3 font-normal text-right">RESULT</th>
-                  <th className="py-1 pl-3 font-normal text-right">P&L</th>
-                </tr>
-              </thead>
-              <tbody>
-                {settled.slice(0, 15).map((b) => {
+                {settled.slice(0, 15).map(b => {
                   const won = b.status === "won";
                   const lost = b.status === "lost";
-                  const color = won ? "var(--edge)" : lost ? "var(--kill)" : "var(--muted)";
+                  const tone = won ? "var(--win)" : lost ? "var(--loss)" : "var(--ink-3)";
                   return (
-                    <tr key={b.id} className="border-t border-[var(--border)]">
-                      <td className="py-1.5 pr-3 max-w-[320px] truncate font-sans text-[var(--text)]" title={b.finalScore ?? b.matchup}>
-                        {b.team}
+                    <tr key={b.id}>
+                      <td className="max-w-[340px] text-sm text-ink">
+                        <span className="block leading-snug break-words line-clamp-2" title={b.finalScore ?? b.matchup}>
+                          {b.team}
+                        </span>
+                        <span className="num text-[0.65rem] text-ink-3 sm:hidden">{fmtOdds(b.oddsAmerican)}</span>
                       </td>
-                      <td className="py-1.5 px-3 text-right text-[var(--muted)]">{fmtOdds(b.oddsAmerican)}</td>
-                      <td className="py-1.5 px-3 text-right" style={{ color }}>
-                        {b.status.toUpperCase()}
+                      <td className="num text-xs text-right text-ink-2 hidden sm:table-cell">
+                        {fmtOdds(b.oddsAmerican)}
                       </td>
-                      <td className="py-1.5 pl-3 text-right" style={{ color: (b.pnlUsd ?? 0) >= 0 ? "var(--edge)" : "var(--kill)" }}>
-                        {(b.pnlUsd ?? 0) >= 0 ? "+" : ""}{fmtUsd2(b.pnlUsd ?? 0)}
+                      <td className="text-right">
+                        <span className="tag" style={{ color: tone }}>
+                          {b.status}
+                        </span>
+                      </td>
+                      <td
+                        className="num text-sm text-right font-semibold"
+                        style={{ color: (b.pnlUsd ?? 0) >= 0 ? "var(--win)" : "var(--loss)" }}
+                      >
+                        {(b.pnlUsd ?? 0) >= 0 ? "+" : ""}
+                        {fmtUsd2(b.pnlUsd ?? 0)}
                       </td>
                     </tr>
                   );
@@ -158,14 +127,100 @@ export function DevigPaperBook() {
               </tbody>
             </table>
           </div>
-        </div>
+        </>
+      ) : (
+        <p className="px-4 sm:px-5 py-3 border-b border-rule tag" style={{ color: "var(--hold)" }}>
+          Awaiting first settle
+          {open.length === 0
+            ? ` · no open bets — +EV ≥ ${(config.evFloor * 100).toFixed(0)}% plays are rare; an empty book is the honest result of an efficient market`
+            : ` · ${open.length} open bet${open.length === 1 ? "" : "s"} riding`}
+        </p>
       )}
 
-      <p className="eyebrow text-[var(--muted)] leading-relaxed">
-        SIMULATED · NOT FINANCIAL ADVICE. Bets are taker fills at the best soft-book price recorded at entry,
-        sized at quarter-Kelly on the de-vigged Pinnacle fair value. Edge basis: positive expected value vs the
-        sharp closing line (Miller–Davidow). The companion CLV-proof harness measures whether these entries beat the close.
+      {/* Open book — printed disclosure */}
+      {open.length > 0 && (
+        <details className="group">
+          <summary className="px-4 sm:px-5 py-2.5 cursor-pointer list-none flex items-baseline justify-between hover:bg-paper-3/60 transition-colors">
+            <span className="eyebrow">Open bets · {open.length}</span>
+            <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+            <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+          </summary>
+          <div className="overflow-x-auto border-t border-rule">
+            <table className="ledger-table">
+              <caption className="sr-only">Open de-vig paper bets</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Bet</th>
+                  <th scope="col" className="text-right hidden sm:table-cell">Price</th>
+                  <th scope="col" className="text-right">EV</th>
+                  <th scope="col" className="text-right hidden sm:table-cell">Stake</th>
+                  <th scope="col" className="text-right hidden sm:table-cell">Game</th>
+                </tr>
+              </thead>
+              <tbody>
+                {open.slice(0, 20).map(b => (
+                  <tr key={b.id}>
+                    <td className="max-w-[320px] text-sm text-ink">
+                      <span className="block leading-snug break-words line-clamp-2" title={b.matchup}>
+                        {b.team} <span className="eyebrow text-ink-3">@ {b.book}</span>
+                      </span>
+                      <span className="num text-[0.65rem] text-ink-3 sm:hidden">
+                        {fmtOdds(b.oddsAmerican)} · {fmtUsd2(b.stakeUsd)} · {gameTime(b.commenceTime)}
+                      </span>
+                    </td>
+                    <td className="num text-sm text-right text-ink hidden sm:table-cell">
+                      {fmtOdds(b.oddsAmerican)}
+                    </td>
+                    <td className="num text-sm text-right font-medium" style={{ color: "var(--win)" }}>
+                      +{(b.evVsSharp * 100).toFixed(1)}%
+                    </td>
+                    <td className="num text-xs text-right text-ink-2 hidden sm:table-cell">
+                      {fmtUsd2(b.stakeUsd)}
+                    </td>
+                    <td className="num text-xs text-right text-ink-2 hidden sm:table-cell">
+                      {gameTime(b.commenceTime)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {open.length > 20 && (
+              <p className="eyebrow text-ink-3 px-4 py-2 border-t border-rule">
+                + {open.length - 20} more
+              </p>
+            )}
+          </div>
+        </details>
+      )}
+
+      <p className="eyebrow text-ink-3 leading-relaxed px-4 sm:px-5 py-2.5 border-t border-rule">
+        Simulated · not financial advice. Taker fills at the best soft-book price recorded at
+        entry, sized at quarter-Kelly on the de-vigged Pinnacle fair value. Edge basis: positive
+        EV vs the sharp closing line (Miller–Davidow). The companion CLV-proof harness measures
+        whether these entries beat the close.
       </p>
-    </section>
+    </article>
+  );
+}
+
+function Tile({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: string;
+}) {
+  return (
+    <div className="px-4 py-3">
+      <p className="eyebrow text-ink-3">{label}</p>
+      <p className="num-display text-xl mt-1" style={{ color: tone ?? "var(--ink)" }}>
+        {value}
+      </p>
+      {sub && <p className="eyebrow text-ink-3 mt-0.5">{sub}</p>}
+    </div>
   );
 }

@@ -1,227 +1,127 @@
 "use client";
 
+// Folio 02 — Tonight's play. The merged hero/survivor brief: the top game
+// pick runs ONCE as the full story (headline, thesis pull-quote, autopsy
+// stats, what-kills-it); additional surviving picks sit in a ledger table
+// below and the table disappears entirely when there's just one. When
+// nothing survived, the folio compresses to a single honest line — no
+// empty-state theater.
+
 import { useState } from "react";
 import type { SlatePick } from "../_data/dashboard";
 import { SectionHeader } from "./SectionHeader";
 import { PickAutopsy } from "./PickAutopsy";
+import { fmtAmerican, fmtPct, propLabel } from "./format";
 
-function fmtAmerican(n: number): string {
-  return n > 0 ? `+${n}` : `${n}`;
-}
-function fmtPct(n: number, digits = 1): string {
-  return `${(n * 100).toFixed(digits)}%`;
-}
-
-// Map prop-type keys to short, readable labels. The keys come from the
-// scraper (RotoWire / odds feed), so the inverse mapping is stable.
-const PROP_LABELS: Record<string, string> = {
-  player_points: "pts",
-  player_rebounds: "reb",
-  player_assists: "ast",
-  player_threes: "3PM",
-  player_blocks: "blk",
-  player_steals: "stl",
-  player_turnovers: "TO",
-  player_points_rebounds_assists: "PRA",
-  player_points_rebounds: "P+R",
-  player_points_assists: "P+A",
-  player_rebounds_assists: "R+A",
-  player_blocks_steals: "B+S",
-  batter_hits: "hits",
-  batter_home_runs: "HR",
-  batter_rbis: "RBI",
-  batter_runs_scored: "runs",
-  batter_total_bases: "TB",
-  pitcher_strikeouts: "K",
-  pitcher_earned_runs: "ER",
-};
-
-function formatPropType(propType: string | null): string {
-  if (!propType) return "";
-  return PROP_LABELS[propType] ?? propType.replace(/^player_|^batter_|^pitcher_/, "").replace(/_/g, " ");
-}
-
-// Per-kind labels keep the games / props sections visually distinct while
-// reusing the same component shell. Anchors come straight from the spec
-// (CommandHeader nav uses them).
-const SECTION_LABELS = {
-  games: {
-    anchor: "survivors",
-    index: "03",
-    eyebrow: "SURVIVOR BRIEF · GAMES",
-    title: "GAME SURVIVOR",
-    subtitle:
-      "Moneyline/spread/total picks that survived the analyst, grader, critic, and bankroll guard.",
-    emptyTitle: "NO GAME EDGE",
-    emptyHeadline: "No game picks survived the critic today.",
-    emptyBody:
-      "Discipline > action. Capital remains locked on the moneyline board. Nothing cleared the 6% edge floor + critic pass.",
-  },
-  props: {
-    anchor: "prop-survivors",
-    index: "04",
-    eyebrow: "SURVIVOR BRIEF · PROPS",
-    title: "PROP SURVIVOR",
-    subtitle:
-      "Player props that cleared the projector + critic. modelProb on every pick comes from get_prop_projection, not analyst reasoning.",
-    emptyTitle: "NO PROP EDGE",
-    emptyHeadline: "No prop picks survived today.",
-    emptyBody:
-      "Prop track is independent from games — the projector returned no qualifying edges, or the critic killed every one it found.",
-  },
-} as const;
-
-export function SurvivorBrief({
-  picks,
-  kind = "games",
-}: {
-  picks: SlatePick[];
-  kind?: "games" | "props";
-}) {
+export function TonightsPlay({ picks }: { picks: SlatePick[] }) {
   const [openId, setOpenId] = useState<number | null>(null);
 
-  const labels = SECTION_LABELS[kind];
-
-  // The brief: the single highest-edge survivor — that's the headline.
-  // Other survivors get listed below as a stack.
   const sorted = [...picks].sort((a, b) => b.edge - a.edge);
   const headline = sorted[0] ?? null;
   const others = sorted.slice(1);
 
   if (!headline) {
     return (
-      <section className="space-y-4">
+      <section>
         <SectionHeader
-          id={labels.anchor}
-          index={labels.index}
-          label={labels.eyebrow}
-          title={labels.emptyTitle}
-          status="CAPITAL LOCKED"
-          statusColor="muted"
+          id="tonights-play"
+          index="02"
+          label="TONIGHT'S PLAY"
+          title="No edge found."
+          status="Capital held"
+          statusTone="loss"
         />
-        <div className="surface p-8 sm:p-10">
-          <p className="font-display text-2xl sm:text-3xl text-[var(--text)] mb-3">
-            {labels.emptyHeadline}
-          </p>
-          <p className="font-mono text-sm text-[var(--muted)] max-w-xl">
-            ▸ {labels.emptyBody}
-          </p>
-        </div>
+        <p className="num text-sm text-ink-2 mt-4 max-w-2xl leading-relaxed">
+          Nothing cleared the 6% edge floor plus the critic pass tonight. Discipline
+          beats action — the bankroll stays on the bench.
+        </p>
       </section>
     );
   }
 
   const open = openId !== null ? picks.find(p => p.id === openId) ?? null : null;
+  const isProp = headline.market === "prop" && headline.player;
+  const result = headline.outcome?.result ?? null;
 
   return (
-    <section id={labels.anchor} className="space-y-10">
-      {/* Editorial spread banner */}
-      <div className="flex items-baseline justify-between flex-wrap gap-3 pb-3 border-b border-[var(--border)]">
-        <p className="eyebrow">{labels.eyebrow}</p>
-        <p className="eyebrow text-[var(--faint)]">
-          {picks.length} survivor{picks.length === 1 ? "" : "s"} · critic passed
-        </p>
-      </div>
+    <section className="space-y-10">
+      <SectionHeader
+        id="tonights-play"
+        index="02"
+        label="TONIGHT'S PLAY"
+        title={picks.length === 1 ? "The play" : `${picks.length} survivors tonight`}
+        subtitle="Picks that lived through analyst, grader, devil's-advocate critic, and bankroll guard."
+        status={`${picks.length} shipped`}
+        statusTone="win"
+      />
 
-      {/* Magazine-style two-column spread:
-            left column — pull quote (the pick + thesis)
-            right column — narrow data rail */}
-      <article className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-10 lg:gap-16">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            <span className="pill" style={{ color: "var(--edge)", borderColor: "var(--edge)" }}>
-              ★ Top survivor
+      {/* The story — 8/4 */}
+      <article className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="lg:col-span-8">
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <span className="tag" style={{ color: "var(--blue)" }}>
+              Survived the critic
             </span>
-            <span className="pill" style={{ color: "var(--signal)", borderColor: "var(--signal)" }}>
-              {headline.league}
-            </span>
-            {headline.outcome?.result && (
+            <span className="eyebrow">{headline.league}</span>
+            {result && (
               <span
-                className="pill"
+                className="tag"
                 style={{
-                  color: headline.outcome.result === "win" ? "var(--edge)" : "var(--kill)",
-                  borderColor: headline.outcome.result === "win" ? "var(--edge)" : "var(--kill)",
+                  color:
+                    result === "win" ? "var(--win)" : result === "loss" ? "var(--loss)" : "var(--ink-2)",
                 }}
               >
-                {headline.outcome.result.toUpperCase()}
+                {result}
               </span>
             )}
           </div>
 
-          {headline.market === "prop" && headline.player ? (
-            <>
-              <h3
-                className="font-display leading-[0.95] text-[var(--text)]"
-                style={{
-                  fontStyle: "italic",
-                  fontSize: "clamp(3rem, 7.5vw, 6.5rem)",
-                  letterSpacing: "-0.025em",
-                }}
-              >
-                {headline.player}
-              </h3>
-              <p className="mt-2 font-mono text-xs text-[var(--muted)]">{headline.matchup}</p>
-              <p
-                className="mt-4 font-display text-2xl sm:text-3xl text-[var(--edge)]"
-                style={{ fontStyle: "italic" }}
-              >
-                {headline.side?.toUpperCase()} {headline.line} {formatPropType(headline.propType)}
-                <span className="text-[var(--text)] numeric" style={{ fontStyle: "normal" }}> @ {fmtAmerican(headline.oddsAmerican)}</span>
-              </p>
-            </>
-          ) : (
-            <>
-              <h3
-                className="font-display leading-[0.95] text-[var(--text)]"
-                style={{
-                  fontStyle: "italic",
-                  fontSize: "clamp(3rem, 7.5vw, 6.5rem)",
-                  letterSpacing: "-0.025em",
-                }}
-              >
-                {headline.matchup}
-              </h3>
-              <p
-                className="mt-4 font-display text-2xl sm:text-3xl text-[var(--edge)]"
-                style={{ fontStyle: "italic" }}
-              >
-                {headline.selection}{" "}
-                <span className="text-[var(--text)] numeric" style={{ fontStyle: "normal" }}>@ {fmtAmerican(headline.oddsAmerican)}</span>
-              </p>
-            </>
-          )}
-
-          {/* Thesis as pull-quote */}
-          <blockquote
-            className="mt-10 pl-6 border-l-2 border-[var(--edge)] font-display text-xl sm:text-2xl text-[var(--text)] leading-snug max-w-2xl"
-            style={{ fontStyle: "italic" }}
+          <h3
+            className="headline text-ink"
+            style={{ fontSize: "clamp(2.25rem, 5.5vw, 4.5rem)" }}
           >
+            {isProp ? headline.player : headline.matchup}
+          </h3>
+          {isProp && <p className="mt-2 num text-xs text-ink-2">{headline.matchup}</p>}
+          <p className="mt-4 num text-xl sm:text-2xl font-semibold">
+            <span style={{ color: "var(--win)" }}>
+              {isProp
+                ? `${headline.side?.toUpperCase()} ${headline.line} ${propLabel(headline.propType)}`
+                : headline.selection}
+            </span>{" "}
+            <span className="text-ink">@ {fmtAmerican(headline.oddsAmerican)}</span>
+          </p>
+
+          {/* Thesis pull-quote */}
+          <blockquote className="deck mt-8 pl-6 border-l-2 border-rule-strong text-xl sm:text-2xl text-ink max-w-2xl italic font-display">
             {headline.thesis}
           </blockquote>
 
-          <p className="mt-6 max-w-2xl text-sm text-[var(--muted)] leading-relaxed">
-            <span className="eyebrow text-[var(--warn)] mr-2">What kills it</span>
+          <p className="mt-6 max-w-2xl text-sm text-ink-2 leading-relaxed">
+            <span className="eyebrow mr-2" style={{ color: "var(--loss)" }}>
+              What kills it
+            </span>
             {headline.invalidation || "—"}
           </p>
 
           <button
             type="button"
             onClick={() => setOpenId(headline.id)}
-            className="mt-10 eyebrow inline-flex items-center gap-3 text-[var(--text)] hover:text-[var(--edge)] transition-colors group"
+            className="mt-8 eyebrow inline-flex items-center gap-3 text-ink hover:text-loss transition-colors group"
           >
             <span className="w-10 h-px bg-current group-hover:w-16 transition-all duration-300" />
             Open autopsy
           </button>
         </div>
 
-        {/* Right rail — narrow stat column */}
-        <dl className="space-y-8 lg:border-l lg:border-[var(--border)] lg:pl-12">
-          <RailStat label="Edge" value={fmtPct(headline.edge, 2)} color="edge" big />
-          <RailStat label="Stake" value={`${headline.kellyStakeUnits.toFixed(2)}u`} />
-          <RailStat label="Model probability" value={fmtPct(headline.modelProb)} color="signal" />
-          <RailStat label="Market probability" value={fmtPct(headline.marketProb)} color="muted" />
-          <RailStat label="Confidence" value={`${headline.confidence}`} />
-          <RailStat
+        {/* Data rail — the autopsy stats */}
+        <dl className="lg:col-span-4 lg:border-l lg:border-rule lg:pl-10 self-start">
+          <RailFigure label="Edge" value={fmtPct(headline.edge, 2)} tone="var(--win)" big />
+          <RailFigure label="Stake" value={`${headline.kellyStakeUnits.toFixed(2)}u`} tone="var(--ink)" />
+          <RailFigure label="Model probability" value={fmtPct(headline.modelProb)} tone="var(--blue)" />
+          <RailFigure label="Market probability" value={fmtPct(headline.marketProb)} tone="var(--ink-2)" />
+          <RailFigure label="Confidence" value={`${headline.confidence}`} tone="var(--ink)" />
+          <RailFigure
             label="CLV"
             value={
               headline.market === "prop"
@@ -230,66 +130,87 @@ export function SurvivorBrief({
                 ? `${headline.clvCents > 0 ? "+" : ""}${headline.clvCents}¢`
                 : "pending"
             }
-            color={
+            tone={
               headline.market === "prop"
-                ? "muted"
+                ? "var(--ink-3)"
                 : headline.clvCents !== null && headline.clvCents > 0
-                ? "edge"
+                ? "var(--win)"
                 : headline.clvCents !== null && headline.clvCents < 0
-                ? "kill"
-                : "muted"
+                ? "var(--loss)"
+                : "var(--hold)"
             }
+            last
           />
         </dl>
       </article>
 
-      {/* Other survivors as a stack */}
+      {/* Additional survivors — only when there are any */}
       {others.length > 0 && (
-        <div className="space-y-1">
-          <p className="eyebrow text-[var(--muted)] px-1">OTHER SURVIVORS</p>
-          <ul className="surface">
-            {others.map((p, i) => (
-              <li
-                key={p.id}
-                className={`grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-[var(--border)]" : ""}`}
-              >
-                <span className="pill" style={{ color: "var(--signal)", borderColor: "var(--signal)" }}>
-                  {p.league}
-                </span>
-                <div className="min-w-0">
-                  {p.market === "prop" && p.player ? (
-                    <>
-                      <p className="font-sans text-sm truncate text-[var(--text)]">{p.player}</p>
-                      <p className="font-mono text-xs text-[var(--muted)] truncate">
-                        {p.side?.toUpperCase()} {p.line} {formatPropType(p.propType)} · {p.matchup}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="font-sans text-sm truncate text-[var(--text)]">{p.matchup}</p>
-                      <p className="font-mono text-xs text-[var(--muted)] truncate">{p.selection}</p>
-                    </>
-                  )}
-                </div>
-                <span className="numeric text-sm text-[var(--text)] hidden sm:inline">
-                  {fmtAmerican(p.oddsAmerican)}
-                </span>
-                <span className="numeric text-sm text-[var(--edge)]">
-                  EDGE {fmtPct(p.edge, 1)}
-                </span>
-                <span className="numeric text-xs text-[var(--muted)] hidden sm:inline">
-                  {p.kellyStakeUnits.toFixed(2)}U
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setOpenId(p.id)}
-                  className="eyebrow text-[var(--text)] hover:text-[var(--edge)] px-2 py-1 border border-[var(--border)] hover:border-[var(--edge)]"
-                >
-                  AUTOPSY
-                </button>
-              </li>
-            ))}
-          </ul>
+        <div>
+          <p className="eyebrow mb-2">Additional plays</p>
+          <div className="panel overflow-x-auto">
+            <table className="ledger-table">
+              <caption className="sr-only">Additional surviving picks</caption>
+              <thead>
+                <tr>
+                  <th scope="col" className="hidden sm:table-cell">Lg</th>
+                  <th scope="col">Pick</th>
+                  <th scope="col" className="text-right hidden sm:table-cell">Odds</th>
+                  <th scope="col" className="text-right">Edge</th>
+                  <th scope="col" className="text-right hidden sm:table-cell">Stake</th>
+                  <th scope="col" className="text-right">
+                    <span className="sr-only">Autopsy</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {others.map(p => (
+                  <tr key={p.id}>
+                    <td className="hidden sm:table-cell">
+                      <span className="tag">{p.league}</span>
+                    </td>
+                    <td className="min-w-0 max-w-[320px]">
+                      {p.market === "prop" && p.player ? (
+                        <>
+                          <p className="text-sm text-ink font-medium leading-snug break-words">{p.player}</p>
+                          <p className="num text-xs text-ink-2 leading-snug break-words">
+                            {p.side?.toUpperCase()} {p.line} {propLabel(p.propType)} · {p.matchup}
+                            <span className="sm:hidden"> · {fmtAmerican(p.oddsAmerican)} · {p.kellyStakeUnits.toFixed(2)}u</span>
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm text-ink font-medium leading-snug break-words">{p.matchup}</p>
+                          <p className="num text-xs text-ink-2 leading-snug break-words">
+                            {p.selection}
+                            <span className="sm:hidden"> · {fmtAmerican(p.oddsAmerican)} · {p.kellyStakeUnits.toFixed(2)}u</span>
+                          </p>
+                        </>
+                      )}
+                    </td>
+                    <td className="num text-sm text-ink text-right hidden sm:table-cell">
+                      {fmtAmerican(p.oddsAmerican)}
+                    </td>
+                    <td className="num text-sm text-right font-medium" style={{ color: "var(--win)" }}>
+                      {fmtPct(p.edge, 1)}
+                    </td>
+                    <td className="num text-xs text-ink-2 text-right hidden sm:table-cell">
+                      {p.kellyStakeUnits.toFixed(2)}u
+                    </td>
+                    <td className="text-right">
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(p.id)}
+                        className="eyebrow px-2 py-1 border border-rule text-ink-2 hover:text-loss hover:border-loss transition-colors"
+                      >
+                        Autopsy
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -298,77 +219,31 @@ export function SurvivorBrief({
   );
 }
 
-function RailStat({
+function RailFigure({
   label,
   value,
-  color = "text",
+  tone,
   big = false,
+  last = false,
 }: {
   label: string;
   value: string;
-  color?: "edge" | "warn" | "kill" | "signal" | "muted" | "text";
+  tone: string;
   big?: boolean;
+  last?: boolean;
 }) {
-  const colorVar = color === "muted" ? "var(--muted)" : `var(--${color})`;
   return (
-    <div>
-      <p className="eyebrow mb-2">{label}</p>
-      <p
-        className="font-display leading-none"
+    <div className={`py-3 ${last ? "" : "border-b border-rule"}`}>
+      <dt className="eyebrow mb-1.5">{label}</dt>
+      <dd
+        className="num-display"
         style={{
-          fontStyle: "italic",
-          fontSize: big ? "clamp(2.5rem, 5vw, 4rem)" : "clamp(1.5rem, 2.5vw, 2.25rem)",
-          color: colorVar,
-          letterSpacing: "-0.02em",
+          fontSize: big ? "clamp(2.25rem, 4.5vw, 3.5rem)" : "clamp(1.25rem, 2vw, 1.75rem)",
+          color: tone,
         }}
       >
         {value}
-      </p>
-    </div>
-  );
-}
-
-// Model vs market disagreement — the visual center of the product per spec
-function ModelMarketBar({
-  modelProb,
-  marketProb,
-  edge,
-}: {
-  modelProb: number;
-  marketProb: number;
-  edge: number;
-}) {
-  const m = modelProb * 100;
-  const mk = marketProb * 100;
-  return (
-    <div className="mt-5">
-      <div className="flex justify-between mb-1">
-        <span className="eyebrow text-[var(--signal)]">MODEL {m.toFixed(1)}%</span>
-        <span className="eyebrow text-[var(--edge)]">+{(edge * 100).toFixed(2)} EDGE</span>
-        <span className="eyebrow text-[var(--muted)]">MARKET {mk.toFixed(1)}%</span>
-      </div>
-      <div className="relative h-2.5" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)" }}>
-        {/* market track */}
-        <div
-          className="absolute inset-y-0 left-0"
-          style={{ width: `${mk}%`, background: "rgba(125,138,153,0.35)" }}
-        />
-        {/* model track overlaid */}
-        <div
-          className="absolute inset-y-0 left-0"
-          style={{ width: `${m}%`, background: "var(--signal)", opacity: 0.7 }}
-        />
-        {/* edge delta — vertical marker between market and model */}
-        <div
-          className="absolute inset-y-0"
-          style={{
-            left: `${Math.min(m, mk)}%`,
-            width: `${Math.abs(m - mk)}%`,
-            background: "repeating-linear-gradient(45deg, var(--edge) 0, var(--edge) 4px, transparent 4px, transparent 8px)",
-            opacity: 0.85,
-          }}
-        />
-      </div>
+      </dd>
     </div>
   );
 }

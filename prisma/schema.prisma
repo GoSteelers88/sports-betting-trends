@@ -251,3 +251,37 @@ model AgentDreamRun {
   notes         String?
   error         String?
 }
+
+// ── Kalshi favorite-longshot paper trail ($10k virtual book) ───────────────
+// Timestamps stored as ISO strings (not DateTime) so the tables can be created
+// with plain DDL on Turso without DateTime serialization mismatch.
+model KalshiPaperPosition {
+  id          Int     @id @default(autoincrement())
+  ticker      String  @unique
+  eventTicker String
+  category    String
+  title       String
+  side        String  // always "yes" (favorite side) for v1
+  entryPrice  Float   // dollars 0-1 (maker fill assumed at the bid)
+  contracts   Int
+  costUsd     Float
+  status      String  // open | closed
+  result      String? // yes | no (at settlement)
+  pnlUsd      Float?
+  openedAt    String  // ISO
+  closedAt    String? // ISO
+  closeTime   String  // market close time, ISO
+}
+
+model KalshiPaperLedgerSnapshot {
+  id             Int    @id @default(autoincrement())
+  ts             String // ISO
+  cashUsd        Float
+  exposureUsd    Float
+  equityUsd      Float
+  realizedPnlUsd Float
+  openCount      Int
+  closedCount    Int
+  wins           Int
+  losses         Int
+}

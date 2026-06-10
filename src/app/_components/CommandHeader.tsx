@@ -1,3 +1,9 @@
+// The desk strip — slim sticky bar above the ledger: mode, trial day,
+// last/next agent run, funding state, and the folio index. The index maps
+// 1:1 onto the page's folios and anchor-links to each. Solid paper, no
+// glass; the funding state reads as plain ink (the bordered stamp is
+// reserved for the page's three true-stamp moments).
+
 import type { DashboardData } from "../_data/dashboard";
 
 function rel(iso: string | null): string {
@@ -22,61 +28,62 @@ function fmtEt(iso: string): string {
     .toUpperCase();
 }
 
+// 1:1 with the page's folios, in print order.
 const NAV = [
-  { id: "ledger", label: "Games Ledger" },
-  { id: "reactor", label: "Reactor" },
-  { id: "survivors", label: "Games" },
-  { id: "last-night", label: "Last Night" },
-  { id: "kill-room", label: "Kill Room" },
-  { id: "market-feed", label: "Slate" },
-  { id: "prop-survivors", label: "Props" },
-  { id: "last-night-props", label: "Props Last Night" },
-  { id: "prop-ledger", label: "Props Ledger" },
-  { id: "system-memory", label: "Memory" },
+  { id: "front-page", num: "01", label: "Front page" },
+  { id: "tonights-play", num: "02", label: "Tonight" },
+  { id: "deployment-gate", num: "03", label: "Gate" },
+  { id: "ledger", num: "04", label: "Account" },
+  { id: "kill-room", num: "05", label: "Kill room" },
+  { id: "experiments", num: "06", label: "Experiments" },
+  { id: "market-feed", num: "07", label: "Board" },
+  { id: "props-desk", num: "08", label: "Props desk" },
+  { id: "back-of-book", num: "BB", label: "Back of book" },
 ];
 
 export function CommandHeader({ data }: { data: DashboardData }) {
   const { status, paperTrial } = data;
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--border)] backdrop-blur-xl bg-[#05070A]/85">
-      {/* Top row — brand + status */}
-      <div className="px-4 sm:px-6 py-2 flex items-center gap-3 sm:gap-6 flex-wrap text-xs hairline">
+    <header className="sticky top-0 z-50 bg-paper border-b border-rule-strong">
+      {/* Telemetry row */}
+      <div className="px-4 sm:px-8 py-2 flex items-center gap-3 sm:gap-5 flex-wrap border-b border-rule">
         <div className="flex items-center gap-2 shrink-0">
-          <span className="dot dot-pulse" style={{ color: "var(--edge)" }} />
-          <span className="font-display text-base sm:text-lg tracking-tight" style={{ fontStyle: "italic" }}>
-            NATESTACKS<span style={{ color: "var(--edge)" }}>·</span>OS
+          <span className="dot dot-pulse" style={{ color: status.lastAgentRunAt ? "var(--win)" : "var(--ink-3)" }} />
+          <span className="font-display font-black text-sm tracking-tight text-ink">
+            NATESTACKS<span style={{ color: "var(--loss)" }}>*</span>
           </span>
+          <span className="eyebrow hidden sm:inline">The Paper Trial</span>
         </div>
         <Divider />
-        <Bit label="MODE" value="PAPER_TRIAL" color="warn" />
-        <Bit label="DAY" value={String(paperTrial.dayNumber)} />
-        <Bit label="LAST_RUN" value={rel(status.lastAgentRunAt)} />
-        <Bit label="NEXT_RUN" value={fmtEt(status.nextScheduledRunUtc)} />
-        <div className="ml-auto flex items-center gap-2 shrink-0">
-          <span className="eyebrow text-[var(--muted)]">FUNDING</span>
-          <span
-            className="pill"
-            style={{
-              color: paperTrial.ready ? "var(--edge)" : "var(--kill)",
-              borderColor: paperTrial.ready ? "var(--edge)" : "var(--kill)",
-            }}
+        <Bit label="MODE" value="PAPER" tone="var(--hold)" />
+        <Bit label="DAY" value={String(paperTrial.dayNumber).padStart(3, "0")} />
+        <Bit label="LAST RUN" value={rel(status.lastAgentRunAt)} />
+        <span className="hidden md:contents">
+          <Bit label="NEXT" value={fmtEt(status.nextScheduledRunUtc)} />
+        </span>
+        <div className="ml-auto shrink-0">
+          <a
+            href="#deployment-gate"
+            className="tag hover:underline underline-offset-4"
+            style={{ color: paperTrial.ready ? "var(--win)" : "var(--loss)" }}
           >
-            {paperTrial.ready ? "UNLOCKED" : "LOCKED"}
-          </span>
+            Funding · {paperTrial.ready ? "Unlocked" : "Locked"}
+          </a>
         </div>
       </div>
 
-      {/* Nav row — anchor jumps */}
+      {/* Folio index */}
       <nav
-        aria-label="Section navigation"
-        className="px-4 sm:px-6 py-2 flex items-center gap-1 overflow-x-auto"
+        aria-label="Folio index"
+        className="px-4 sm:px-8 flex items-center overflow-x-auto"
       >
         {NAV.map(n => (
           <a
             key={n.id}
             href={`#${n.id}`}
-            className="eyebrow shrink-0 px-2.5 py-1 text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface)] border border-transparent hover:border-[var(--border)] transition-colors"
+            className="eyebrow shrink-0 py-2 pr-4 text-ink-3 hover:text-ink transition-colors flex items-baseline gap-1.5"
           >
+            <span className="num text-[0.6rem] text-ink-3">{n.num}</span>
             {n.label}
           </a>
         ))}
@@ -88,17 +95,16 @@ export function CommandHeader({ data }: { data: DashboardData }) {
 function Bit({
   label,
   value,
-  color,
+  tone,
 }: {
   label: string;
   value: string;
-  color?: "edge" | "warn" | "kill" | "signal";
+  tone?: string;
 }) {
-  const cssColor = color ? `var(--${color})` : "var(--text)";
   return (
     <div className="flex items-baseline gap-1.5 shrink-0">
-      <span className="eyebrow text-[var(--muted)]">{label}</span>
-      <span className="numeric text-xs" style={{ color: cssColor }}>
+      <span className="eyebrow text-ink-3">{label}</span>
+      <span className="num text-xs font-medium" style={{ color: tone ?? "var(--ink)" }}>
         {value}
       </span>
     </div>
@@ -106,5 +112,5 @@ function Bit({
 }
 
 function Divider() {
-  return <span className="hidden sm:inline-block h-3 w-px bg-[var(--border)]" />;
+  return <span className="hidden sm:inline-block h-3 w-px bg-rule-strong" aria-hidden />;
 }

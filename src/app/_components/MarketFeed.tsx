@@ -1,13 +1,15 @@
 "use client";
 
+// Folio 07 — the board, set in agate. Defaults to the desk's actual remit:
+// picked rows plus real NBA/MLB games. FULL BOARD unfolds everything the
+// feed carries — honestly labeled: baseball that isn't MLB (NCAA, NPB,
+// minor-league) reads OTHER, never MLB. Columns that are empty for ≥95% of
+// rows don't print.
+
 import { useMemo, useState } from "react";
 import type { SlateGame } from "../_data/dashboard";
 import { SectionHeader } from "./SectionHeader";
-
-function fmtAmerican(n: number | null | undefined): string {
-  if (n === null || n === undefined) return "—";
-  return n > 0 ? `+${n}` : `${n}`;
-}
+import { fmtAmerican, honestLeague, isInScopeGame, type HonestLeague } from "./format";
 
 function fmtTime(iso: string): string {
   return new Date(iso)
@@ -20,51 +22,76 @@ function fmtTime(iso: string): string {
     .toUpperCase();
 }
 
-type LeagueFilter = "ALL" | "NBA" | "MLB" | "WNBA" | "NHL";
-type EdgeFilter = "ALL" | "ANY" | "5" | "10";
+type LeagueFilter = "ALL" | HonestLeague;
 type SortKey = "time" | "edge" | "disagree";
 
 export function MarketFeed({ games }: { games: SlateGame[] }) {
+  const [fullBoard, setFullBoard] = useState(false);
   const [league, setLeague] = useState<LeagueFilter>("ALL");
-  const [edge, setEdge] = useState<EdgeFilter>("ALL");
   const [picksOnly, setPicksOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>("time");
 
+  // Honest league per row, computed once.
+  const tagged = useMemo(
+    () => games.map(g => ({ ...g, displayLeague: honestLeague(g) })),
+    [games]
+  );
+
+  // Scope: DESK = in-scope (real NBA/MLB) + any picked row; FULL = everything.
+  const scoped = useMemo(
+    () => (fullBoard ? tagged : tagged.filter(g => isInScopeGame(g) || g.hasPick)),
+    [tagged, fullBoard]
+  );
+
+  // Column honesty — a column that is ≥95% em-dash doesn't print.
+  const modelCoverage =
+    scoped.length > 0 ? scoped.filter(g => g.modelHomeProb !== null).length / scoped.length : 0;
+  const edgeCoverage =
+    scoped.length > 0
+      ? scoped.filter(
+          g =>
+            g.pick !== null ||
+            (g.modelHomeProb !== null && g.consensus.home?.impliedProb !== undefined)
+        ).length / scoped.length
+      : 0;
+  const showModel = modelCoverage >= 0.05;
+  const showEdge = edgeCoverage >= 0.05;
+
   const filtered = useMemo(() => {
-    let list = [...games];
-    if (league !== "ALL") list = list.filter(g => g.league === league);
+    let list = [...scoped];
+    if (league !== "ALL") list = list.filter(g => g.displayLeague === league);
     if (picksOnly) list = list.filter(g => g.hasPick);
-    if (edge !== "ALL") {
-      const threshold = edge === "ANY" ? 0.001 : edge === "5" ? 0.05 : 0.10;
-      list = list.filter(g => g.pick && g.pick.edge >= threshold);
-    }
     list.sort((a, b) => {
+      // Picked rows pin to the top of the board regardless of active sort —
+      // the desk's own plays never sink below the agate.
+      if (a.hasPick !== b.hasPick) return a.hasPick ? -1 : 1;
       if (sortBy === "edge") {
         return (b.pick?.edge ?? -1) - (a.pick?.edge ?? -1);
       }
       if (sortBy === "disagree") {
-        const da = a.modelHomeProb !== null && a.consensus.home?.impliedProb !== undefined
-          ? Math.abs(a.modelHomeProb - (a.consensus.home?.impliedProb ?? 0))
-          : -1;
-        const db = b.modelHomeProb !== null && b.consensus.home?.impliedProb !== undefined
-          ? Math.abs(b.modelHomeProb - (b.consensus.home?.impliedProb ?? 0))
-          : -1;
+        const da =
+          a.modelHomeProb !== null && a.consensus.home?.impliedProb !== undefined
+            ? Math.abs(a.modelHomeProb - (a.consensus.home?.impliedProb ?? 0))
+            : -1;
+        const db =
+          b.modelHomeProb !== null && b.consensus.home?.impliedProb !== undefined
+            ? Math.abs(b.modelHomeProb - (b.consensus.home?.impliedProb ?? 0))
+            : -1;
         return db - da;
       }
       return new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime();
     });
     return list;
-  }, [games, league, edge, picksOnly, sortBy]);
+  }, [scoped, league, picksOnly, sortBy]);
 
-  const availableLeagues = Array.from(new Set(games.map(g => g.league)));
+  const availableLeagues = Array.from(new Set(scoped.map(g => g.displayLeague)));
+  const leagueOrder: HonestLeague[] = ["NBA", "MLB", "WNBA", "NHL", "OTHER"];
 
   if (games.length === 0) {
     return (
-      <section className="space-y-4">
-        <SectionHeader id="market-feed" index="07" label="MARKET FEED" title="FEED OFFLINE" />
-        <div className="surface p-8 text-center">
-          <p className="eyebrow text-[var(--muted)]">NO GAMES SCHEDULED</p>
-        </div>
+      <section>
+        <SectionHeader id="market-feed" index="07" dense label="THE BOARD" title="Board dark" status="Off-slate" statusTone="mute" />
+        <p className="tag text-ink-3 mt-3">No games scheduled — the board reopens with the next slate</p>
       </section>
     );
   }
@@ -74,74 +101,99 @@ export function MarketFeed({ games }: { games: SlateGame[] }) {
       <SectionHeader
         id="market-feed"
         index="07"
-        label="MARKET FEED"
-        title="LIVE ODDS BOARD"
-        subtitle="Full slate at consensus median. Highlight rows where model and market disagree most — those are the agent's hunting grounds."
-        status={`${filtered.length} / ${games.length} GAMES`}
-        statusColor="signal"
+        dense
+        label="THE BOARD · CONSENSUS MEDIAN"
+        title={fullBoard ? "The full board" : "Tonight's desk slate"}
+        subtitle={
+          fullBoard
+            ? "Everything the odds feed carries tonight — including out-of-scope and non-league baseball, labeled honestly."
+            : "Picked rows plus real NBA/MLB games — the desk's actual remit. Unfold the full board for everything else."
+        }
+        status={`${filtered.length} / ${fullBoard ? tagged.length : scoped.length} games`}
+        statusTone="blue"
       />
 
       {/* Filter rail */}
-      <div className="surface p-3 flex flex-wrap items-center gap-2 text-xs">
-        <FilterGroup label="LEAGUE">
-          <FilterPill active={league === "ALL"} onClick={() => setLeague("ALL")}>ALL</FilterPill>
-          {(["NBA", "MLB", "WNBA", "NHL"] as LeagueFilter[]).filter(l => l === "ALL" || availableLeagues.includes(l)).map(l => (
-            <FilterPill key={l} active={league === l} onClick={() => setLeague(l)}>
-              {l}
-            </FilterPill>
-          ))}
+      <div className="panel-dim p-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <FilterGroup label="Scope">
+          <FilterChip active={!fullBoard} onClick={() => { setFullBoard(false); setLeague("ALL"); }}>
+            DESK
+          </FilterChip>
+          <FilterChip active={fullBoard} onClick={() => { setFullBoard(true); setLeague("ALL"); }}>
+            FULL BOARD
+          </FilterChip>
         </FilterGroup>
-        <Divider />
-        <FilterGroup label="EDGE">
-          <FilterPill active={edge === "ALL"} onClick={() => setEdge("ALL")}>ALL</FilterPill>
-          <FilterPill active={edge === "ANY"} onClick={() => setEdge("ANY")}>ANY</FilterPill>
-          <FilterPill active={edge === "5"} onClick={() => setEdge("5")}>≥5%</FilterPill>
-          <FilterPill active={edge === "10"} onClick={() => setEdge("10")}>≥10%</FilterPill>
+        <FilterGroup label="League">
+          <FilterChip active={league === "ALL"} onClick={() => setLeague("ALL")}>ALL</FilterChip>
+          {leagueOrder
+            .filter(l => availableLeagues.includes(l))
+            .map(l => (
+              <FilterChip key={l} active={league === l} onClick={() => setLeague(l)}>
+                {l}
+              </FilterChip>
+            ))}
         </FilterGroup>
-        <Divider />
-        <FilterGroup label="SORT">
-          <FilterPill active={sortBy === "time"} onClick={() => setSortBy("time")}>TIME</FilterPill>
-          <FilterPill active={sortBy === "edge"} onClick={() => setSortBy("edge")}>EDGE</FilterPill>
-          <FilterPill active={sortBy === "disagree"} onClick={() => setSortBy("disagree")}>DISAGREE</FilterPill>
+        <FilterGroup label="Sort">
+          <FilterChip active={sortBy === "time"} onClick={() => setSortBy("time")}>TIME</FilterChip>
+          <FilterChip active={sortBy === "edge"} onClick={() => setSortBy("edge")}>EDGE</FilterChip>
+          {showModel && (
+            <FilterChip active={sortBy === "disagree"} onClick={() => setSortBy("disagree")}>
+              DISAGREE
+            </FilterChip>
+          )}
         </FilterGroup>
         <button
           type="button"
           onClick={() => setPicksOnly(p => !p)}
-          className={`ml-auto eyebrow px-2 py-1 border transition-colors ${
+          aria-pressed={picksOnly}
+          className={`ml-auto eyebrow px-2.5 py-1 border transition-colors ${
             picksOnly
-              ? "border-[var(--edge)] text-[var(--edge)] bg-[var(--edge)]/10"
-              : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] hover:border-[var(--border-strong)]"
+              ? "border-loss text-loss"
+              : "border-rule text-ink-3 hover:text-ink hover:border-rule-strong"
           }`}
+          style={picksOnly ? { background: "var(--loss-wash)" } : undefined}
         >
-          PICKS ONLY
+          Picks only
         </button>
       </div>
 
-      {/* Header row */}
-      <div className="surface">
-        <div className="hidden md:grid grid-cols-[60px_56px_1fr_72px_72px_92px_72px_72px_60px] gap-2 px-3 py-2 border-b border-[var(--border)] eyebrow text-[var(--muted)]">
-          <span>TIME</span>
-          <span>LG</span>
-          <span>MATCHUP</span>
-          <span className="text-right">ML(A)</span>
-          <span className="text-right">ML(H)</span>
-          <span className="text-right">SPRD</span>
-          <span className="text-right">MODEL</span>
-          <span className="text-right">MKT</span>
-          <span className="text-right">EDGE</span>
-        </div>
-
-        <ul className="divide-y divide-[var(--border)]">
-          {filtered.map(g => (
-            <FeedRow key={g.eventId} game={g} />
-          ))}
-        </ul>
+      {/* The board */}
+      <div className="panel overflow-x-auto">
+        <table className="ledger-table">
+          <caption className="sr-only">Tonight&rsquo;s odds board</caption>
+          <thead>
+            <tr>
+              <th scope="col" className="hidden sm:table-cell">Time</th>
+              <th scope="col">Lg</th>
+              <th scope="col">Matchup</th>
+              <th scope="col" className="text-right hidden md:table-cell">ML (A)</th>
+              <th scope="col" className="text-right hidden md:table-cell">ML (H)</th>
+              <th scope="col" className="text-right hidden md:table-cell">Sprd</th>
+              {showModel && <th scope="col" className="text-right hidden sm:table-cell">Model</th>}
+              {showModel && <th scope="col" className="text-right hidden sm:table-cell">Mkt</th>}
+              {showEdge && <th scope="col" className="text-right">Edge</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(g => (
+              <BoardRow key={g.eventId} game={g} showModel={showModel} showEdge={showEdge} />
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );
 }
 
-function FeedRow({ game }: { game: SlateGame }) {
+function BoardRow({
+  game,
+  showModel,
+  showEdge,
+}: {
+  game: SlateGame & { displayLeague: HonestLeague };
+  showModel: boolean;
+  showEdge: boolean;
+}) {
   const c = game.consensus;
   const modelHome = game.modelHomeProb;
   const marketHome = c.home?.impliedProb ?? null;
@@ -150,75 +202,85 @@ function FeedRow({ game }: { game: SlateGame }) {
   const edge = game.pick?.edge ?? null;
 
   return (
-    <li
-      className={`grid grid-cols-[1fr_auto] md:grid-cols-[60px_56px_1fr_72px_72px_92px_72px_72px_60px] gap-2 px-3 py-2 items-center hover:bg-[rgba(255,255,255,0.02)] ${
-        game.hasPick ? "border-l-2 border-l-[var(--edge)]" : "border-l-2 border-l-transparent"
-      }`}
+    <tr
+      style={{
+        boxShadow: game.hasPick ? "inset 3px 0 0 var(--loss)" : undefined,
+        background: game.hasPick ? "var(--win-wash)" : undefined,
+      }}
     >
-      <span className="numeric text-xs text-[var(--muted)] md:order-none order-1 col-start-1">
-        {fmtTime(game.commenceTime)}
-      </span>
-      <span className="pill md:order-none order-2 col-start-2 row-start-1 justify-self-end md:justify-self-start" style={{ color: "var(--signal)", borderColor: "var(--signal)" }}>
-        {game.league}
-      </span>
-      <div className="md:order-none order-3 col-span-2 md:col-span-1 min-w-0">
-        <p className="font-sans text-sm truncate">
-          <span className="text-[var(--text)]">{game.awayTeam}</span>{" "}
-          <span className="text-[var(--muted)]">@</span>{" "}
-          <span className="text-[var(--text)]">{game.homeTeam}</span>
+      <td className="num text-xs text-ink-2 hidden sm:table-cell">{fmtTime(game.commenceTime)}</td>
+      <td>
+        <span className="tag" style={game.displayLeague === "OTHER" ? { color: "var(--ink-3)" } : undefined}>
+          {game.displayLeague}
+        </span>
+      </td>
+      <td className="min-w-0 max-w-[340px]">
+        {/* Two-line row — mobile folds time + prices in, nothing clips mid-word */}
+        <p className="text-sm leading-snug break-words">
+          <span className="text-ink font-medium">{game.awayTeam}</span>{" "}
+          <span className="text-ink-3">@</span>{" "}
+          <span className="text-ink font-medium">{game.homeTeam}</span>
+        </p>
+        <p className="num text-[0.68rem] text-ink-2 leading-snug break-words md:hidden">
+          <span className="sm:hidden">{fmtTime(game.commenceTime)} · </span>
+          ML {fmtAmerican(c.away?.american)}/{fmtAmerican(c.home?.american)}
+          {c.spread ? ` · SPRD ${c.spread.line > 0 ? "+" : ""}${c.spread.line}` : ""}
         </p>
         {game.pick && (
-          <p className="font-mono text-[0.65rem] text-[var(--edge)] truncate">
-            ▸ {game.pick.selection} @ {fmtAmerican(game.pick.oddsAmerican)} · {(game.pick.edge * 100).toFixed(1)}%
+          <p className="num text-[0.68rem] leading-snug break-words" style={{ color: "var(--win)" }}>
+            ▸ {game.pick.selection} @ {fmtAmerican(game.pick.oddsAmerican)} ·{" "}
+            {(game.pick.edge * 100).toFixed(1)}%
           </p>
         )}
-      </div>
-      <span className="numeric text-xs text-right hidden md:block">
-        {fmtAmerican(c.away?.american)}
-      </span>
-      <span className="numeric text-xs text-right hidden md:block">
-        {fmtAmerican(c.home?.american)}
-      </span>
-      <span className="numeric text-xs text-right text-[var(--muted)] hidden md:block">
+      </td>
+      <td className="num text-xs text-right text-ink hidden md:table-cell">{fmtAmerican(c.away?.american)}</td>
+      <td className="num text-xs text-right text-ink hidden md:table-cell">{fmtAmerican(c.home?.american)}</td>
+      <td className="num text-xs text-right text-ink-2 hidden md:table-cell">
         {c.spread ? `${c.spread.line > 0 ? "+" : ""}${c.spread.line}` : "—"}
-      </span>
-      <span className="numeric text-xs text-right hidden md:block" style={{ color: "var(--signal)" }}>
-        {modelHome !== null ? `${Math.round(modelHome * 100)}%` : "—"}
-      </span>
-      <span className="numeric text-xs text-right hidden md:block text-[var(--muted)]">
-        {marketHome !== null ? `${Math.round(marketHome * 100)}%` : "—"}
-      </span>
-      <span
-        className="numeric text-xs text-right hidden md:block"
-        style={{
-          color:
-            edge !== null && edge >= 0.05
-              ? "var(--edge)"
-              : disagreement !== null && Math.abs(disagreement) >= 0.05
-              ? "var(--warn)"
-              : "var(--muted)",
-        }}
-      >
-        {edge !== null
-          ? `+${(edge * 100).toFixed(1)}%`
-          : disagreement !== null
-          ? `Δ${Math.abs(disagreement * 100).toFixed(0)}`
-          : "—"}
-      </span>
-    </li>
+      </td>
+      {showModel && (
+        <td className="num text-xs text-right hidden sm:table-cell" style={{ color: "var(--blue)" }}>
+          {modelHome !== null ? `${Math.round(modelHome * 100)}%` : "—"}
+        </td>
+      )}
+      {showModel && (
+        <td className="num text-xs text-right text-ink-2 hidden sm:table-cell">
+          {marketHome !== null ? `${Math.round(marketHome * 100)}%` : "—"}
+        </td>
+      )}
+      {showEdge && (
+        <td
+          className="num text-xs text-right font-medium"
+          style={{
+            color:
+              edge !== null && edge >= 0.05
+                ? "var(--win)"
+                : disagreement !== null && Math.abs(disagreement) >= 0.05
+                ? "var(--hold)"
+                : "var(--ink-3)",
+          }}
+        >
+          {edge !== null
+            ? `+${(edge * 100).toFixed(1)}%`
+            : disagreement !== null
+            ? `Δ${Math.abs(disagreement * 100).toFixed(0)}`
+            : "—"}
+        </td>
+      )}
+    </tr>
   );
 }
 
 function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-1">
-      <span className="eyebrow text-[var(--muted)] mr-1">{label}</span>
+    <div className="flex items-center gap-1.5">
+      <span className="eyebrow text-ink-3 mr-0.5">{label}</span>
       {children}
     </div>
   );
 }
 
-function FilterPill({
+function FilterChip({
   active,
   onClick,
   children,
@@ -231,17 +293,14 @@ function FilterPill({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`eyebrow px-2 py-1 border transition-colors ${
         active
-          ? "border-[var(--text)] text-[var(--text)] bg-white/5"
-          : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)]"
+          ? "border-rule-strong text-ink bg-paper-2"
+          : "border-rule text-ink-3 hover:text-ink"
       }`}
     >
       {children}
     </button>
   );
-}
-
-function Divider() {
-  return <span className="hidden sm:inline-block h-3 w-px bg-[var(--border)] mx-1" />;
 }

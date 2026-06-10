@@ -1,14 +1,11 @@
+// Last night's page of the ledger — a reusable settled-picks table. WIN/LOSS
+// on settled rows is one of the three true-stamp moments; push/pending read
+// as plain tags. The front page mounts the games table; the props desk
+// mounts the props table. Mobile rows collapse to the designed two-line
+// pattern — no mid-word clipping, no dropped information.
+
 import type { LastNightLedger as LastNightLedgerData, SlatePick } from "../_data/dashboard";
-import { SectionHeader } from "./SectionHeader";
-
-function fmtAmerican(n: number): string {
-  return n > 0 ? `+${n}` : `${n}`;
-}
-
-function fmtUnits(n: number): string {
-  const sign = n > 0 ? "+" : n < 0 ? "" : "";
-  return `${sign}${n.toFixed(2)}U`;
-}
+import { fmtAmerican, fmtUnits, propLabel } from "./format";
 
 function gameTimeEt(iso: string): string {
   return new Date(iso)
@@ -22,193 +19,122 @@ function gameTimeEt(iso: string): string {
     .toUpperCase();
 }
 
-const RESULT_COLOR: Record<string, string> = {
-  win: "var(--edge)",
-  loss: "var(--kill)",
-  push: "var(--muted)",
-  void: "var(--muted)",
-  pending: "var(--warn)",
+const RESULT_TONE: Record<string, string> = {
+  win: "var(--win)",
+  loss: "var(--loss)",
+  push: "var(--ink-3)",
+  void: "var(--ink-3)",
+  pending: "var(--hold)",
 };
 
-const PROP_LABELS: Record<string, string> = {
-  player_points: "pts", player_rebounds: "reb", player_assists: "ast",
-  player_threes: "3PM", player_blocks: "blk", player_steals: "stl",
-  player_turnovers: "TO", player_points_rebounds_assists: "PRA",
-  player_points_rebounds: "P+R", player_points_assists: "P+A",
-  player_rebounds_assists: "R+A", player_blocks_steals: "B+S",
-  batter_hits: "hits", batter_home_runs: "HR", batter_rbis: "RBI",
-  batter_runs_scored: "runs", batter_total_bases: "TB",
-  pitcher_strikeouts: "K", pitcher_earned_runs: "ER",
-};
-
-function formatPropType(propType: string | null): string {
-  if (!propType) return "";
-  return PROP_LABELS[propType] ?? propType.replace(/^player_|^batter_|^pitcher_/, "").replace(/_/g, " ");
+export function lastNightSummary(data: LastNightLedgerData): {
+  record: string;
+  pnl: number;
+  graded: number;
+  pending: number;
+} {
+  return {
+    record: `${data.wins}-${data.losses}${data.pushes > 0 ? `-${data.pushes}` : ""}`,
+    pnl: data.pnl,
+    graded: data.graded,
+    pending: data.pending,
+  };
 }
 
-const LASTNIGHT_LABELS = {
-  games: {
-    anchor: "last-night",
-    index: "06",
-    eyebrow: "LAST NIGHT · GAMES",
-    subtitle:
-      "Every game pick (moneyline/spread/total) whose game tipped, pitched, or dropped the puck in the last 36 hours.",
-    emptyBody: "No game picks resolved in the last 36 hours.",
-  },
-  props: {
-    anchor: "last-night-props",
-    index: "11",
-    eyebrow: "LAST NIGHT · PROPS",
-    subtitle:
-      "Player props whose game completed in the last 36 hours. Autograder resolves these against ESPN box scores at 13:00 UTC.",
-    emptyBody: "No prop picks resolved in the last 36 hours.",
-  },
-} as const;
-
-export function LastNightLedger({
-  data,
-  kind = "games",
+/** The settled book — every pick whose game resolved in the window. */
+export function SettledTable({
+  picks,
+  caption,
 }: {
-  data: LastNightLedgerData;
-  kind?: "games" | "props";
+  picks: SlatePick[];
+  caption: string;
 }) {
-  const labels = LASTNIGHT_LABELS[kind];
-  const { picks, graded, pending, wins, losses, pushes, pnl, totalStake } = data;
-  const roi = totalStake > 0 && graded > 0 ? pnl / totalStake : null;
-  const wlRecord = `${wins}-${losses}${pushes > 0 ? `-${pushes}` : ""}`;
-
-  if (picks.length === 0) {
-    return (
-      <section className="space-y-4">
-        <SectionHeader
-          id={labels.anchor}
-          index={labels.index}
-          label={labels.eyebrow}
-          title="LEDGER QUIET"
-          status="NO PICKS"
-          statusColor="muted"
-        />
-        <div className="surface p-6">
-          <p className="font-mono text-sm text-[var(--muted)]">
-            ▸ {labels.emptyBody}
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  const pnlColor =
-    graded === 0 ? "var(--muted)"
-    : pnl > 0 ? "var(--edge)"
-    : pnl < 0 ? "var(--kill)"
-    : "var(--text)";
-  const pendingBadge = pending > 0 ? `${pending} PENDING` : "ALL GRADED";
-  const pendingColor: "warn" | "edge" = pending > 0 ? "warn" : "edge";
-
+  if (picks.length === 0) return null;
   return (
-    <section className="space-y-4">
-      <SectionHeader
-        id={labels.anchor}
-        index={labels.index}
-        label={labels.eyebrow}
-        title={`${wlRecord} · ${fmtUnits(pnl)}`}
-        subtitle={labels.subtitle}
-        status={pendingBadge}
-        statusColor={pendingColor}
-      />
-
-      {/* Header strip — quick totals */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <Stat label="W-L-P" value={wlRecord} color="text" />
-        <Stat label="UNITS" value={fmtUnits(pnl)} color={pnl > 0 ? "edge" : pnl < 0 ? "kill" : "muted"} />
-        <Stat
-          label="ROI"
-          value={roi !== null ? `${(roi * 100).toFixed(1)}%` : "—"}
-          color={roi !== null && roi > 0 ? "edge" : roi !== null && roi < 0 ? "kill" : "muted"}
-        />
-        <Stat label="GRADED" value={`${graded}`} color="signal" />
-        <Stat label="PENDING" value={`${pending}`} color={pending > 0 ? "warn" : "muted"} />
-      </div>
-
-      {/* Pick list */}
-      <ul className="surface">
-        {picks.map((p, i) => (
-          <PickRow key={p.id} pick={p} divider={i > 0} pnlColor={pnlColor} />
-        ))}
-      </ul>
-    </section>
+    <div className="panel overflow-x-auto">
+      <table className="ledger-table">
+        <caption className="sr-only">{caption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Result</th>
+            <th scope="col" className="hidden sm:table-cell">Lg</th>
+            <th scope="col">Pick</th>
+            <th scope="col" className="text-right hidden sm:table-cell">Stake</th>
+            <th scope="col" className="text-right">Units</th>
+            <th scope="col" className="text-right hidden sm:table-cell">Edge</th>
+          </tr>
+        </thead>
+        <tbody>
+          {picks.map(p => (
+            <PickRow key={p.id} pick={p} />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
-function PickRow({ pick, divider }: { pick: SlatePick; divider: boolean; pnlColor: string }) {
+function PickRow({ pick }: { pick: SlatePick }) {
   const result = pick.outcome?.result ?? "pending";
-  const color = RESULT_COLOR[result] ?? "var(--muted)";
+  const tone = RESULT_TONE[result] ?? "var(--ink-3)";
   const units = pick.outcome?.unitsPnl ?? null;
   const isProp = pick.market === "prop" && pick.player;
+  const settled = result === "win" || result === "loss";
+
+  const headline = isProp ? pick.player : pick.matchup;
+  const detail = isProp
+    ? `${pick.side?.toUpperCase()} ${pick.line} ${propLabel(pick.propType)} @ ${fmtAmerican(pick.oddsAmerican)} · ${pick.matchup}`
+    : `${pick.selection} @ ${fmtAmerican(pick.oddsAmerican)} · ${gameTimeEt(pick.createdAt)}`;
 
   return (
-    <li
-      className={`grid grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-3 ${divider ? "border-t border-[var(--border)]" : ""}`}
-    >
-      <span
-        className="pill"
-        style={{ color, borderColor: color }}
-      >
-        {result.toUpperCase()}
-      </span>
-      <span className="pill hidden sm:inline-block" style={{ color: "var(--signal)", borderColor: "var(--signal)" }}>
-        {isProp ? "PROP" : pick.league}
-      </span>
-      <div className="min-w-0">
-        {isProp ? (
-          <>
-            <p className="font-sans text-sm truncate text-[var(--text)]">{pick.player}</p>
-            <p className="font-mono text-xs text-[var(--muted)] truncate">
-              {pick.side?.toUpperCase()} {pick.line} {formatPropType(pick.propType)} <span className="text-[var(--text)]">@ {fmtAmerican(pick.oddsAmerican)}</span>
-              <span className="hidden sm:inline"> · {pick.matchup}</span>
-            </p>
-          </>
+    <tr>
+      <td>
+        {settled ? (
+          <span className="stamp-row" style={{ color: tone }}>
+            {result}
+          </span>
         ) : (
-          <>
-            <p className="font-sans text-sm truncate text-[var(--text)]">{pick.matchup}</p>
-            <p className="font-mono text-xs text-[var(--muted)] truncate">
-              {pick.selection} <span className="text-[var(--text)]">@ {fmtAmerican(pick.oddsAmerican)}</span>
-              <span className="hidden sm:inline"> · {gameTimeEt(pick.createdAt)}</span>
-            </p>
-          </>
+          <span className="tag" style={{ color: tone }}>
+            {result}
+          </span>
         )}
-      </div>
-      <span className="numeric text-xs text-[var(--muted)] hidden sm:inline">
-        {pick.kellyStakeUnits.toFixed(2)}U
-      </span>
-      <span
-        className="numeric text-sm"
-        style={{ color: units === null ? "var(--muted)" : units > 0 ? "var(--edge)" : units < 0 ? "var(--kill)" : "var(--text)" }}
+      </td>
+      <td className="hidden sm:table-cell">
+        <span className="tag">{isProp ? "PROP" : pick.league}</span>
+      </td>
+      <td className="min-w-0 max-w-[340px]">
+        {/* Two-line row — wraps at word boundaries, never clips mid-word */}
+        <p className="text-sm text-ink font-medium leading-snug break-words">{headline}</p>
+        <p className="num text-xs text-ink-2 leading-snug break-words">
+          {detail}
+          {/* Mobile folds the hidden columns into line two — zero info loss */}
+          <span className="sm:hidden">
+            {" "}· {isProp ? "PROP" : pick.league} · {pick.kellyStakeUnits.toFixed(2)}u ·{" "}
+            {(pick.edge * 100).toFixed(1)}%
+          </span>
+        </p>
+      </td>
+      <td className="num text-xs text-ink-2 text-right hidden sm:table-cell">
+        {pick.kellyStakeUnits.toFixed(2)}u
+      </td>
+      <td
+        className="num text-sm text-right font-semibold"
+        style={{
+          color:
+            units === null
+              ? "var(--ink-3)"
+              : units > 0
+              ? "var(--win)"
+              : units < 0
+              ? "var(--loss)"
+              : "var(--ink)",
+        }}
       >
         {units !== null ? fmtUnits(units) : "—"}
-      </span>
-      <span className="numeric text-[0.65rem] text-[var(--muted)] hidden sm:inline">
-        EDGE {(pick.edge * 100).toFixed(1)}%
-      </span>
-    </li>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  color = "text",
-}: {
-  label: string;
-  value: string;
-  color?: "edge" | "warn" | "kill" | "signal" | "muted" | "text";
-}) {
-  return (
-    <div className="surface px-4 py-3">
-      <p className="eyebrow text-[var(--muted)]">{label}</p>
-      <p className="numeric text-2xl mt-1" style={{ color: `var(--${color === "muted" ? "muted" : color})` }}>
-        {value}
-      </p>
-    </div>
+      </td>
+      <td className="num text-xs text-ink-2 text-right hidden sm:table-cell">
+        {(pick.edge * 100).toFixed(1)}%
+      </td>
+    </tr>
   );
 }
