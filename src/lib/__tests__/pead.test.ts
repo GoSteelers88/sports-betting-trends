@@ -12,6 +12,7 @@ import {
   excessReturnPct,
   meanTStat,
   killVerdict,
+  overnightLegs,
 } from "../stocks/peadLogic";
 
 describe("surprisePct", () => {
@@ -80,6 +81,32 @@ describe("excessReturnPct", () => {
 
   it("returns null for nonsensical prices", () => {
     expect(excessReturnPct(0, 110, 500, 510)).toBeNull();
+  });
+});
+
+describe("overnightLegs", () => {
+  const bars = [
+    { t: "2026-06-10T04:00:00Z", o: 100, c: 104 },
+    { t: "2026-06-11T04:00:00Z", o: 106, c: 103 },
+    { t: "2026-06-12T04:00:00Z", o: 102, c: 105 },
+  ];
+
+  it("returns the entry session close and the next session open", () => {
+    expect(overnightLegs(bars, "2026-06-10T15:05:00.000Z")).toEqual({
+      entryDayClose: 104,
+      nextOpen: 106,
+    });
+  });
+
+  it("returns a null nextOpen when the next session has not printed yet", () => {
+    expect(overnightLegs(bars, "2026-06-12T15:05:00.000Z")).toEqual({
+      entryDayClose: 105,
+      nextOpen: null,
+    });
+  });
+
+  it("returns null when the entry session is missing from the bars", () => {
+    expect(overnightLegs(bars, "2026-06-13T15:05:00.000Z")).toBeNull();
   });
 });
 

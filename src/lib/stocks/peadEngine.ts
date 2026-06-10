@@ -20,6 +20,7 @@ import {
   excessReturnPct,
   meanTStat,
   killVerdict,
+  overnightLegs,
   type KillVerdict,
 } from "@/lib/stocks/peadLogic";
 import {
@@ -31,6 +32,7 @@ import {
   placeMarketOrder,
   waitForFill,
   getPositionQty,
+  fetchDailyBars,
 } from "@/lib/stocks/alpaca";
 import { finnhubConfigured, earningsCalendar } from "@/lib/stocks/finnhub";
 
@@ -98,6 +100,14 @@ export async function settleDuePositions(now = new Date()): Promise<number> {
       const exitSpy = await latestTradePrice(PEAD_CONFIG.benchmarkSymbol);
       const pnlUsd = +(fill.qty * (fill.price - p.entryPrice)).toFixed(2);
       const excess = excessReturnPct(p.entryPrice, fill.price, p.entrySpy, exitSpy);
+      // Overnight decomposition legs — fail-soft, verdict instrumentation only.
+      let legs: { entryDayClose: number; nextOpen: number | null } | null = null;
+      try {
+        const barsEnd = new Date(Date.parse(p.openedAt) + 6 * 24 * 60 * 60 * 1000).toISOString();
+        legs = overnightLegs(await fetchDailyBars(p.symbol, p.openedAt.slice(0, 10), barsEnd), p.openedAt);
+      } catch {
+        /* legs stay null */
+      }
       await prisma.stockPaperPosition.update({
         where: { id: p.id },
         data: {
@@ -108,6 +118,8 @@ export async function settleDuePositions(now = new Date()): Promise<number> {
           excessRetPct: excess,
           closedAt: isoNow(),
           exitOrderId: order.id,
+          entryDayClose: legs?.entryDayClose ?? null,
+          nextOpen: legs?.nextOpen ?? null,
         },
       });
       settled++;

@@ -73,6 +73,22 @@ export function excessReturnPct(
   return (stockRet - (benchExit / benchEntry - 1)) * 100;
 }
 
+/**
+ * Overnight decomposition legs from daily bars: the entry session's close and
+ * the next session's open. Bars must be oldest-first; openedAt is the entry
+ * timestamp (ISO). Null when the entry session isn't in the bars yet.
+ */
+export function overnightLegs(
+  bars: Array<{ t: string; o: number; c: number }>,
+  openedAt: string,
+): { entryDayClose: number; nextOpen: number | null } | null {
+  const day = openedAt.slice(0, 10);
+  const idx = bars.findIndex((b) => b.t.slice(0, 10) === day);
+  if (idx < 0) return null;
+  const next = bars[idx + 1];
+  return { entryDayClose: bars[idx].c, nextOpen: next ? next.o : null };
+}
+
 /** Mean + one-sample t-stat (vs 0) — drives the pre-registered kill criterion. */
 export function meanTStat(xs: number[]): { n: number; mean: number | null; t: number | null } {
   const n = xs.length;

@@ -314,6 +314,10 @@ model StockPaperPosition {
   // Watchdog annotation (JSON string): artifact risk, revenue confirmation,
   // note. Label-only — never used by the trading rule.
   annotation   String?
+  // Overnight decomposition legs (captured at settle from daily bars) — lets
+  // the verdict split drift into overnight vs intraday (Chan–Marsh 2024).
+  entryDayClose Float? // close of the entry session
+  nextOpen      Float? // open of the following session
 
   @@unique([symbol, reportDate])
 }

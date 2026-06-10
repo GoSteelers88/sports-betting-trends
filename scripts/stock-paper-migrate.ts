@@ -54,6 +54,8 @@ const ALTERS = [
   `ALTER TABLE "StockPaperPosition" ADD COLUMN "revEstimate" REAL`,
   `ALTER TABLE "StockPaperPosition" ADD COLUMN "revActual" REAL`,
   `ALTER TABLE "StockPaperPosition" ADD COLUMN "annotation" TEXT`,
+  `ALTER TABLE "StockPaperPosition" ADD COLUMN "entryDayClose" REAL`,
+  `ALTER TABLE "StockPaperPosition" ADD COLUMN "nextOpen" REAL`,
 ];
 
 async function main() {

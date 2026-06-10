@@ -112,6 +112,29 @@ export async function avgDollarVolume(symbol: string, days = 5): Promise<number 
   return dv.length > 0 ? dv.reduce((s, x) => s + x, 0) / dv.length : null;
 }
 
+export interface DailyBar {
+  t: string; // RFC3339 session timestamp
+  o: number;
+  c: number;
+}
+
+/** Daily bars for [startISO, endISO], oldest first (IEX feed). */
+export async function fetchDailyBars(
+  symbol: string,
+  startISO: string,
+  endISO: string,
+): Promise<DailyBar[]> {
+  const r = await afetch(
+    DATA_BASE,
+    `/stocks/bars?symbols=${encodeURIComponent(symbol)}&timeframe=1Day` +
+      `&start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}` +
+      `&limit=10&feed=iex&adjustment=split&sort=asc`,
+  );
+  return (((r?.bars?.[symbol] ?? []) as any[]) || [])
+    .map((b) => ({ t: String(b.t ?? ""), o: Number(b.o), c: Number(b.c) }))
+    .filter((b) => b.t && Number.isFinite(b.o) && Number.isFinite(b.c));
+}
+
 export interface AlpacaOrder {
   id: string;
   status: string;
