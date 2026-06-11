@@ -39,6 +39,11 @@ export type AnalystPick = {
   // not the pick's persistence-time. Optional in older payloads — falls back
   // to today UTC midnight if missing (with a warning logged).
   gameTime?: string;
+  // Stable per-game id (the Odds API event.id) copied from get_odds. Lets the
+  // persist layer tell split doubleheaders apart (same matchup + commence_time).
+  // Optional: when absent we derive a deterministic synthetic id from
+  // matchup + gameTime, so idempotency still holds for non-doubleheader games.
+  eventId?: string;
   // Prop-only structured fields. Required when market === "prop"; ignored
   // for moneyline. The autograder reads these to look up the player's box
   // score line and compare to `line` for over/under resolution.
@@ -112,7 +117,7 @@ You can produce TWO kinds of picks: moneyline picks and player-prop picks. Diffe
 - **Always use the BEST PRICE across books, not consensus.** get_odds returns bestPrice.{home,away}.{book,american,impliedProb}. Set oddsAmerican = bestPrice.american and marketProb = bestPrice.impliedProb. Mention the book in your signals (e.g. "best line: DraftKings +145").
 - If bookSpread.{home|away} > 15 cents, that's a strong off-market signal — highlight in your thesis.
 - Use 1/4 Kelly for stake sizing, capped at 2 units. Kelly = (b·p - q)/b where b = decimal odds - 1, p = modelProb, q = 1-p.
-- Required fields: matchup, market="moneyline", selection (a team name), oddsAmerican, modelProb, marketProb, edge, kellyStakeUnits, confidence (1-100), thesis (≥80 chars), invalidation (one sentence), signals (array; first signal = "best line: BOOK PRICE"), gameTime (ISO 8601 from commence_time).
+- Required fields: matchup, market="moneyline", selection (a team name), oddsAmerican, modelProb, marketProb, edge, kellyStakeUnits, confidence (1-100), thesis (≥80 chars), invalidation (one sentence), signals (array; first signal = "best line: BOOK PRICE"), gameTime (ISO 8601 from commence_time), eventId (from get_odds).
 
 ═══ PROP PICKS (market = "prop") — NBA + MLB ONLY ═══
 **modelProb for a prop MUST come from the get_prop_projection tool. Never invent a modelProb from reasoning alone — LLMs are not reliable at prop math.**
@@ -137,7 +142,7 @@ Required fields for a prop pick:
 - modelProb: VERBATIM from get_prop_projection
 - marketProb: implied prob of your side's price
 - edge: modelProb − marketProb
-- kellyStakeUnits, confidence, thesis (mention opponentFactor + recentForm + any injury/usage angle), invalidation, signals (include "projection: X.X over/under L (n=N games)"), gameTime
+- kellyStakeUnits, confidence, thesis (mention opponentFactor + recentForm + any injury/usage angle), invalidation, signals (include "projection: X.X over/under L (n=N games)"), gameTime, eventId (from get_odds)
 
 Use thesis to explain WHY you're picking this prop — what changed (opponent matchup, recent form, role change, injury filling minutes, FanGraphs xwOBA gap, FB velocity bump). The projection number alone is not a thesis.
 
@@ -146,6 +151,7 @@ Prop-specific risk: at most one prop per player per slate. Avoid stacking high-c
 ═══ COMMON RULES (both pick types) ═══
 - Round modelProb and marketProb to 4 decimals; round kellyStakeUnits to 2 decimals.
 - Always copy gameTime exactly from the get_odds tool's commenceTime for that event. This is critical for grading.
+- Always copy eventId exactly from the get_odds tool's eventId for that event. This distinguishes split doubleheaders (same teams, same day) so the right game gets graded.
 
 ═══ MEMORY RULES (HARD GUARDRAILS) ═══
 Active rules from prior weekly dream consolidations:
@@ -351,6 +357,7 @@ export async function persistFinalPicks(args: {
           runId: args.runId,
           league: args.league,
           gameDate,
+          eventId: deriveEventId(p, gameDate),
           matchup: p.matchup,
           market: p.market,
           selection: p.selection,
@@ -389,6 +396,29 @@ export async function persistFinalPicks(args: {
     }
   }
   return { ids, skipped, skippedNoGameTime };
+}
+
+// Derive a stable per-game id for a pick. Prefers the analyst-copied Odds API
+// event.id, which uniquely identifies a game and so distinguishes split
+// doubleheaders that share a matchup AND a commence_time. When absent, falls
+// back to a deterministic synthetic id from normalized matchup + game time, so
+// cross-run idempotency still holds for ordinary games (same game → same id
+// across reruns; distinct-time doubleheaders → distinct ids). The only case
+// this synthetic cannot separate is two games with identical matchup AND
+// identical commence_time and no model-supplied eventId — which the prompt
+// makes the analyst supply. Exported for testing.
+export function deriveEventId(
+  pick: { eventId?: string; matchup: string },
+  gameDate: Date,
+): string {
+  const fromModel = pick.eventId?.trim();
+  if (fromModel) return fromModel;
+  const normMatchup = pick.matchup
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, "-");
+  return `syn:${normMatchup}@${gameDate.toISOString()}`;
 }
 
 // Strip optional ```json fences and parse
