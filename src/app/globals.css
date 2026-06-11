@@ -273,6 +273,76 @@ body::after {
   background: rgba(31, 27, 22, 0.025);
 }
 
+/* Agate scan-lines — a faint warm wash on even rows so a long board reads
+   line-by-line without a heavy zebra. Picked rows (which set their own
+   background inline) override this; the wash only lands on plain agate. */
+.ledger-table.agate tbody tr:nth-child(even):not([style*="background"]) {
+  background: rgba(31, 27, 22, 0.018);
+}
+.ledger-table.agate tbody tr:hover {
+  background: rgba(31, 27, 22, 0.04);
+}
+
+/* ─── Divergence meter — model vs. market, centered on the consensus ─────────
+   A ledger sparkline for the board: the hairline is the market's number; the
+   bar bleeds toward the side the MODEL leans. Right (blue) = model is higher
+   on the home side than the market; left (red) = model fades the home side.
+   The longer the bleed, the bigger the disagreement — the desk's whole job in
+   one glyph. Width is driven by a --d custom property in [-1, 1]. */
+
+.diverge {
+  position: relative;
+  display: block;
+  width: 64px;
+  height: 14px;
+  margin-left: auto;
+}
+/* the consensus tick — the market's line, dead center */
+.diverge::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--rule-strong);
+  transform: translateX(-0.5px);
+}
+.diverge-bar {
+  position: absolute;
+  top: 50%;
+  height: 5px;
+  transform: translateY(-50%);
+  /* --m ∈ [0,1] magnitude; positive bleeds right from center */
+  left: 50%;
+  width: calc(var(--m, 0) * 50%);
+  background: var(--blue);
+}
+.diverge-bar[data-dir="neg"] {
+  /* negative bleeds left: anchor the right edge at center */
+  left: auto;
+  right: 50%;
+  background: var(--loss);
+}
+/* the tip — a 1px end-cap so even a tiny edge prints as a mark, not nothing */
+.diverge-bar::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 1.5px;
+  background: currentColor;
+  color: inherit;
+}
+.diverge-bar[data-dir="pos"]::after {
+  right: 0;
+  background: var(--blue);
+}
+.diverge-bar[data-dir="neg"]::after {
+  left: 0;
+  background: var(--loss);
+}
+
 /* ─── Meters ────────────────────────────────────────────────────────────── */
 
 .meter {
