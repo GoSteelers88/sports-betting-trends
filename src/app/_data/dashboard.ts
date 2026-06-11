@@ -745,10 +745,19 @@ async function loadPaperTrial(): Promise<PaperTrial> {
     // liquidity to make CLV a reliable edge signal (industry consensus),
     // so we exclude them rather than letting noisy prop closings dilute
     // the metric that gates Kalshi placement.
+    //
+    // Legacy-row exclusion (2026-06-11): rows captured before the
+    // convergence-to-close fix froze an OPENING-ish (or in-play) line as the
+    // "close" — median 51 min pre-tip, one case 28 min post-tip. Those closes
+    // are NOT recoverable, so they must not feed the funding gate. We gate on
+    // clvReadingMinutesBeforeTip (NULL only on pre-fix legacy rows; every
+    // convergence-captured row records its reading distance). Until enough
+    // correctly-captured picks accumulate, the CLV sample is honestly small.
     const clvPicks = await prisma.agentPick.findMany({
       where: {
         createdAt: { gte: PAPER_TRIAL_START },
         clvCents: { not: null },
+        clvReadingMinutesBeforeTip: { not: null },
         market: { not: "prop" },
       },
       select: { clvCents: true },

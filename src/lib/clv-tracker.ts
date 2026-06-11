@@ -7,13 +7,17 @@
 // apples-to-apples instead of comparing a best-line pick to a consensus
 // close.
 //
-// Strategy:
-//   - Find AgentPick rows where clvCents IS NULL and gameDate is within the
-//     configured pre-game window
+// Strategy (CONVERGENCE-TO-CLOSE):
+//   - Find AgentPick rows where clvFinal = false and gameDate is within the
+//     scan window (from maxBeforeStart pre-tip through a grace period post-tip)
 //   - Read pre-scraped FD+Bovada odds from data/processed/latest-odds-api-{sportKey}.json
 //     (refreshed by the CLV workflow immediately before each capture)
 //   - Compute clvCents = pickedOdds - bestClosingOdds (positive = we beat the close)
-//   - Update AgentPick atomically
+//   - On every sweep, overwrite clvCents ONLY when this reading is strictly
+//     closer to tip than the stored one — the closeness gate lives in the WHERE
+//     clause so it is atomic against concurrent sweeps
+//   - Freeze the value (clvFinal = true) only once the game goes in-play; we
+//     never let an in-play price land as the "close"
 
 import fs from "node:fs";
 import path from "node:path";
@@ -145,13 +149,25 @@ export type ClvCaptureResult = {
 // `[minBeforeStart, maxBeforeStart]` minute window from now. Default window
 // covers the last 90 minutes pre-tip-off, which lines up with the GHA-driven
 // scrape-then-capture schedule (every ~15-30 min during peak game hours).
-// Both bounds must remain positive — past commence_time, the scraped odds
-// start to show in-play prices and would corrupt the funding-gate signal.
+//
+// CONVERGENCE-TO-CLOSE semantics (fixed 2026-06-11): each sweep RE-READS every
+// non-finalized pick and overwrites clvCents only if this reading is closer to
+// tip than the stored one. clvCents is finalized (frozen) once the pick goes
+// in-play (now >= gameDate): the last pre-tip reading IS the close, and we never
+// let an in-play price land. We deliberately do NOT freeze on a "tight closing
+// window" — that window can be narrower than the sweep interval, so a sweep
+// might never land inside it; finalizing strictly on in-play is robust to any
+// sweep cadence. This stops the old bug where the FIRST sweep (~85 min pre-tip)
+// froze an opening-ish line as the "closing" line and corrupted the funding gate.
 export async function captureClv(
   opts: { minBeforeStart?: number; maxBeforeStart?: number } = {}
 ): Promise<ClvCaptureResult> {
   const minBeforeStart = opts.minBeforeStart ?? 10;
   const maxBeforeStart = opts.maxBeforeStart ?? 90;
+  // After tip, keep scanning a pick for this long so a post-tip sweep can
+  // FINALIZE its stored pre-tip reading. Comfortably wider than the ~20-min
+  // sweep interval so at least one sweep always catches the in-play transition.
+  const POST_TIP_GRACE_MIN = 180;
 
   const result: ClvCaptureResult = {
     ranAt: new Date().toISOString(),
@@ -166,14 +182,18 @@ export async function captureClv(
   };
 
   const now = Date.now();
-  const since = new Date(now + minBeforeStart * 60 * 1000);
-  const until = new Date(now + maxBeforeStart * 60 * 1000);
+  // Re-read picks anywhere from `maxBeforeStart` minutes pre-tip through
+  // `POST_TIP_GRACE_MIN` minutes past tip, so a pick that first appeared at
+  // ~85 min keeps getting tighter readings down to tip, and a post-tip sweep
+  // can still FINALIZE its last pre-tip reading without writing the in-play price.
+  const earliest = new Date(now + maxBeforeStart * 60 * 1000);
+  const latestPostTip = new Date(now - POST_TIP_GRACE_MIN * 60 * 1000);
   let pending: Awaited<ReturnType<typeof prisma.agentPick.findMany>>;
   try {
     pending = await prisma.agentPick.findMany({
       where: {
-        clvCents: null,
-        gameDate: { gte: since, lte: until },
+        clvFinal: false,
+        gameDate: { lte: earliest, gte: latestPostTip },
         // Props excluded — prop markets lack the market-making liquidity
         // that makes CLV a reliable edge signal (industry consensus). The
         // dashboard already filters props OUT of CLV stats, so capturing
@@ -211,32 +231,77 @@ export async function captureClv(
       continue;
     }
     for (const pick of picks) {
+      const minutesBeforeTip = Math.round((pick.gameDate.getTime() - now) / 60_000);
+      const inPlay = minutesBeforeTip <= 0;
+
+      // Once the game has started, no better pre-tip reading is possible: freeze
+      // whatever we have (which may be null if we never matched it) and stop
+      // re-scanning the pick. We NEVER overwrite clvCents with an in-play price.
+      if (inPlay) {
+        try {
+          // updateMany so we can gate on clvFinal (non-unique) — no-op if a
+          // concurrent sweep already froze it.
+          await prisma.agentPick.updateMany({
+            where: { id: pick.id, clvFinal: false },
+            data: { clvFinal: true },
+          });
+        } catch {
+          /* already finalized by a concurrent sweep — fine */
+        }
+        continue;
+      }
+
       // Find the event matching pick.matchup
       const ev = events.find(
         e => teamMatches(e.home_team, pick.matchup) || teamMatches(e.away_team, pick.matchup)
       );
       if (!ev) {
         result.unmatched++;
+        // Majors: name the pick so "unmatched: N" is debuggable from logs alone.
+        console.warn(
+          `[clv-capture] unmatched pick ${pick.id} (${pick.matchup}) — no event in ${league} closing-odds file`,
+        );
         continue;
       }
       // Find the side we picked — match analyst's "best line" selection logic
       const closingOdds = bestPriceForTeam(ev, pick.selection);
       if (closingOdds === null) {
         result.unmatched++;
+        console.warn(
+          `[clv-capture] unmatched pick ${pick.id} (${pick.matchup} / ${pick.selection}) — no h2h price for selection`,
+        );
         continue;
       }
+
       const clvCents = pick.oddsAmerican - closingOdds;
       try {
-        await prisma.agentPick.update({
-          where: { id: pick.id },
+        // updateMany so the closeness gate lives in the WHERE clause and is
+        // therefore ATOMIC against concurrent sweeps: the write lands only if no
+        // reading exists yet, or this one is strictly closer to tip than the
+        // stored reading. A stale findMany snapshot can't let a farther reading
+        // win, and a row already finalized (in-play) is skipped (count === 0).
+        const res = await prisma.agentPick.updateMany({
+          where: {
+            id: pick.id,
+            clvFinal: false,
+            OR: [
+              { clvReadingMinutesBeforeTip: null },
+              { clvReadingMinutesBeforeTip: { gt: minutesBeforeTip } },
+            ],
+          },
           data: {
             closingOddsAmerican: closingOdds,
             clvCents,
             clvCapturedAt: new Date(),
+            clvReadingMinutesBeforeTip: minutesBeforeTip,
+            // Never finalize pre-tip — a closer reading may still arrive. The
+            // value is frozen only when the game goes in-play (branch above).
           },
         });
-        result.clvCaptured++;
-        clvDeltas.push(clvCents);
+        if (res.count > 0) {
+          result.clvCaptured++;
+          clvDeltas.push(clvCents);
+        }
       } catch (err) {
         result.errors.push(`pick ${pick.id}: ${err instanceof Error ? err.message : err}`);
       }
@@ -248,5 +313,20 @@ export async function captureClv(
       clvDeltas.reduce((s, c) => s + c, 0) / clvDeltas.length
     ).toFixed(2);
   }
+
+  // CLV-health log line: a stranger should be able to answer "did we capture
+  // the close?" from logs alone. One structured line per sweep.
+  console.log(
+    "[clv-capture] " +
+      JSON.stringify({
+        ranAt: result.ranAt,
+        pending: result.pendingChecked,
+        captured: result.clvCaptured,
+        unmatched: result.unmatched,
+        avgClvCents: result.averageClvCents,
+        oddsFileAgeMinutes: result.oddsFileAgeMinutes,
+        errors: result.errors.length,
+      }),
+  );
   return result;
 }

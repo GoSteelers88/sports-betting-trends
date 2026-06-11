@@ -131,6 +131,15 @@ model AgentPick {
   closingOddsAmerican Int?
   clvCents            Int?     // pickedOdds - closingOdds, in cents
   clvCapturedAt       DateTime?
+  // Minutes-before-tip at which the current clvCents reading was taken. A later
+  // sweep only overwrites clvCents if it is CLOSER to tip than this (so the
+  // captured value converges on the true closing line instead of freezing on
+  // the first ~85-min-pre-tip reading). NULL until the first valid reading.
+  clvReadingMinutesBeforeTip Int?
+  // True once clvCents is frozen (pick went in-play, or a sweep ran inside the
+  // tight closing window). The capture query skips finalized rows; non-final
+  // rows with a reading remain eligible for a closer-to-tip overwrite.
+  clvFinal            Boolean  @default(false)
 
   // Player-prop fields (null for team-level markets). When market = "prop",
   // all four must be populated; the autograder uses these to look up the
