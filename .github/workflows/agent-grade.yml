@@ -54,15 +54,10 @@ jobs:
           DAYS_BACK: ${{ github.event.inputs.daysBack || '1' }}
         run: npm run picks:grade -- "$DAYS_BACK"
 
-      # CLV capture moved to agent-clv.yml (runs every 20 min during peak
-      # game window using fresh FD+Bovada scrapes). Keeping the call here
-      # as a daily catch-all in case the per-run capture window misses a
-      # pick — uses the same wide [10, 90] minute window.
-      - name: Run CLV tracker (catch-all sweep)
-        env:
-          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
-          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-          # Mirror so Prisma's schema-time URL parser doesn't throw; libSQL
-          # adapter overrides at runtime. See agent-run.yml for context.
-          DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
-        run: npm run ingest:odds && (npm run picks:clv -- 10 90 || echo "clv tracker failed (non-fatal)")
+      # NOTE: there is deliberately no CLV step here. CLV capture is owned
+      # entirely by agent-clv.yml, which sweeps every 20 min through the game
+      # window and finalizes each pick at in-play (convergence-to-close). A
+      # 13:00 UTC "catch-all" using the [10, 90] forward window scans games
+      # starting 13:10-14:30 UTC — i.e. nothing, since last night's picks are
+      # hours past tip and outside the scan window. It captured nothing and was
+      # removed (2026-06-11) rather than masquerade as a safety net.

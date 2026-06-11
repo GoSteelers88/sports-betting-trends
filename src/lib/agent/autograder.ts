@@ -127,12 +127,17 @@ export function matchesPickToFinal(
 
 type GradeResult = "win" | "loss" | "push" | "void";
 
-function gradeMoneyline(selection: string, finals: GameFinal): GradeResult | null {
+export function gradeMoneyline(selection: string, finals: GameFinal): GradeResult | null {
   const home = finals.homeTeam;
   const away = finals.awayTeam;
   const pickedHome = teamMatches(home, selection);
   const pickedAway = teamMatches(away, selection);
   if (!pickedHome && !pickedAway) return null;
+  // Ambiguous: the selection matched BOTH teams (e.g. "Sox" matches both
+  // White Sox and Red Sox once the <4-char token filter drops "sox"). Refuse
+  // to grade rather than silently default to the home arm — a wrong grade
+  // corrupts the trial ledger worse than an ungraded pick does.
+  if (pickedHome && pickedAway) return null;
   // NBA/MLB don't allow ties; a tied "final" is bad data → mark void, not push.
   if (finals.homeScore === finals.awayScore) return "void";
   const homeWon = finals.homeScore > finals.awayScore;

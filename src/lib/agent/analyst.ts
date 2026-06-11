@@ -319,21 +319,31 @@ export async function persistFinalPicks(args: {
   league: string;
   finalPicks: GradedPick[];
   toolsUsed: ToolName[];
-}): Promise<{ ids: number[]; skipped: number }> {
+}): Promise<{ ids: number[]; skipped: number; skippedNoGameTime: number }> {
   const ids: number[] = [];
   let skipped = 0;
+  let skippedNoGameTime = 0;
   for (const p of args.finalPicks) {
-    // Use the actual game time (commenceTime from odds feed) so:
-    //   1. the autograder's 36h proximity match targets the right game day
-    //   2. the @@unique key correctly distinguishes doubleheaders (same matchup,
-    //      different times) from re-runs of the same pick.
+    // gameDate is load-bearing: the autograder's 36h proximity match and CLV's
+    // tip-window both key off it, and it's part of the @@unique idempotency key.
+    // A missing-gameTime pick used to be pinned to today UTC-noon, which could
+    // collide two genuinely different games on the unique key (dropping one as a
+    // false idempotent skip) and mis-target the grader. An ungradeable pick is
+    // worse than a missing one, so we refuse to persist it and count it instead.
     let gameDate: Date;
     if (p.gameTime) {
       const parsed = new Date(p.gameTime);
-      gameDate = Number.isFinite(parsed.getTime()) ? parsed : fallbackGameDate();
+      if (Number.isFinite(parsed.getTime())) {
+        gameDate = parsed;
+      } else {
+        console.warn(`persistFinalPicks: pick has invalid gameTime (${p.gameTime}), skipping: ${p.matchup}`);
+        skippedNoGameTime++;
+        continue;
+      }
     } else {
-      console.warn(`persistFinalPicks: pick missing gameTime, falling back to today UTC midnight: ${p.matchup}`);
-      gameDate = fallbackGameDate();
+      console.warn(`persistFinalPicks: pick missing gameTime, skipping: ${p.matchup}`);
+      skippedNoGameTime++;
+      continue;
     }
     try {
       const created = await prisma.agentPick.create({
@@ -378,15 +388,7 @@ export async function persistFinalPicks(args: {
       throw err;
     }
   }
-  return { ids, skipped };
-}
-
-// Fallback when an analyst pick is missing gameTime — pin to today UTC noon
-// so we end up in the right calendar day rather than midnight (which lands
-// in yesterday for west-coast viewers). Should be rare with the updated prompt.
-function fallbackGameDate(): Date {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12));
+  return { ids, skipped, skippedNoGameTime };
 }
 
 // Strip optional ```json fences and parse

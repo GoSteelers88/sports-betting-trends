@@ -447,9 +447,20 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
       persistOk = true;
       trace.push({
         step: "persist_picks",
-        detail: { inserted: persistResult.ids.length, skipped_idempotent: persistResult.skipped },
+        detail: {
+          inserted: persistResult.ids.length,
+          skipped_idempotent: persistResult.skipped,
+          skipped_no_gametime: persistResult.skippedNoGameTime,
+        },
         at: new Date().toISOString(),
       });
+      if (persistResult.skippedNoGameTime > 0) {
+        await notifyError(
+          "persistFinalPicks:noGameTime",
+          new Error(`${persistResult.skippedNoGameTime} pick(s) refused — missing/invalid gameTime`),
+          { runId, league },
+        );
+      }
     } catch (err) {
       trace.push({
         step: "persist_picks_failed",
