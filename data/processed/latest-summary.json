@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-06-12T00:10:31.386Z",
+  "generatedAt": "2026-06-12T17:15:11.121Z",
   "ready": true,
-  "recordsIngested": 798,
-  "recordsCompleted": 798,
+  "recordsIngested": 802,
+  "recordsCompleted": 802,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 758,
+      "games": 762,
       "conferences": [
         "NL East",
         "NL West",
         "AL Central",
         "NL Central",
         "AL West",
-        "Unknown",
-        "AL East"
+        "AL East",
+        "Unknown"
       ],
-      "avgPoints": 4.547493403693931,
+      "avgPoints": 4.557742782152231,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
@@ -28,10 +28,10 @@
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 758,
-        "rpg": 4.55,
-        "oppRpg": 4.55,
-        "hitsPerGame": 8.27,
+        "games": 762,
+        "rpg": 4.56,
+        "oppRpg": 4.56,
+        "hitsPerGame": 8.28,
         "errorsPerGame": 0.53,
         "sos": 0.52
       },
@@ -114,6 +114,38 @@
           "oppRpg": 5.23,
           "hitsPerGame": 7.77,
           "errorsPerGame": 0.31,
+          "sos": 0.52
+        },
+        "Pirates": {
+          "games": 26,
+          "rpg": 5.31,
+          "oppRpg": 5.58,
+          "hitsPerGame": 9,
+          "errorsPerGame": 0.81,
+          "sos": null
+        },
+        "Dodgers": {
+          "games": 26,
+          "rpg": 6.19,
+          "oppRpg": 3.12,
+          "hitsPerGame": 8.92,
+          "errorsPerGame": 0.31,
+          "sos": null
+        },
+        "Orioles": {
+          "games": 26,
+          "rpg": 5.31,
+          "oppRpg": 4.96,
+          "hitsPerGame": 8.85,
+          "errorsPerGame": 0.35,
+          "sos": null
+        },
+        "Mariners": {
+          "games": 26,
+          "rpg": 4.38,
+          "oppRpg": 3.81,
+          "hitsPerGame": 8.42,
+          "errorsPerGame": 0.54,
           "sos": 0.52
         },
         "Athletics": {
@@ -210,38 +242,6 @@
           "oppRpg": 5.21,
           "hitsPerGame": 8.67,
           "errorsPerGame": 0.71,
-          "sos": null
-        },
-        "Orioles": {
-          "games": 25,
-          "rpg": 5.24,
-          "oppRpg": 4.96,
-          "hitsPerGame": 8.92,
-          "errorsPerGame": 0.32,
-          "sos": null
-        },
-        "Mariners": {
-          "games": 25,
-          "rpg": 4.36,
-          "oppRpg": 3.68,
-          "hitsPerGame": 8.4,
-          "errorsPerGame": 0.56,
-          "sos": 0.52
-        },
-        "Pirates": {
-          "games": 25,
-          "rpg": 5.28,
-          "oppRpg": 5.48,
-          "hitsPerGame": 8.88,
-          "errorsPerGame": 0.84,
-          "sos": null
-        },
-        "Dodgers": {
-          "games": 25,
-          "rpg": 6.12,
-          "oppRpg": 3,
-          "hitsPerGame": 8.88,
-          "errorsPerGame": 0.32,
           "sos": null
         },
         "Blue Jays": {
@@ -775,11 +775,132 @@
     "Unknown",
     "Western"
   ],
-  "bestBets": [],
+  "bestBets": [
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-12T23:41:00.000Z",
+      "matchup": "Philadelphia Phillies at Milwaukee Brewers",
+      "pickTeam": "Milwaukee Brewers",
+      "opponent": "Philadelphia Phillies",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Milwaukee Brewers -1.5",
+      "score": 65,
+      "confidence": 61,
+      "rationaleSignals": [
+        "Momentum edge -0.20 (last-10 trend proxy)",
+        "ATS edge +0.000",
+        "History sample Milwaukee Brewers: 26 games (mapped Brewers) vs Philadelphia Phillies: 25 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Milwaukee Brewers 2d rest vs Philadelphia Phillies 3d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +2.5",
+        "Home SP: Jacob Misiorowski",
+        "Away SP: Andrew Painter",
+        "MLB model: 73.5% win prob (calibrated)"
+      ],
+      "momentumEdge": -0.2,
+      "atsEdge": 0,
+      "mlbModelProb": 0.7346,
+      "mlbEdge": 0.0144,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-13T02:16:00.000Z",
+      "matchup": "Chicago Cubs at San Francisco Giants",
+      "pickTeam": "San Francisco Giants",
+      "opponent": "Chicago Cubs",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "San Francisco Giants -1.5",
+      "score": 62,
+      "confidence": 58,
+      "rationaleSignals": [
+        "Momentum edge +0.40 (last-10 trend proxy)",
+        "ATS edge +0.500",
+        "History sample San Francisco Giants: 26 games (mapped Giants) vs Chicago Cubs: 26 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: San Francisco Giants 3d rest vs Chicago Cubs 2d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +1.6",
+        "Home SP: Landen Roupp",
+        "Away SP: Javier Assad",
+        "MLB model: 61.5% win prob (calibrated) | Edge vs market: +6.1%"
+      ],
+      "momentumEdge": 0.4,
+      "atsEdge": 0.5,
+      "mlbModelProb": 0.6147,
+      "mlbEdge": 0.0611,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-12T23:06:00.000Z",
+      "matchup": "San Diego Padres at Baltimore Orioles",
+      "pickTeam": "Baltimore Orioles",
+      "opponent": "San Diego Padres",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Baltimore Orioles -1.5",
+      "score": 61,
+      "confidence": 57,
+      "rationaleSignals": [
+        "Momentum edge +0.40 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Baltimore Orioles: 26 games (mapped Orioles) vs San Diego Padres: 25 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Baltimore Orioles 2d rest vs San Diego Padres 3d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +2.1",
+        "Home SP: Shane Baz",
+        "Away SP: Griffin Canning",
+        "MLB model: 62.8% win prob (calibrated) | Edge vs market: +6.8%"
+      ],
+      "momentumEdge": 0.4,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.6279,
+      "mlbEdge": 0.0675,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-12T23:11:00.000Z",
+      "matchup": "Detroit Tigers at Cleveland Guardians",
+      "pickTeam": "Detroit Tigers",
+      "opponent": "Cleveland Guardians",
+      "spread": 0,
+      "modelSpread": 0,
+      "line": "Detroit Tigers 0",
+      "score": 60,
+      "confidence": 56,
+      "rationaleSignals": [
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample Detroit Tigers: 26 games (mapped Tigers) vs Cleveland Guardians: 25 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Detroit Tigers 2d rest vs Cleveland Guardians 3d rest",
+        "2 books: avg 0, variance 2.25 (high disagreement)",
+        "Net Rating edge: +4.1",
+        "Home SP: Tanner Bibee",
+        "Away SP: Jack Flaherty",
+        "MLB model: 56.7% win prob (calibrated) | Edge vs market: +8.1%"
+      ],
+      "momentumEdge": 0.8,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.5674,
+      "mlbEdge": 0.0808,
+      "mlbCalibrated": true
+    }
+  ],
   "topBestBetsTarget": 5,
-  "topBestBetsDateEt": "2026-06-11",
+  "topBestBetsDateEt": "2026-06-12",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 0 eligible games found on 2026-06-11 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 4 eligible games found on 2026-06-12 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -2208,6 +2329,14 @@
         "returnDate": "2026-08-01"
       },
       {
+        "player": "Tank Dell",
+        "team": "Houston Texans",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Knee - ACL + MCL",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Layne Pryor",
         "team": "Houston Texans",
         "position": "TE",
@@ -2237,14 +2366,6 @@
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Knee",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Tank Dell",
-        "team": "Houston Texans",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL + MCL",
         "returnDate": "2026-08-01"
       },
       {
@@ -2316,8 +2437,8 @@
         "team": "Indianapolis Colts",
         "position": "CB",
         "status": "Questionable",
-        "injuryType": "Calf",
-        "returnDate": "2026-07-01"
+        "injuryType": "questionable",
+        "returnDate": ""
       },
       {
         "player": "Hunter Wohler",
@@ -2360,6 +2481,14 @@
         "returnDate": "2026-07-01"
       },
       {
+        "player": "Xavier Worthy",
+        "team": "Kansas City Chiefs",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Shoulder - Labrum",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Patrick Mahomes",
         "team": "Kansas City Chiefs",
         "position": "QB",
@@ -2373,14 +2502,6 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Knee",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Xavier Worthy",
-        "team": "Kansas City Chiefs",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Shoulder - Labrum",
         "returnDate": "2026-08-01"
       },
       {
