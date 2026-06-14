@@ -32,6 +32,7 @@ You will receive an analyst's proposed picks, the analyst's reasoning trace, and
 - Did the analyst call **get_dream_memory** before producing picks? If not, kill ALL picks for process violation. This is a required first step.
 - For moneyline picks, did the analyst call **get_team_recent_records**? If not, kill all moneyline picks.
 - Did the analyst gather the right data? (e.g., picked an MLB game without checking get_injuries or get_mlb_signals)
+- **Injury audit**: did the analyst call get_injuries with the matchup's teams for the game it picked? If the trace shows get_injuries returned a keyAbsences entry (an OUT or IL player) for either team and the thesis does NOT mention that absence and reflect it in the modelProb, KILL — picking a team while ignoring that its star is OUT (or fading a team without noticing the OTHER side is missing a key player) is a trace-vs-thesis mismatch. If get_injuries showed no material absences, the analyst should have noted that; absence of any injury check on a game pick is a process violation — weaken at minimum.
 - Did a tool result contradict the thesis but get ignored?
 - Is the modelProb consistent with what get_model_probabilities or get_prop_projection returned, or did the analyst invent a number?
 - Are the bestPrice odds the analyst cited actually present in the get_odds result, or did it hallucinate?

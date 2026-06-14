@@ -5,6 +5,20 @@ import fs from "node:fs";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
+import { getHomeRunLikes, type HomeRunLike } from "@/lib/props-board";
+import {
+  buildMlbPropPlays,
+  type MlbPropPlaysBoard,
+  type SharpPropRow,
+  type SoftQuoteRow,
+} from "@/lib/mlb-prop-plays";
+import type { MlbGameLogFile } from "@/lib/mlb-prop-distributions";
+import {
+  slateTeamsFromEvents,
+  isTeamOnSlate,
+  scopeInjuriesToSlate,
+  type ScopeInjury,
+} from "@/lib/injuries-scope";
 
 type PickWithOutcome = Prisma.AgentPickGetPayload<{ include: { outcome: true } }>;
 type OutcomeWithPick = Prisma.AgentOutcomeGetPayload<{ include: { pick: true } }>;
@@ -88,6 +102,26 @@ export type Injury = {
   position?: string;
   status: string;
   injuryType?: string;
+};
+
+// Wraps the scoped injury list with enough context for the wire to label
+// itself honestly ("scoped to N teams on today's slate").
+export type InjuryWire = {
+  injuries: Injury[];
+  // Distinct teams playing today (across all covered leagues) that the wire
+  // is scoped to. Drives the "teams on today's slate" label.
+  slateTeamCount: number;
+  // Leagues that contributed at least one slate team today.
+  leaguesOnSlate: string[];
+  // Leaguewide "watch" injuries for a covered league that has NO valid slate
+  // today (e.g. NFL out of season, or its odds feed isn't a pro slate). These
+  // are the top OUT/IL absences shown as CONTEXT, not scoped to today's games —
+  // labeled distinctly so nobody mistakes them for today's slate.
+  watch: Injury[];
+  // Leagues represented in `watch` (so the UI can name them in the explainer).
+  watchLeagues: string[];
+  // One-line plain-English explainer of what the wire is and how it's scoped.
+  explainer: string;
 };
 
 export type MarketPick = {
@@ -285,6 +319,13 @@ export type DashboardData = {
   picks: { games: SlatePick[]; props: SlatePick[] };
   marketPicks: MarketPick[];
   playerProps: PlayerProp[];
+  // 🔥 home-run likes the props board has flagged (MLB HomeRuns/Over, +EV vs
+  // the de-vigged sharp line). A highlight surfaced on the Props Desk.
+  homeRunLikes: HomeRunLike[];
+  // MLB prop plays organized BY STAT — each stat's milestone ladder (1+, 2+, …)
+  // with OUR model's P(≥k) per rung, market edge/price overlaid where a line
+  // exists. Empty (groups: []) when there's no MLB slate → the section hides.
+  mlbPropPlays: MlbPropPlaysBoard;
   trackRecord7: TrackRecord;
   trackRecord30: TrackRecord;
   paperTrial: PaperTrial;
@@ -293,7 +334,7 @@ export type DashboardData = {
   agentMemory: AgentMemorySummary;
   lastNight: { games: LastNightLedger; props: LastNightLedger };
   overallRecord: { games: OverallRecord; props: OverallRecord };
-  injuries: Injury[];
+  injuryWire: InjuryWire;
   status: {
     lastAgentRunAt: string | null;
     nextScheduledRunUtc: string;
@@ -488,24 +529,172 @@ function loadPlayerProps(): PlayerProp[] {
   return (file.topProps ?? []).slice(0, 5);
 }
 
+// ─── MLB prop plays (by-stat threshold ladders, model-first) ─────────────────
+
+type SharpPropsFileShape = { fetchedAt?: string; props?: SharpPropRow[] };
+type SoftPropsFileShape = { fetchedAt?: string; quotes?: SoftQuoteRow[] };
+
+/** Build the by-stat MLB ladder board from the gamelog distribution model,
+ *  scoped to tonight's MLB slate teams, with sharp/soft market overlay.
+ *  Pure read — any missing file degrades to an empty board (section hides). */
+function loadMlbPropPlays(): MlbPropPlaysBoard {
+  const gamelog = readJson<MlbGameLogFile | null>("player-gamelogs-mlb.json", null);
+  const odds = readJson<RawOddsFile>(ODDS_FILE.MLB, { events: [] });
+  const sharp = readJson<SharpPropsFileShape>("latest-sharp-props-mlb.json", {});
+  const soft = readJson<SoftPropsFileShape>("latest-soft-props-mlb.json", {});
+
+  // Slate teams = the real MLB teams on tonight's baseball odds feed. The feed
+  // also carries NCAA/exhibition games; honestLeague-equivalent gating is the
+  // MLB_TEAMS membership baked into the odds events, but the gamelog only holds
+  // MLB players, so a non-MLB team simply matches nobody — safe either way.
+  const slateTeams = slateTeamsFromEvents(odds.events ?? []);
+  const isSlateTeam = (team: string | null): boolean =>
+    !!team && isTeamOnSlate(team, slateTeams);
+
+  return buildMlbPropPlays({
+    gamelog,
+    isSlateTeam,
+    sharp: sharp.props ?? [],
+    soft: soft.quotes ?? [],
+  });
+}
+
 // ─── injuries ──────────────────────────────────────────────────────────────
 
-type InjuryFile = { players?: Array<{ player: string; team: string; position?: string; status: string; injuryType?: string }> };
+type InjuryFile = { players?: ScopeInjury[] };
 
-function loadInjuries(): Injury[] {
+// All leagues we cover, each with its ESPN injury feed and Odds API slate
+// feed. The wire is scoped to teams actually playing today (per league), then
+// trimmed to decision-relevant statuses (OUT/DOUBTFUL/IL/QUESTIONABLE).
+//
+// `watchWhenNoSlate`: leagues we want to keep VISIBLE as leaguewide context
+// even on days they have no valid slate (NFL — picks are NBA+MLB only, but we
+// surface NFL absences so the board reads as a true cross-sport injury wire).
+const INJURY_LEAGUES: Array<{
+  league: string;
+  injuryFile: string;
+  oddsFile: string;
+  watchWhenNoSlate?: boolean;
+}> = [
+  { league: "NBA", injuryFile: "injuries-nba.json", oddsFile: "latest-odds-api-basketball_nba.json" },
+  { league: "MLB", injuryFile: "injuries-mlb.json", oddsFile: "latest-odds-api-baseball_mlb.json" },
+  { league: "NHL", injuryFile: "injuries-nhl.json", oddsFile: "latest-odds-api-icehockey_nhl.json" },
+  {
+    league: "NFL",
+    injuryFile: "injuries-nfl.json",
+    oddsFile: "latest-odds-api-americanfootball_nfl.json",
+    watchWhenNoSlate: true,
+  },
+];
+
+type SlateOddsFile = { events?: Array<{ home_team?: string; away_team?: string }> };
+
+// How many leaguewide "watch" absences to surface per watch-league when there's
+// no slate to scope to. Keeps the agate section small.
+const WATCH_LIMIT_PER_LEAGUE = 8;
+
+function loadInjuryWire(): InjuryWire {
   const out: Injury[] = [];
-  for (const [league, file] of [["NBA", "injuries-nba.json"], ["NHL", "injuries-nhl.json"]] as const) {
-    const data = readJson<InjuryFile>(file, { players: [] });
-    for (const p of data.players ?? []) {
-      const status = p.status?.toLowerCase() ?? "";
-      if (status.includes("out") || status.includes("doubtful")) {
-        out.push({ league, ...p });
+  const watch: Injury[] = [];
+  const watchLeagues: string[] = [];
+  let slateTeamCount = 0;
+  const leaguesOnSlate: string[] = [];
+
+  for (const { league, injuryFile, oddsFile, watchWhenNoSlate } of INJURY_LEAGUES) {
+    const odds = readJson<SlateOddsFile>(oddsFile, { events: [] });
+    const slateTeams = slateTeamsFromEvents(odds.events ?? []);
+    const data = readJson<InjuryFile>(injuryFile, { players: [] });
+    const players = data.players ?? [];
+
+    const scoped = scopeInjuriesToSlate(players, slateTeams, { decisionOnly: true, league });
+
+    // A "valid" slate for this league means the odds feed's teams actually
+    // intersect this league's injury teams. If not (NFL out of season, or the
+    // odds file is a different sport like CFB), there's nothing real to scope —
+    // fall through to the leaguewide watch when this is a watch league.
+    const hasValidSlate = scoped.teamsPlaying.length > 0;
+
+    if (hasValidSlate) {
+      slateTeamCount += slateTeams.length;
+      if (scoped.scoped.length > 0) leaguesOnSlate.push(league);
+      for (const p of scoped.scoped) {
+        out.push({
+          league,
+          player: p.player,
+          team: p.team,
+          position: p.position,
+          status: p.status,
+          injuryType: p.injuryType,
+        });
+      }
+      continue;
+    }
+
+    // No valid slate. For watch leagues, surface the most severe leaguewide
+    // absences (OUT / IL) as CONTEXT — clearly separated from slate injuries.
+    if (watchWhenNoSlate) {
+      const severe = scopeInjuriesToSlate(
+        players,
+        // empty slate → nothing scoped; instead pull from the full feed and
+        // keep only OUT/IL via a synthetic "all teams" pass below.
+        players.map((p) => p.team),
+        { decisionOnly: true, league }
+      ).scoped.filter((p) => {
+        const s = (p.status ?? "").toUpperCase();
+        return s.includes("OUT") || s.includes("IL") || s.includes("INJURED RESERVE");
+      });
+      const top = severe.slice(0, WATCH_LIMIT_PER_LEAGUE);
+      if (top.length > 0) {
+        watchLeagues.push(league);
+        for (const p of top) {
+          watch.push({
+            league,
+            player: p.player,
+            team: p.team,
+            position: p.position,
+            status: p.status,
+            injuryType: p.injuryType,
+          });
+        }
       }
     }
   }
-  return out;
+
+  const explainer = buildWireExplainer(leaguesOnSlate, slateTeamCount, watchLeagues);
+
+  return { injuries: out, slateTeamCount, leaguesOnSlate, watch, watchLeagues, explainer };
 }
 
+// Plain-English summary of what the injury wire is doing right now, so a reader
+// understands the scope at a glance: which leagues are scoped to today's slate,
+// and which (e.g. NFL) are shown as leaguewide context.
+function buildWireExplainer(
+  leaguesOnSlate: string[],
+  slateTeamCount: number,
+  watchLeagues: string[]
+): string {
+  const parts: string[] = [];
+  if (leaguesOnSlate.length > 0) {
+    parts.push(
+      `Scoped to the ${slateTeamCount} teams playing today across ${leaguesOnSlate.join(", ")} — only injuries that can move a game on the board.`
+    );
+  } else {
+    parts.push("No teams on today's slate yet.");
+  }
+  if (watchLeagues.length > 0) {
+    parts.push(
+      `${watchLeagues.join(", ")} shown as a leaguewide watch (no slate today) so the wire stays a full cross-sport picture.`
+    );
+  }
+  parts.push("Bets are NBA + MLB only; other leagues are surfaced as context.");
+  return parts.join(" ");
+}
+
+// ─── league desks ("what we're doing", per sport) ───────────────────────────
+
+// Static program description per league. The LIVE counts are filled in from
+// today's data so the desk can't overstate activity. Edit these strings to
+// change what the public sees we're doing in each sport.
 // ─── DB queries ────────────────────────────────────────────────────────────
 
 async function loadTodaysPicks(): Promise<{ games: SlatePick[]; props: SlatePick[] }> {
@@ -1349,9 +1538,11 @@ export async function getDashboardData(): Promise<DashboardData> {
     loadOverallRecord(),
   ]);
 
-  const injuries = loadInjuries();
+  const injuryWire = loadInjuryWire();
   const marketPicks = loadMarketPicks();
   const playerProps = loadPlayerProps();
+  const homeRunLikes = getHomeRunLikes();
+  const mlbPropPlays = loadMlbPropPlays();
 
   const allTodayPicks = [...picks.games, ...picks.props];
   const todayPnl = allTodayPicks.reduce((s, p) => s + (p.outcome?.unitsPnl ?? 0), 0);
@@ -1372,6 +1563,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     picks,
     marketPicks,
     playerProps,
+    homeRunLikes,
+    mlbPropPlays,
     trackRecord7,
     trackRecord30,
     paperTrial,
@@ -1380,7 +1573,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     agentMemory,
     lastNight,
     overallRecord,
-    injuries,
+    injuryWire,
     status: {
       lastAgentRunAt,
       nextScheduledRunUtc: next.toISOString(),

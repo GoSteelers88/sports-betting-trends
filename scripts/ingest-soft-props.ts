@@ -76,6 +76,15 @@ async function main() {
           continue;
         }
         const data: any = await oddsRes.json();
+        // Game identity from the /events row — the parlay book requires it to
+        // prove legs come from distinct, independent games. Without an id a
+        // leg is ineligible for parlays (still fine for the single-leg board).
+        const gameId = ev.id ? String(ev.id) : "";
+        const homeTeam = ev.home_team ? String(ev.home_team) : undefined;
+        const awayTeam = ev.away_team ? String(ev.away_team) : undefined;
+        if (!gameId) {
+          console.warn(`[soft-props] event missing id — props on this game are parlay-ineligible`);
+        }
         for (const bm of data.bookmakers ?? []) {
           for (const mkt of bm.markets ?? []) {
             for (const o of mkt.outcomes ?? []) {
@@ -89,6 +98,14 @@ async function main() {
                 american: Number(o.price),
                 book: String(bm.key),
                 commence: String(ev.commence_time),
+                gameId,
+                // The Odds API props feed doesn't tag a prop with the player's
+                // own side; we record both teams so the correlation rule (same
+                // game / same matchup) can fire. Per-side resolution can be
+                // refined later via a roster map — both teams suffice for the
+                // distinct-game and same-game-stack checks.
+                team: homeTeam,
+                opponent: awayTeam,
               });
             }
           }

@@ -4,6 +4,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { project as projectProp, type ProjectionInput } from "@/lib/prop-projector";
+import { getHomeRunLikes, type HomeRunLike } from "@/lib/props-board";
+import {
+  slateTeamsFromEvents,
+  scopeInjuriesToSlate,
+  injuriesForTeams,
+  statusTier,
+  type ScopeInjury,
+} from "@/lib/injuries-scope";
 
 const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 
@@ -360,23 +368,114 @@ export function getModelProbabilities(league: AgentLeague): {
 
 type InjuryFile = { fetchedAt?: string; players?: Injury[] };
 
-export function getInjuries(
-  league: AgentLeague
-): { fetchedAt: string | null; players: Injury[]; dataWarning?: string } {
-  // We have nba/nfl/nhl injury snapshots; MLB / WNBA / NCAAB injuries surface
-  // inside latest-summary for now. Return empty-list gracefully when absent.
-  const file =
-    league === "NBA" ? "injuries-nba.json"
-    : league === "NHL" ? "injuries-nhl.json"
-    : null;
-  if (!file) return { fetchedAt: null, players: [] };
+// Every league we cover now has an ESPN injury snapshot written by
+// scripts/ingest-injuries.ts. NCAAB has no feed (return empty gracefully).
+const INJURY_FILE: Record<AgentLeague, string | null> = {
+  NBA: "injuries-nba.json",
+  MLB: "injuries-mlb.json",
+  NHL: "injuries-nhl.json",
+  WNBA: null,
+  NCAAB: null,
+};
+
+export type GetInjuriesInput = {
+  league: AgentLeague;
+  // When the analyst is evaluating a specific matchup it passes the two team
+  // names here (full Odds API display names from get_odds). The tool then
+  // returns ONLY those teams' decision-relevant players (OUT/DOUBTFUL/IL/
+  // QUESTIONABLE) — the injuries that actually move THIS game.
+  teams?: string[];
+  // Default true: restrict the player list to teams on today's slate (read
+  // from the odds feed). Set false to get the entire league feed.
+  scopeToSlate?: boolean;
+};
+
+export type GetInjuriesResult = {
+  fetchedAt: string | null;
+  // When `teams` is supplied: the decision-relevant players for that matchup.
+  // Otherwise: the slate-scoped (or full, if scopeToSlate=false) player list.
+  players: Injury[];
+  // Teams the returned players belong to (helps the analyst confirm scope).
+  teamsCovered: string[];
+  // How the list was filtered, so the analyst knows what it's looking at.
+  scope: "matchup" | "slate" | "full";
+  // Compact "key absence" summary the analyst should weigh: OUT/IL players by
+  // team, so a star being out is impossible to miss in the tool payload.
+  keyAbsences: Array<{ team: string; player: string; status: string; position?: string }>;
+  dataWarning?: string;
+};
+
+function slateTeamsForLeague(league: AgentLeague): string[] {
+  const oddsFile = ODDS_FILE[league];
+  const loaded = loadJsonWithStatus<RawOddsFile>(oddsFile, { events: [] });
+  return slateTeamsFromEvents(loaded.data.events ?? []);
+}
+
+export function getInjuries(input: GetInjuriesInput): GetInjuriesResult {
+  const { league } = input;
+  const file = INJURY_FILE[league];
+  const empty: GetInjuriesResult = {
+    fetchedAt: null,
+    players: [],
+    teamsCovered: [],
+    scope: input.teams && input.teams.length ? "matchup" : input.scopeToSlate === false ? "full" : "slate",
+    keyAbsences: [],
+  };
+  if (!file) return empty;
+
   const loaded = loadJsonWithStatus<InjuryFile>(file, {});
   const warn = dataWarning(file, loaded.status, loaded.ageMs);
+  const all = (loaded.data.players ?? []) as ScopeInjury[];
+
+  // Matchup mode — the analyst passed the two teams it's evaluating.
+  if (input.teams && input.teams.length > 0) {
+    const players = injuriesForTeams(all, input.teams, { decisionOnly: true, league }) as Injury[];
+    return {
+      fetchedAt: loaded.data.fetchedAt ?? null,
+      players,
+      teamsCovered: [...new Set(players.map((p) => p.team))].sort(),
+      scope: "matchup",
+      keyAbsences: keyAbsencesOf(players),
+      ...(warn ? { dataWarning: warn } : {}),
+    };
+  }
+
+  // Full-feed mode — explicit opt-out of slate scoping.
+  if (input.scopeToSlate === false) {
+    const players = [...all].sort((a, b) => a.team.localeCompare(b.team)) as Injury[];
+    return {
+      fetchedAt: loaded.data.fetchedAt ?? null,
+      players,
+      teamsCovered: [...new Set(players.map((p) => p.team))].sort(),
+      scope: "full",
+      keyAbsences: keyAbsencesOf(players),
+      ...(warn ? { dataWarning: warn } : {}),
+    };
+  }
+
+  // Default — scope to today's slate for this league.
+  const slateTeams = slateTeamsForLeague(league);
+  const result = scopeInjuriesToSlate(all, slateTeams, { decisionOnly: true, league });
+  const players = result.scoped as Injury[];
   return {
     fetchedAt: loaded.data.fetchedAt ?? null,
-    players: loaded.data.players ?? [],
+    players,
+    teamsCovered: result.teamsPlaying,
+    scope: "slate",
+    keyAbsences: keyAbsencesOf(players),
     ...(warn ? { dataWarning: warn } : {}),
   };
+}
+
+// Pull the highest-impact absences (OUT / IL) to the top of the tool payload
+// so a star sitting can't be buried under a wall of questionable role players.
+function keyAbsencesOf(players: Injury[]): GetInjuriesResult["keyAbsences"] {
+  return players
+    .filter((p) => {
+      const t = statusTier(p.status);
+      return t === "OUT" || t === "IL";
+    })
+    .map((p) => ({ team: p.team, player: p.player, status: p.status, position: p.position }));
 }
 
 // ─── Tool: get_player_props (NBA only currently) ───────────────────────────
@@ -512,6 +611,42 @@ export function getPropProjection(input: PropProjectionInput) {
   };
 }
 
+// ─── Tool: get_home_run_likes (MLB only) ───────────────────────────────────
+// Surfaces the 🔥 home-run "likes" the props board has already flagged: MLB
+// HomeRuns/Over props whose de-vigged sharp fair prob beats the soft book's
+// implied prob by the playable EV floor. The number is NOT fabricated by the
+// LLM — it comes from the same devigged sharp HR line the props board uses.
+// The analyst can promote a flagged HR like into a prop pick, but it MUST still
+// run get_prop_projection for the player to source modelProb (this tool gives
+// the market-edge signal, not the projection). Read-only; empty/missing log
+// degrades to [] so the analyst can skip cleanly.
+
+export function getHomeRunLikesForAgent(league: AgentLeague): {
+  available: boolean;
+  count: number;
+  likes: HomeRunLike[];
+  note: string;
+} {
+  if (league !== "MLB") {
+    return {
+      available: false,
+      count: 0,
+      likes: [],
+      note: "home-run likes are MLB-only — no HR market for this league.",
+    };
+  }
+  const likes = getHomeRunLikes();
+  return {
+    available: true,
+    count: likes.length,
+    likes,
+    note:
+      likes.length === 0
+        ? "No HR likes on the current board — no MLB HomeRuns/Over prop currently beats the de-vigged sharp line by the playable floor. Don't force an HR pick."
+        : "These MLB batter_home_runs OVER props beat the de-vigged sharp (Pinnacle) line by the playable EV floor. evPct is the edge vs the soft book. To pick one, call get_prop_projection(MLB, player, 'batter_home_runs', line, 'over', opponent) for the modelProb — this tool supplies the sharp-market edge, NOT the projection. Still apply the ≥6% pick floor and one-prop-per-player cap.",
+  };
+}
+
 // ─── Tool dispatch table ───────────────────────────────────────────────────
 
 export type ToolName =
@@ -522,6 +657,7 @@ export type ToolName =
   | "get_trend_summary"
   | "get_mlb_signals"
   | "get_prop_projection"
+  | "get_home_run_likes"
   | "get_dream_memory"
   | "get_team_recent_records";
 
@@ -565,11 +701,13 @@ export function buildToolHandlers(
     get_odds: input => getOdds((input as { league: AgentLeague }).league),
     get_model_probabilities: input =>
       getModelProbabilities((input as { league: AgentLeague }).league),
-    get_injuries: input => getInjuries((input as { league: AgentLeague }).league),
+    get_injuries: input => getInjuries(input as GetInjuriesInput),
     get_player_props: input => getPlayerProps((input as { league: AgentLeague }).league),
     get_trend_summary: input => getTrendSummary((input as { league: AgentLeague }).league),
     get_mlb_signals: () => getMlbSignals(),
     get_prop_projection: input => getPropProjection(input as PropProjectionInput),
+    get_home_run_likes: input =>
+      getHomeRunLikesForAgent((input as { league: AgentLeague }).league),
     get_dream_memory: () => ({
       // Return EVERYTHING the analyst needs from dream in one payload. The
       // analyst is required to call this tool first thing every run (enforced
@@ -625,10 +763,22 @@ export const TOOL_DEFINITIONS = [
   {
     name: "get_injuries",
     description:
-      "Get current injury list for a league. Returns player, team, status, injury type, and expected return date when available.",
+      "Get the injury report for a league, scoped to teams playing today. By default returns ONLY decision-relevant players (OUT / DOUBTFUL / IL / QUESTIONABLE) for teams on today's slate, worst-first, plus a keyAbsences list of OUT/IL players you must not overlook. **For MLB the list is filtered to GAME-HEAVY absences only: any near-term injured pitcher (starter/reliever) plus position players who are OUT/short-IL — season-long 60-Day-IL players are excluded because the market already priced them. So an MLB injury appearing here is one that can actually move tonight's line (especially a scratched/IL starting pitcher).** When evaluating a specific game, pass `teams` (the two full team names from get_odds) to get just that matchup's injuries — a key player OUT should move your modelProb, and the critic will check you accounted for it. Set scopeToSlate=false only if you need the entire league feed. Covers NBA, MLB, and NHL.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: {
+        league: { type: "string", enum: ["NBA", "MLB"] },
+        teams: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "The two team names of the matchup you are evaluating (full Odds API display names, e.g. ['Los Angeles Clippers','Boston Celtics']). Returns only these teams' decision-relevant injuries.",
+        },
+        scopeToSlate: {
+          type: "boolean",
+          description: "Default true. False returns the entire league feed (rarely needed).",
+        },
+      },
       required: ["league"],
     },
   },
@@ -677,6 +827,16 @@ export const TOOL_DEFINITIONS = [
         opponent: { type: "string", description: "Opponent team displayName, used for matchup adjustment" },
       },
       required: ["league", "player", "propType", "line", "side"],
+    },
+  },
+  {
+    name: "get_home_run_likes",
+    description:
+      "MLB-only. Returns the current home-run 'likes' the props board has flagged: batter_home_runs OVER props whose de-vigged sharp (Pinnacle) fair probability beats the soft book's implied price by the playable EV floor. Each like has player, line, book, softAmerican, evPct (edge vs the soft book), team, opponent, and commence. The edge here is sharp-market-derived, not invented. Use this when generating MLB prop picks to find HR overs the soft books haven't caught up to — but you MUST still call get_prop_projection for the player to source the pick's modelProb (this tool supplies the market edge, not the projection), apply the ≥6% pick floor, and respect the one-prop-per-player cap. Returns count=0 / empty when no HR over currently clears the floor — don't force a pick.",
+    input_schema: {
+      type: "object" as const,
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      required: ["league"],
     },
   },
   {

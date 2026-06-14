@@ -16,6 +16,9 @@ export const MODELS = {
   // PEAD entry annotator — label-only classification of 0-3 rows/day;
   // never on the trading path, so the cheapest tier is appropriate.
   annotator: "claude-haiku-4-5",
+  // Private NFL Backtest Learning Loop (offline offseason study, not on any
+  // live path). Sonnet balances slate-sized reasoning against per-week cost.
+  nflLoop: "claude-sonnet-4-6",
 } as const;
 
 export type ModelKey = keyof typeof MODELS;

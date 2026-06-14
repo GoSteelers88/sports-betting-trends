@@ -4,6 +4,15 @@
 
 import { prisma } from "@/lib/prisma";
 import { getAnthropic, MODELS } from "./client";
+import { getParlayLedgerView } from "@/lib/parlay-paper";
+import {
+  PARLAY_LEARNINGS,
+  PARLAY_LEARNING_TYPE,
+  seedParlayLearnings,
+  QUANT_DESK_LEARNING_TYPE,
+  seedQuantDeskLearnings,
+} from "./memory";
+import { readQuantDeskForDream } from "@/lib/quant-desk/dream-input";
 
 export type DreamResult = {
   dreamRunId: number;
@@ -28,6 +37,22 @@ You will receive:
 - A "marketModelComparison" of how the model-derived picks (ModelPickSnapshot)
   performed alongside the bot picks. If model picks consistently beat bot
   picks, surface that as a rule for the analyst to lean on those signals.
+- A "quantDesk" block: THE QUANT DESK (Benter/Benham/Bloom) — the MLB live paper
+  book's equity + CLV (the HEADLINE metric), the private NFL dry-run record, the
+  coverage-audit DATA-ACQUISITION BACKLOG (which missing stat would add the most
+  edge), and the top DISCOVERED CORRELATIONS (quarantined hypotheses). Reflect on
+  it: is the desk getting CLV (beat-rate >=55% and avg >= +2c at n>=50 = real,
+  else kill)? Which missing stat should we acquire first? Which discovered
+  correlation is worth validating out-of-sample next? Discovered correlations are
+  HYPOTHESES — you may NOTE one as worth validating, but NEVER propose promoting
+  one into the model in-sample. Treat clvSettledCount < 50 as preliminary.
+- A "parlayPerformance" block: the live parlay paper book's realized record
+  (Exp 4) — equity, realized P&L, yield, win rate, settled/open counts, avg
+  parlay EV — plus the durable parlay learnings we already proved out
+  (favorites-not-longshots, the +EV-per-leg floor, distinct-uncorrelated games,
+  and how estimation error compounds in a 3-leg parlay). Reflect on it: does the
+  live book corroborate or contradict the durable learnings? Treat small samples
+  (settled < 30) as preliminary — observe, do not over-claim.
 
 Your job: produce an updated memory store. Specifically:
 1. Identify recurring failure patterns (e.g. "underperforms on road favorites in MLB" if multiple losses fit)
@@ -35,11 +60,22 @@ Your job: produce an updated memory store. Specifically:
 3. Mark contradicted or stale rules as retired
 4. Merge duplicates
 5. Add new rules where evidence justifies them
+6. Reflect on parlay performance: if the live parlay book and the durable
+   learnings agree, you may ADD a reinforcing rule (cite the book's yield + n).
+   If they appear to disagree at a meaningful sample, NOTE it — but be
+   conservative below n=30 settled.
 
 Each rule must be:
 - Specific and actionable (a future analyst should be able to apply it)
 - Backed by at least 3 picks of evidence, OR be a refinement of an existing rule
 - Honest about uncertainty (use "weight" 0.3-0.5 for tentative, 0.7-0.9 for confirmed)
+
+HARD CONSTRAINT — do NOT retire rules whose type is "${PARLAY_LEARNING_TYPE}" or
+"${QUANT_DESK_LEARNING_TYPE}". Those are durable, pre-validated learnings (parlay
+construction and the QUANT DESK doctrine), not window-induced rules; the rolling
+30-day pick window cannot contradict them. You may reinforce them by ADDING a new
+rule, but never put a "${PARLAY_LEARNING_TYPE}" or "${QUANT_DESK_LEARNING_TYPE}"
+rule id in the "retire" array.
 
 Return ONLY a JSON object with this exact shape, no markdown:
 {
@@ -49,7 +85,7 @@ Return ONLY a JSON object with this exact shape, no markdown:
   "retire": [
     { "id": 12, "reasoning": "contradicted by 4 recent picks (ids 88, 91, 95, 102)" }
   ],
-  "notes": "1-2 sentence summary of what changed and why"
+  "notes": "1-2 sentence summary of what changed and why (include a clause on the parlay book if it has settled parlays)"
 }`;
 
 export async function dream(): Promise<DreamResult> {
@@ -60,6 +96,14 @@ export async function dream(): Promise<DreamResult> {
   });
 
   try {
+    // Ensure the durable parlay learnings exist before we read the active
+    // memory set — idempotent, so re-runs are no-ops. This guarantees the
+    // analyst (and this consolidation) always have the validated parlay rules
+    // in AgentMemory, even on a fresh DB or before the first weekly dream.
+    await seedParlayLearnings();
+    // Same for the durable QUANT DESK doctrine (non-retirable guardrails).
+    await seedQuantDeskLearnings();
+
     const since = new Date(Date.now() - DREAM_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
 
     const picks = await prisma.agentPick.findMany({
@@ -108,6 +152,22 @@ export async function dream(): Promise<DreamResult> {
       { total: 0, wins: 0, losses: 0, bySource: {} as Record<string, number> }
     );
 
+    // Parlay paper book (Exp 4) record + the durable learnings. Best-effort:
+    // a missing/corrupt book degrades to a stub so the consolidation never
+    // fails on a side input. This is a READ — the dream reflects on the book,
+    // it never opens or settles parlays.
+    const parlayPerformance = readParlayPerformance();
+
+    // THE QUANT DESK block — the desk's learning brain reads its own ledger +
+    // CLV, the NFL dry-run, the coverage backlog, and the discovered
+    // correlations. Best-effort: never fails the dream on a side input.
+    let quantDesk: ReturnType<typeof readQuantDeskForDream> | { note: string } ;
+    try {
+      quantDesk = readQuantDeskForDream();
+    } catch {
+      quantDesk = { note: "Quant desk artifacts unavailable this run — reflecting on doctrine only." };
+    }
+
     const userPayload = JSON.stringify(
       {
         currentMemories: memories.map(m => ({
@@ -121,6 +181,8 @@ export async function dream(): Promise<DreamResult> {
         })),
         pipelineRecord: runStats,
         marketModelComparison: modelStats,
+        parlayPerformance,
+        quantDesk,
         recentPicks: picks.map(p => ({
           id: p.id,
           league: p.league,
@@ -176,8 +238,15 @@ export async function dream(): Promise<DreamResult> {
     }
 
     for (const r of parsed.retire ?? []) {
+      // Defense-in-depth: never retire a durable parlay-learning row, even if
+      // the LLM ignores the system-prompt constraint. The updateMany's WHERE
+      // excludes that type, so a stray id targeting one is a guaranteed no-op.
       const result = await prisma.agentMemory.updateMany({
-        where: { id: r.id, active: true },
+        where: {
+          id: r.id,
+          active: true,
+          type: { notIn: [PARLAY_LEARNING_TYPE, QUANT_DESK_LEARNING_TYPE] },
+        },
         data: { active: false },
       });
       if (result.count > 0) retired++;
@@ -212,6 +281,43 @@ export async function dream(): Promise<DreamResult> {
       },
     });
     throw err;
+  }
+}
+
+// Read the parlay paper book's record (Exp 4) plus the durable learnings, in a
+// shape the dream LLM can reflect on. Best-effort: any failure to read the book
+// degrades to a stub with the learnings still attached, so the dream always has
+// the validated lessons even before the live book has settled parlays.
+function readParlayPerformance() {
+  const durableLearnings = PARLAY_LEARNINGS.map(l => ({ rule: l.rule, weight: l.weight }));
+  try {
+    const view = getParlayLedgerView();
+    return {
+      note:
+        "Exp 4 parlay paper book — realized record below. Metric is YIELD (P&L/staked), not win rate (most parlays lose by design). Treat settled < 30 as preliminary.",
+      stats: {
+        equityUsd: view.stats.equityUsd,
+        realizedPnlUsd: view.stats.realizedPnlUsd,
+        yieldPct: view.stats.yieldPct,
+        roiPct: view.stats.roiPct,
+        winRatePct: view.stats.winRatePct,
+        settledCount: view.stats.settledCount,
+        openCount: view.stats.openCount,
+        wins: view.stats.wins,
+        losses: view.stats.losses,
+        voids: view.stats.voids,
+        avgParlayEv: view.stats.avgParlayEv,
+      },
+      config: view.config,
+      durableLearnings,
+    };
+  } catch {
+    return {
+      note: "Parlay paper book unavailable this run — reflecting on durable learnings only.",
+      stats: null,
+      config: null,
+      durableLearnings,
+    };
   }
 }
 

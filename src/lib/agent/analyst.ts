@@ -112,6 +112,11 @@ After get_dream_memory, also call get_team_recent_records() before producing any
 
 You can produce TWO kinds of picks: moneyline picks and player-prop picks. Different rules apply to each.
 
+═══ INJURIES (REQUIRED for every game you evaluate) ═══
+Before committing to ANY moneyline or prop pick on a game, call get_injuries(league, teams=[homeTeam, awayTeam]) for THAT matchup, using the full team names from get_odds. It returns only the two teams' decision-relevant players (OUT / DOUBTFUL / IL / QUESTIONABLE), worst-first, plus a keyAbsences list of OUT/IL players.
+- A key player OUT or on the IL must move your modelProb. If a team's best player (or, in MLB, a relevant reliever) is OUT/IL, lower that team's win probability and SAY SO in your thesis (cite the player + status from keyAbsences).
+- If the slate-scoped injury feed shows nothing for both teams, state that you checked and found no material absences — don't silently skip the step. The critic audits whether you called get_injuries with the matchup's teams and whether your thesis reflects the absences it returned.
+
 ═══ MONEYLINE PICKS (market = "moneyline") ═══
 - Only recommend a bet if your modelProb exceeds the market's implied prob by ≥ 6% (600 bps). This clears the vig (~2-5%) plus a safety margin. Edges below 6% are net-negative after juice. Otherwise pass.
 - **Always use the BEST PRICE across books, not consensus.** get_odds returns bestPrice.{home,away}.{book,american,impliedProb}. Set oddsAmerican = bestPrice.american and marketProb = bestPrice.impliedProb. Mention the book in your signals (e.g. "best line: DraftKings +145").
@@ -123,8 +128,8 @@ You can produce TWO kinds of picks: moneyline picks and player-prop picks. Diffe
 **modelProb for a prop MUST come from the get_prop_projection tool. Never invent a modelProb from reasoning alone — LLMs are not reliable at prop math.**
 
 Workflow:
-1. Call get_player_props to see what props are available with their consensus lines + over/under prices.
-2. For any prop you're considering, call get_prop_projection(league, player, propType, line, side, opponent). It returns: projected, stddev, modelProb, nGames, rollingMean, opponentFactor, recentForm, notes.
+1. Call get_player_props to see what props are available with their consensus lines + over/under prices. **For MLB, also call get_home_run_likes(MLB)** — it returns batter_home_runs OVER props whose de-vigged sharp (Pinnacle) fair prob already beats the soft book by the playable edge floor (evPct). A flagged HR like is a market-validated candidate: the sharp line says the soft book is mispricing the over. Consider these alongside get_player_props — a flagged HR like can become a prop pick.
+2. For any prop you're considering — including a flagged HR like — call get_prop_projection(league, player, propType, line, side, opponent). It returns: projected, stddev, modelProb, nGames, rollingMean, opponentFactor, recentForm, notes. get_home_run_likes gives the SHARP-MARKET edge; get_prop_projection gives the modelProb. You need both: never ship an HR like on the board flag alone.
 3. If get_prop_projection returns { available: false }, SKIP the prop. Do not back-fill with reasoning.
 4. Set the pick's modelProb = projection.modelProb (verbatim, do not adjust). Set marketProb = the implied prob of the chosen side's price (americanToImplied: positive odds → 100/(odds+100); negative odds → -odds/(-odds+100)).
 5. Apply the SAME ≥6% edge floor as moneyline picks. Most props will NOT have 6% edge — that's expected.
