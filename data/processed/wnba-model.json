@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-06-14T23:50:36.064Z",
+  "generatedAt": "2026-06-15T18:47:50.657Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 4,
+  "recordCount": 6,
   "errors": [],
   "data": {
-    "generatedAt": "2026-06-14T23:50:36.064Z",
+    "generatedAt": "2026-06-15T18:47:50.657Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 4,
+    "gameCount": 6,
     "results": [
       {
         "eventId": "fd_35715715",
@@ -62,6 +62,30 @@
         "awayNetRtg": -3.75,
         "calibrated": false,
         "startTime": "2026-06-16T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35722780",
+        "homeTeam": "Connecticut Sun",
+        "awayTeam": "Washington Mystics",
+        "homeWinProb": 0.5067,
+        "awayWinProb": 0.4933,
+        "expectedMargin": 0.25,
+        "homeNetRtg": -10.142857142857142,
+        "awayNetRtg": -7.375,
+        "calibrated": false,
+        "startTime": "2026-06-17T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35722779",
+        "homeTeam": "Chicago Sky",
+        "awayTeam": "New York Liberty",
+        "homeWinProb": 0.3359,
+        "awayWinProb": 0.6641,
+        "expectedMargin": -6.49,
+        "homeNetRtg": -8.428571428571429,
+        "awayNetRtg": 9.333333333333334,
+        "calibrated": false,
+        "startTime": "2026-06-18T00:00:00.000Z"
       }
     ]
   }
