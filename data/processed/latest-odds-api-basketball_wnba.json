@@ -1,130 +1,22 @@
 {
-  "fetchedAt": "2026-06-15T18:47:05.433Z",
+  "fetchedAt": "2026-06-16T00:17:02.853Z",
   "league": "basketball_wnba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 6,
   "sampleEvent": {
-    "id": "fd_35715715",
+    "id": "fd_35715719",
     "sport_key": "basketball_wnba",
-    "commence_time": "2026-06-16T00:00:00.000Z",
-    "home_team": "Dallas Wings",
-    "away_team": "Las Vegas Aces"
+    "commence_time": "2026-06-16T00:03:00.000Z",
+    "home_team": "Minnesota Lynx",
+    "away_team": "Portland Fire"
   },
   "events": [
-    {
-      "id": "fd_35715715",
-      "sport_key": "basketball_wnba",
-      "sport_title": "WNBA",
-      "commence_time": "2026-06-16T00:00:00.000Z",
-      "home_team": "Dallas Wings",
-      "away_team": "Las Vegas Aces",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -164
-                },
-                {
-                  "name": "Dallas Wings",
-                  "price": 134
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -108,
-                  "point": -3.5
-                },
-                {
-                  "name": "Dallas Wings",
-                  "price": -112,
-                  "point": 3.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -115,
-                  "point": 176.5
-                },
-                {
-                  "name": "Under",
-                  "price": -105,
-                  "point": 176.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -115,
-                  "point": -3
-                },
-                {
-                  "name": "Dallas Wings",
-                  "price": -105,
-                  "point": 3
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -160
-                },
-                {
-                  "name": "Dallas Wings",
-                  "price": 135
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 177.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 177.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_35715719",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
-      "commence_time": "2026-06-16T00:00:00.000Z",
+      "commence_time": "2026-06-16T00:03:00.000Z",
       "home_team": "Minnesota Lynx",
       "away_team": "Portland Fire",
       "bookmakers": [
@@ -137,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Portland Fire",
-                  "price": 630
+                  "price": 1060
                 },
                 {
                   "name": "Minnesota Lynx",
-                  "price": -1050
+                  "price": -3500
                 }
               ]
             },
@@ -151,12 +43,12 @@
                 {
                   "name": "Portland Fire",
                   "price": -114,
-                  "point": 14.5
+                  "point": 17.5
                 },
                 {
                   "name": "Minnesota Lynx",
-                  "price": -106,
-                  "point": -14.5
+                  "price": -114,
+                  "point": -17.5
                 }
               ]
             },
@@ -165,47 +57,57 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -112,
-                  "point": 168.5
+                  "price": 104,
+                  "point": 171.5
                 },
                 {
                   "name": "Under",
-                  "price": -108,
-                  "point": 168.5
+                  "price": -138,
+                  "point": 171.5
                 }
               ]
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "id": "fd_35715715",
+      "sport_key": "basketball_wnba",
+      "sport_title": "WNBA",
+      "commence_time": "2026-06-16T00:08:00.000Z",
+      "home_team": "Dallas Wings",
+      "away_team": "Las Vegas Aces",
+      "bookmakers": [
         {
-          "key": "bovada",
-          "title": "Bovada",
+          "key": "fanduel",
+          "title": "FanDuel",
           "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Portland Fire",
-                  "price": -110,
-                  "point": 14
-                },
-                {
-                  "name": "Minnesota Lynx",
-                  "price": -110,
-                  "point": -14
-                }
-              ]
-            },
             {
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Portland Fire",
-                  "price": 650
+                  "name": "Las Vegas Aces",
+                  "price": 114
                 },
                 {
-                  "name": "Minnesota Lynx",
-                  "price": -1100
+                  "name": "Dallas Wings",
+                  "price": -146
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Las Vegas Aces",
+                  "price": -108,
+                  "point": 2.5
+                },
+                {
+                  "name": "Dallas Wings",
+                  "price": -122,
+                  "point": -2.5
                 }
               ]
             },
@@ -214,13 +116,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
-                  "point": 168.5
+                  "price": -132,
+                  "point": 179.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
-                  "point": 168.5
+                  "price": 100,
+                  "point": 179.5
                 }
               ]
             }
@@ -245,11 +147,11 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Sparks",
-                  "price": 172
+                  "price": 176
                 },
                 {
                   "name": "Golden State Valkyries",
-                  "price": -215
+                  "price": -220
                 }
               ]
             },
@@ -273,13 +175,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -106,
-                  "point": 173.5
+                  "price": -114,
+                  "point": 172.5
                 },
                 {
                   "name": "Under",
-                  "price": -114,
-                  "point": 173.5
+                  "price": -106,
+                  "point": 172.5
                 }
               ]
             }
@@ -294,13 +196,13 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Sparks",
-                  "price": -105,
-                  "point": 5
+                  "price": -115,
+                  "point": 5.5
                 },
                 {
                   "name": "Golden State Valkyries",
-                  "price": -115,
-                  "point": -5
+                  "price": -105,
+                  "point": -5.5
                 }
               ]
             },
@@ -323,12 +225,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 173.5
+                  "point": 172.5
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 173.5
+                  "point": 172.5
                 }
               ]
             }
@@ -373,6 +275,55 @@
                   "name": "Indiana Fever",
                   "price": -110,
                   "point": -8.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 178.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 178.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Toronto Tempo",
+                  "price": -110,
+                  "point": 8.5
+                },
+                {
+                  "name": "Indiana Fever",
+                  "price": -110,
+                  "point": -8.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Toronto Tempo",
+                  "price": 285
+                },
+                {
+                  "name": "Indiana Fever",
+                  "price": -370
                 }
               ]
             },
@@ -451,6 +402,55 @@
               ]
             }
           ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Washington Mystics",
+                  "price": -110,
+                  "point": -4.5
+                },
+                {
+                  "name": "Connecticut Sun",
+                  "price": -110,
+                  "point": 4.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Washington Mystics",
+                  "price": -195
+                },
+                {
+                  "name": "Connecticut Sun",
+                  "price": 165
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 163.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 163.5
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -471,11 +471,11 @@
               "outcomes": [
                 {
                   "name": "New York Liberty",
-                  "price": -325
+                  "price": -310
                 },
                 {
                   "name": "Chicago Sky",
-                  "price": 250
+                  "price": 245
                 }
               ]
             },
@@ -500,12 +500,61 @@
                 {
                   "name": "Over",
                   "price": -112,
-                  "point": 167.5
+                  "point": 168.5
                 },
                 {
                   "name": "Under",
                   "price": -108,
-                  "point": 167.5
+                  "point": 168.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New York Liberty",
+                  "price": -110,
+                  "point": -7.5
+                },
+                {
+                  "name": "Chicago Sky",
+                  "price": -110,
+                  "point": 7.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New York Liberty",
+                  "price": -330
+                },
+                {
+                  "name": "Chicago Sky",
+                  "price": 265
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 170
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 170
                 }
               ]
             }
