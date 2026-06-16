@@ -70,6 +70,9 @@ describe("buildPropsBoard", () => {
     american: 160, // fair 0.42 → dec 2.6 × 0.42 = 1.092 → +9.2% EV
     book: "draftkings",
     commence: "2026-06-11T00:05:00Z",
+    gameId: "evt-sproat-game",
+    team: "New York Mets",
+    opponent: "Philadelphia Phillies",
     ...overrides,
   });
 
@@ -99,5 +102,36 @@ describe("buildPropsBoard", () => {
 
   it("ignores unmapped prop markets", () => {
     expect(buildPropsBoard(sharp, [quote({ market: "batter_stolen_bases" })])).toHaveLength(0);
+  });
+
+  it("threads the game identity through to the row", () => {
+    const rows = buildPropsBoard(sharp, [quote()]);
+    expect(rows[0].gameId).toBe("evt-sproat-game");
+    expect(rows[0].team).toBe("New York Mets");
+    expect(rows[0].opponent).toBe("Philadelphia Phillies");
+  });
+
+  it("tags a playable MLB home-run Over as hrLike (🔥 highlight)", () => {
+    const hrSharp: SharpProp[] = [
+      {
+        player: "Aaron Judge",
+        units: "HomeRuns",
+        line: 0.5,
+        overAmerican: 250,
+        underAmerican: -320,
+        fairOverProb: 0.3,
+        cutoffAt: "2026-06-11T01:05:00+00:00",
+      },
+    ];
+    // fair 0.30 × dec(+280)=3.8 = 1.14 → +14% EV → playable & hrLike
+    const rows = buildPropsBoard(hrSharp, [
+      quote({ player: "Aaron Judge", market: "batter_home_runs", line: 0.5, side: "Over", american: 280 }),
+    ]);
+    expect(rows[0].hrLike).toBe(true);
+    expect(rows[0].playable).toBe(true);
+  });
+
+  it("does NOT tag a non-HR prop or an HR Under as hrLike", () => {
+    expect(buildPropsBoard(sharp, [quote()])[0].hrLike).toBe(false); // Strikeouts
   });
 });

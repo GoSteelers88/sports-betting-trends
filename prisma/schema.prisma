@@ -107,6 +107,12 @@ model AgentPick {
   runId          String    // groups all picks from one analyze run
   league         String    // NBA | MLB | NCAAB
   gameDate       DateTime
+  // Stable per-game identifier (the Odds API event.id, copied by the analyst
+  // from get_odds). Distinguishes split doubleheaders that share a matchup and
+  // a commence_time — which (league, gameDate, market, selection) cannot. Added
+  // 2026-06-11 as the EXPAND phase; the unique key still keys on gameDate until
+  // eventId is verified populated, then a follow-up swaps it to eventId.
+  eventId        String?
   matchup        String    // "Yankees @ Red Sox"
   market         String    // moneyline | spread | total | prop
   selection      String    // "Yankees -130" | "Aaron Judge over 1.5 HR"

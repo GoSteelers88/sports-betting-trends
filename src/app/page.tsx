@@ -9,8 +9,11 @@ import { KillRoom } from "./_components/KillRoom";
 import { KalshiPaperTrail } from "./_components/KalshiPaperTrail";
 import { DevigPaperBook } from "./_components/DevigPaperBook";
 import { StockPaperBook } from "./_components/StockPaperBook";
+import { ParlayPaperBook } from "./_components/ParlayPaperBook";
 import { MarketFeed } from "./_components/MarketFeed";
 import { PropsDesk } from "./_components/PropsDesk";
+import { MlbPropPlays } from "./_components/MlbPropPlays";
+import { QuantDesk } from "./_components/QuantDesk";
 import { SystemMemory } from "./_components/SystemMemory";
 import { VolatilityInputs } from "./_components/VolatilityInputs";
 import { SectionHeader } from "./_components/SectionHeader";
@@ -56,15 +59,16 @@ export default async function Home() {
             <SectionHeader
               id="experiments"
               index="06"
-              label="THE EXPERIMENTS · THREE PAPER BOOKS"
+              label="THE EXPERIMENTS · FOUR PAPER BOOKS"
               title="Side bets, on paper"
-              subtitle="Three independent $10k simulated books testing published market inefficiencies. Each compresses to a card until its first settle — charts print only when there is something to chart."
-              status="3 books live"
+              subtitle="Four independent $10k simulated books testing published market inefficiencies. Each compresses to a card until its first settle — charts print only when there is something to chart."
+              status="4 books live"
               statusTone="blue"
             />
             <KalshiPaperTrail />
             <DevigPaperBook />
             <StockPaperBook />
+            <ParlayPaperBook />
           </section>
 
           {/* FOL. 07 — the board (agate) */}
@@ -76,12 +80,30 @@ export default async function Home() {
             lastNight={data.lastNight.props}
             record={data.overallRecord.props}
             signals={data.playerProps}
+            homeRunLikes={data.homeRunLikes}
           />
+
+          {/* FOL. 09 — MLB prop plays, organized by stat (model-first ladders) */}
+          <MlbPropPlays board={data.mlbPropPlays} />
+
+          {/* FOL. 10 — THE QUANT DESK (model-edge MLB, $10k paper, CLV-judged) */}
+          <section className="space-y-5">
+            <SectionHeader
+              id="quant-desk-section"
+              index="10"
+              label="THE QUANT DESK · MODEL-EDGE BETTING"
+              title="Bet the mispricing, measure by CLV"
+              subtitle="A proprietary model makes fair probabilities; the desk bets only where the market is mispriced vs the model (edge ≥ 3%, sharp-favored side), sizes quarter-Kelly behind a drawdown rail, and is judged by closing-line value — not wins. In the lineage of Benter, Benham, and Bloom. Places nothing real."
+              status="Paper · Live"
+              statusTone="blue"
+            />
+            <QuantDesk />
+          </section>
 
           {/* Back of the book — agate */}
           <div id="back-of-book" className="space-y-14 pt-8" style={{ borderTop: "3px double var(--rule-strong)" }}>
             <SystemMemory data={data.agentMemory} />
-            <VolatilityInputs injuries={data.injuries} />
+            <VolatilityInputs wire={data.injuryWire} />
           </div>
 
           <Footer generatedAt={data.generatedAt} />

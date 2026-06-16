@@ -38,6 +38,8 @@ const NAV = [
   { id: "experiments", num: "06", label: "Experiments" },
   { id: "market-feed", num: "07", label: "Board" },
   { id: "props-desk", num: "08", label: "Props desk" },
+  { id: "mlb-prop-plays", num: "09", label: "Prop plays" },
+  { id: "quant-desk-section", num: "10", label: "Quant desk" },
   { id: "back-of-book", num: "BB", label: "Back of book" },
 ];
 

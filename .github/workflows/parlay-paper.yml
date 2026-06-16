@@ -1,0 +1,76 @@
+name: Parlay — paper book (Experiment No. 4)
+
+# One cycle of the $10k parlay paper book (PARLAY_PAPER_SPEC.md):
+#   grade open legs vs ESPN box scores → settle parlays whose legs are all
+#   terminal (push/void legs drop + re-price) → assemble new disjoint +EV
+#   three-leg parlays from the props-board log (3 distinct games) → snapshot.
+# Places NOTHING real — there is no broker client anywhere in this path. State
+# lives in data/processed/parlay-paper-book.json, committed back like the board.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily 21:40 UTC — 30 min after the props board logs its tick (21:10), so
+    # the freshest playable legs are in props-board-log.json before assembly.
+    - cron: "40 21 * * *"
+
+permissions:
+  contents: write # push the parlay book back
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run parlay paper cycle
+        run: npm run paper:parlay
+
+      - name: Commit parlay book back (allowlisted file only)
+        if: success()
+        run: |
+          git config user.name "parlay-paper-bot"
+          git config user.email "58962244+GoSteelers88@users.noreply.github.com"
+          ALLOWED=( "data/processed/parlay-paper-book.json" )
+          SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|[Aa]uthorization":\s*"Bearer'
+          for f in "${ALLOWED[@]}"; do
+            [ -f "$f" ] || continue
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
+              exit 1
+            fi
+          done
+          git add "${ALLOWED[@]}" 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no parlay-book changes to commit"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
+          git commit -m "parlay-paper: cycle ${DATE_TAG}"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin master && git push origin master && break
+            echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            git stash drop 2>/dev/null || true
+            sleep 5
+          done
+
+      # Optional dead-man's switch: create a check at healthchecks.io and set
+      # the HC_PING_PARLAY secret to its ping URL. Skips silently when unset.
+      - name: Heartbeat ping
+        if: success()
+        env:
+          PING: ${{ secrets.HC_PING_PARLAY }}
+        run: '[ -z "$PING" ] || curl -fsS -m 10 --retry 3 "$PING" > /dev/null || true'

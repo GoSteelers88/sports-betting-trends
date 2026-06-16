@@ -13,6 +13,7 @@ import type {
   PlayerProp,
   SlatePick,
 } from "../_data/dashboard";
+import type { HomeRunLike } from "@/lib/props-board";
 import { SectionHeader } from "./SectionHeader";
 import { PickAutopsy } from "./PickAutopsy";
 import { SettledTable } from "./LastNightLedger";
@@ -25,11 +26,13 @@ export function PropsDesk({
   lastNight,
   record,
   signals,
+  homeRunLikes = [],
 }: {
   picks: SlatePick[];
   lastNight: LastNightLedgerData;
   record: OverallRecord;
   signals: PlayerProp[];
+  homeRunLikes?: HomeRunLike[];
 }) {
   const [openId, setOpenId] = useState<number | null>(null);
   const open = openId !== null ? picks.find(p => p.id === openId) ?? null : null;
@@ -44,9 +47,9 @@ export function PropsDesk({
         id="props-desk"
         index="08"
         dense
-        label="THE PROPS DESK · INDEPENDENT TRACK"
+        label="THE PROPS DESK · LEG SOURCE"
         title="Props, in brief"
-        subtitle="Player props validate separately from games — win rate over CLV (prop markets lack market-making liquidity). Survivors, last night, the account, and the model's signals, on one page."
+        subtitle="Props are judged on edge vs price — the de-vigged sharp prop line, not raw win rate — and weigh slate-scoped injuries before they ship. They're the leg source for the Exp. 4 parlay book, which stacks only the playable +EV legs across distinct games. Survivors, last night, the account, and the model's signals, on one page."
         status={picks.length > 0 ? `${picks.length} shipped tonight` : "No prop edge tonight"}
         statusTone={picks.length > 0 ? "win" : "mute"}
       />
@@ -108,6 +111,70 @@ export function PropsDesk({
           </div>
         )}
       </div>
+
+      {/* a.2 — 🔥 home-run likes (MLB). A highlight, not a staked track:
+          MLB HomeRuns/Over rows the props board flagged +EV vs the de-vigged
+          sharp line. Sourced from the same props-board log the parlay book
+          uses — no invented numbers. Prints only when the board has flagged one. */}
+      {homeRunLikes.length > 0 && (
+        <div>
+          <p className="eyebrow mb-2">
+            <span aria-hidden="true">🔥</span> Home-run likes ·{" "}
+            <span style={{ color: "var(--win)" }}>MLB</span>
+            <span className="text-ink-3"> · highlight, not a staked bet</span>
+          </p>
+          <div className="panel overflow-x-auto">
+            <table className="ledger-table">
+              <caption className="sr-only">
+                MLB home-run props the board likes over the de-vigged sharp line
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Player · to hit a HR</th>
+                  <th scope="col" className="text-right hidden sm:table-cell">Price · book</th>
+                  <th scope="col" className="text-right">Edge</th>
+                </tr>
+              </thead>
+              <tbody>
+                {homeRunLikes.map(h => (
+                  <tr key={`${h.player}-${h.line}-${h.book}`}>
+                    <td className="min-w-0 max-w-[340px]">
+                      <p className="text-sm text-ink font-medium leading-snug break-words">
+                        {h.player}
+                      </p>
+                      <p className="num text-xs text-ink-2 leading-snug break-words">
+                        OVER {h.line} HR
+                        {h.team ? ` · ${h.team}` : ""}
+                        {h.opponent ? ` vs ${h.opponent}` : ""}
+                        <span className="sm:hidden">
+                          {" "}· {fmtAmerican(h.softAmerican)} @ {h.book}
+                        </span>
+                      </p>
+                    </td>
+                    <td className="num text-xs text-ink-2 text-right hidden sm:table-cell whitespace-nowrap">
+                      {fmtAmerican(h.softAmerican)} <span className="text-ink-3">@ {h.book}</span>
+                    </td>
+                    <td className="num text-sm text-right font-medium" style={{ color: "var(--win)" }}>
+                      +{h.evPct.toFixed(1)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={3} className="!border-t !border-rule">
+                    <p className="eyebrow text-ink-3 leading-relaxed py-1">
+                      A surfacing flag only — the board&rsquo;s de-vigged Pinnacle HR fair
+                      prob beats the soft book&rsquo;s implied price by the playable floor. Not
+                      a staked sub-experiment.
+                    </p>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* b — last night's props */}
       <div>

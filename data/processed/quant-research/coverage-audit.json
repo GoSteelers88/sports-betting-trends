@@ -1,0 +1,315 @@
+{
+  "generatedAt": "2026-06-14T04:44:10.572Z",
+  "mlbFeedFields": [
+    "batter_hits",
+    "batter_home_runs",
+    "batter_rbis",
+    "batter_runs_scored",
+    "pitcher_earned_runs",
+    "pitcher_strikeouts"
+  ],
+  "nflFeedFields": [
+    "away_coach",
+    "away_moneyline",
+    "away_qb_id",
+    "away_qb_name",
+    "away_rest",
+    "away_score",
+    "away_spread_odds",
+    "away_team",
+    "div_game",
+    "espn",
+    "ftn",
+    "game_id",
+    "game_type",
+    "gameday",
+    "gametime",
+    "gsis",
+    "home_coach",
+    "home_moneyline",
+    "home_qb_id",
+    "home_qb_name",
+    "home_rest",
+    "home_score",
+    "home_spread_odds",
+    "home_team",
+    "location",
+    "nfl_detail_id",
+    "old_game_id",
+    "over_odds",
+    "overtime",
+    "pff",
+    "pfr",
+    "referee",
+    "result",
+    "roof",
+    "season",
+    "spread_line",
+    "stadium",
+    "stadium_id",
+    "surface",
+    "temp",
+    "total",
+    "total_line",
+    "under_odds",
+    "week",
+    "weekday",
+    "wind"
+  ],
+  "backlog": [
+    {
+      "sport": "NFL",
+      "market": "QB-injury-aware spread",
+      "status": "missing",
+      "missingFields": [
+        "qb_status"
+      ],
+      "presentFields": [],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"QB-injury-aware spread\" market",
+      "why": "feed has no signal for [qb_status] and no synthesis source available",
+      "impact": "high",
+      "difficulty": "medium",
+      "priority": 11
+    },
+    {
+      "sport": "NFL",
+      "market": "Game total O/U (model-driven)",
+      "status": "missing",
+      "missingFields": [
+        "pace",
+        "off_epa",
+        "def_epa"
+      ],
+      "presentFields": [],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Game total O/U (model-driven)\" market",
+      "why": "feed has no signal for [pace, off_epa, def_epa] and no synthesis source available",
+      "impact": "high",
+      "difficulty": "high",
+      "priority": 10
+    },
+    {
+      "sport": "NFL",
+      "market": "Spread (snap-level adjusted)",
+      "status": "missing",
+      "missingFields": [
+        "snap_counts",
+        "personnel"
+      ],
+      "presentFields": [],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Spread (snap-level adjusted)\" market",
+      "why": "feed has no signal for [snap_counts, personnel] and no synthesis source available",
+      "impact": "high",
+      "difficulty": "high",
+      "priority": 10
+    },
+    {
+      "sport": "MLB",
+      "market": "Stolen Bases 1+",
+      "status": "missing",
+      "missingFields": [
+        "batter_stolen_bases"
+      ],
+      "presentFields": [],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Stolen Bases 1+\" market",
+      "why": "feed has no signal for [batter_stolen_bases] and no synthesis source available",
+      "impact": "medium",
+      "difficulty": "medium",
+      "priority": 9
+    },
+    {
+      "sport": "MLB",
+      "market": "Batter Strikeouts O/U",
+      "status": "missing",
+      "missingFields": [
+        "batter_strikeouts"
+      ],
+      "presentFields": [],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Batter Strikeouts O/U\" market",
+      "why": "feed has no signal for [batter_strikeouts] and no synthesis source available",
+      "impact": "medium",
+      "difficulty": "medium",
+      "priority": 9
+    },
+    {
+      "sport": "MLB",
+      "market": "Pitcher Outs/Innings O/U",
+      "status": "missing",
+      "missingFields": [
+        "pitcher_outs"
+      ],
+      "presentFields": [],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Pitcher Outs/Innings O/U\" market",
+      "why": "feed has no signal for [pitcher_outs] and no synthesis source available",
+      "impact": "medium",
+      "difficulty": "medium",
+      "priority": 9
+    },
+    {
+      "sport": "MLB",
+      "market": "Total Bases 1+/2+/3+",
+      "status": "synthesized",
+      "missingFields": [
+        "batter_doubles",
+        "batter_triples"
+      ],
+      "presentFields": [],
+      "synthesizedFields": [
+        "batter_doubles",
+        "batter_triples"
+      ],
+      "unlocks": "pricing the \"Total Bases 1+/2+/3+\" market",
+      "why": "no feed key for [batter_doubles, batter_triples]; proxy synthesizable from [batter_hits, batter_home_runs] — flagged as estimate, not measured",
+      "impact": "high",
+      "difficulty": "medium",
+      "priority": 9
+    },
+    {
+      "sport": "MLB",
+      "market": "Hits 1+/2+",
+      "status": "covered",
+      "missingFields": [],
+      "presentFields": [
+        "batter_hits"
+      ],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Hits 1+/2+\" market",
+      "why": "all required per-game fields present in the feed",
+      "impact": "high",
+      "difficulty": "low",
+      "priority": 9
+    },
+    {
+      "sport": "MLB",
+      "market": "Home Runs 1+",
+      "status": "covered",
+      "missingFields": [],
+      "presentFields": [
+        "batter_home_runs"
+      ],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Home Runs 1+\" market",
+      "why": "all required per-game fields present in the feed",
+      "impact": "high",
+      "difficulty": "low",
+      "priority": 9
+    },
+    {
+      "sport": "MLB",
+      "market": "Pitcher Strikeouts O/U",
+      "status": "covered",
+      "missingFields": [],
+      "presentFields": [
+        "pitcher_strikeouts"
+      ],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Pitcher Strikeouts O/U\" market",
+      "why": "all required per-game fields present in the feed",
+      "impact": "high",
+      "difficulty": "low",
+      "priority": 9
+    },
+    {
+      "sport": "MLB",
+      "market": "Walks 1+",
+      "status": "missing",
+      "missingFields": [
+        "batter_walks"
+      ],
+      "presentFields": [],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Walks 1+\" market",
+      "why": "feed has no signal for [batter_walks] and no synthesis source available",
+      "impact": "low",
+      "difficulty": "medium",
+      "priority": 7
+    },
+    {
+      "sport": "MLB",
+      "market": "Hits Allowed O/U",
+      "status": "missing",
+      "missingFields": [
+        "pitcher_hits_allowed"
+      ],
+      "presentFields": [],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Hits Allowed O/U\" market",
+      "why": "feed has no signal for [pitcher_hits_allowed] and no synthesis source available",
+      "impact": "low",
+      "difficulty": "medium",
+      "priority": 7
+    },
+    {
+      "sport": "MLB",
+      "market": "RBIs 1+",
+      "status": "covered",
+      "missingFields": [],
+      "presentFields": [
+        "batter_rbis"
+      ],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"RBIs 1+\" market",
+      "why": "all required per-game fields present in the feed",
+      "impact": "medium",
+      "difficulty": "low",
+      "priority": 7
+    },
+    {
+      "sport": "MLB",
+      "market": "Runs 1+",
+      "status": "covered",
+      "missingFields": [],
+      "presentFields": [
+        "batter_runs_scored"
+      ],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Runs 1+\" market",
+      "why": "all required per-game fields present in the feed",
+      "impact": "medium",
+      "difficulty": "low",
+      "priority": 7
+    },
+    {
+      "sport": "MLB",
+      "market": "Earned Runs O/U",
+      "status": "covered",
+      "missingFields": [],
+      "presentFields": [
+        "pitcher_earned_runs"
+      ],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Earned Runs O/U\" market",
+      "why": "all required per-game fields present in the feed",
+      "impact": "medium",
+      "difficulty": "low",
+      "priority": 7
+    },
+    {
+      "sport": "NFL",
+      "market": "Weather-adjusted total",
+      "status": "covered",
+      "missingFields": [],
+      "presentFields": [
+        "temp",
+        "wind",
+        "roof"
+      ],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Weather-adjusted total\" market",
+      "why": "all required per-game fields present in the feed",
+      "impact": "medium",
+      "difficulty": "low",
+      "priority": 7
+    }
+  ],
+  "summary": {
+    "covered": 7,
+    "synthesized": 1,
+    "missing": 8
+  }
+}

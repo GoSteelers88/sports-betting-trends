@@ -4,11 +4,18 @@
  *
  *   npm run ingest:soft-props
  *
- * QUOTA AWARE: props are per-event calls costing markets × regions credits
- * each. Hard-capped at PROPS_MAX_EVENTS (default 3) events per run with one
- * market and one region → 3 credits/run, ~90/month at one run per weekday,
- * inside the free tier alongside the CLV harness (~360/month).
- * Writes data/processed/latest-soft-props-{sport}.json.
+ * QUOTA AWARE: props are per-event calls costing (markets × regions) credits
+ * each. Total run cost = markets × regions × events. To keep that inside the
+ * free tier (500/mo, shared with ingest:odds + ingest:softbooks) the number of
+ * events is derived from a credit budget: events = floor(PROPS_CREDIT_BUDGET /
+ * markets), so adding markets trims event coverage instead of multiplying spend.
+ * PROPS_MAX_EVENTS (if set) is an additional hard ceiling on events.
+ *
+ * Default markets cover the sharp side's three biggest buckets — TotalBases,
+ * HomeRuns, Strikeouts — which are ~83% of the de-vigged Pinnacle props. Only
+ * markets present in PROP_TYPE_MAP can ever match a sharp prop, so requesting
+ * batter_hits / batter_rbis (no Pinnacle counterpart on this feed) would just
+ * burn credits. Writes data/processed/latest-soft-props-{sport}.json.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -34,11 +41,21 @@ for (const envFile of [".env", ".env.local"]) {
 }
 
 const OUT_DIR = path.join(process.cwd(), "data", "processed");
-const MAX_EVENTS = Math.max(1, Number(process.env.PROPS_MAX_EVENTS ?? 3));
 const REGION = "us";
+// Credit budget for the whole run (1 credit per market per event, 1 region).
+// events = floor(budget / markets); default 18 → 6 events at 3 markets ≈ 90
+// credits/wk-month. PROPS_MAX_EVENTS, if set, is an extra hard ceiling.
+const CREDIT_BUDGET = Math.max(1, Number(process.env.PROPS_CREDIT_BUDGET ?? 18));
+const EVENT_CEILING = process.env.PROPS_MAX_EVENTS
+  ? Math.max(1, Number(process.env.PROPS_MAX_EVENTS))
+  : Infinity;
+
+// Default to the three highest-volume sharp-matching markets (TotalBases,
+// HomeRuns, Strikeouts). All must be keys of PROP_TYPE_MAP or they can't match.
+const DEFAULT_MARKETS = "batter_total_bases,batter_home_runs,pitcher_strikeouts";
 
 const SPORTS = [
-  { sport: "mlb", key: "baseball_mlb", markets: process.env.PROPS_MARKETS ?? "pitcher_strikeouts" },
+  { sport: "mlb", key: "baseball_mlb", markets: process.env.PROPS_MARKETS ?? DEFAULT_MARKETS },
 ];
 
 async function main() {
@@ -57,12 +74,22 @@ async function main() {
       if (!evRes.ok) throw new Error(`events HTTP ${evRes.status}`);
       const events: any[] = await evRes.json();
       const now = Date.now();
+      // Cost is markets × events (1 region). Spend the credit budget on as many
+      // events as it buys, capped by the optional hard event ceiling.
+      const marketCount = Math.max(1, markets.split(",").filter(Boolean).length);
+      const maxEvents = Math.max(
+        1,
+        Math.min(Math.floor(CREDIT_BUDGET / marketCount), EVENT_CEILING),
+      );
       const upcoming = events
         .filter((e) => {
           const t = Date.parse(e.commence_time);
           return Number.isFinite(t) && t > now && t < now + 12 * 60 * 60 * 1000;
         })
-        .slice(0, MAX_EVENTS);
+        .slice(0, maxEvents);
+      console.log(
+        `[soft-props] ${sport}: ${marketCount} markets × ${upcoming.length} events ≈ ${marketCount * upcoming.length} credits`,
+      );
 
       const quotes: SoftPropQuote[] = [];
       for (const ev of upcoming) {
@@ -76,6 +103,15 @@ async function main() {
           continue;
         }
         const data: any = await oddsRes.json();
+        // Game identity from the /events row — the parlay book requires it to
+        // prove legs come from distinct, independent games. Without an id a
+        // leg is ineligible for parlays (still fine for the single-leg board).
+        const gameId = ev.id ? String(ev.id) : "";
+        const homeTeam = ev.home_team ? String(ev.home_team) : undefined;
+        const awayTeam = ev.away_team ? String(ev.away_team) : undefined;
+        if (!gameId) {
+          console.warn(`[soft-props] event missing id — props on this game are parlay-ineligible`);
+        }
         for (const bm of data.bookmakers ?? []) {
           for (const mkt of bm.markets ?? []) {
             for (const o of mkt.outcomes ?? []) {
@@ -89,6 +125,14 @@ async function main() {
                 american: Number(o.price),
                 book: String(bm.key),
                 commence: String(ev.commence_time),
+                gameId,
+                // The Odds API props feed doesn't tag a prop with the player's
+                // own side; we record both teams so the correlation rule (same
+                // game / same matchup) can fire. Per-side resolution can be
+                // refined later via a roster map — both teams suffice for the
+                // distinct-game and same-game-stack checks.
+                team: homeTeam,
+                opponent: awayTeam,
               });
             }
           }
