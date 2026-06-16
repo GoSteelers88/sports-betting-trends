@@ -1,11 +1,12 @@
 name: Props board — sharp-vs-soft player props
 
 # Daily player-prop +EV measurement: de-vigged Pinnacle prop lines (free
-# guest API) vs soft-book prop prices (The Odds API, hard-capped at 3
-# per-event calls = 3 credits/run ≈ 90/month — inside the free tier next to
-# the CLV harness). Appends matched rows to props-board-log.json. Places
-# NOTHING — this measures whether props are the volume fix for the de-vig
-# thesis before any book is pre-registered.
+# guest API) vs soft-book prop prices (The Odds API). Budget-capped at
+# PROPS_CREDIT_BUDGET credits/run (3 markets — TotalBases/HomeRuns/Strikeouts
+# — across as many events as the budget buys) ≈ 90 credits/month — inside the
+# free tier next to the other Odds API draws. Appends matched rows to
+# props-board-log.json. Places NOTHING — this measures whether props are the
+# volume fix for the de-vig thesis before any book is pre-registered.
 
 on:
   workflow_dispatch:
@@ -23,7 +24,8 @@ jobs:
     timeout-minutes: 8
     env:
       THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
-      PROPS_MAX_EVENTS: "3"
+      # 3 default markets → 6 events/run (~18 credits) ≈ 90/month weekdays.
+      PROPS_CREDIT_BUDGET: "18"
     steps:
       - uses: actions/checkout@v4
         with:
