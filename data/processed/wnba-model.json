@@ -1,92 +1,20 @@
 {
-  "generatedAt": "2026-06-18T00:04:57.567Z",
+  "generatedAt": "2026-06-18T17:27:57.812Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 7,
+  "recordCount": 5,
   "errors": [],
   "data": {
-    "generatedAt": "2026-06-18T00:04:57.567Z",
+    "generatedAt": "2026-06-18T17:27:57.812Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 7,
+    "gameCount": 5,
     "results": [
-      {
-        "eventId": "fd_35722780",
-        "homeTeam": "Connecticut Sun",
-        "awayTeam": "Washington Mystics",
-        "homeWinProb": 0.5067,
-        "awayWinProb": 0.4933,
-        "expectedMargin": 0.25,
-        "homeNetRtg": -10.142857142857142,
-        "awayNetRtg": -7.375,
-        "calibrated": false,
-        "startTime": "2026-06-17T23:03:00.000Z"
-      },
-      {
-        "eventId": "fd_35722779",
-        "homeTeam": "Chicago Sky",
-        "awayTeam": "New York Liberty",
-        "homeWinProb": 0.3359,
-        "awayWinProb": 0.6641,
-        "expectedMargin": -6.49,
-        "homeNetRtg": -8.428571428571429,
-        "awayNetRtg": 9.333333333333334,
-        "calibrated": false,
-        "startTime": "2026-06-18T00:05:00.000Z"
-      },
-      {
-        "eventId": "fd_35722781",
-        "homeTeam": "Phoenix Mercury",
-        "awayTeam": "Las Vegas Aces",
-        "homeWinProb": 0.448,
-        "awayWinProb": 0.552,
-        "expectedMargin": -1.99,
-        "homeNetRtg": -3.25,
-        "awayNetRtg": 4.5,
-        "calibrated": false,
-        "startTime": "2026-06-18T02:00:00.000Z"
-      },
-      {
-        "eventId": "fd_35722782",
-        "homeTeam": "Portland Fire",
-        "awayTeam": "Seattle Storm",
-        "homeWinProb": 0.6155,
-        "awayWinProb": 0.3845,
-        "expectedMargin": 4.48,
-        "homeNetRtg": -5,
-        "awayNetRtg": -11.625,
-        "calibrated": false,
-        "startTime": "2026-06-18T02:00:00.000Z"
-      },
-      {
-        "eventId": "fd_35722785",
-        "homeTeam": "Los Angeles Sparks",
-        "awayTeam": "Minnesota Lynx",
-        "homeWinProb": 0.38,
-        "awayWinProb": 0.62,
-        "expectedMargin": -4.66,
-        "homeNetRtg": -2.125,
-        "awayNetRtg": 11.571428571428571,
-        "calibrated": false,
-        "startTime": "2026-06-18T02:00:00.000Z"
-      },
-      {
-        "eventId": "fd_35722790",
-        "homeTeam": "Golden State Valkyries",
-        "awayTeam": "Dallas Wings",
-        "homeWinProb": 0.622,
-        "awayWinProb": 0.378,
-        "expectedMargin": 4.74,
-        "homeNetRtg": 8.333333333333334,
-        "awayNetRtg": 1.125,
-        "calibrated": false,
-        "startTime": "2026-06-18T02:00:00.000Z"
-      },
       {
         "eventId": "fd_35726260",
         "homeTeam": "Indiana Fever",
@@ -98,6 +26,54 @@
         "awayNetRtg": 5,
         "calibrated": false,
         "startTime": "2026-06-18T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35730467",
+        "homeTeam": "Connecticut Sun",
+        "awayTeam": "Toronto Tempo",
+        "homeWinProb": 0.4925,
+        "awayWinProb": 0.5075,
+        "expectedMargin": -0.29,
+        "homeNetRtg": -9.75,
+        "awayNetRtg": -5.777777777777778,
+        "calibrated": false,
+        "startTime": "2026-06-19T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35730471",
+        "homeTeam": "New York Liberty",
+        "awayTeam": "Washington Mystics",
+        "homeWinProb": 0.6458,
+        "awayWinProb": 0.3542,
+        "expectedMargin": 5.72,
+        "homeNetRtg": 3.6,
+        "awayNetRtg": -5.777777777777778,
+        "calibrated": false,
+        "startTime": "2026-06-19T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35730468",
+        "homeTeam": "Golden State Valkyries",
+        "awayTeam": "Minnesota Lynx",
+        "homeWinProb": 0.4977,
+        "awayWinProb": 0.5023,
+        "expectedMargin": -0.09,
+        "homeNetRtg": 8.6,
+        "awayNetRtg": 12.125,
+        "calibrated": false,
+        "startTime": "2026-06-20T02:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35733420",
+        "homeTeam": "New York Liberty",
+        "awayTeam": "Las Vegas Aces",
+        "homeWinProb": 0.5228,
+        "awayWinProb": 0.4772,
+        "expectedMargin": 0.87,
+        "homeNetRtg": 3.6,
+        "awayNetRtg": 5,
+        "calibrated": false,
+        "startTime": "2026-07-01T00:00:00.000Z"
       }
     ]
   }

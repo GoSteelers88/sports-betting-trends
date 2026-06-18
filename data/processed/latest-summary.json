@@ -1,41 +1,89 @@
 {
-  "generatedAt": "2026-06-18T00:04:34.453Z",
+  "generatedAt": "2026-06-18T17:27:31.491Z",
   "ready": true,
-  "recordsIngested": 777,
-  "recordsCompleted": 777,
+  "recordsIngested": 791,
+  "recordsCompleted": 791,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 744,
+      "games": 758,
       "conferences": [
         "NL Central",
-        "NL East",
-        "AL Central",
-        "AL West",
         "NL West",
+        "AL West",
         "AL East",
-        "Unknown"
+        "Unknown",
+        "NL East",
+        "AL Central"
       ],
-      "avgPoints": 4.543010752688172,
+      "avgPoints": 4.565963060686016,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 4.7,
+      "recentAvgPoints": 5.6,
       "recentAvgYards": null,
-      "trendScore": 32,
-      "trendSignal": "down",
+      "trendScore": 62,
+      "trendSignal": "up",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 744,
-        "rpg": 4.54,
-        "oppRpg": 4.54,
-        "hitsPerGame": 8.33,
+        "games": 758,
+        "rpg": 4.57,
+        "oppRpg": 4.57,
+        "hitsPerGame": 8.35,
         "errorsPerGame": 0.52,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Cubs": {
+          "games": 26,
+          "rpg": 3.77,
+          "oppRpg": 4.69,
+          "hitsPerGame": 7.88,
+          "errorsPerGame": 0.35,
+          "sos": 0.52
+        },
+        "Rockies": {
+          "games": 26,
+          "rpg": 5.31,
+          "oppRpg": 6.73,
+          "hitsPerGame": 9.19,
+          "errorsPerGame": 0.73,
+          "sos": 0.52
+        },
+        "Mariners": {
+          "games": 25,
+          "rpg": 4.48,
+          "oppRpg": 4.08,
+          "hitsPerGame": 8.8,
+          "errorsPerGame": 0.64,
+          "sos": 0.52
+        },
+        "Orioles": {
+          "games": 26,
+          "rpg": 5.27,
+          "oppRpg": 4.35,
+          "hitsPerGame": 8.77,
+          "errorsPerGame": 0.54,
+          "sos": null
+        },
+        "Athletics": {
+          "games": 26,
+          "rpg": 4.81,
+          "oppRpg": 6.54,
+          "hitsPerGame": 8.58,
+          "errorsPerGame": 0.5,
+          "sos": null
+        },
+        "Pirates": {
+          "games": 27,
+          "rpg": 5.33,
+          "oppRpg": 5.37,
+          "hitsPerGame": 9.11,
+          "errorsPerGame": 0.89,
+          "sos": 0.52
+        },
         "Reds": {
           "games": 24,
           "rpg": 4.13,
@@ -148,21 +196,69 @@
           "errorsPerGame": 0.69,
           "sos": 0.52
         },
-        "Cubs": {
+        "Red Sox": {
+          "games": 23,
+          "rpg": 4.43,
+          "oppRpg": 4.43,
+          "hitsPerGame": 8.78,
+          "errorsPerGame": 0.52,
+          "sos": null
+        },
+        "Blue Jays": {
+          "games": 26,
+          "rpg": 4,
+          "oppRpg": 4.04,
+          "hitsPerGame": 8.69,
+          "errorsPerGame": 0.5,
+          "sos": null
+        },
+        "Yankees": {
+          "games": 23,
+          "rpg": 5.7,
+          "oppRpg": 3.43,
+          "hitsPerGame": 9.26,
+          "errorsPerGame": 0.3,
+          "sos": 0.52
+        },
+        "White Sox": {
+          "games": 24,
+          "rpg": 5.25,
+          "oppRpg": 4.92,
+          "hitsPerGame": 8.63,
+          "errorsPerGame": 0.5,
+          "sos": null
+        },
+        "Braves": {
+          "games": 24,
+          "rpg": 4.5,
+          "oppRpg": 4.08,
+          "hitsPerGame": 8,
+          "errorsPerGame": 0.42,
+          "sos": null
+        },
+        "Giants": {
           "games": 25,
-          "rpg": 3.6,
-          "oppRpg": 4.64,
-          "hitsPerGame": 7.72,
+          "rpg": 5.6,
+          "oppRpg": 5.6,
+          "hitsPerGame": 10.08,
+          "errorsPerGame": 0.76,
+          "sos": null
+        },
+        "Brewers": {
+          "games": 25,
+          "rpg": 5.96,
+          "oppRpg": 4.04,
+          "hitsPerGame": 9.28,
           "errorsPerGame": 0.32,
           "sos": 0.52
         },
-        "Rockies": {
-          "games": 25,
-          "rpg": 5.28,
-          "oppRpg": 6.68,
-          "hitsPerGame": 9.2,
-          "errorsPerGame": 0.72,
-          "sos": 0.52
+        "Guardians": {
+          "games": 24,
+          "rpg": 3,
+          "oppRpg": 4.21,
+          "hitsPerGame": 7.42,
+          "errorsPerGame": 0.67,
+          "sos": null
         },
         "Rangers": {
           "games": 25,
@@ -178,102 +274,6 @@
           "oppRpg": 5.92,
           "hitsPerGame": 8.58,
           "errorsPerGame": 0.77,
-          "sos": null
-        },
-        "Mariners": {
-          "games": 24,
-          "rpg": 4.54,
-          "oppRpg": 4.04,
-          "hitsPerGame": 8.88,
-          "errorsPerGame": 0.71,
-          "sos": 0.52
-        },
-        "Orioles": {
-          "games": 25,
-          "rpg": 5.28,
-          "oppRpg": 4.4,
-          "hitsPerGame": 8.72,
-          "errorsPerGame": 0.48,
-          "sos": null
-        },
-        "Athletics": {
-          "games": 25,
-          "rpg": 4.84,
-          "oppRpg": 6.32,
-          "hitsPerGame": 8.76,
-          "errorsPerGame": 0.52,
-          "sos": null
-        },
-        "Pirates": {
-          "games": 26,
-          "rpg": 5.08,
-          "oppRpg": 5.42,
-          "hitsPerGame": 8.85,
-          "errorsPerGame": 0.85,
-          "sos": 0.52
-        },
-        "Braves": {
-          "games": 23,
-          "rpg": 4.48,
-          "oppRpg": 3.96,
-          "hitsPerGame": 7.83,
-          "errorsPerGame": 0.43,
-          "sos": null
-        },
-        "Giants": {
-          "games": 24,
-          "rpg": 5.54,
-          "oppRpg": 5.63,
-          "hitsPerGame": 10.13,
-          "errorsPerGame": 0.79,
-          "sos": null
-        },
-        "Red Sox": {
-          "games": 22,
-          "rpg": 4.64,
-          "oppRpg": 4.5,
-          "hitsPerGame": 8.86,
-          "errorsPerGame": 0.55,
-          "sos": null
-        },
-        "Blue Jays": {
-          "games": 25,
-          "rpg": 4.04,
-          "oppRpg": 4.2,
-          "hitsPerGame": 8.72,
-          "errorsPerGame": 0.52,
-          "sos": null
-        },
-        "Yankees": {
-          "games": 22,
-          "rpg": 5.5,
-          "oppRpg": 3.36,
-          "hitsPerGame": 9.09,
-          "errorsPerGame": 0.32,
-          "sos": 0.52
-        },
-        "White Sox": {
-          "games": 23,
-          "rpg": 5.26,
-          "oppRpg": 4.7,
-          "hitsPerGame": 8.52,
-          "errorsPerGame": 0.48,
-          "sos": null
-        },
-        "Brewers": {
-          "games": 24,
-          "rpg": 5.83,
-          "oppRpg": 4.04,
-          "hitsPerGame": 9.21,
-          "errorsPerGame": 0.33,
-          "sos": 0.52
-        },
-        "Guardians": {
-          "games": 23,
-          "rpg": 2.96,
-          "oppRpg": 4,
-          "hitsPerGame": 7.61,
-          "errorsPerGame": 0.7,
           "sos": null
         }
       }
@@ -544,17 +544,17 @@
     {
       "league": "MLB",
       "conference": "NL Central",
-      "gameDate": "2026-06-17T00:00:00.000Z",
-      "team": "Reds",
-      "opponent": "Mets",
-      "points": 1,
-      "opponentPoints": 9,
+      "gameDate": "2026-06-18T00:00:00.000Z",
+      "team": "Cubs",
+      "opponent": "Rockies",
+      "points": 8,
+      "opponentPoints": 6,
       "rebounds": null,
       "assists": null,
       "yards": null,
-      "spread": 1.5,
-      "atsResult": "L",
-      "won": false,
+      "spread": -1.5,
+      "atsResult": "W",
+      "won": true,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -581,10 +581,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 5,
+      "hits": 12,
       "errors": 1,
       "source": "espn-public-api",
-      "sourceEventId": "401815792",
+      "sourceEventId": "401815796",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -755,37 +755,124 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-06-17T23:08:00.000Z",
+      "gameDate": "2026-06-18T18:11:00.000Z",
+      "matchup": "Cleveland Guardians at Milwaukee Brewers",
+      "pickTeam": "Milwaukee Brewers",
+      "opponent": "Cleveland Guardians",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Milwaukee Brewers -1.5",
+      "score": 76,
+      "confidence": 72,
+      "rationaleSignals": [
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.000",
+        "History sample Milwaukee Brewers: 25 games (mapped Brewers) vs Cleveland Guardians: 24 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Milwaukee Brewers 2d rest vs Cleveland Guardians 2d rest",
+        "Net Rating edge: +4.2",
+        "Home SP: Shane Drohan",
+        "Away SP: Parker Messick",
+        "MLB model: 84.8% win prob (calibrated) | Edge vs market: +25.1%"
+      ],
+      "momentumEdge": 0.8,
+      "atsEdge": 0,
+      "mlbModelProb": 0.8478,
+      "mlbEdge": 0.251,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-18T23:16:00.000Z",
+      "matchup": "San Francisco Giants at Atlanta Braves",
+      "pickTeam": "San Francisco Giants",
+      "opponent": "Atlanta Braves",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "San Francisco Giants +1.5",
+      "score": 72,
+      "confidence": 68,
+      "rationaleSignals": [
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample San Francisco Giants: 25 games (mapped Giants) vs Atlanta Braves: 24 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: San Francisco Giants 2d rest vs Atlanta Braves 2d rest",
+        "Net Rating edge: +0.8",
+        "Home SP: Martín Pérez",
+        "Away SP: Landen Roupp",
+        "MLB model: 80.9% win prob (calibrated) | Edge vs market: +34.6%"
+      ],
+      "momentumEdge": 0.2,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.809,
+      "mlbEdge": 0.346,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-18T23:06:00.000Z",
       "matchup": "Chicago White Sox at New York Yankees",
       "pickTeam": "New York Yankees",
       "opponent": "Chicago White Sox",
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "New York Yankees -1.5",
-      "score": 58,
-      "confidence": 53,
+      "score": 69,
+      "confidence": 65,
       "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.000",
-        "History sample New York Yankees: 22 games (mapped Yankees) vs Chicago White Sox: 23 games",
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample New York Yankees: 23 games (mapped Yankees) vs Chicago White Sox: 24 games",
         "Home court (+1 pt adjustment)",
         "Rest: New York Yankees 2d rest vs Chicago White Sox 2d rest",
-        "Net Rating edge: +2.6",
-        "Home SP: Carlos Rodón",
-        "Away SP: Anthony Kay",
-        "MLB model: 67.4% win prob (calibrated) | Edge vs market: -9.8%"
+        "Net Rating edge: +4.3",
+        "Home SP: Ryan Weathers",
+        "Away SP: Sean Burke",
+        "MLB model: 70.4% win prob (calibrated) | Edge vs market: +8.0%"
       ],
-      "momentumEdge": 0.4,
-      "atsEdge": 0,
-      "mlbModelProb": 0.6743,
-      "mlbEdge": -0.0984,
+      "momentumEdge": 0.6,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.704,
+      "mlbEdge": 0.0799,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-18T17:36:00.000Z",
+      "matchup": "Toronto Blue Jays at Boston Red Sox",
+      "pickTeam": "Toronto Blue Jays",
+      "opponent": "Boston Red Sox",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Toronto Blue Jays +1.5",
+      "score": 60,
+      "confidence": 56,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample Toronto Blue Jays: 26 games (mapped Blue Jays) vs Boston Red Sox: 23 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Toronto Blue Jays 2d rest vs Boston Red Sox 2d rest",
+        "Net Rating edge: +0.9",
+        "Home SP: Sonny Gray",
+        "Away SP: Trey Yesavage",
+        "MLB model: 59.8% win prob (calibrated) | Edge vs market: +15.1%"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.5977,
+      "mlbEdge": 0.1513,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
-  "topBestBetsDateEt": "2026-06-17",
+  "topBestBetsDateEt": "2026-06-18",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-06-17 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 4 eligible games found on 2026-06-18 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
