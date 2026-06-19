@@ -1,32 +1,20 @@
 {
-  "generatedAt": "2026-06-19T00:15:28.762Z",
+  "generatedAt": "2026-06-19T16:40:49.750Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 5,
+  "recordCount": 7,
   "errors": [],
   "data": {
-    "generatedAt": "2026-06-19T00:15:28.762Z",
+    "generatedAt": "2026-06-19T16:40:49.750Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 5,
+    "gameCount": 7,
     "results": [
-      {
-        "eventId": "fd_35726260",
-        "homeTeam": "Indiana Fever",
-        "awayTeam": "Atlanta Dream",
-        "homeWinProb": 0.604,
-        "awayWinProb": 0.396,
-        "expectedMargin": 4.02,
-        "homeNetRtg": 10.6,
-        "awayNetRtg": 5,
-        "calibrated": false,
-        "startTime": "2026-06-18T23:39:00.000Z"
-      },
       {
         "eventId": "fd_35730467",
         "homeTeam": "Connecticut Sun",
@@ -62,6 +50,42 @@
         "awayNetRtg": 12.125,
         "calibrated": false,
         "startTime": "2026-06-20T02:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35733855",
+        "homeTeam": "Atlanta Dream",
+        "awayTeam": "Indiana Fever",
+        "homeWinProb": 0.5858,
+        "awayWinProb": 0.4142,
+        "expectedMargin": 3.3,
+        "homeNetRtg": 5.857142857142857,
+        "awayNetRtg": 1.8571428571428572,
+        "calibrated": false,
+        "startTime": "2026-06-20T17:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35733856",
+        "homeTeam": "Phoenix Mercury",
+        "awayTeam": "Seattle Storm",
+        "homeWinProb": 0.6185,
+        "awayWinProb": 0.3815,
+        "expectedMargin": 4.6,
+        "homeNetRtg": -4,
+        "awayNetRtg": -10.88888888888889,
+        "calibrated": false,
+        "startTime": "2026-06-20T19:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35733862",
+        "homeTeam": "Dallas Wings",
+        "awayTeam": "Chicago Sky",
+        "homeWinProb": 0.7209,
+        "awayWinProb": 0.2791,
+        "expectedMargin": 9.04,
+        "homeNetRtg": 13.375,
+        "awayNetRtg": -3.375,
+        "calibrated": false,
+        "startTime": "2026-06-21T00:00:00.000Z"
       },
       {
         "eventId": "fd_35733420",
