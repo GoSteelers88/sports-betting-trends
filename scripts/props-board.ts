@@ -20,7 +20,8 @@ import {
 
 const DIR = path.join(process.cwd(), "data", "processed");
 const LOG = path.join(DIR, "props-board-log.json");
-const SPORTS = ["mlb", "nba"];
+const SPORTS = ["mlb", "nba", "wnba"];
+const LEAGUE_OF: Record<string, string> = { mlb: "MLB", nba: "NBA", wnba: "WNBA" };
 
 function loadJson<T>(file: string): T | null {
   try {
@@ -56,7 +57,7 @@ function main() {
     const sharp = loadJson<{ props: SharpProp[] }>(path.join(DIR, `latest-sharp-props-${sport}.json`));
     const soft = loadJson<{ quotes: SoftPropQuote[] }>(path.join(DIR, `latest-soft-props-${sport}.json`));
     if (!sharp?.props?.length || !soft?.quotes?.length) continue;
-    allRows.push(...buildPropsBoard(sharp.props, soft.quotes));
+    allRows.push(...buildPropsBoard(sharp.props, soft.quotes, LEAGUE_OF[sport] ?? "MLB"));
   }
 
   if (allRows.length === 0) {

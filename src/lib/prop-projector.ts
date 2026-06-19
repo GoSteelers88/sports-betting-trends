@@ -106,14 +106,31 @@ const STDDEV_FLOOR: Record<PropGradingLeague, Record<string, number>> = {
     pitcher_strikeouts: 1.8,
     pitcher_earned_runs: 1.3,
   },
+  // WNBA shares the basketball box-score schema — same per-stat dispersion
+  // floors as the NBA until a WNBA-specific game-log history is ingested.
+  WNBA: {
+    player_points: 4.0,
+    player_rebounds: 1.8,
+    player_assists: 1.5,
+    player_threes: 0.9,
+    player_blocks: 0.8,
+    player_steals: 0.7,
+    player_turnovers: 0.8,
+    player_points_rebounds_assists: 4.5,
+    player_points_rebounds: 4.0,
+    player_points_assists: 3.5,
+    player_rebounds_assists: 2.2,
+    player_blocks_steals: 1.0,
+  },
 };
 
 // Shrinkage constant k (in "effective games"). The player mean gets weight
 // n/(n+k); the league prior gets k/(n+k). Larger k = trust the prior more.
 // Tuned per league: baseball single-game counts are noisier than NBA box
 // totals, so MLB shrinks harder. At n=5 with k=6, the prior still carries
-// 55% of the weight — exactly the caution thin samples demand.
-const SHRINK_K: Record<PropGradingLeague, number> = { NBA: 4, MLB: 6 };
+// 55% of the weight — exactly the caution thin samples demand. WNBA mirrors
+// the NBA until its own game-log history exists.
+const SHRINK_K: Record<PropGradingLeague, number> = { NBA: 4, MLB: 6, WNBA: 4 };
 
 // League-average bases per NON-HR hit, used to SYNTHESIZE total bases from
 // (H, HR) when the box-score feed lacks 2B/3B. Of non-HR hits, roughly 76%

@@ -1,12 +1,13 @@
 name: Props board — sharp-vs-soft player props
 
 # Daily player-prop +EV measurement: de-vigged Pinnacle prop lines (free
-# guest API) vs soft-book prop prices (The Odds API). Budget-capped at
-# PROPS_CREDIT_BUDGET credits/run (3 markets — TotalBases/HomeRuns/Strikeouts
-# — across as many events as the budget buys) ≈ 90 credits/month — inside the
-# free tier next to the other Odds API draws. Appends matched rows to
-# props-board-log.json. Places NOTHING — this measures whether props are the
-# volume fix for the de-vig thesis before any book is pre-registered.
+# guest API) vs soft-book prop prices (The Odds API). Per-sport credit budgets:
+#   MLB  — PROPS_CREDIT_BUDGET      (TotalBases/HomeRuns/Strikeouts) ≈ 90/mo
+#   WNBA — PROPS_WNBA_CREDIT_BUDGET (Points/Rebounds/Assists)        ≈ 45/mo
+# ≈ 135 credits/month combined — inside the free tier next to the other Odds
+# API draws. Appends matched rows (league-tagged) to props-board-log.json.
+# Places NOTHING — this measures whether props are the volume fix for the
+# de-vig thesis before any book is pre-registered.
 
 on:
   workflow_dispatch:
@@ -24,8 +25,10 @@ jobs:
     timeout-minutes: 8
     env:
       THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
-      # 3 default markets → 6 events/run (~18 credits) ≈ 90/month weekdays.
+      # MLB: 3 markets → 6 events (~18 credits). WNBA: 3 markets → 3 events
+      # (~9 credits). ~27 credits/run ≈ 135/month weekdays.
       PROPS_CREDIT_BUDGET: "18"
+      PROPS_WNBA_CREDIT_BUDGET: "9"
     steps:
       - uses: actions/checkout@v4
         with:

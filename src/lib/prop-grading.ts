@@ -39,17 +39,22 @@ export type EspnSummary = {
   };
 };
 
-export const PROP_GRADING_LEAGUES = ["NBA", "MLB"] as const;
+export const PROP_GRADING_LEAGUES = ["NBA", "MLB", "WNBA"] as const;
 export type PropGradingLeague = (typeof PROP_GRADING_LEAGUES)[number];
 
+// WNBA shares the ESPN basketball box-score schema with the NBA, so the
+// basketball PROP_STAT_MAP resolvers (PTS/REB/AST) grade it unchanged — only
+// the scoreboard/summary endpoints differ.
 export const SCOREBOARD: Record<PropGradingLeague, string> = {
   NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
   MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
+  WNBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard",
 };
 
 export const SUMMARY: Record<PropGradingLeague, string> = {
   NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary",
   MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary",
+  WNBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/summary",
 };
 
 // 36-hour proximity gate — picks anchored to one snapshot date can only

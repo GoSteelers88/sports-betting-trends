@@ -64,7 +64,7 @@ export type ParlayLeg = {
   finalScore: string | null;
 };
 
-export type ParlayLeague = "MLB" | "NBA";
+export type ParlayLeague = "MLB" | "NBA" | "WNBA";
 
 export type ParlayBet = {
   id: string; // deterministic = sorted leg ids joined — re-running opens no dup
@@ -399,6 +399,7 @@ type PropsLogRow = {
   gameId?: string;
   team?: string;
   opponent?: string;
+  league?: string; // board-tagged slate ("MLB"|"WNBA"|"NBA"); absent on legacy rows
 };
 
 /**
@@ -406,7 +407,8 @@ type PropsLogRow = {
  *  - keep only `playable` rows (EV ≥ floor) whose commence is still FUTURE,
  *  - dedup to the LATEST tick per (player, propType, side, line, book),
  *  - drop rows with no gameId (ineligible — counted in the tally),
- *  - league inferred from propType (MLB markets vs NBA markets).
+ *  - league taken from the board's slate tag (MLB/WNBA/NBA), falling back to a
+ *    propType guess for legacy rows.
  * Pure given (rows, nowMs); the caller does the file read.
  */
 export function buildCandidates(
@@ -458,10 +460,17 @@ export function buildCandidates(
       book: r.book,
       fairProb: r.fairProb,
       commence: r.commence,
-      league: leagueForProp(r.propType),
+      // Prefer the board's slate tag; fall back to the propType guess for
+      // legacy rows logged before the board carried a league.
+      league: parlayLeague(r.league) ?? leagueForProp(r.propType),
     });
   }
   return out;
+}
+
+/** Narrow a board league string to a ParlayLeague, or null if unrecognized. */
+function parlayLeague(league?: string): ParlayLeague | null {
+  return league === "MLB" || league === "NBA" || league === "WNBA" ? league : null;
 }
 
 const MLB_PROPS = new Set([

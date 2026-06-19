@@ -59,10 +59,20 @@ export interface SoftPropQuote {
   opponent?: string;
 }
 
-/** "Brandon Sproat (Total Strikeouts)(must start)" → "Brandon Sproat" */
+/**
+ * "Brandon Sproat (Total Strikeouts)(must start)" → "Brandon Sproat"
+ * "Aaliyah Edwards Total Rebounds" → "Aaliyah Edwards"
+ *
+ * Pinnacle MLB player-prop specials parenthesize the stat; WNBA/NBA specials
+ * append it bare ("<Player> Total <Stat>"). Strip both so the player name joins
+ * the clean Odds API name.
+ */
 export function playerFromDescription(description: string): string {
-  const i = description.indexOf("(");
-  return (i > 0 ? description.slice(0, i) : description).trim();
+  const paren = description.indexOf("(");
+  let s = paren > 0 ? description.slice(0, paren) : description;
+  const total = s.search(/\sTotal\s/i);
+  if (total > 0) s = s.slice(0, total);
+  return s.trim();
 }
 
 /** Build a SharpProp from parsed Pinnacle pieces; null when devig fails. */
@@ -113,6 +123,7 @@ export function samePlayer(a: string, b: string): boolean {
 }
 
 export interface PropsBoardRow {
+  league: string; // "MLB" | "WNBA" | "NBA" — the slate this prop came from
   player: string;
   propType: string; // Pinnacle units
   line: number;
@@ -141,7 +152,11 @@ export interface PropsBoardRow {
  * Join soft quotes to sharp props (player + prop type + EXACT line) and
  * price every quoted side. Returns all matches, best EV first.
  */
-export function buildPropsBoard(sharp: SharpProp[], soft: SoftPropQuote[]): PropsBoardRow[] {
+export function buildPropsBoard(
+  sharp: SharpProp[],
+  soft: SoftPropQuote[],
+  league = "MLB",
+): PropsBoardRow[] {
   const rows: PropsBoardRow[] = [];
   for (const q of soft) {
     const units = PROP_TYPE_MAP[q.market];
@@ -160,6 +175,7 @@ export function buildPropsBoard(sharp: SharpProp[], soft: SoftPropQuote[]): Prop
     const hrLike =
       units === "HomeRuns" && q.side === "Over" && ev >= PROPS_PLAYABLE_FLOOR;
     rows.push({
+      league,
       player: match.player,
       propType: units,
       line: q.line,
