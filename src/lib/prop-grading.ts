@@ -39,17 +39,22 @@ export type EspnSummary = {
   };
 };
 
-export const PROP_GRADING_LEAGUES = ["NBA", "MLB"] as const;
+export const PROP_GRADING_LEAGUES = ["NBA", "MLB", "WNBA"] as const;
 export type PropGradingLeague = (typeof PROP_GRADING_LEAGUES)[number];
 
+// WNBA shares the ESPN basketball box-score schema with the NBA, so the
+// basketball PROP_STAT_MAP resolvers (PTS/REB/AST) grade it unchanged — only
+// the scoreboard/summary endpoints differ.
 export const SCOREBOARD: Record<PropGradingLeague, string> = {
   NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
   MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
+  WNBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard",
 };
 
 export const SUMMARY: Record<PropGradingLeague, string> = {
   NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary",
   MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary",
+  WNBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/summary",
 };
 
 // 36-hour proximity gate — picks anchored to one snapshot date can only
@@ -79,9 +84,20 @@ export const PROP_STAT_MAP: Record<string, (stats: Map<string, number>) => numbe
   batter_home_runs: s => s.get("HR") ?? null,
   batter_rbis: s => s.get("RBI") ?? null,
   batter_runs_scored: s => s.get("R") ?? null,
+  // Batter strikeouts share the "K" box-score label with pitcher strikeouts.
+  // The two blocks differ: the PITCHING block carries an "IP" (innings) label,
+  // the BATTING block does not. We attribute "K" to the batter ONLY when there
+  // is no IP in the same stat map, and to the pitcher ONLY when IP is present —
+  // so a pitcher's batting-K and a batter's K never cross-contaminate.
+  batter_strikeouts: s => (s.has("IP") ? null : s.get("K") ?? null),
+  // Total Bases: ESPN's MLB box exposes H and HR but NOT 2B/3B, so an exact TB
+  // is unavailable from this feed. If a "TB" label ever appears we use it;
+  // otherwise this returns null and the projector SYNTHESIZES TB from H + HR
+  // (see prop-projector.ts). We deliberately do NOT fabricate a TB here so the
+  // grader (which needs the TRUE outcome) never grades against an estimate.
   batter_total_bases: s => s.get("TB") ?? null,
-  // MLB pitchers
-  pitcher_strikeouts: s => s.get("K") ?? null,
+  // MLB pitchers — gated on IP so a batter's "K" is never read as a pitcher's.
+  pitcher_strikeouts: s => (s.has("IP") ? s.get("K") ?? null : null),
   pitcher_earned_runs: s => s.get("ER") ?? null,
 };
 

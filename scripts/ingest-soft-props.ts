@@ -42,20 +42,40 @@ for (const envFile of [".env", ".env.local"]) {
 
 const OUT_DIR = path.join(process.cwd(), "data", "processed");
 const REGION = "us";
-// Credit budget for the whole run (1 credit per market per event, 1 region).
-// events = floor(budget / markets); default 18 → 6 events at 3 markets ≈ 90
-// credits/wk-month. PROPS_MAX_EVENTS, if set, is an extra hard ceiling.
-const CREDIT_BUDGET = Math.max(1, Number(process.env.PROPS_CREDIT_BUDGET ?? 18));
+// Credit budget is PER SPORT (1 credit per market per event, 1 region):
+// events = floor(budget / markets). Adding markets within a sport trims its
+// event coverage instead of multiplying spend; each sport carries its own
+// budget so adding a sport is a bounded, opt-in spend increase. PROPS_MAX_EVENTS,
+// if set, is an extra hard ceiling on events for every sport.
+const MLB_CREDIT_BUDGET = Math.max(1, Number(process.env.PROPS_CREDIT_BUDGET ?? 18));
+// WNBA is the smaller in-season slate — give it a smaller default budget so the
+// combined props draw stays inside the shared Odds API free tier. 3 markets →
+// 3 events ≈ 45 credits/wk-month on top of MLB's ~90.
+const WNBA_CREDIT_BUDGET = Math.max(1, Number(process.env.PROPS_WNBA_CREDIT_BUDGET ?? 9));
 const EVENT_CEILING = process.env.PROPS_MAX_EVENTS
   ? Math.max(1, Number(process.env.PROPS_MAX_EVENTS))
   : Infinity;
 
-// Default to the three highest-volume sharp-matching markets (TotalBases,
-// HomeRuns, Strikeouts). All must be keys of PROP_TYPE_MAP or they can't match.
-const DEFAULT_MARKETS = "batter_total_bases,batter_home_runs,pitcher_strikeouts";
+// Default to the three highest-volume sharp-matching markets per sport. Every
+// market MUST be a key of PROP_TYPE_MAP or it can never join a sharp prop.
+//   MLB: TotalBases, HomeRuns, Strikeouts (~83% of the de-vigged Pinnacle props)
+//   WNBA: Points, Rebounds, Assists (Pinnacle posts no Threes props → omitted)
+const MLB_DEFAULT_MARKETS = "batter_total_bases,batter_home_runs,pitcher_strikeouts";
+const WNBA_DEFAULT_MARKETS = "player_points,player_rebounds,player_assists";
 
 const SPORTS = [
-  { sport: "mlb", key: "baseball_mlb", markets: process.env.PROPS_MARKETS ?? DEFAULT_MARKETS },
+  {
+    sport: "mlb",
+    key: "baseball_mlb",
+    markets: process.env.PROPS_MARKETS ?? MLB_DEFAULT_MARKETS,
+    budget: MLB_CREDIT_BUDGET,
+  },
+  {
+    sport: "wnba",
+    key: "basketball_wnba",
+    markets: process.env.PROPS_WNBA_MARKETS ?? WNBA_DEFAULT_MARKETS,
+    budget: WNBA_CREDIT_BUDGET,
+  },
 ];
 
 async function main() {
@@ -64,7 +84,7 @@ async function main() {
     console.warn("[soft-props] THE_ODDS_API_KEY unset — skipping");
     return;
   }
-  for (const { sport, key, markets } of SPORTS) {
+  for (const { sport, key, markets, budget } of SPORTS) {
     try {
       // The /events list is quota-free; only the per-event odds calls cost.
       const evRes = await fetch(
@@ -79,7 +99,7 @@ async function main() {
       const marketCount = Math.max(1, markets.split(",").filter(Boolean).length);
       const maxEvents = Math.max(
         1,
-        Math.min(Math.floor(CREDIT_BUDGET / marketCount), EVENT_CEILING),
+        Math.min(Math.floor(budget / marketCount), EVENT_CEILING),
       );
       const upcoming = events
         .filter((e) => {
@@ -103,6 +123,15 @@ async function main() {
           continue;
         }
         const data: any = await oddsRes.json();
+        // Game identity from the /events row — the parlay book requires it to
+        // prove legs come from distinct, independent games. Without an id a
+        // leg is ineligible for parlays (still fine for the single-leg board).
+        const gameId = ev.id ? String(ev.id) : "";
+        const homeTeam = ev.home_team ? String(ev.home_team) : undefined;
+        const awayTeam = ev.away_team ? String(ev.away_team) : undefined;
+        if (!gameId) {
+          console.warn(`[soft-props] event missing id — props on this game are parlay-ineligible`);
+        }
         for (const bm of data.bookmakers ?? []) {
           for (const mkt of bm.markets ?? []) {
             for (const o of mkt.outcomes ?? []) {
@@ -116,6 +145,14 @@ async function main() {
                 american: Number(o.price),
                 book: String(bm.key),
                 commence: String(ev.commence_time),
+                gameId,
+                // The Odds API props feed doesn't tag a prop with the player's
+                // own side; we record both teams so the correlation rule (same
+                // game / same matchup) can fire. Per-side resolution can be
+                // refined later via a roster map — both teams suffice for the
+                // distinct-game and same-game-stack checks.
+                team: homeTeam,
+                opponent: awayTeam,
               });
             }
           }

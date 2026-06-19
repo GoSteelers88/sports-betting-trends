@@ -1,0 +1,13 @@
+-- AgentPick.eventId — stable per-game identifier (Odds API event.id).
+--
+-- EXPAND phase of an expand-migrate-contract. Split doubleheaders can share a
+-- matchup AND a commence_time, which the @@unique([league, gameDate, market,
+-- selection]) key cannot tell apart — one of the two picks is silently dropped
+-- as a false idempotent skip. eventId distinguishes them.
+--
+-- This migration ONLY adds the (nullable) column. It is additive and safe with
+-- the currently-deployed code, which simply leaves it null. The unique key is
+-- intentionally left on gameDate for now; a follow-up swaps it to eventId once
+-- new picks are confirmed populating eventId, so there is never a window where
+-- old code writes null eventIds against an eventId-keyed unique index.
+ALTER TABLE "AgentPick" ADD COLUMN "eventId" TEXT;

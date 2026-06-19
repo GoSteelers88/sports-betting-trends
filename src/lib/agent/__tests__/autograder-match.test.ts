@@ -6,7 +6,7 @@
 // both, so cross-game contamination cannot happen.
 
 import { describe, it, expect } from "vitest";
-import { matchesPickToFinal, teamMatches } from "../autograder";
+import { matchesPickToFinal, teamMatches, gradeMoneyline } from "../autograder";
 
 describe("matchesPickToFinal", () => {
   it("matches when both ESPN teams appear in pick.matchup", () => {
@@ -54,6 +54,39 @@ describe("matchesPickToFinal", () => {
         { homeTeam: "New York Knicks", awayTeam: "Philadelphia 76ers" }
       )
     ).toBe(true);
+  });
+});
+
+describe("gradeMoneyline", () => {
+  const gf = (
+    homeTeam: string,
+    awayTeam: string,
+    homeScore: number,
+    awayScore: number,
+    league: "NBA" | "MLB" = "NBA"
+  ) => ({ league, homeTeam, awayTeam, homeScore, awayScore, date: "2026-06-11" });
+
+  it("grades a home-team pick that won", () => {
+    expect(gradeMoneyline("New York Knicks", gf("New York Knicks", "Philadelphia 76ers", 110, 104))).toBe("win");
+  });
+
+  it("grades an away-team pick that lost", () => {
+    expect(gradeMoneyline("Philadelphia 76ers", gf("New York Knicks", "Philadelphia 76ers", 110, 104))).toBe("loss");
+  });
+
+  it("returns null when the selection matches neither team", () => {
+    expect(gradeMoneyline("Boston Celtics", gf("New York Knicks", "Philadelphia 76ers", 110, 104))).toBeNull();
+  });
+
+  it("REGRESSION: returns null when the selection matches BOTH teams (ambiguous)", () => {
+    // "Sox" matches both White Sox and Red Sox once the <4-char token filter
+    // drops "sox". The old logic silently graded it as the home team; now it
+    // refuses rather than risk a wrong grade corrupting the trial ledger.
+    expect(gradeMoneyline("Sox", gf("Chicago White Sox", "Boston Red Sox", 5, 3, "MLB"))).toBeNull();
+  });
+
+  it("voids a tie (bad data — NBA/MLB cannot end tied)", () => {
+    expect(gradeMoneyline("New York Knicks", gf("New York Knicks", "Philadelphia 76ers", 100, 100))).toBe("void");
   });
 });
 

@@ -82,9 +82,11 @@ ingest:odds + ingest:free + ingest:injuries + scrape:nba-props + scrape:mlb-prop
                                               ↓ kept/weakened/killed
                                   bankroll guard (5u cap, edge/stake trim)
                                               ↓ final picks
-                          persistFinalPicks ($transaction, idempotent via @@unique)
+                          AgentRun row (persistOk=false) written FIRST
                                               ↓
-                          AgentRun row + AgentPick rows + Discord post
+                          persistFinalPicks (per-pick create, idempotent via @@unique)
+                                              ↓
+                          flip AgentRun.persistOk=true → AgentPick rows + Discord post
 ```
 
 Files:

@@ -90,6 +90,8 @@ export const PROP_LABELS: Record<string, string> = {
   batter_rbis: "RBI",
   batter_runs_scored: "runs",
   batter_total_bases: "TB",
+  batter_strikeouts: "K",
+  batter_stolen_bases: "SB",
   pitcher_strikeouts: "K",
   pitcher_earned_runs: "ER",
 };

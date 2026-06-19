@@ -369,15 +369,77 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
     finalPicks = analystPicks ?? [];
   }
 
+  // Persist run-level metadata FIRST, with persistOk=false. This is the fix for
+  // the orphan-picks hole: the old order (picks, THEN run) could die mid-persist
+  // and leave AgentPick rows with NO AgentRun row — silently desyncing the
+  // kill-rate / sample-size denominators (the funding-gate math reads AgentRun).
+  // Every count below is known before persistence; only persistOk flips after.
+  // Writing the marker up front means any crash leaves a discoverable partial
+  // run (persistOk=false) whose denominators already match the picks that land.
+  const weakened = critique_.decisions.filter(d => d.verdict === "weaken").length;
+  // When critic JSON parse fails we drop ALL picks defensively, but those aren't
+  // real critic kills — track them separately so the kill-rate metric reflects
+  // actual critic decisions.
+  const realCriticKills = critique_.parseFailed ? 0 : killed.length;
+  const agentRunRunId = analystRunId ?? runId;
+  let agentRunExists = false;
+  try {
+    await prisma.agentRun.create({
+      data: {
+        runId: agentRunRunId,
+        league,
+        rawAnalystPicks: rawAnalystPickCount, // pre-grader count
+        graderKept: analystPicks?.length ?? 0,
+        criticKilled: realCriticKills,
+        criticWeakened: weakened,
+        bankrollDropped: dropped.length,
+        finalPickCount: finalPicks.length,
+        totalUnits: +finalPicks.reduce((s, p) => s + p.kellyStakeUnits, 0).toFixed(2),
+        bankrollFlags: JSON.stringify(flags),
+        parseFailed: critique_.parseFailed === true,
+        persistOk: false,
+        modelId: MODELS.analyst,
+      },
+    });
+    agentRunExists = true;
+    trace.push({ step: "persist_run", detail: "created (persistOk=false)", at: new Date().toISOString() });
+  } catch (err) {
+    // P2002 / UNIQUE means duplicate runId — re-run of the same session. The row
+    // already exists, so picks can still (re)persist idempotently and we flip
+    // persistOk below. Any other error is logged; we do NOT persist picks
+    // without a run marker (that's the desync we're preventing).
+    const code = (err as { code?: string })?.code;
+    const message = err instanceof Error ? err.message : String(err);
+    const isDup = code === "P2002" || /UNIQUE constraint failed/i.test(message);
+    agentRunExists = isDup;
+    trace.push({
+      step: isDup ? "persist_run_duplicate" : "persist_run_failed",
+      detail: message,
+      at: new Date().toISOString(),
+    });
+    if (!isDup) {
+      await notifyError("persistAgentRun", err, { runId, league });
+    }
+  }
+
   // Persist ONLY the post-pipeline survivors. Killed/dropped picks never reach
   // the DB, so they don't pollute dream training data or the dashboard count.
-  // If persistence fails, we DO NOT send the Discord notification — picks
-  // shown in Discord but missing from the DB would break grading.
+  // If persistence fails, we DO NOT send the Discord notification — picks shown
+  // in Discord but missing from the DB would break grading — and we leave the
+  // AgentRun marker at persistOk=false so the partial run is discoverable.
   let persistOk = false;
-  if (finalPicks.length > 0) {
+  if (!agentRunExists) {
+    // No run marker landed (a non-duplicate AgentRun write failure). Refuse to
+    // persist picks without it rather than recreate the orphan-row hole.
+    trace.push({
+      step: "persist_picks_skipped",
+      detail: "no AgentRun marker — refusing to persist picks without it",
+      at: new Date().toISOString(),
+    });
+  } else if (finalPicks.length > 0) {
     try {
       const persistResult = await persistFinalPicks({
-        runId: analystRunId ?? runId,
+        runId: agentRunRunId,
         league,
         finalPicks,
         toolsUsed: analystToolsUsed as Parameters<typeof persistFinalPicks>[0]["toolsUsed"],
@@ -385,9 +447,20 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
       persistOk = true;
       trace.push({
         step: "persist_picks",
-        detail: { inserted: persistResult.ids.length, skipped_idempotent: persistResult.skipped },
+        detail: {
+          inserted: persistResult.ids.length,
+          skipped_idempotent: persistResult.skipped,
+          skipped_no_gametime: persistResult.skippedNoGameTime,
+        },
         at: new Date().toISOString(),
       });
+      if (persistResult.skippedNoGameTime > 0) {
+        await notifyError(
+          "persistFinalPicks:noGameTime",
+          new Error(`${persistResult.skippedNoGameTime} pick(s) refused — missing/invalid gameTime`),
+          { runId, league },
+        );
+      }
     } catch (err) {
       trace.push({
         step: "persist_picks_failed",
@@ -400,6 +473,26 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
     persistOk = true; // nothing to persist — proceed to notify "no picks"
   }
 
+  // Commit the run marker: flip persistOk=true now that picks have landed.
+  // updateMany keyed on runId is idempotent and a no-op if the row is somehow
+  // missing. Failure here is non-fatal — picks already landed and the marker
+  // exists; the trace records that the flip didn't take.
+  if (persistOk && agentRunExists) {
+    try {
+      await prisma.agentRun.updateMany({
+        where: { runId: agentRunRunId },
+        data: { persistOk: true },
+      });
+      trace.push({ step: "persist_run_committed", detail: "persistOk=true", at: new Date().toISOString() });
+    } catch (err) {
+      trace.push({
+        step: "persist_run_commit_failed",
+        detail: err instanceof Error ? err.message : String(err),
+        at: new Date().toISOString(),
+      });
+    }
+  }
+
   // Discord notification: only send if persistence worked. A failed persist
   // means picks shown in chat but missing from DB → grading divergence.
   if (persistOk) {
@@ -408,44 +501,6 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
     trace.push({
       step: "discord_skipped",
       detail: "persistence failed — refusing to broadcast unpersisted picks",
-      at: new Date().toISOString(),
-    });
-  }
-
-  // Persist run-level metadata so the dashboard can compute critic kill rate
-  // and other paper-trial criteria. Failure is non-fatal — picks already
-  // landed; this is just observability.
-  try {
-    const weakened = critique_.decisions.filter(d => d.verdict === "weaken").length;
-    // When critic JSON parse fails we drop ALL picks defensively, but those
-    // aren't real critic kills — track them separately so the kill-rate
-    // metric reflects actual critic decisions.
-    const realCriticKills = critique_.parseFailed ? 0 : killed.length;
-    await prisma.agentRun.create({
-      data: {
-        runId: analystRunId ?? runId,
-        league,
-        rawAnalystPicks: rawAnalystPickCount, // pre-grader count
-        graderKept: analystPicks?.length ?? 0,
-        criticKilled: realCriticKills,
-        criticWeakened: weakened,
-        bankrollDropped: dropped.length,
-        finalPickCount: finalPicks.length,
-        totalUnits: +finalPicks.reduce((s, p) => s + p.kellyStakeUnits, 0).toFixed(2),
-        bankrollFlags: JSON.stringify(flags),
-        parseFailed: critique_.parseFailed === true,
-        persistOk,
-        modelId: MODELS.analyst,
-      },
-    });
-    trace.push({ step: "persist_run", detail: "ok", at: new Date().toISOString() });
-  } catch (err) {
-    // P2002 means duplicate runId — re-run of same orchestrator session.
-    // Other errors get logged but don't block the response.
-    const code = (err as { code?: string })?.code;
-    trace.push({
-      step: code === "P2002" ? "persist_run_duplicate" : "persist_run_failed",
-      detail: err instanceof Error ? err.message : String(err),
       at: new Date().toISOString(),
     });
   }

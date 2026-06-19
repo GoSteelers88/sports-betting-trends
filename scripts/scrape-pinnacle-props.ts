@@ -18,6 +18,7 @@ const OUT_DIR = path.join(process.cwd(), "data", "processed");
 const SPORTS = [
   { sport: "mlb", leagueId: 246 },
   { sport: "nba", leagueId: 487 },
+  { sport: "wnba", leagueId: 578 },
 ];
 
 async function pget(endpoint: string): Promise<any> {

@@ -159,7 +159,7 @@ export function MarketFeed({ games }: { games: SlateGame[] }) {
 
       {/* The board */}
       <div className="panel overflow-x-auto">
-        <table className="ledger-table">
+        <table className="ledger-table agate">
           <caption className="sr-only">Tonight&rsquo;s odds board</caption>
           <thead>
             <tr>
@@ -171,7 +171,11 @@ export function MarketFeed({ games }: { games: SlateGame[] }) {
               <th scope="col" className="text-right hidden md:table-cell">Sprd</th>
               {showModel && <th scope="col" className="text-right hidden sm:table-cell">Model</th>}
               {showModel && <th scope="col" className="text-right hidden sm:table-cell">Mkt</th>}
-              {showEdge && <th scope="col" className="text-right">Edge</th>}
+              {showEdge && (
+                <th scope="col" className="text-right" title="Model vs. market on the home side — bar bleeds toward the side the model leans">
+                  Edge · Δ
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -249,25 +253,68 @@ function BoardRow({
         </td>
       )}
       {showEdge && (
-        <td
-          className="num text-xs text-right font-medium"
-          style={{
-            color:
-              edge !== null && edge >= 0.05
-                ? "var(--win)"
-                : disagreement !== null && Math.abs(disagreement) >= 0.05
-                ? "var(--hold)"
-                : "var(--ink-3)",
-          }}
-        >
-          {edge !== null
-            ? `+${(edge * 100).toFixed(1)}%`
-            : disagreement !== null
-            ? `Δ${Math.abs(disagreement * 100).toFixed(0)}`
-            : "—"}
+        <td className="text-right">
+          <EdgeMeter edge={edge} disagreement={disagreement} />
         </td>
       )}
     </tr>
+  );
+}
+
+/** The board's signature glyph: a divergence meter (model vs. market on the
+ *  home side) with the numeric edge beside it. A picked row reads as a solid
+ *  blue conviction bar sized to the pick's edge; an unpicked row reads as the
+ *  raw model−market disagreement, bleeding toward the side the model leans. */
+function EdgeMeter({
+  edge,
+  disagreement,
+}: {
+  edge: number | null;
+  disagreement: number | null;
+}) {
+  // Picked row → the desk's own edge, always a positive (blue) conviction mark.
+  // Unpicked row → signed model−market divergence on the home side.
+  const signed = edge !== null ? edge : disagreement;
+  if (signed === null || !Number.isFinite(signed)) {
+    return <span className="num text-xs text-ink-3">—</span>;
+  }
+  // ~15pp of disagreement saturates the bar; below 1pp prints no bar (noise).
+  const mag = Math.min(1, Math.abs(signed) / 0.15);
+  const dir = signed >= 0 ? "pos" : "neg";
+  const labelColor =
+    edge !== null && edge >= 0.05
+      ? "var(--blue)"
+      : Math.abs(signed) >= 0.05
+      ? "var(--hold)"
+      : "var(--ink-3)";
+  const label =
+    edge !== null
+      ? `+${(edge * 100).toFixed(1)}`
+      : `${signed >= 0 ? "+" : "−"}${Math.abs(signed * 100).toFixed(0)}`;
+
+  return (
+    <span className="inline-flex items-center justify-end gap-2">
+      <span className="num text-xs font-medium tabular-nums" style={{ color: labelColor }}>
+        {label}
+      </span>
+      <span
+        className="diverge shrink-0"
+        role="img"
+        aria-label={
+          edge !== null
+            ? `picked, ${label} percent edge`
+            : `model ${dir === "pos" ? "favors home" : "fades home"} by ${Math.abs(signed * 100).toFixed(0)} points`
+        }
+      >
+        {mag > 0.02 && (
+          <span
+            className="diverge-bar"
+            data-dir={dir}
+            style={{ ["--m" as string]: mag.toFixed(3) }}
+          />
+        )}
+      </span>
+    </span>
   );
 }
 

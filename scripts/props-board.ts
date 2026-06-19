@@ -20,7 +20,8 @@ import {
 
 const DIR = path.join(process.cwd(), "data", "processed");
 const LOG = path.join(DIR, "props-board-log.json");
-const SPORTS = ["mlb", "nba"];
+const SPORTS = ["mlb", "nba", "wnba"];
+const LEAGUE_OF: Record<string, string> = { mlb: "MLB", nba: "NBA", wnba: "WNBA" };
 
 function loadJson<T>(file: string): T | null {
   try {
@@ -56,7 +57,7 @@ function main() {
     const sharp = loadJson<{ props: SharpProp[] }>(path.join(DIR, `latest-sharp-props-${sport}.json`));
     const soft = loadJson<{ quotes: SoftPropQuote[] }>(path.join(DIR, `latest-soft-props-${sport}.json`));
     if (!sharp?.props?.length || !soft?.quotes?.length) continue;
-    allRows.push(...buildPropsBoard(sharp.props, soft.quotes));
+    allRows.push(...buildPropsBoard(sharp.props, soft.quotes, LEAGUE_OF[sport] ?? "MLB"));
   }
 
   if (allRows.length === 0) {
@@ -67,10 +68,15 @@ function main() {
   console.log(`[props-board] ${allRows.length} matched quotes — top of board:`);
   for (const r of allRows.slice(0, 12)) {
     const tag = r.suspicious ? "SUSPICIOUS" : r.playable ? "PLAYABLE" : "";
+    const hr = r.hrLike ? " 🔥HR" : "";
     console.log(
       `  ${r.evPct >= 0 ? "+" : ""}${r.evPct.toFixed(2)}%  ${r.player} ${r.propType} ${r.side} ${r.line}` +
-        ` @ ${r.softAmerican > 0 ? "+" : ""}${r.softAmerican} (${r.book}) ${tag}`,
+        ` @ ${r.softAmerican > 0 ? "+" : ""}${r.softAmerican} (${r.book}) ${tag}${hr}`,
     );
+  }
+  const hrLikes = allRows.filter((r) => r.hrLike);
+  if (hrLikes.length > 0) {
+    console.log(`[props-board] 🔥 ${hrLikes.length} home-run prop(s) we like: ${hrLikes.map((r) => r.player).join(", ")}`);
   }
 
   const ts = new Date().toISOString();
