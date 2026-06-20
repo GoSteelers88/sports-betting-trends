@@ -17,6 +17,8 @@ import {
   slateTeamsFromEvents,
   isTeamOnSlate,
   scopeInjuriesToSlate,
+  mlbSlateEvents,
+  easternDateOf,
   type ScopeInjury,
 } from "@/lib/injuries-scope";
 
@@ -310,6 +312,90 @@ export type PaperTrial = {
   }>;
 };
 
+// Exp 4 RETROSPECTIVE — the favorites-combinatorics 30-day backtest, sourced
+// from data/processed/parlay-retro.json (written by `parlay-backtest.ts -- mine`).
+// This is QUARANTINED from the live pre-registered parlay book: it is a
+// favorites approximation (NOT the +EV-vs-de-vigged-sharp rule), never tunes the
+// live rule, and renders in a demoted panel BELOW the live book. Null when the
+// file is absent → the panel hides.
+export type ParlayRetro = {
+  rule: string;
+  generatedAt: string;
+  startingBankrollUsd: number;
+  days: number;
+  parlaysPlaced: number;
+  record: { wins: number; losses: number; pushes: number };
+  winRatePct: number | null;
+  avgBreakEvenPct: number | null;
+  totalStakedUsd: number;
+  netPnlUsd: number;
+  roiPct: number | null;
+  endingEquityUsd: number;
+  equityCurve: Array<{ day: string; equityUsd: number }>;
+};
+
+// Exp 5 — NFL backtest (research dry-run). Public summary written by
+// `npm run nfl:exp5-summary` from the PRIVATE (gitignored) NFL quant book + prop
+// log. The raw per-week picks never leave data/private/ UNSETTLED; the desk-level
+// aggregates plus a handful of SETTLED-ONLY example rows (with the model's
+// reasoning) deploy. Null when data/processed/nfl-exp5.json is absent → the card
+// hides.
+export type NflExp5GamePickExample = {
+  matchup: string;
+  selection: string;
+  market: string;
+  edgePct: number;
+  result: "won" | "lost" | "void";
+  explanation: string;
+  season: number | null;
+  week: number | null;
+};
+export type NflExp5PropExample = {
+  player: string;
+  team: string;
+  stat: string;
+  threshold: number;
+  side: "over" | "under";
+  result: "win" | "loss" | "push";
+  rationale: string;
+  season: number;
+  week: number;
+};
+export type NflExp5Props = {
+  record: { wins: number; losses: number; pushes: number };
+  settled: number;
+  noData: number;
+  examples: NflExp5PropExample[];
+};
+// Aggregate-only parlay block (Exp 5 parlay backtest). No per-parlay rows or leg
+// details — same leakage discipline as the rest of the summary. Null when no
+// parlay was formed (the section hides). `pushes` = full-void parlays.
+export type NflExp5Parlays = {
+  record: { wins: number; losses: number; pushes: number };
+  settled: number;
+  roiPct: number; // FLAT-STAKE yield (profit per 1u risked), NOT a Kelly equity ROI
+  winRatePct: number; // realized parlay win rate
+  breakEvenPct: number; // win rate the parlay odds require to break even
+  avgLegsEdge: number | null;
+  note: string;
+};
+export type NflExp5 = {
+  generatedAt: string;
+  source: "nfl-quant-dryrun";
+  record: { wins: number; losses: number; pushes: number };
+  settled: number;
+  clvBeatRatePct: number | null;
+  avgClvCents: number | null;
+  roiPct: number;
+  note: string;
+  // SETTLED-ONLY example rows — up to 8 most recent game picks, newest first.
+  examplePicks: NflExp5GamePickExample[];
+  // Prop block, or null when zero prop rows exist yet (the props section hides).
+  props: NflExp5Props | null;
+  // Aggregate-only parlay block, or null when no parlay was formed.
+  parlays: NflExp5Parlays | null;
+};
+
 export type DashboardData = {
   generatedAt: string;
   slate: SlateGame[];
@@ -326,6 +412,12 @@ export type DashboardData = {
   // with OUR model's P(≥k) per rung, market edge/price overlaid where a line
   // exists. Empty (groups: []) when there's no MLB slate → the section hides.
   mlbPropPlays: MlbPropPlaysBoard;
+  // Exp 4 retrospective (favorites-combinatorics 30-day backtest), or null when
+  // the parlay-retro.json file is absent. Drives the demoted panel under the
+  // live parlay book — never the live book itself.
+  parlayRetro: ParlayRetro | null;
+  // Exp 5 — NFL backtest research summary, or null when the file is absent.
+  nflExp5: NflExp5 | null;
   trackRecord7: TrackRecord;
   trackRecord30: TrackRecord;
   paperTrial: PaperTrial;
@@ -537,17 +629,74 @@ type SoftPropsFileShape = { fetchedAt?: string; quotes?: SoftQuoteRow[] };
 /** Build the by-stat MLB ladder board from the gamelog distribution model,
  *  scoped to tonight's MLB slate teams, with sharp/soft market overlay.
  *  Pure read — any missing file degrades to an empty board (section hides). */
+// The feed's own primary slate date = the MOST COMMON US-Eastern game-date among
+// the (already MLB-filtered) events. Returns null when there are no dated events.
+// We scope the prop board to this — derived from the data, never the wall clock —
+// so the board reflects "the games in this feed" regardless of when it renders.
+function primaryEasternSlateDate(
+  events: Array<{ commence_time?: string }>,
+): string | null {
+  const counts = new Map<string, number>();
+  for (const e of events) {
+    const d = easternDateOf(e.commence_time);
+    if (d) counts.set(d, (counts.get(d) ?? 0) + 1);
+  }
+  let best: string | null = null;
+  let bestN = 0;
+  for (const [d, n] of counts) {
+    // Tie-break toward the EARLIER date (the sooner slate is "today's").
+    if (n > bestN || (n === bestN && best !== null && d < best)) {
+      best = d;
+      bestN = n;
+    }
+  }
+  return best;
+}
+
+// Tonight's probable starting pitchers, from the MLB Stats API ingest. Shape:
+// { games: [{ homePitcher: { name }, awayPitcher: { name } }] }. Used to gate
+// pitcher prop ladders so non-starters can't surface phantom K/ER plays.
+type PitchersTodayFile = {
+  games?: Array<{
+    homePitcher?: { name?: string } | null;
+    awayPitcher?: { name?: string } | null;
+  }>;
+};
+
 function loadMlbPropPlays(): MlbPropPlaysBoard {
   const gamelog = readJson<MlbGameLogFile | null>("player-gamelogs-mlb.json", null);
   const odds = readJson<RawOddsFile>(ODDS_FILE.MLB, { events: [] });
   const sharp = readJson<SharpPropsFileShape>("latest-sharp-props-mlb.json", {});
   const soft = readJson<SoftPropsFileShape>("latest-soft-props-mlb.json", {});
+  const pitchersToday = readJson<PitchersTodayFile>("mlb-pitchers-today.json", {});
+  // Present file (even with no games) → gate; missing file (default {}, no
+  // `games` array) → undefined → gate disabled so a read failure can't silently
+  // empty the whole pitcher board.
+  const probableStarters = Array.isArray(pitchersToday.games)
+    ? pitchersToday.games
+        .flatMap(g => [g.homePitcher?.name, g.awayPitcher?.name])
+        .filter((n): n is string => typeof n === "string" && n.length > 0)
+    : undefined;
 
-  // Slate teams = the real MLB teams on tonight's baseball odds feed. The feed
-  // also carries NCAA/exhibition games; honestLeague-equivalent gating is the
-  // MLB_TEAMS membership baked into the odds events, but the gamelog only holds
-  // MLB players, so a non-MLB team simply matches nobody — safe either way.
-  const slateTeams = slateTeamsFromEvents(odds.events ?? []);
+  // Slate teams = the real MLB teams on THIS feed's slate. The baseball_mlb
+  // endpoint carries NPB/KBO/CPBL/NCAA games AND (via Bovada's preMatchOnly
+  // board) can span multiple days, so:
+  //  1. mlbSlateEvents strips everything that isn't one of the 30 MLB franchises
+  //     (both sides must be MLB) — kills the foreign/college pollution.
+  //  2. We then scope to the feed's OWN primary slate date (the modal US-Eastern
+  //     game-date among the MLB events), NOT the wall clock. Deriving the date
+  //     from the data — not from easternToday() — is critical: the odds snapshot
+  //     is static (bundled at build / last ingest), so comparing it to the live
+  //     clock would EMPTY the board every night at midnight ET once "today" rolls
+  //     past the snapshot's date. Scoping to the feed's own date shows "the games
+  //     in the current feed" and never vanishes from clock drift, while still
+  //     dropping a stray next-day game on a sparse/multi-day board.
+  const mlbTeamEvents = mlbSlateEvents(odds.events ?? []); // MLB-only, no date filter
+  const slateDate = primaryEasternSlateDate(mlbTeamEvents);
+  const mlbEvents = slateDate
+    ? mlbTeamEvents.filter((e) => easternDateOf(e.commence_time) === slateDate)
+    : mlbTeamEvents;
+  const slateTeams = slateTeamsFromEvents(mlbEvents);
   const isSlateTeam = (team: string | null): boolean =>
     !!team && isTeamOnSlate(team, slateTeams);
 
@@ -556,7 +705,197 @@ function loadMlbPropPlays(): MlbPropPlaysBoard {
     isSlateTeam,
     sharp: sharp.props ?? [],
     soft: soft.quotes ?? [],
+    probableStarters,
   });
+}
+
+// ─── Exp 4 retrospective (favorites-combinatorics backtest) ─────────────────
+
+// Read the quarantined retrospective. Pure read; any missing/malformed file or
+// a wrong rule stamp degrades to null → the demoted panel hides. We assert the
+// rule stamp so a stray JSON can never masquerade as the live pre-registered
+// book in the panel.
+function loadParlayRetro(): ParlayRetro | null {
+  const raw = readJson<Partial<ParlayRetro> | null>("parlay-retro.json", null);
+  if (!raw || raw.rule !== "favorites-combinatorics-RETROSPECTIVE") return null;
+  if (!Array.isArray(raw.equityCurve) || typeof raw.startingBankrollUsd !== "number") {
+    return null;
+  }
+  return {
+    rule: raw.rule,
+    generatedAt: raw.generatedAt ?? "",
+    startingBankrollUsd: raw.startingBankrollUsd,
+    days: raw.days ?? 0,
+    parlaysPlaced: raw.parlaysPlaced ?? 0,
+    record: raw.record ?? { wins: 0, losses: 0, pushes: 0 },
+    winRatePct: raw.winRatePct ?? null,
+    avgBreakEvenPct: raw.avgBreakEvenPct ?? null,
+    totalStakedUsd: raw.totalStakedUsd ?? 0,
+    netPnlUsd: raw.netPnlUsd ?? 0,
+    roiPct: raw.roiPct ?? null,
+    endingEquityUsd:
+      typeof raw.endingEquityUsd === "number"
+        ? raw.endingEquityUsd
+        : raw.startingBankrollUsd + (raw.netPnlUsd ?? 0),
+    equityCurve: raw.equityCurve,
+  };
+}
+
+// ─── Exp 5 — NFL backtest (research dry-run) summary ─────────────────────────
+
+// Read the aggregate-only NFL summary. Pure read; any missing/malformed file or
+// a wrong source stamp degrades to null → the card hides. The source stamp guard
+// ensures a stray JSON can never masquerade as the dry-run summary, and the
+// shape is validated field-by-field so a partial file never reaches the UI.
+function loadNflExp5(): NflExp5 | null {
+  const raw = readJson<Partial<NflExp5> | null>("nfl-exp5.json", null);
+  if (!raw || raw.source !== "nfl-quant-dryrun") return null;
+  const rec = raw.record;
+  if (
+    !rec ||
+    typeof rec.wins !== "number" ||
+    typeof rec.losses !== "number" ||
+    typeof rec.pushes !== "number" ||
+    typeof raw.settled !== "number" ||
+    typeof raw.roiPct !== "number"
+  ) {
+    return null;
+  }
+  return {
+    generatedAt: raw.generatedAt ?? "",
+    source: "nfl-quant-dryrun",
+    record: { wins: rec.wins, losses: rec.losses, pushes: rec.pushes },
+    settled: raw.settled,
+    clvBeatRatePct: typeof raw.clvBeatRatePct === "number" ? raw.clvBeatRatePct : null,
+    avgClvCents: typeof raw.avgClvCents === "number" ? raw.avgClvCents : null,
+    roiPct: raw.roiPct,
+    note: raw.note ?? "",
+    examplePicks: sanitizeNflExp5GamePicks(raw.examplePicks),
+    props: sanitizeNflExp5Props(raw.props),
+    parlays: sanitizeNflExp5Parlays(raw.parlays),
+  };
+}
+
+// Sanitize the SETTLED-ONLY example rows. Defensive: a malformed file degrades to
+// an empty list / null props rather than crashing the card, and only well-formed
+// SETTLED rows survive (an "open" game result or "no-data" prop result can never
+// pass these guards, mirroring the writer's leakage gate).
+function sanitizeNflExp5GamePicks(raw: unknown): NflExp5GamePickExample[] {
+  if (!Array.isArray(raw)) return [];
+  const out: NflExp5GamePickExample[] = [];
+  for (const r of raw) {
+    if (!r || typeof r !== "object") continue;
+    const o = r as Record<string, unknown>;
+    if (o.result !== "won" && o.result !== "lost" && o.result !== "void") continue;
+    if (
+      typeof o.matchup !== "string" ||
+      typeof o.selection !== "string" ||
+      typeof o.market !== "string" ||
+      typeof o.edgePct !== "number" ||
+      typeof o.explanation !== "string"
+    ) {
+      continue;
+    }
+    out.push({
+      matchup: o.matchup,
+      selection: o.selection,
+      market: o.market,
+      edgePct: o.edgePct,
+      result: o.result,
+      explanation: o.explanation,
+      season: typeof o.season === "number" ? o.season : null,
+      week: typeof o.week === "number" ? o.week : null,
+    });
+  }
+  return out;
+}
+
+function sanitizeNflExp5Props(raw: unknown): NflExp5Props | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const rec = o.record as Record<string, unknown> | undefined;
+  if (
+    !rec ||
+    typeof rec.wins !== "number" ||
+    typeof rec.losses !== "number" ||
+    typeof rec.pushes !== "number" ||
+    typeof o.settled !== "number" ||
+    typeof o.noData !== "number"
+  ) {
+    return null;
+  }
+  const examples: NflExp5PropExample[] = [];
+  if (Array.isArray(o.examples)) {
+    for (const e of o.examples) {
+      if (!e || typeof e !== "object") continue;
+      const p = e as Record<string, unknown>;
+      if (p.result !== "win" && p.result !== "loss" && p.result !== "push") continue;
+      if (p.side !== "over" && p.side !== "under") continue;
+      if (
+        typeof p.player !== "string" ||
+        typeof p.team !== "string" ||
+        typeof p.stat !== "string" ||
+        typeof p.threshold !== "number" ||
+        typeof p.season !== "number" ||
+        typeof p.week !== "number"
+      ) {
+        continue;
+      }
+      examples.push({
+        player: p.player,
+        team: p.team,
+        stat: p.stat,
+        threshold: p.threshold,
+        side: p.side,
+        result: p.result,
+        rationale: typeof p.rationale === "string" ? p.rationale : "",
+        season: p.season,
+        week: p.week,
+      });
+    }
+  }
+  return {
+    record: { wins: rec.wins, losses: rec.losses, pushes: rec.pushes },
+    settled: o.settled,
+    noData: o.noData,
+    examples,
+  };
+}
+
+// Sanitize the aggregate-only parlay block. Mirrors sanitizeNflExp5Props: a
+// malformed/missing block degrades to null (the section hides) and only a fully
+// well-formed aggregate survives. No per-parlay rows exist in the contract, so
+// there is nothing leg-level to validate — aggregates only, by construction.
+function sanitizeNflExp5Parlays(raw: unknown): NflExp5Parlays | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const rec = o.record as Record<string, unknown> | undefined;
+  if (
+    !rec ||
+    typeof rec.wins !== "number" ||
+    typeof rec.losses !== "number" ||
+    typeof rec.pushes !== "number" ||
+    typeof o.settled !== "number" ||
+    typeof o.roiPct !== "number"
+  ) {
+    return null;
+  }
+  const settled = o.settled;
+  const wins = rec.wins;
+  return {
+    record: { wins: rec.wins, losses: rec.losses, pushes: rec.pushes },
+    settled,
+    roiPct: o.roiPct,
+    winRatePct:
+      typeof o.winRatePct === "number"
+        ? o.winRatePct
+        : settled > 0
+          ? +((wins / settled) * 100).toFixed(1)
+          : 0,
+    breakEvenPct: typeof o.breakEvenPct === "number" ? o.breakEvenPct : 0,
+    avgLegsEdge: typeof o.avgLegsEdge === "number" ? o.avgLegsEdge : null,
+    note: typeof o.note === "string" ? o.note : "",
+  };
 }
 
 // ─── injuries ──────────────────────────────────────────────────────────────
@@ -1543,6 +1882,8 @@ export async function getDashboardData(): Promise<DashboardData> {
   const playerProps = loadPlayerProps();
   const homeRunLikes = getHomeRunLikes();
   const mlbPropPlays = loadMlbPropPlays();
+  const parlayRetro = loadParlayRetro();
+  const nflExp5 = loadNflExp5();
 
   const allTodayPicks = [...picks.games, ...picks.props];
   const todayPnl = allTodayPicks.reduce((s, p) => s + (p.outcome?.unitsPnl ?? 0), 0);
@@ -1565,6 +1906,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     playerProps,
     homeRunLikes,
     mlbPropPlays,
+    parlayRetro,
+    nflExp5,
     trackRecord7,
     trackRecord30,
     paperTrial,

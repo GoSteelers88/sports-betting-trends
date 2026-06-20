@@ -188,6 +188,16 @@ export function buildMlbPropPlays(input: {
   nowMs?: number;
   /** Max players to show per stat group (board stays dense, not endless). */
   perStatLimit?: number;
+  /**
+   * Probable starting pitchers for tonight (display names). When provided,
+   * PITCHER stat ladders (Strikeouts/EarnedRuns) are gated to this set — so a
+   * pitcher whose TEAM is on the slate but who isn't actually starting (a
+   * reliever, or a starter on his off-day) can't surface a phantom ladder off
+   * stale game-logs. Batter stats are unaffected. Pass `undefined` to disable
+   * the gate (back-compat / tests). An empty array means "no confirmed
+   * starters" → no pitcher ladders at all (honest: we don't know who's pitching).
+   */
+  probableStarters?: string[];
 }): MlbPropPlaysBoard {
   const empty: MlbPropPlaysBoard = {
     generatedAt: null,
@@ -208,6 +218,19 @@ export function buildMlbPropPlays(input: {
   const slatePlayers = Object.values(gamelog.players).filter(p =>
     input.isSlateTeam(p.team),
   );
+
+  // Pitcher gate: a pitcher only earns a ladder if he's a confirmed probable
+  // starter tonight. Without this, ANY pitcher on a slate team with game-log
+  // data surfaces a K/ER ladder even when he isn't pitching (the phantom). The
+  // matcher mirrors samePlayer so "Will Warren" ≈ "W. Warren". `undefined` →
+  // gate disabled; a present-but-empty list → no pitcher passes.
+  const starterList = input.probableStarters;
+  const starterNorm = starterList ? new Set(starterList.map(normalize)) : null;
+  const isProbableStarter = (name: string): boolean => {
+    if (!starterNorm) return true; // gate disabled
+    if (starterNorm.has(normalize(name))) return true;
+    return starterList!.some(s => samePlayer(name, s));
+  };
 
   // Index market rows for O(1)-ish lookup per (stat, threshold).
   // Sharp: best (lowest overround already baked into fairOverProb) per
@@ -247,7 +270,14 @@ export function buildMlbPropPlays(input: {
   for (const spec of MLB_STAT_SPECS) {
     const ladders: PlayerStatLadder[] = [];
 
-    for (const player of slatePlayers) {
+    // Pitcher stats are gated to probable starters; batter stats see everyone
+    // on a slate team.
+    const eligible =
+      spec.kind === "pitcher" && starterNorm
+        ? slatePlayers.filter(p => isProbableStarter(p.displayName))
+        : slatePlayers;
+
+    for (const player of eligible) {
       const dist = distributionFor(player, spec, leagueAverages);
       if (!dist) continue;
       modeledStats.add(spec.label);
