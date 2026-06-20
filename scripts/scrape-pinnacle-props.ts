@@ -75,7 +75,10 @@ async function main() {
         continue;
       }
       const file = path.join(OUT_DIR, `latest-sharp-props-${sport}.json`);
-      fs.writeFileSync(file, JSON.stringify({ fetchedAt: new Date().toISOString(), props }, null, 1));
+      // Atomic write (temp + rename) so a reader never sees a truncated file.
+      const tmp = `${file}.tmp`;
+      fs.writeFileSync(tmp, JSON.stringify({ fetchedAt: new Date().toISOString(), props }, null, 1));
+      fs.renameSync(tmp, file);
       const units = [...new Set(props.map((p) => p.units))];
       console.log(`[sharp-props] ${sport}: ${props.length} de-vigged props (${units.join(", ")})`);
     } catch (err) {

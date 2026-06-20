@@ -164,10 +164,14 @@ async function main() {
         continue;
       }
       const file = path.join(OUT_DIR, `latest-soft-props-${sport}.json`);
+      // Atomic write (temp + rename): a reader (dashboard, props-board) must
+      // never catch a half-written file and silently degrade to an empty board.
+      const tmp = `${file}.tmp`;
       fs.writeFileSync(
-        file,
+        tmp,
         JSON.stringify({ fetchedAt: new Date().toISOString(), markets, quotes }, null, 1),
       );
+      fs.renameSync(tmp, file);
       console.log(
         `[soft-props] ${sport}: ${quotes.length} quotes from ${upcoming.length} events (${markets})`,
       );

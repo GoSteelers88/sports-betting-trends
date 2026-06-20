@@ -12,9 +12,15 @@ name: Props board — sharp-vs-soft player props
 on:
   workflow_dispatch:
   schedule:
-    # Weekdays 21:10 UTC — ~2h before typical MLB evening first pitch, when
-    # both Pinnacle and soft books have posted prop lines.
-    - cron: "10 21 * * 1-5"
+    # DAILY 21:10 UTC — ~2h before typical MLB evening first pitch, when both
+    # Pinnacle and soft books have posted prop lines. Runs every day, NOT just
+    # weekdays: MLB plays 7 days/week and WNBA leans heavily on weekends, so the
+    # old "* * 1-5" schedule silently left Sat/Sun slates UNMEASURED — the
+    # parlay-paper cron (which runs daily at 21:40) would then assemble from a
+    # board log with no weekend ticks. The freshness gate in props-board.ts now
+    # also refuses to log stale matches, so a missed run degrades honestly
+    # instead of poisoning the measurement log.
+    - cron: "10 21 * * *"
 
 permissions:
   contents: write # push the board log back
@@ -26,9 +32,13 @@ jobs:
     env:
       THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
       # MLB: 3 markets → 6 events (~18 credits). WNBA: 3 markets → 3 events
-      # (~9 credits). ~27 credits/run ≈ 135/month weekdays.
-      PROPS_CREDIT_BUDGET: "18"
-      PROPS_WNBA_CREDIT_BUDGET: "9"
+      # (~9 credits). ~27 credits/run × ~30 days ≈ 810/month — OVER the 500/mo
+      # free tier if left here. The board now runs DAILY (was weekdays), so the
+      # per-run budgets are trimmed to keep the monthly draw inside the free
+      # tier alongside the other Odds API jobs: 9 + 6 = 15 credits/run × 30 ≈
+      # 450/month. Raise these only if the plan tier increases.
+      PROPS_CREDIT_BUDGET: "9"
+      PROPS_WNBA_CREDIT_BUDGET: "6"
     steps:
       - uses: actions/checkout@v4
         with:

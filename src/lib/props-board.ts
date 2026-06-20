@@ -106,7 +106,19 @@ const normalize = (name: string): string =>
     .replace(/\s+/g, " ")
     .trim();
 
-/** Same player? Exact normalized match, or last name + first initial. */
+/**
+ * Same player? Exact normalized match, or an ABBREVIATED form vs the full name
+ * ("B. Sproat" ≈ "Brandon Sproat").
+ *
+ * The initial-only fallback fires ONLY when at least one side's first token is a
+ * single letter (a genuine abbreviation). Two FULL first names that merely share
+ * a last name + first initial are DIFFERENT people — this is the collision that
+ * matters in MLB, where "Jose Ramirez" and "Jeremy Ramirez" (or two J. Garcías)
+ * would otherwise be fused and a sharp prop priced onto the wrong player's soft
+ * line. We require the same last name AND same first initial AND that the names
+ * are abbreviation-compatible (the full first name starts with the initial), so
+ * "J. Ramirez" ≈ "Jose Ramirez" but "Jose Ramirez" ≠ "Jeremy Ramirez".
+ */
 export function samePlayer(a: string, b: string): boolean {
   const na = normalize(a);
   const nb = normalize(b);
@@ -114,12 +126,17 @@ export function samePlayer(a: string, b: string): boolean {
   if (na === nb) return true;
   const ta = na.split(" ");
   const tb = nb.split(" ");
-  return (
-    ta.length > 1 &&
-    tb.length > 1 &&
-    ta[ta.length - 1] === tb[tb.length - 1] &&
-    ta[0][0] === tb[0][0]
-  );
+  if (ta.length < 2 || tb.length < 2) return false;
+  if (ta[ta.length - 1] !== tb[tb.length - 1]) return false; // different last name
+  if (ta[0][0] !== tb[0][0]) return false; // different first initial
+  const aAbbrev = ta[0].length === 1; // "b" from "B. Sproat"
+  const bAbbrev = tb[0].length === 1;
+  // At least one side must be an abbreviation for the initial match to be
+  // trustworthy. Two full first names sharing only an initial are NOT a match.
+  if (!aAbbrev && !bAbbrev) return false;
+  // The abbreviated side's initial must be the prefix of the full side's first
+  // name (it already is, since first initials are equal) — guaranteed above.
+  return true;
 }
 
 export interface PropsBoardRow {

@@ -337,7 +337,16 @@ export function loadBook(dir: string): ParlayPaperBook {
 }
 
 export function saveBook(dir: string, book: ParlayPaperBook, nowIso: string): void {
-  fs.writeFileSync(bookPath(dir), JSON.stringify({ ...book, updatedAt: nowIso }, null, 2));
+  // Atomic write (temp + rename): the book is the paper-trial's permanent
+  // financial record. A process killed mid-write (CI timeout) must never leave a
+  // truncated JSON that loadBook() then silently degrades to an empty book —
+  // that would erase every open/settled parlay and reset the equity curve. On
+  // the same filesystem rename() is atomic: a reader sees the old or the new
+  // complete book, never a half.
+  const target = bookPath(dir);
+  const tmp = `${target}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify({ ...book, updatedAt: nowIso }, null, 2));
+  fs.renameSync(tmp, target);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -21,6 +21,7 @@ import {
   easternDateOf,
   type ScopeInjury,
 } from "@/lib/injuries-scope";
+import { assessFreshness, MAX_AGE_HOURS } from "@/lib/data-freshness";
 
 type PickWithOutcome = Prisma.AgentPickGetPayload<{ include: { outcome: true } }>;
 type OutcomeWithPick = Prisma.AgentOutcomeGetPayload<{ include: { pick: true } }>;
@@ -612,12 +613,19 @@ function loadMarketPicks(): MarketPick[] {
 
 type PropsFile = {
   available?: boolean;
+  generatedAt?: string | null;
   topProps?: PlayerProp[];
 };
 
 function loadPlayerProps(): PlayerProp[] {
   const file = readJson<PropsFile>("latest-player-props.json", {});
   if (!file.available) return [];
+  // Freshness gate: the legacy props feed has frozen before (dead scraper) and
+  // a stale `available: true` snapshot would render month-old "props" as
+  // today's. Hide the section when the file is past the props freshness budget.
+  if (!assessFreshness(file.generatedAt ?? null, MAX_AGE_HOURS.PROPS_QUOTE).isFresh) {
+    return [];
+  }
   return (file.topProps ?? []).slice(0, 5);
 }
 
@@ -666,9 +674,20 @@ type PitchersTodayFile = {
 function loadMlbPropPlays(): MlbPropPlaysBoard {
   const gamelog = readJson<MlbGameLogFile | null>("player-gamelogs-mlb.json", null);
   const odds = readJson<RawOddsFile>(ODDS_FILE.MLB, { events: [] });
-  const sharp = readJson<SharpPropsFileShape>("latest-sharp-props-mlb.json", {});
-  const soft = readJson<SoftPropsFileShape>("latest-soft-props-mlb.json", {});
+  const sharpFile = readJson<SharpPropsFileShape>("latest-sharp-props-mlb.json", {});
+  const softFile = readJson<SoftPropsFileShape>("latest-soft-props-mlb.json", {});
   const pitchersToday = readJson<PitchersTodayFile>("mlb-pitchers-today.json", {});
+
+  // Market overlay must be FRESH or it's dropped. A stale sharp/soft prop file
+  // would overlay yesterday's lines/prices on today's model ladders — a quieter
+  // version of the same disease. When a market file is past its freshness budget
+  // we pass NO rows for that side, so the board falls back to model-only ladders
+  // (honest) instead of showing month-old edges as live. (The gamelog's own
+  // staleness is gated inside buildMlbPropPlays, which empties the whole board.)
+  const sharpFresh = assessFreshness(sharpFile.fetchedAt ?? null, MAX_AGE_HOURS.PROPS_QUOTE).isFresh;
+  const softFresh = assessFreshness(softFile.fetchedAt ?? null, MAX_AGE_HOURS.PROPS_QUOTE).isFresh;
+  const sharp: SharpPropsFileShape = sharpFresh ? sharpFile : {};
+  const soft: SoftPropsFileShape = softFresh ? softFile : {};
   // Present file (even with no games) → gate; missing file (default {}, no
   // `games` array) → undefined → gate disabled so a read failure can't silently
   // empty the whole pitcher board.

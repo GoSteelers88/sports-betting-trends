@@ -99,6 +99,16 @@ jobs:
           npm run scrape:nba-props || echo "nba props scrape failed (non-fatal)"
           npm run scrape:mlb-props || echo "mlb props scrape failed (non-fatal)"
           npm run scrape:mlb-signals || echo "mlb signals scrape failed (non-fatal)"
+          # Probable starters + player game-logs. These were NOT refreshed here
+          # before — which is exactly why mlb-pitchers-today.json was only ever
+          # stale-committed-back and player-gamelogs-mlb.json drifted 37 days
+          # stale (driving the projection board off a month-old window). Refresh
+          # both every run so the prop board's freshness gates see live data.
+          # ingest:player-gamelogs now REFUSES to overwrite a good file with an
+          # empty one (ESPN outage) and exits non-zero, so the `|| echo` keeps a
+          # transient failure non-fatal while leaving last-known-good in place.
+          npm run ingest:mlb-pitchers || echo "mlb pitchers refresh failed (non-fatal)"
+          npm run ingest:player-gamelogs || echo "player gamelogs refresh failed (non-fatal)"
           npm run picks:log || echo "picks logger failed (non-fatal)"
           npm run picks:clv || echo "clv tracker failed (non-fatal)"
 
@@ -144,6 +154,8 @@ jobs:
             "data/processed/mlb-bullpen.json"
             "data/processed/mlb-batting.json"
             "data/processed/statcast-pitching.json"
+            "data/processed/player-gamelogs-mlb.json"
+            "data/processed/player-gamelogs-nba.json"
           )
           # Pre-commit secret scan — refuse to commit if any allowlisted file
           # contains a recognizable secret pattern. Defense in depth.
