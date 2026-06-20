@@ -190,18 +190,49 @@ async function main() {
   const { days } = parseArgs();
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
+  let failures = 0;
+  let successes = 0;
   for (const league of ["NBA", "MLB"] as const) {
     const windowDays = days ?? DEFAULT_DAYS[league];
     console.log(`\n[${league}] building game log (${windowDays} day window)...`);
     const log = await buildGameLog(league, windowDays);
     const filename = `player-gamelogs-${league.toLowerCase()}.json`;
     const out = path.join(OUT_DIR, filename);
-    fs.writeFileSync(out, JSON.stringify(log, null, 2));
     const playerCount = Object.keys(log.players).length;
     const teamCount = Object.keys(log.teamsAllowed).length;
+
+    // SELF-CORRUPTION GUARD: a build that scraped ZERO players almost certainly
+    // means every ESPN fetch failed (rate-limit / outage), NOT that no games
+    // happened in a 10–14 day window. Writing it would overwrite a good file
+    // with an empty one AND reset its generatedAt — defeating the downstream
+    // freshness gate (it would look "fresh but empty" instead of "stale"). So we
+    // refuse the write, leave the last-known-good file in place, and flag a
+    // failure so the cron exits non-zero and the heartbeat fires.
+    if (playerCount === 0) {
+      console.error(
+        `[${league}] REFUSING to write — 0 players parsed (ESPN outage / rate-limit?). ` +
+          `Leaving existing ${filename} untouched so stale data stays visibly stale.`,
+      );
+      failures++;
+      continue;
+    }
+
+    // Atomic write (temp + rename) so a reader never catches a half-written file.
+    const tmp = `${out}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(log, null, 2));
+    fs.renameSync(tmp, out);
+    successes++;
     console.log(
       `[${league}] wrote ${out} — ${playerCount} players, ${teamCount} teams, ${Object.keys(log.leagueAverages).length} prop types`
     );
+  }
+  // Exit non-zero ONLY on a TOTAL wipeout (every league empty) — that's a real
+  // ESPN outage worth surfacing to the scheduler/heartbeat. A single league
+  // returning zero is almost always an offseason (e.g. NBA in June), which is
+  // expected, not a failure — so we don't paint the run red for it.
+  if (failures > 0 && successes === 0) {
+    console.error("[gamelogs] ALL leagues empty — likely ESPN outage. Exiting non-zero.");
+    process.exit(1);
   }
 }
 

@@ -48,6 +48,43 @@ describe("samePlayer", () => {
     expect(samePlayer("Brandon Sproat", "Bobby Sprout")).toBe(false);
     expect(samePlayer("Will Smith", "Wilson Contreras")).toBe(false);
   });
+
+  it("does NOT fuse two full names sharing a last name + first initial", () => {
+    // The money-adjacent collision: two genuinely different MLB players. The
+    // old last-name+initial rule fused them and would price a sharp prop onto
+    // the wrong player's soft line. The abbreviation requirement fixes it.
+    expect(samePlayer("Jose Ramirez", "Jeremy Ramirez")).toBe(false);
+    expect(samePlayer("Luis Garcia", "Leody Garcia")).toBe(false);
+    // Abbreviation ↔ full name still matches (the legit fuzzy case).
+    expect(samePlayer("J. Ramirez", "Jose Ramirez")).toBe(true);
+  });
+
+  it("does not price a sharp prop onto a different same-initial player", () => {
+    const sharpRamirez: SharpProp[] = [
+      {
+        player: "Jose Ramirez",
+        units: "TotalBases",
+        line: 1.5,
+        overAmerican: -110,
+        underAmerican: -110,
+        fairOverProb: 0.5,
+        cutoffAt: "2026-06-20T01:05:00+00:00",
+      },
+    ];
+    const wrongGuy: SoftPropQuote = {
+      player: "Jeremy Ramirez",
+      market: "batter_total_bases",
+      line: 1.5,
+      side: "Over",
+      american: 200,
+      book: "draftkings",
+      commence: "2026-06-20T00:05:00Z",
+      gameId: "evt-x",
+    };
+    // No fusion → no row. (Previously this produced a phantom +EV row on the
+    // wrong player.)
+    expect(buildPropsBoard(sharpRamirez, [wrongGuy])).toHaveLength(0);
+  });
 });
 
 describe("buildPropsBoard", () => {

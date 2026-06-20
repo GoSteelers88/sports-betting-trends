@@ -14,6 +14,7 @@
 // degrades to an empty board so the dashboard section hides cleanly.
 
 import { expectedValue } from "./devig";
+import { assessFreshness, MAX_AGE_HOURS } from "./data-freshness";
 import {
   MLB_STAT_SPECS,
   distributionFor,
@@ -90,7 +91,14 @@ function normalize(name: string): string {
     .trim();
 }
 
-/** Exact normalized match, or last name + first initial. */
+/**
+ * Exact normalized match, or an ABBREVIATED form vs the full name. Mirrors
+ * props-board.samePlayer: the initial-only fallback fires ONLY when at least one
+ * side's first token is a single letter, so two full first names sharing a last
+ * name + first initial ("Jose Ramirez" vs "Jeremy Ramirez") are NOT fused. Here
+ * the collision would gate the wrong pitcher onto a starter list or overlay a
+ * sharp line onto the wrong batter's rung.
+ */
 export function samePlayer(a: string, b: string): boolean {
   const na = normalize(a);
   const nb = normalize(b);
@@ -98,12 +106,10 @@ export function samePlayer(a: string, b: string): boolean {
   if (na === nb) return true;
   const ta = na.split(" ");
   const tb = nb.split(" ");
-  return (
-    ta.length > 1 &&
-    tb.length > 1 &&
-    ta[ta.length - 1] === tb[tb.length - 1] &&
-    ta[0][0] === tb[0][0]
-  );
+  if (ta.length < 2 || tb.length < 2) return false;
+  if (ta[ta.length - 1] !== tb[tb.length - 1]) return false;
+  if (ta[0][0] !== tb[0][0]) return false;
+  return ta[0].length === 1 || tb[0].length === 1;
 }
 
 /** A milestone line `k − 0.5` maps to the ladder rung "≥ k". Returns the
@@ -159,6 +165,14 @@ export interface StatGroup {
 export interface MlbPropPlaysBoard {
   generatedAt: string | null;
   windowAgeHours: number | null;
+  // Staleness signal — true when the game-log feed is OLDER than the freshness
+  // budget (default MAX_AGE_HOURS.GAMELOG), so the distributions would be fit on
+  // history that excludes the most recent games. When stale we deliberately
+  // EMPTY the board (groups: []) rather than render confident ladders off old
+  // data — the disease this codebase keeps catching is stale-but-parseable JSON
+  // masquerading as live. The flag + generatedAt let the dashboard show an
+  // honest "data stale" note instead of silently-wrong numbers.
+  stale: boolean;
   groups: StatGroup[];
   /** Distinct stats that are MODEL-backed (real or synthesized fit). */
   modeledStats: string[];
@@ -198,10 +212,17 @@ export function buildMlbPropPlays(input: {
    * starters" → no pitcher ladders at all (honest: we don't know who's pitching).
    */
   probableStarters?: string[];
+  /**
+   * Max age (hours) of the game-log feed before the board is treated as STALE
+   * and emptied. Defaults to MAX_AGE_HOURS.GAMELOG (48h ≈ one missed nightly
+   * ingest). Pass a large number to disable the gate (tests / back-compat).
+   */
+  maxGamelogAgeHours?: number;
 }): MlbPropPlaysBoard {
   const empty: MlbPropPlaysBoard = {
     generatedAt: null,
     windowAgeHours: null,
+    stale: false,
     groups: [],
     modeledStats: [],
     totalPlayers: 0,
@@ -210,6 +231,26 @@ export function buildMlbPropPlays(input: {
   if (!gamelog || !gamelog.players) return empty;
 
   const nowMs = input.nowMs ?? Date.now();
+
+  // Freshness gate FIRST: a game-log older than the budget would fit every
+  // distribution on history that excludes the most recent games (the projector
+  // board went 37 days stale once and rendered as live). When stale we keep the
+  // provenance (generatedAt + age + stale flag) but ship NO groups, so the
+  // dashboard can show a truthful "stale" note instead of confident-but-wrong
+  // ladders. `null` generatedAt is also "stale" — a feed with no provenance
+  // can't be trusted as today's.
+  const maxAge = input.maxGamelogAgeHours ?? MAX_AGE_HOURS.GAMELOG;
+  const freshness = assessFreshness(gamelog.generatedAt, maxAge, nowMs);
+  if (!freshness.isFresh) {
+    return {
+      generatedAt: gamelog.generatedAt ?? null,
+      windowAgeHours: freshness.ageHours,
+      stale: true,
+      groups: [],
+      modeledStats: [],
+      totalPlayers: 0,
+    };
+  }
   const perStatLimit = input.perStatLimit ?? 12;
   const leagueAverages = gamelog.leagueAverages ?? {};
 
@@ -372,6 +413,7 @@ export function buildMlbPropPlays(input: {
   return {
     generatedAt,
     windowAgeHours,
+    stale: false, // passed the freshness gate above
     groups,
     modeledStats: [...modeledStats],
     totalPlayers: playerSet.size,

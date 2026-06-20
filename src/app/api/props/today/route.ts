@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { NextResponse, type NextRequest } from "next/server";
+import { assessFreshness, MAX_AGE_HOURS } from "@/lib/data-freshness";
 
 export const dynamic = "force-dynamic";
 
@@ -32,10 +33,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
   const search = req.nextUrl.searchParams;
-  const league = search.get("league")?.toUpperCase();
-  const stat = search.get("stat");
-  const player = search.get("player")?.toLowerCase();
-  const oddsType = search.get("oddsType") ?? "standard";
+  // Bound free-text filters so a pathological query string can't drive an
+  // expensive scan or get reflected back at length. 64 chars covers any real
+  // league/stat/player name.
+  const clip = (s: string | null | undefined): string | undefined =>
+    s == null ? undefined : s.slice(0, 64);
+  const league = clip(search.get("league"))?.toUpperCase();
+  const stat = clip(search.get("stat"));
+  const player = clip(search.get("player"))?.toLowerCase();
+  const oddsType = clip(search.get("oddsType")) ?? "standard";
   const includePromo = search.get("includePromo") === "1";
 
   let props = Array.isArray(env.data) ? env.data : [];
@@ -45,9 +51,20 @@ export async function GET(req: NextRequest) {
   if (stat) props = props.filter((p) => p.stat.toLowerCase() === stat.toLowerCase());
   if (player) props = props.filter((p) => p.player.toLowerCase().includes(player));
 
+  // FRESHNESS: this endpoint reads a static snapshot. The underlying scraper has
+  // gone dead before (scrape-props.json frozen at 2026-05-06) and the route
+  // happily served month-old props as if they were today's. Surface the age and
+  // a `stale` flag so a consumer can refuse to render stale data instead of
+  // trusting the bytes. We do NOT hard-404 (some consumers want the last-known
+  // board) — but the staleness is now impossible to miss in the payload.
+  const freshness = assessFreshness(env.generatedAt, MAX_AGE_HOURS.PROPS_QUOTE);
+
   return NextResponse.json({
     generatedAt: env.generatedAt,
     status: env.status,
+    stale: !freshness.isFresh,
+    ageHours: freshness.ageHours,
+    freshnessStatus: freshness.status,
     count: props.length,
     filters: { league, stat, player, oddsType, includePromo },
     props,

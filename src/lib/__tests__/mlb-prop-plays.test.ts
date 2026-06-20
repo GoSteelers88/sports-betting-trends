@@ -65,6 +65,19 @@ describe("samePlayer", () => {
     expect(samePlayer("A. Judge", "Aaron Judge")).toBe(true);
     expect(samePlayer("Aaron Judge", "Mike Trout")).toBe(false);
   });
+
+  it("does NOT fuse two FULL names sharing only a last name + first initial", () => {
+    // The collision that matters in MLB: two real, different players. Fusing
+    // them would overlay a sharp line onto the wrong batter's rung or gate the
+    // wrong pitcher onto the starter list.
+    expect(samePlayer("Jose Ramirez", "Jeremy Ramirez")).toBe(false);
+    expect(samePlayer("Will Smith", "Wyatt Smith")).toBe(false);
+    // But an abbreviation still matches its full name.
+    expect(samePlayer("J. Ramirez", "Jose Ramirez")).toBe(true);
+    expect(samePlayer("Jose Ramirez", "J. Ramirez")).toBe(true);
+    // Different initial never matches regardless of abbreviation.
+    expect(samePlayer("A. Ramirez", "Jose Ramirez")).toBe(false);
+  });
 });
 
 describe("buildMlbPropPlays — degradation", () => {
@@ -77,6 +90,50 @@ describe("buildMlbPropPlays — degradation", () => {
     const file = fileWith([player("Aaron Judge", "New York Yankees", "batter_hits", [1, 2, 1, 0, 2, 1])]);
     const board = buildMlbPropPlays({ gamelog: file, isSlateTeam: () => false, sharp: [], soft: [] });
     expect(board.groups).toEqual([]);
+  });
+});
+
+describe("buildMlbPropPlays — staleness gate", () => {
+  const judge = player("Aaron Judge", "New York Yankees", "batter_hits", [1, 2, 1, 0, 2, 1, 3, 1]);
+
+  it("EMPTIES the board when the gamelog is older than the freshness budget", () => {
+    const file: MlbGameLogFile = { ...fileWith([judge]), generatedAt: "2026-05-13T00:00:00Z" };
+    const nowMs = Date.parse("2026-06-20T00:00:00Z"); // 38 days later
+    const board = buildMlbPropPlays({ gamelog: file, isSlateTeam: () => true, sharp: [], soft: [], nowMs });
+    expect(board.stale).toBe(true);
+    expect(board.groups).toEqual([]);
+    expect(board.totalPlayers).toBe(0);
+    // Provenance preserved so the dashboard can show an honest "stale" note.
+    expect(board.generatedAt).toBe("2026-05-13T00:00:00Z");
+    expect(board.windowAgeHours).toBeGreaterThan(800);
+  });
+
+  it("treats a gamelog with NO generatedAt as stale (no provenance)", () => {
+    const file = { ...fileWith([judge]), generatedAt: "" } as MlbGameLogFile;
+    const board = buildMlbPropPlays({ gamelog: file, isSlateTeam: () => true, sharp: [], soft: [] });
+    expect(board.stale).toBe(true);
+    expect(board.groups).toEqual([]);
+  });
+
+  it("renders normally when fresh (stale=false)", () => {
+    const board = buildMlbPropPlays({ gamelog: fileWith([judge]), isSlateTeam: () => true, sharp: [], soft: [] });
+    expect(board.stale).toBe(false);
+    expect(board.groups.length).toBeGreaterThan(0);
+  });
+
+  it("respects an overridden maxGamelogAgeHours (gate can be relaxed)", () => {
+    const file: MlbGameLogFile = { ...fileWith([judge]), generatedAt: "2026-06-18T00:00:00Z" };
+    const nowMs = Date.parse("2026-06-20T00:00:00Z"); // 48h old
+    // Default 48h budget => fresh (boundary). A 12h budget => stale.
+    expect(
+      buildMlbPropPlays({ gamelog: file, isSlateTeam: () => true, sharp: [], soft: [], nowMs }).stale,
+    ).toBe(false);
+    expect(
+      buildMlbPropPlays({
+        gamelog: file, isSlateTeam: () => true, sharp: [], soft: [], nowMs,
+        maxGamelogAgeHours: 12,
+      }).stale,
+    ).toBe(true);
   });
 });
 

@@ -45,6 +45,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { normalizeName, normalCdf, type PropGradingLeague } from "./prop-grading";
+import { assessFreshness, MAX_AGE_HOURS } from "./data-freshness";
 
 type PerGameStats = { date: string; opponent: string | null; stats: Record<string, number> };
 type PlayerEntry = { displayName: string; team: string | null; games: PerGameStats[] };
@@ -264,6 +265,18 @@ export type ProjectionOutput = {
 export function project(input: ProjectionInput): ProjectionOutput | null {
   const log = loadGameLog(input.league);
   if (!log) return null;
+
+  // STALENESS GATE: refuse to project off a game-log older than the freshness
+  // budget. This is the projector's half of the disease the codebase keeps
+  // catching — player-gamelogs-mlb.json went 37 days stale (ingest dead since
+  // 2026-05-13) yet still drove confident modelProbs. A projection built on a
+  // window that excludes the last month of games is a lie dressed as a model;
+  // returning null forces the caller to fall back to the market-implied prob
+  // (clearly labeled) instead of shipping a phantom number. A log with no
+  // parseable generatedAt is also rejected (no provenance ⇒ not trustworthy).
+  if (!assessFreshness(log.generatedAt, MAX_AGE_HOURS.GAMELOG).isFresh) {
+    return null;
+  }
 
   const key = normalizeName(input.player);
   const player = log.players[key];

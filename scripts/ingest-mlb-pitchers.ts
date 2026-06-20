@@ -13,6 +13,15 @@ const OUT = path.join(root, "data/processed/mlb-pitchers-today.json");
 const PITCHER_STATS_PATH = path.join(root, "data/processed/pitcher-stats-season.json");
 const TIMEOUT = 12000;
 
+/** Atomic JSON write (temp + rename): a reader (the dashboard's pitcher-starter
+ *  gate) must never catch a half-written file. rename() is atomic on the same
+ *  filesystem, so readers see either the old file or the complete new one. */
+function writeJsonAtomic(file: string, value: unknown): void {
+  const tmp = `${file}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(value, null, 2));
+  fs.renameSync(tmp, file);
+}
+
 type PitcherInfo = {
   name: string;
   hand: string;
@@ -162,8 +171,17 @@ async function run() {
   const mlbGames = data?.dates?.[0]?.games ?? [];
 
   if (!mlbGames.length) {
-    console.warn("[mlb-pitchers] No games from MLB Stats API — writing empty output");
-    fs.writeFileSync(OUT, JSON.stringify({ fetchedAt: new Date().toISOString(), games: [] }, null, 2));
+    // Distinguish "no slate today" (legit empty) from "API failed" (data === null).
+    // On a fetch failure we must NOT clobber a good file with an empty one — that
+    // would silently disable the dashboard's pitcher-starter gate (every probable
+    // starter vanishes → no pitcher ladders) with no error surfaced. Leave the
+    // last-known file in place and exit non-zero so the cron/heartbeat notices.
+    if (data === null) {
+      console.error("[mlb-pitchers] MLB Stats API fetch FAILED — leaving existing file untouched");
+      process.exit(1);
+    }
+    console.warn("[mlb-pitchers] No games on today's slate — writing empty output");
+    writeJsonAtomic(OUT, { fetchedAt: new Date().toISOString(), games: [] });
     return;
   }
 
@@ -221,7 +239,7 @@ async function run() {
   }
 
   const out = { fetchedAt: new Date().toISOString(), games };
-  fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+  writeJsonAtomic(OUT, out);
   console.log(`[mlb-pitchers] Wrote ${games.length} games to ${OUT}`);
   const found = games.filter((g) => g.homePitcher || g.awayPitcher).length;
   console.log(`[mlb-pitchers] Probable starters found: ${found}/${games.length} games`);
