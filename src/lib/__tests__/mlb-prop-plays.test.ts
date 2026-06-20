@@ -165,3 +165,57 @@ describe("buildMlbPropPlays — market overlay", () => {
     expect(rung5.playable).toBe(false);
   });
 });
+
+describe("buildMlbPropPlays — probable-starter gate", () => {
+  // Two pitchers whose teams are both on the slate and both have K game-logs,
+  // plus a hitter. Only Skubal is starting tonight. Without the gate, Warren's
+  // phantom K ladder surfaces off stale logs even though he isn't pitching.
+  const file = fileWith([
+    player("Will Warren", "New York Yankees", "pitcher_strikeouts", [5, 6, 4, 7, 5, 6, 5, 6]),
+    player("Tarik Skubal", "Detroit Tigers", "pitcher_strikeouts", [7, 8, 6, 9, 7, 8, 7, 9]),
+    player("Aaron Judge", "New York Yankees", "batter_hits", [1, 2, 1, 0, 2, 1, 3, 1]),
+  ]);
+
+  const pitcherNames = (board: ReturnType<typeof buildMlbPropPlays>): string[] =>
+    (board.groups.find(g => g.stat === "pitcher_strikeouts")?.ladders ?? []).map(l => l.player);
+
+  it("drops a pitcher who isn't a probable starter, keeps the one who is", () => {
+    const board = buildMlbPropPlays({
+      gamelog: file, isSlateTeam: () => true, sharp: [], soft: [],
+      probableStarters: ["Tarik Skubal"],
+    });
+    const names = pitcherNames(board);
+    expect(names).toContain("Tarik Skubal");
+    expect(names).not.toContain("Will Warren"); // the bug this fixes
+  });
+
+  it("matches starters fuzzily (last name + first initial)", () => {
+    const board = buildMlbPropPlays({
+      gamelog: file, isSlateTeam: () => true, sharp: [], soft: [],
+      probableStarters: ["W. Warren"],
+    });
+    expect(pitcherNames(board)).toContain("Will Warren");
+  });
+
+  it("does NOT gate batter stats — a hitter shows regardless of the starter list", () => {
+    const board = buildMlbPropPlays({
+      gamelog: file, isSlateTeam: () => true, sharp: [], soft: [],
+      probableStarters: ["Tarik Skubal"],
+    });
+    const hitters = board.groups.find(g => g.stat === "batter_hits")?.ladders.map(l => l.player) ?? [];
+    expect(hitters).toContain("Aaron Judge");
+  });
+
+  it("an empty starter list yields no pitcher ladders (no confirmed starters)", () => {
+    const board = buildMlbPropPlays({
+      gamelog: file, isSlateTeam: () => true, sharp: [], soft: [],
+      probableStarters: [],
+    });
+    expect(board.groups.find(g => g.stat === "pitcher_strikeouts")).toBeUndefined();
+  });
+
+  it("undefined starter list disables the gate (back-compat)", () => {
+    const board = buildMlbPropPlays({ gamelog: file, isSlateTeam: () => true, sharp: [], soft: [] });
+    expect(pitcherNames(board)).toContain("Will Warren");
+  });
+});
