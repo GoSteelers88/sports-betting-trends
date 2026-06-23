@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-22T18:18:13.858Z",
+  "generatedAt": "2026-06-22T23:54:39.447Z",
   "ready": true,
   "recordsIngested": 787,
   "recordsCompleted": 787,
@@ -136,7 +136,7 @@
           "games": 26,
           "rpg": 5.08,
           "oppRpg": 5.73,
-          "hitsPerGame": 9.38,
+          "hitsPerGame": 9.42,
           "errorsPerGame": 0.54,
           "sos": null
         },
@@ -759,30 +759,91 @@
       "matchup": "Texas Rangers at Miami Marlins",
       "pickTeam": "Miami Marlins",
       "opponent": "Texas Rangers",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Miami Marlins 0",
-      "score": 59,
-      "confidence": 54,
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Miami Marlins +1.5",
+      "score": 60,
+      "confidence": 56,
       "rationaleSignals": [
         "Momentum edge +0.60 (last-10 trend proxy)",
         "ATS edge +0.400",
         "History sample Miami Marlins: 25 games (mapped Marlins) vs Texas Rangers: 26 games",
         "Home court (+1 pt adjustment)",
         "Rest: Miami Marlins 2d rest vs Texas Rangers 2d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +3.3"
+        "Net Rating edge: +3.3",
+        "Home SP: Tyler Phillips",
+        "Away SP: Tyler Alexander",
+        "MLB model: 56.9% win prob (calibrated) | Edge vs market: +26.6%"
       ],
       "momentumEdge": 0.6,
       "atsEdge": 0.4,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.5692,
+      "mlbEdge": 0.2662,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-22T22:11:00.000Z",
+      "matchup": "New York Yankees at Detroit Tigers",
+      "pickTeam": "New York Yankees",
+      "opponent": "Detroit Tigers",
+      "spread": 3.5,
+      "modelSpread": 3.2,
+      "line": "New York Yankees +3.5",
+      "score": 59,
+      "confidence": 54,
+      "rationaleSignals": [
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample New York Yankees: 24 games (mapped Yankees) vs Detroit Tigers: 25 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: New York Yankees 2d rest vs Detroit Tigers 2d rest",
+        "Net Rating edge: +0.0",
+        "Home SP: Framber Valdez",
+        "Away SP: Gerrit Cole",
+        "MLB model: 57.2% win prob (calibrated) | Edge vs market: +48.1%"
+      ],
+      "momentumEdge": 0.2,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.5718,
+      "mlbEdge": 0.4809,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-22T22:41:00.000Z",
+      "matchup": "Kansas City Royals at Tampa Bay Rays",
+      "pickTeam": "Tampa Bay Rays",
+      "opponent": "Kansas City Royals",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Tampa Bay Rays +1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Tampa Bay Rays: 25 games (mapped Rays) vs Kansas City Royals: 26 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Tampa Bay Rays 2d rest vs Kansas City Royals 2d rest",
+        "Net Rating edge: -0.6",
+        "Home SP: Drew Rasmussen",
+        "Away SP: Michael Wacha",
+        "MLB model: 56.6% win prob (calibrated) | Edge vs market: +25.4%"
+      ],
+      "momentumEdge": 0,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.5661,
+      "mlbEdge": 0.2536,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-06-22",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-06-22 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 3 eligible games found on 2026-06-22 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -2059,6 +2120,14 @@
         "returnDate": "2026-07-01"
       },
       {
+        "player": "Harold Fannin Jr.",
+        "team": "Cleveland Browns",
+        "position": "TE",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-07-01"
+      },
+      {
         "player": "Jerry Jeudy",
         "team": "Cleveland Browns",
         "position": "WR",
@@ -2089,14 +2158,6 @@
         "status": "Questionable",
         "injuryType": "Lower Leg",
         "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Harold Fannin Jr.",
-        "team": "Cleveland Browns",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-01"
       },
       {
         "player": "Mike Hall Jr.",
@@ -2593,14 +2654,6 @@
         "status": "Questionable",
         "injuryType": "Undisclosed",
         "returnDate": "2026-07-01"
-      },
-      {
-        "player": "Damien Alford",
-        "team": "New Orleans Saints",
-        "position": "WR",
-        "status": "Injured Reserve",
-        "injuryType": "Undisclosed",
-        "returnDate": "2027-02-15"
       },
       {
         "player": "Devin Neal",
