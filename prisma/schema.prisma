@@ -361,3 +361,21 @@ model KalshiPaperLedgerSnapshot {
   wins           Int
   losses         Int
 }
+
+// GLOBAL daily spend governor for "The Sharp" public chatbot (/api/chat).
+// This is the source of truth for the day's model token budget — it MUST be
+// global (one row per UTC date, shared across every serverless instance and
+// the Discord/Actions runners), not per-process, because /api/chat is a public
+// endpoint spending real Anthropic tokens. Per-IP and per-session caps are
+// best-effort in-memory abuse mitigation; THIS row is the hard money ceiling.
+// Increments are single atomic UPDATE statements (no read-modify-write in app
+// code) so concurrent requests can't lose a write.
+model ChatSpendCounter {
+  // UTC date, YYYY-MM-DD. One row per day; the natural primary key.
+  utcDate    String   @id
+  // Approximate tokens (input + output) charged against the day's ceiling.
+  tokensUsed Int      @default(0)
+  // Number of model calls made today — a coarse secondary guard.
+  modelCalls Int      @default(0)
+  updatedAt  DateTime @updatedAt
+}

@@ -10,7 +10,7 @@ data (data/processed/*.json + Prisma)
       ├─ check_data_health()      → health.ts
       ├─ run_ingest(scripts)      → runners.ts  (allowlisted, 90-min cooldown)
       └─ delegate_to_analyst()    → HARD-STOP after this call (orchestrator.ts:245)
-  → analyst.ts       (Sonnet, 9 tools, ≤8 iterations)
+  → analyst.ts       (Sonnet, 11 tools, ≤8 iterations)
       → raw AnalystPick[]
   → grader.ts        (pure code, no LLM)
       → kept + dropped
@@ -59,6 +59,7 @@ These are load-bearing. Don't relax them without explicit user buy-in.
 | `get_prop_projection(...)` | deterministic in-memory | No external I/O. Use for sanity-checking prop edges. |
 | `get_dream_memory()` | Prisma `AgentMemory` (active=true) | Injected via `ToolDeps`. |
 | `get_team_recent_records()` | Prisma `AgentPick` + `AgentOutcome` (14d) | Injected via `ToolDeps`. |
+| `get_quant_desk_analysis(league)` | `data/processed/quant-desk-mlb-book.json` | MLB-only. Deterministic quant desk open plays + CLV record. Corroborating signal — advisory, not a required step. |
 
 All file-backed tools check staleness (`>6h` → returns a `stale` flag the analyst sees in-band). Don't silently drop stale data — let the analyst decide.
 

@@ -46,6 +46,16 @@ You will receive:
   correlation is worth validating out-of-sample next? Discovered correlations are
   HYPOTHESES — you may NOTE one as worth validating, but NEVER propose promoting
   one into the model in-sample. Treat clvSettledCount < 50 as preliminary.
+  NOTE: the quant desk is now ANALYST-VISIBLE — the live MLB analyst calls
+  get_quant_desk_analysis each run and treats open plays as a corroborating
+  signal. If the desk's open plays and the analyst's MLB picks consistently
+  AGREE and that subset out-performs the analyst's solo picks, surface a rule
+  to lean on desk corroboration; if they consistently DISAGREE and the desk
+  wins on CLV, surface that too. The NFL dry-run now ALSO covers player props
+  (QB pass yds/TDs, RB rush yds, WR/TE rec yds/TDs) on the same leak-free
+  1-week-a-day loop — reflect on the prop dry-run's edge distribution the same
+  way you reflect on the NFL game dry-run (it's a research signal, not a live
+  book; ROI is an optimistic upper bound, the edge distribution is the signal).
 - A "parlayPerformance" block: the live parlay paper book's realized record
   (Exp 4) — equity, realized P&L, yield, win rate, settled/open counts, avg
   parlay EV — plus the durable parlay learnings we already proved out

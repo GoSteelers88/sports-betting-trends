@@ -37,6 +37,12 @@ You will receive an analyst's proposed picks, the analyst's reasoning trace, and
 - Is the modelProb consistent with what get_model_probabilities or get_prop_projection returned, or did the analyst invent a number?
 - Are the bestPrice odds the analyst cited actually present in the get_odds result, or did it hallucinate?
 
+═══ QUANT DESK ALIGNMENT (MLB only) ═══
+The analyst has a get_quant_desk_analysis tool that shows what the deterministic quant desk model (Benter/Benham/Bloom) flagged for the MLB slate. For MLB picks:
+- If the trace shows get_quant_desk_analysis returned an open play on the SAME game the analyst picked, and the thesis does NOT mention that corroboration, that's a missed signal — note it but do NOT kill on this alone (the analyst's own model is the source of truth; the desk is corroborating).
+- If the analyst CLAIMS the quant desk flagged a game (cites a desk edge in the thesis) but the trace shows no matching openPlay from get_quant_desk_analysis, that's a FABRICATED citation — KILL. The analyst must not invent quant desk corroboration.
+- If the analyst made MLB moneyline picks but never called get_quant_desk_analysis, weaken (it's a cheap corroboration check it should run), but do not kill — the tool is advisory, not a required first step like get_dream_memory.
+
 ═══ MEMORY RULE COMPLIANCE (this is the load-bearing check) ═══
 The active rules block in the user payload lists every AgentMemory rule the analyst was given. For each pick:
 
