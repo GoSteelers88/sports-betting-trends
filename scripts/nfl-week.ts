@@ -1,5 +1,6 @@
 /**
- * nfl-week.ts — process ONE NFL week for the private Backtest Learning Loop.
+ * nfl-week.ts — process ONE NFL week for Experiment No. 5: the private NFL
+ * Backtest Learning Loop.
  *
  *   npm run nfl:week           # pick → grade → learn → advance the cursor
  *   npm run nfl:week report    # read-only cumulative stat record + calibration
@@ -15,26 +16,34 @@ import {
   defaultStateDir,
   loadGames,
   loadInjuries,
+  loadPlayerStats,
   loadCursor,
   saveCursor,
   nextCursor,
   buildBlindWeek,
   gamesForCursor,
   gradeGame,
+  gradePropPick,
   upsertGradedRows,
+  upsertGradedPropRows,
   loadGradedRows,
   loadLessonsCurrent,
   writeWeekLessons,
   computeStatRecord,
+  buildActualStatMap,
   type Cursor,
   type GradedRow,
+  type GradedPropRow,
+  type PropPick,
   type StatRecord,
   type SplitStat,
 } from "../src/lib/nfl-loop";
 import {
   makeClaudePickFn,
+  makeClaudePropsPickFn,
   makeClaudeReflectFn,
   type PickFn,
+  type PropPickFn,
   type ReflectFn,
 } from "../src/lib/nfl-agent";
 
@@ -113,7 +122,14 @@ function cursorLabel(c: Cursor): string {
   return `${c.season} ${c.phase} wk${c.week}`;
 }
 
-async function runWeek(pickFn: PickFn, reflectFn: ReflectFn): Promise<void> {
+// Whether the week actually processed a slate (true) or we're caught up to the
+// end of the loaded seasons (false). The seed loop reads this to know when to
+// stop; a single `nfl:week` invocation ignores it.
+async function runWeek(
+  pickFn: PickFn,
+  propPickFn: PropPickFn,
+  reflectFn: ReflectFn,
+): Promise<boolean> {
   const dir = defaultStateDir();
   const games = loadGames(dir);
   let cursor = loadCursor(dir);
@@ -129,7 +145,7 @@ async function runWeek(pickFn: PickFn, reflectFn: ReflectFn): Promise<void> {
         `${Y}caught up${R} — processed through the end of the loaded seasons. ` +
           `Awaiting a live season. ${D}(cursor ${cursorLabel(cursor)})${R}`,
       );
-      return;
+      return false;
     }
     if (snapped.season !== cursor.season || snapped.phase !== cursor.phase || snapped.week !== cursor.week) {
       console.log(`${D}snapping cursor ${cursorLabel(cursor)} → ${cursorLabel(snapped)}${R}`);
@@ -143,7 +159,7 @@ async function runWeek(pickFn: PickFn, reflectFn: ReflectFn): Promise<void> {
     console.log(
       `${Y}caught up${R} — no games for ${cursorLabel(cursor)}. Awaiting a live season.`,
     );
-    return;
+    return false;
   }
 
   console.log(
@@ -153,9 +169,11 @@ async function runWeek(pickFn: PickFn, reflectFn: ReflectFn): Promise<void> {
   // 1) BLIND pick. Injuries are a PRE-GAME source (reports publish before
   //    kickoff) — buildBlindWeek scopes them per game to the two playing teams.
   //    Absent cache → empty arrays (offline-safe).
+  //    Player stats are optional — absent cache → playerContexts [] (offline-safe).
   const lessons = loadLessonsCurrent(dir);
   const injuries = loadInjuries(dir);
-  const blind = buildBlindWeek(games, cursor, lessons, injuries);
+  const playerStats = loadPlayerStats(dir);
+  const blind = buildBlindWeek(games, cursor, lessons, injuries, playerStats);
   const totalInj = blind.games.reduce(
     (s, g) => s + g.injuries.away.length + g.injuries.home.length,
     0,
@@ -164,6 +182,11 @@ async function runWeek(pickFn: PickFn, reflectFn: ReflectFn): Promise<void> {
     `  injury reports attached: ${totalInj} across ${realSlate.length} games` +
       `${injuries.length === 0 ? ` ${D}(no injuries.csv — run npm run nfl:ingest-injuries)${R}` : ""}`,
   );
+  console.log(
+    `  player contexts: ${blind.playerContexts.length}` +
+      `${playerStats.length === 0 ? ` ${D}(no player_stats.csv — run npm run nfl:ingest-props-stats)${R}` : ""}`,
+  );
+
   const picks = await pickFn(blind);
   console.log(`  picks returned: ${picks.length}/${realSlate.length} games`);
 
@@ -176,7 +199,7 @@ async function runWeek(pickFn: PickFn, reflectFn: ReflectFn): Promise<void> {
     graded.push(...gradeGame(game, p));
   }
 
-  // 3) upsert the log (idempotent)
+  // 3) upsert the game picks log (idempotent)
   const { added, replaced } = upsertGradedRows(dir, graded);
   console.log(`  graded rows: ${G}${added} new${R}, ${replaced} replaced (rerun-safe)`);
 
@@ -187,12 +210,58 @@ async function runWeek(pickFn: PickFn, reflectFn: ReflectFn): Promise<void> {
   const wkPnl = graded.reduce((s, r) => s + r.pnlUnits, 0);
   console.log(`  week record ${B}${w}-${l}-${pu}${R}  P&L ${units(+wkPnl.toFixed(2))}`);
 
-  // 4) learn — reflect into the lessons memo (fed into next week's prompt)
-  const memo = await reflectFn(blind, graded);
+  // 4) Props — optional layer, silently skipped when playerContexts is empty
+  const propPicks: PropPick[] = await propPickFn(blind);
+  console.log(`  prop picks returned: ${propPicks.length}`);
+
+  const gradedProps: GradedPropRow[] = [];
+  if (propPicks.length > 0) {
+    // Build actual stat map for this exact cursor week (grading path only)
+    const actualStatMap = buildActualStatMap(playerStats, cursor);
+
+    // Associate each prop pick with the gameId for the player's team this week
+    for (const p of propPicks) {
+      // Find the game where this player's team is playing
+      const game = realSlate.find(
+        (g) => g.awayTeam === p.team || g.homeTeam === p.team,
+      );
+      if (!game) {
+        // Team string didn't match any slate game (abbreviation drift, mid-season
+        // trade, etc.). Don't mint a fake-but-plausible gameId that detaches the
+        // row from any real game forever — stamp empty so it's filterable, and
+        // name the player/team so a 3am debugger can see WHY.
+        console.warn(
+          `  ${Y}prop: ${p.player} (${p.team}) ${p.stat} — team not on this week's slate; gameId left empty${R}`,
+        );
+      }
+      const gameId = game?.gameId ?? "";
+      gradedProps.push(gradePropPick(p, gameId, cursor, actualStatMap));
+    }
+
+    const noDataCount = gradedProps.filter((r) => r.result === "no-data").length;
+    if (noDataCount > 0 && noDataCount / gradedProps.length > 0.3) {
+      console.warn(
+        `  ${Y}warning: ${noDataCount}/${gradedProps.length} prop picks have no-data (>${Math.round((noDataCount / gradedProps.length) * 100)}% no-data rate)${R}`,
+      );
+    }
+
+    const { added: pAdded, replaced: pReplaced } = upsertGradedPropRows(dir, gradedProps);
+    console.log(`  prop graded rows: ${G}${pAdded} new${R}, ${pReplaced} replaced`);
+
+    // prop week summary
+    const pw = gradedProps.filter((r) => r.result === "win").length;
+    const pl = gradedProps.filter((r) => r.result === "loss").length;
+    const pp = gradedProps.filter((r) => r.result === "push").length;
+    const pnd = gradedProps.filter((r) => r.result === "no-data").length;
+    console.log(`  prop record ${B}${pw}-${pl}-${pp}${R}${pnd ? ` ${D}(${pnd} no-data)${R}` : ""}`);
+  }
+
+  // 5) learn — reflect into the lessons memo (fed into next week's prompt)
+  const memo = await reflectFn(blind, graded, gradedProps);
   writeWeekLessons(dir, cursor, memo);
   console.log(`  lessons memo written + rolled into lessons-current.md`);
 
-  // 5) advance cursor — the COMMIT POINT
+  // 6) advance cursor — the COMMIT POINT
   const next = nextCursor(games, cursor);
   if (next) {
     saveCursor(dir, next);
@@ -203,6 +272,37 @@ async function runWeek(pickFn: PickFn, reflectFn: ReflectFn): Promise<void> {
 
   // cumulative snapshot
   printReport(computeStatRecord(loadGradedRows(dir)));
+  return true;
+}
+
+// Seed mode — process every remaining week of the loaded seasons back-to-back
+// until caught up. Crash-safe + idempotent: the cursor advance is the commit
+// point, so a re-run resumes exactly where it stopped. maxWeeks is a runaway
+// guard (3 seasons × ~22 weeks ≈ 66; 100 leaves headroom).
+async function runSeed(
+  pickFn: PickFn,
+  propPickFn: PropPickFn,
+  reflectFn: ReflectFn,
+  maxWeeks = 100,
+): Promise<void> {
+  for (let i = 0; i < maxWeeks; i++) {
+    console.log(`\n${B}━━━ seed week ${i + 1}/${maxWeeks} ━━━${R}`);
+    let advanced = false;
+    try {
+      advanced = await runWeek(pickFn, propPickFn, reflectFn);
+    } catch (err) {
+      // One bad week (API blip, parse error) must not abort the whole overnight
+      // seed. Log it and continue — the cursor only advances on a clean week,
+      // so the next iteration retries the SAME week.
+      console.error(`${RED}seed week ${i + 1} errored — retrying next iteration:${R}`, err);
+      continue;
+    }
+    if (!advanced) {
+      console.log(`\n${G}seed complete${R} — caught up to the end of the loaded seasons after ${i} processed week(s).`);
+      return;
+    }
+  }
+  console.log(`${Y}seed hit maxWeeks=${maxWeeks} guard — re-run to continue if not yet caught up.${R}`);
 }
 
 async function main() {
@@ -215,7 +315,12 @@ async function main() {
   }
 
   // Real Claude functions — constructed lazily so `report`/tests never need a key.
-  await runWeek(makeClaudePickFn(), makeClaudeReflectFn());
+  if (mode === "seed") {
+    await runSeed(makeClaudePickFn(), makeClaudePropsPickFn(), makeClaudeReflectFn());
+    return;
+  }
+
+  await runWeek(makeClaudePickFn(), makeClaudePropsPickFn(), makeClaudeReflectFn());
 }
 
 main().catch((err) => {

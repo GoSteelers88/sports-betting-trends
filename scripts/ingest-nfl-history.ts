@@ -1,6 +1,6 @@
 /**
- * ingest-nfl-history.ts — fetch + cache the nflverse games.csv spine for the
- * private NFL Backtest Learning Loop.
+ * ingest-nfl-history.ts — fetch + cache the nflverse games.csv spine for
+ * Experiment No. 5: the private NFL Backtest Learning Loop.
  *
  *   npm run nfl:ingest
  *

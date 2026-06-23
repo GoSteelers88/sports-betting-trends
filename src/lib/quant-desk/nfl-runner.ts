@@ -1,4 +1,4 @@
-// quant-desk/nfl-runner.ts — the QUIET NFL DRY-RUN (private).
+// quant-desk/nfl-runner.ts — Experiment No. 5 (NFL): the QUIET NFL DRY-RUN (private).
 //
 // Runs the SAME deterministic engine (scan → playable → ¼-Kelly + drawdown rail
 // → ledger + CLV) over the NFL loop's cached HISTORICAL weeks. Because nflverse

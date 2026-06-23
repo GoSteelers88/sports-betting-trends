@@ -1,4 +1,4 @@
-// quant-desk/adapters/nfl.ts — the NFL DRY-RUN fair-value bus (PRIVATE).
+// quant-desk/adapters/nfl.ts — Experiment No. 5 (NFL) DRY-RUN fair-value bus (PRIVATE).
 //
 // NFL has no tuned model in this repo, so the fair value here is a TRANSPARENT
 // Elo power rating built ONLY from games strictly before each week (leak-safe,

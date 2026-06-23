@@ -34,8 +34,16 @@
  *   npm run paper:parlay:backtest            # last 30 days, greedy assembly
  *   npm run paper:parlay:backtest -- 14      # last 14 days
  *   npm run paper:parlay:backtest -- 30 json # machine-readable summary
+ *   npm run paper:parlay:backtest -- 30 mine # selective "ticket I'd make" run;
+ *                                            #   ALSO writes data/processed/
+ *                                            #   parlay-retro.json for the
+ *                                            #   demoted dashboard panel (this
+ *                                            #   file is QUARANTINED from the
+ *                                            #   live pre-registered book).
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import {
   PARLAY_PAPER_CONFIG,
@@ -521,6 +529,67 @@ async function runSelective(rows: SnapRow[], days: number): Promise<void> {
   );
   console.log(
     "ticket must win MORE OFTEN than that to profit. Small n: this is descriptive, not a verdict.",
+  );
+  console.log("");
+
+  // ─── Persist the RETROSPECTIVE for the dashboard panel ─────────────────────
+  //
+  // QUARANTINE NOTE: this writes a SEPARATE file (parlay-retro.json), never the
+  // live pre-registered parlay book (parlay-paper.json). The dashboard renders
+  // it in a demoted, clearly-labeled panel BELOW the live book. It must never
+  // tune the live rule — it is a favorites-combinatorics approximation, not the
+  // +EV-vs-de-vigged-sharp rule, and the +EV/haircut open gate is NOT applied.
+  //
+  // Equity curve = $10,000 + cumulative daily net P&L at a FLAT $100/ticket.
+  // HONESTY: the flat-stake turnover (~$24k staked across ~240 tickets) exceeds
+  // the $10k book — this is flat-stake exposure tracking, NOT bankroll-Kelly
+  // compounding off a $10k balance. The curve shows what a flat $100 bettor's
+  // running net would have been; it is not a Kelly bankroll simulation.
+  const STARTING_BANKROLL = 10_000;
+  const startingDate = outcomes.length > 0 ? outcomes[0].day : "";
+  const equityCurve: Array<{ day: string; equityUsd: number }> = [];
+  // Seed with the day BEFORE the first graded day at flat $10k so the curve
+  // visibly starts at the baseline (length ≥ 2 even on sparse windows). The
+  // seed day is a real, parseable ISO date (one day before the first graded
+  // day) so the chart's date axis renders it without a fallback.
+  if (startingDate) {
+    const seed = new Date(`${startingDate}T00:00:00Z`);
+    seed.setUTCDate(seed.getUTCDate() - 1);
+    const seedDay = seed.toISOString().slice(0, 10);
+    equityCurve.push({ day: seedDay, equityUsd: STARTING_BANKROLL });
+  }
+  let runningEquity = STARTING_BANKROLL;
+  for (const o of outcomes) {
+    const dayPnl = +o.tickets.reduce((s, t) => s + t.pnl, 0).toFixed(2);
+    runningEquity = +(runningEquity + dayPnl).toFixed(2);
+    equityCurve.push({ day: o.day, equityUsd: runningEquity });
+  }
+  const endingEquity = +(STARTING_BANKROLL + netPnl).toFixed(2);
+
+  const retro = {
+    rule: "favorites-combinatorics-RETROSPECTIVE",
+    generatedAt: new Date().toISOString(),
+    startingBankrollUsd: STARTING_BANKROLL,
+    days,
+    parlaysPlaced: placed,
+    record: { wins, losses, pushes },
+    winRatePct: winRate,
+    avgBreakEvenPct: avgImpliedBreakEven,
+    totalStakedUsd: totalStaked,
+    netPnlUsd: netPnl,
+    roiPct: roi,
+    endingEquityUsd: endingEquity,
+    equityCurve,
+  };
+
+  const outDir = path.join(process.cwd(), "data", "processed");
+  fs.mkdirSync(outDir, { recursive: true });
+  const outPath = path.join(outDir, "parlay-retro.json");
+  fs.writeFileSync(outPath, JSON.stringify(retro, null, 2) + "\n", "utf8");
+  console.log(`Wrote retrospective → ${path.relative(process.cwd(), outPath)}`);
+  console.log(
+    `  $${STARTING_BANKROLL.toLocaleString()} start → $${endingEquity.toLocaleString()} end  ·  ` +
+      `${wins}-${losses}-${pushes}  ·  yield ${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi + "%"}`,
   );
   console.log("");
 }
