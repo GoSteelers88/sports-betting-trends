@@ -4,7 +4,7 @@
 // detection through CLV capture, grading, and memory feedback, on a raised
 // sheet of paper over an ink scrim.
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { SlatePick } from "../_data/dashboard";
 import { fmtAmerican } from "./format";
 
@@ -122,19 +122,28 @@ export function PickAutopsy({
   pick: SlatePick | null;
   onClose: () => void;
 }) {
+  // Route onClose through a ref so the scroll-lock effect depends ONLY on
+  // `pick` — not on the parent's inline onClose, which is a fresh function
+  // every render. Depending on onClose churned this effect on every parent
+  // re-render, and a mistimed cleanup could strand `document.body.style.overflow
+  // = "hidden"` → the whole page becomes unscrollable while the (closed) modal
+  // is gone. Cleanup now unconditionally CLEARS the lock (the site default is
+  // scrollable; body carries no base inline overflow), so it can never leak.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!pick) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     };
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      document.body.style.overflow = "";
     };
-  }, [pick, onClose]);
+  }, [pick]);
 
   if (!pick) return null;
   const stages = buildLifecycle(pick);
