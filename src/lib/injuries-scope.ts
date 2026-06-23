@@ -191,6 +191,122 @@ export function slateTeamsFromEvents(events: SlateEvent[]): string[] {
 export function isTeamOnSlate(team: string, slateTeams: string[]): boolean {
   return slateTeams.some((s) => matchTeam(team, s));
 }
+// ─── MLB franchise allowlist + slate filter ──────────────────────────────────
+//
+// The baseball_mlb odds endpoint (FanDuel/Bovada) returns MORE than MLB: NPB
+// (Japan), KBO (Korea), CPBL (Taiwan), and NCAA college baseball all come back
+// under the same sportKey. Downstream code that treats every team in the feed
+// as "tonight's slate" must be scoped to the 30 real MLB franchises explicitly,
+// not by the lucky accident that foreign/college players aren't in the gamelog.
+//
+// We reuse the same canonical/matchTeam logic the injury wire uses, so there is
+// exactly ONE team-matcher in this file. "Athletics" carries no city (current
+// A's branding) and is already covered by CANONICAL_ALIASES, so it matches on
+// the place-less branch of matchTeam without false-matching a city'd team.
+export const MLB_TEAMS: string[] = [
+  "Arizona Diamondbacks",
+  "Athletics",
+  "Atlanta Braves",
+  "Baltimore Orioles",
+  "Boston Red Sox",
+  "Chicago Cubs",
+  "Chicago White Sox",
+  "Cincinnati Reds",
+  "Cleveland Guardians",
+  "Colorado Rockies",
+  "Detroit Tigers",
+  "Houston Astros",
+  "Kansas City Royals",
+  "Los Angeles Angels",
+  "Los Angeles Dodgers",
+  "Miami Marlins",
+  "Milwaukee Brewers",
+  "Minnesota Twins",
+  "New York Mets",
+  "New York Yankees",
+  "Philadelphia Phillies",
+  "Pittsburgh Pirates",
+  "San Diego Padres",
+  "San Francisco Giants",
+  "Seattle Mariners",
+  "St. Louis Cardinals",
+  "Tampa Bay Rays",
+  "Texas Rangers",
+  "Toronto Blue Jays",
+  "Washington Nationals",
+];
+
+// True iff `name` matches one of the 30 current MLB franchises. Case- and
+// punctuation-insensitive via the shared matchTeam (no second matcher).
+export function isMlbTeam(name: string): boolean {
+  const n = (name ?? "").trim();
+  if (!n) return false;
+  return MLB_TEAMS.some((mlb) => matchTeam(n, mlb));
+}
+
+// The UTC calendar date ("YYYY-MM-DD") of an ISO timestamp, or null if absent
+// or unparseable. Used by mlbSlateEvents' optional onDateUtc gate.
+function utcDateOf(commenceTime?: string): string | null {
+  if (!commenceTime) return null;
+  const t = Date.parse(commenceTime);
+  if (Number.isNaN(t)) return null;
+  return new Date(t).toISOString().slice(0, 10);
+}
+
+// The US-EASTERN calendar date ("YYYY-MM-DD") of an ISO timestamp. This is the
+// correct "game day" for MLB scheduling: a 04:00Z game is the prior US evening's
+// late game (e.g. a West-coast night game), so UTC-date would mis-bucket it.
+// Uses Intl with America/New_York so DST is handled by the runtime, not by us.
+export function easternDateOf(commenceTime?: string): string | null {
+  if (!commenceTime) return null;
+  const t = Date.parse(commenceTime);
+  if (Number.isNaN(t)) return null;
+  // en-CA gives YYYY-MM-DD directly.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(t));
+}
+
+// "Today" as a US-Eastern date string. The slate day MLB bettors mean.
+export function easternToday(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}
+
+// Keep ONLY real MLB games from a baseball feed: both home AND away must be MLB
+// franchises (an MLB-vs-NCAA exhibition is dropped — both sides must be MLB).
+// This strips NPB/KBO/CPBL/NCAA contamination from the baseball_mlb endpoint.
+//
+// Date scoping (so a sparse, multi-day pre-match feed can't surface a team that
+// plays TOMORROW as if it plays tonight):
+//  - opts.onDateEt ("YYYY-MM-DD"): keep only events whose US-EASTERN game-date
+//    equals it. This is the CORRECT scope for an MLB slate (game day is US-local).
+//  - opts.onDateUtc ("YYYY-MM-DD"): legacy UTC-date gate (kept for callers that
+//    already pass it). Prefer onDateEt.
+//  - neither: no date filter (MLB-team filter only).
+export function mlbSlateEvents<
+  T extends { home_team?: string; away_team?: string; commence_time?: string }
+>(events: T[], opts: { onDateUtc?: string; onDateEt?: string } = {}): T[] {
+  if (!Array.isArray(events)) return [];
+  const { onDateUtc, onDateEt } = opts;
+  return events.filter((ev) => {
+    if (!ev) return false;
+    if (!isMlbTeam(ev.home_team ?? "") || !isMlbTeam(ev.away_team ?? "")) {
+      return false;
+    }
+    if (onDateEt) return easternDateOf(ev.commence_time) === onDateEt;
+    if (onDateUtc) return utcDateOf(ev.commence_time) === onDateUtc;
+    return true;
+  });
+}
+
 
 // ─── Status severity ─────────────────────────────────────────────────────────
 
