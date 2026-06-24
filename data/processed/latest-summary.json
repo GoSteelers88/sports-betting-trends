@@ -1,71 +1,103 @@
 {
-  "generatedAt": "2026-06-24T16:32:41.290Z",
+  "generatedAt": "2026-06-24T23:48:15.257Z",
   "ready": true,
-  "recordsIngested": 783,
-  "recordsCompleted": 783,
+  "recordsIngested": 791,
+  "recordsCompleted": 791,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 756,
+      "games": 764,
       "conferences": [
+        "NL East",
+        "AL West",
+        "NL Central",
         "NL West",
         "AL East",
-        "AL West",
-        "NL East",
         "Unknown",
-        "AL Central",
-        "NL Central"
+        "AL Central"
       ],
-      "avgPoints": 4.743386243386244,
+      "avgPoints": 4.7539267015706805,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 4.6,
+      "recentAvgPoints": 5.3,
       "recentAvgYards": null,
-      "trendScore": 37,
-      "trendSignal": "down",
+      "trendScore": 44,
+      "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 756,
-        "rpg": 4.74,
-        "oppRpg": 4.74,
+        "games": 764,
+        "rpg": 4.75,
+        "oppRpg": 4.75,
         "hitsPerGame": 8.55,
         "errorsPerGame": 0.52,
         "sos": 0.52
       },
       "teamAdvanced": {
-        "Rockies": {
+        "Marlins": {
+          "games": 26,
+          "rpg": 4.23,
+          "oppRpg": 3.92,
+          "hitsPerGame": 8.12,
+          "errorsPerGame": 0.58,
+          "sos": null
+        },
+        "Rangers": {
+          "games": 27,
+          "rpg": 4.37,
+          "oppRpg": 4.78,
+          "hitsPerGame": 8.89,
+          "errorsPerGame": 0.44,
+          "sos": null
+        },
+        "Mets": {
           "games": 25,
-          "rpg": 5.56,
-          "oppRpg": 6.64,
-          "hitsPerGame": 9.48,
-          "errorsPerGame": 0.72,
+          "rpg": 4.48,
+          "oppRpg": 5.08,
+          "hitsPerGame": 8,
+          "errorsPerGame": 0.68,
+          "sos": null
+        },
+        "Cubs": {
+          "games": 25,
+          "rpg": 5.24,
+          "oppRpg": 4.76,
+          "hitsPerGame": 9.08,
+          "errorsPerGame": 0.16,
+          "sos": 0.52
+        },
+        "Rockies": {
+          "games": 26,
+          "rpg": 5.65,
+          "oppRpg": 6.62,
+          "hitsPerGame": 9.65,
+          "errorsPerGame": 0.69,
           "sos": 0.52
         },
         "Red Sox": {
-          "games": 25,
-          "rpg": 4.28,
-          "oppRpg": 3.84,
-          "hitsPerGame": 8.4,
-          "errorsPerGame": 0.36,
+          "games": 26,
+          "rpg": 4.35,
+          "oppRpg": 4,
+          "hitsPerGame": 8.5,
+          "errorsPerGame": 0.42,
           "sos": null
         },
         "Angels": {
-          "games": 27,
-          "rpg": 5.56,
-          "oppRpg": 4.63,
-          "hitsPerGame": 9.33,
-          "errorsPerGame": 0.7,
+          "games": 28,
+          "rpg": 5.61,
+          "oppRpg": 4.68,
+          "hitsPerGame": 9.29,
+          "errorsPerGame": 0.68,
           "sos": 0.52
         },
         "Orioles": {
-          "games": 27,
-          "rpg": 5.15,
-          "oppRpg": 4,
-          "hitsPerGame": 8.56,
-          "errorsPerGame": 0.56,
+          "games": 28,
+          "rpg": 5.18,
+          "oppRpg": 4.11,
+          "hitsPerGame": 8.57,
+          "errorsPerGame": 0.64,
           "sos": null
         },
         "Padres": {
@@ -164,22 +196,6 @@
           "errorsPerGame": 0.6,
           "sos": 0.52
         },
-        "Marlins": {
-          "games": 25,
-          "rpg": 4.24,
-          "oppRpg": 4,
-          "hitsPerGame": 8.2,
-          "errorsPerGame": 0.6,
-          "sos": null
-        },
-        "Rangers": {
-          "games": 26,
-          "rpg": 4.46,
-          "oppRpg": 4.81,
-          "hitsPerGame": 9,
-          "errorsPerGame": 0.46,
-          "sos": null
-        },
         "Nationals": {
           "games": 25,
           "rpg": 5.24,
@@ -195,22 +211,6 @@
           "hitsPerGame": 8.32,
           "errorsPerGame": 0.44,
           "sos": null
-        },
-        "Mets": {
-          "games": 24,
-          "rpg": 4.54,
-          "oppRpg": 4.88,
-          "hitsPerGame": 8.04,
-          "errorsPerGame": 0.71,
-          "sos": null
-        },
-        "Cubs": {
-          "games": 24,
-          "rpg": 5.04,
-          "oppRpg": 4.83,
-          "hitsPerGame": 9.08,
-          "errorsPerGame": 0.17,
-          "sos": 0.52
         },
         "Reds": {
           "games": 25,
@@ -530,18 +530,18 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "NL West",
+      "conference": "NL East",
       "gameDate": "2026-06-24T00:00:00.000Z",
-      "team": "Rockies",
-      "opponent": "Red Sox",
-      "points": 2,
-      "opponentPoints": 5,
+      "team": "Marlins",
+      "opponent": "Rangers",
+      "points": 4,
+      "opponentPoints": 2,
       "rebounds": null,
       "assists": null,
       "yards": null,
       "spread": 1.5,
-      "atsResult": "L",
-      "won": false,
+      "atsResult": "W",
+      "won": true,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -568,10 +568,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 8,
+      "hits": 6,
       "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401815878",
+      "sourceEventId": "401815889",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -741,127 +741,66 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-06-24T17:11:00.000Z",
-      "matchup": "Chicago Cubs at New York Mets",
-      "pickTeam": "Chicago Cubs",
-      "opponent": "New York Mets",
-      "spread": -0.8,
-      "modelSpread": -0.7,
-      "line": "Chicago Cubs -0.8",
-      "score": 66,
-      "confidence": 62,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Chicago Cubs: 24 games (mapped Cubs) vs New York Mets: 24 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Chicago Cubs 2d rest vs New York Mets 2d rest",
-        "4 books: avg -0.7, variance 1.69 (high disagreement)",
-        "Net Rating edge: +4.2",
-        "Home SP: Kodai Senga",
-        "Away SP: Edward Cabrera",
-        "MLB model: 66.9% win prob (calibrated) | Edge vs market: +15.8%"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.2,
-      "mlbModelProb": 0.6686,
-      "mlbEdge": 0.1579,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-06-25T00:41:00.000Z",
-      "matchup": "Atlanta Braves at San Diego Padres",
-      "pickTeam": "San Diego Padres",
-      "opponent": "Atlanta Braves",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "San Diego Padres +1.5",
-      "score": 60,
-      "confidence": 56,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.500",
-        "History sample San Diego Padres: 25 games (mapped Padres) vs Atlanta Braves: 24 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: San Diego Padres B2B vs Atlanta Braves B2B",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +3.0",
-        "Home SP: Wandy Peralta",
-        "Away SP: JR Ritchie",
-        "MLB model: 56.5% win prob (calibrated) | Edge vs market: +7.2%"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.5,
-      "mlbModelProb": 0.5649,
-      "mlbEdge": 0.0722,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-06-24T16:11:00.000Z",
-      "matchup": "Texas Rangers at Miami Marlins",
-      "pickTeam": "Miami Marlins",
-      "opponent": "Texas Rangers",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Miami Marlins -1.5",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample Miami Marlins: 25 games (mapped Marlins) vs Texas Rangers: 26 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Miami Marlins 2d rest vs Texas Rangers 2d rest",
-        "Net Rating edge: +2.1",
-        "Home SP: Sandy Alcantara",
-        "Away SP: Cal Quantrill",
-        "MLB model: 60.3% win prob (calibrated)"
-      ],
-      "momentumEdge": 0.4,
-      "atsEdge": 0.3,
-      "mlbModelProb": 0.6029,
-      "mlbEdge": 0.0415,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
       "gameDate": "2026-06-24T22:41:00.000Z",
       "matchup": "Kansas City Royals at Tampa Bay Rays",
       "pickTeam": "Kansas City Royals",
       "opponent": "Tampa Bay Rays",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "Kansas City Royals +1.5",
-      "score": 57,
-      "confidence": 52,
+      "spread": 4.5,
+      "modelSpread": 4.1,
+      "line": "Kansas City Royals +4.5",
+      "score": 58,
+      "confidence": 53,
       "rationaleSignals": [
         "Momentum edge +0.60 (last-10 trend proxy)",
         "ATS edge +0.100",
         "History sample Kansas City Royals: 26 games (mapped Royals) vs Tampa Bay Rays: 25 games",
         "Away (+-1 pt adjustment)",
         "Rest: Kansas City Royals 2d rest vs Tampa Bay Rays 2d rest",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
         "Net Rating edge: +2.7",
-        "Home SP: Shane McClanahan",
-        "Away SP: Luinder Avila",
-        "MLB model: 55.3% win prob (calibrated) | Edge vs market: +11.2%"
+        "Home SP: Griffin Jax",
+        "Away SP: Noah Cameron",
+        "MLB model: 54.0% win prob (calibrated) | Edge vs market: +47.3%"
       ],
       "momentumEdge": 0.6,
       "atsEdge": 0.1,
-      "mlbModelProb": 0.5526,
-      "mlbEdge": 0.112,
+      "mlbModelProb": 0.5399,
+      "mlbEdge": 0.4732,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-24T23:08:00.000Z",
+      "matchup": "Houston Astros at Toronto Blue Jays",
+      "pickTeam": "Toronto Blue Jays",
+      "opponent": "Houston Astros",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Toronto Blue Jays -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample Toronto Blue Jays: 25 games (mapped Blue Jays) vs Houston Astros: 26 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Toronto Blue Jays 2d rest vs Houston Astros 2d rest",
+        "Net Rating edge: -0.2",
+        "Home SP: Trey Yesavage",
+        "Away SP: Mike Burrows",
+        "MLB model: 59.9% win prob (calibrated)"
+      ],
+      "momentumEdge": 0,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.5991,
+      "mlbEdge": -0.0412,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-06-24",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 4 eligible games found on 2026-06-24 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 2 eligible games found on 2026-06-24 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -896,6 +835,14 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Day'Ron Sharpe",
+        "team": "Brooklyn Nets",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Thumb",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Danny Wolf",
         "team": "Brooklyn Nets",
         "position": "F",
@@ -904,11 +851,11 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Ziaire Williams",
+        "player": "Noah Clowney",
         "team": "Brooklyn Nets",
         "position": "F",
         "status": "Day-To-Day",
-        "injuryType": "Foot",
+        "injuryType": "Ankle",
         "returnDate": "2026-10-01"
       },
       {
@@ -920,11 +867,19 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Day'Ron Sharpe",
+        "player": "Egor Demin",
         "team": "Brooklyn Nets",
-        "position": "C",
+        "position": "G",
         "status": "Day-To-Day",
-        "injuryType": "Thumb",
+        "injuryType": "Foot",
+        "returnDate": "2026-07-02"
+      },
+      {
+        "player": "Ziaire Williams",
+        "team": "Brooklyn Nets",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Foot",
         "returnDate": "2026-10-01"
       },
       {
@@ -952,22 +907,6 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Egor Demin",
-        "team": "Brooklyn Nets",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Foot",
-        "returnDate": "2026-07-02"
-      },
-      {
-        "player": "Noah Clowney",
-        "team": "Brooklyn Nets",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Brandon Miller",
         "team": "Charlotte Hornets",
         "position": "F",
@@ -979,6 +918,38 @@
         "player": "PJ Hall",
         "team": "Charlotte Hornets",
         "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Jalen Smith",
+        "team": "Chicago Bulls",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Calf",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Noa Essengue",
+        "team": "Chicago Bulls",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Shoulder",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Matas Buzelis",
+        "team": "Chicago Bulls",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Josh Giddey",
+        "team": "Chicago Bulls",
+        "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
         "returnDate": "2026-10-01"
@@ -997,14 +968,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Shoulder",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Jalen Smith",
-        "team": "Chicago Bulls",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Calf",
         "returnDate": "2026-10-01"
       },
       {
@@ -1032,22 +995,6 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Josh Giddey",
-        "team": "Chicago Bulls",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Noa Essengue",
-        "team": "Chicago Bulls",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Shoulder",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Rob Dillingham",
         "team": "Chicago Bulls",
         "position": "G",
@@ -1061,14 +1008,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Toe",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Matas Buzelis",
-        "team": "Chicago Bulls",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
         "returnDate": "2026-10-01"
       },
       {
@@ -1312,11 +1251,11 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Kentavious Caldwell-Pope",
+        "player": "Taylor Hendricks",
         "team": "Memphis Grizzlies",
-        "position": "G",
+        "position": "F",
         "status": "Day-To-Day",
-        "injuryType": "Finger",
+        "injuryType": "Thumb",
         "returnDate": "2026-10-01"
       },
       {
@@ -1325,6 +1264,38 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Toe",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Cedric Coward",
+        "team": "Memphis Grizzlies",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Santi Aldama",
+        "team": "Memphis Grizzlies",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Zach Edey",
+        "team": "Memphis Grizzlies",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Kentavious Caldwell-Pope",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Finger",
         "returnDate": "2026-10-01"
       },
       {
@@ -1368,30 +1339,6 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Taylor Hendricks",
-        "team": "Memphis Grizzlies",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Thumb",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Zach Edey",
-        "team": "Memphis Grizzlies",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Cedric Coward",
-        "team": "Memphis Grizzlies",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Back",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Walter Clayton Jr.",
         "team": "Memphis Grizzlies",
         "position": "G",
@@ -1405,14 +1352,6 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Santi Aldama",
-        "team": "Memphis Grizzlies",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
         "returnDate": "2026-10-01"
       },
       {
@@ -1744,6 +1683,14 @@
         "returnDate": "2026-07-02"
       },
       {
+        "player": "Jaren Jackson Jr.",
+        "team": "Utah Jazz",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Lauri Markkanen",
         "team": "Utah Jazz",
         "position": "F",
@@ -1781,14 +1728,6 @@
         "position": "C",
         "status": "Day-To-Day",
         "injuryType": "Shoulder",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Jaren Jackson Jr.",
-        "team": "Utah Jazz",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
         "returnDate": "2026-10-01"
       },
       {
@@ -2418,14 +2357,6 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Azeez Al-Shaair",
-        "team": "Houston Texans",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Thumb",
-        "returnDate": "2026-07-01"
-      },
-      {
         "player": "Spencer Shrader",
         "team": "Indianapolis Colts",
         "position": "PK",
@@ -2682,14 +2613,6 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Chris Olave",
-        "team": "New Orleans Saints",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Illness",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Jordyn Tyson",
         "team": "New Orleans Saints",
         "position": "WR",
@@ -2882,6 +2805,14 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Brandon Aiyuk",
+        "team": "San Francisco 49ers",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Knee - ACL + MCL",
+        "returnDate": "2026-07-01"
+      },
+      {
         "player": "George Kittle",
         "team": "San Francisco 49ers",
         "position": "TE",
@@ -2896,14 +2827,6 @@
         "status": "Questionable",
         "injuryType": "Undisclosed",
         "returnDate": "2026-07-15"
-      },
-      {
-        "player": "Brandon Aiyuk",
-        "team": "San Francisco 49ers",
-        "position": "WR",
-        "status": "Out",
-        "injuryType": "Knee - ACL + MCL",
-        "returnDate": "2026-07-01"
       },
       {
         "player": "Darrick Forrest",
