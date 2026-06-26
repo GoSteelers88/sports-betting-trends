@@ -1,41 +1,89 @@
 {
-  "generatedAt": "2026-06-25T16:36:24.116Z",
+  "generatedAt": "2026-06-25T23:58:08.577Z",
   "ready": true,
-  "recordsIngested": 784,
-  "recordsCompleted": 784,
+  "recordsIngested": 790,
+  "recordsCompleted": 790,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 758,
+      "games": 764,
       "conferences": [
-        "NL West",
-        "NL East",
-        "Unknown",
-        "AL West",
-        "NL Central",
+        "AL East",
         "AL Central",
-        "AL East"
+        "NL Central",
+        "AL West",
+        "NL West",
+        "Unknown",
+        "NL East"
       ],
-      "avgPoints": 4.704485488126649,
+      "avgPoints": 4.714659685863874,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 3.6,
+      "recentAvgPoints": 4.6,
       "recentAvgYards": null,
-      "trendScore": 57,
-      "trendSignal": "flat",
+      "trendScore": 75,
+      "trendSignal": "up",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 758,
-        "rpg": 4.7,
-        "oppRpg": 4.7,
+        "games": 764,
+        "rpg": 4.71,
+        "oppRpg": 4.71,
         "hitsPerGame": 8.49,
-        "errorsPerGame": 0.54,
+        "errorsPerGame": 0.53,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Rays": {
+          "games": 26,
+          "rpg": 4.12,
+          "oppRpg": 4.88,
+          "hitsPerGame": 8.35,
+          "errorsPerGame": 0.35,
+          "sos": null
+        },
+        "Royals": {
+          "games": 27,
+          "rpg": 5.15,
+          "oppRpg": 5.48,
+          "hitsPerGame": 9.22,
+          "errorsPerGame": 0.56,
+          "sos": null
+        },
+        "Pirates": {
+          "games": 26,
+          "rpg": 5.35,
+          "oppRpg": 5.62,
+          "hitsPerGame": 9.15,
+          "errorsPerGame": 0.77,
+          "sos": 0.52
+        },
+        "Mariners": {
+          "games": 26,
+          "rpg": 3.85,
+          "oppRpg": 4.31,
+          "hitsPerGame": 7.88,
+          "errorsPerGame": 0.62,
+          "sos": 0.52
+        },
+        "Giants": {
+          "games": 25,
+          "rpg": 5.04,
+          "oppRpg": 5.08,
+          "hitsPerGame": 9.64,
+          "errorsPerGame": 0.84,
+          "sos": 0.52
+        },
+        "Athletics": {
+          "games": 26,
+          "rpg": 5.38,
+          "oppRpg": 6.81,
+          "hitsPerGame": 8.77,
+          "errorsPerGame": 0.42,
+          "sos": null
+        },
         "Padres": {
           "games": 25,
           "rpg": 3.8,
@@ -50,22 +98,6 @@
           "oppRpg": 4.46,
           "hitsPerGame": 7.63,
           "errorsPerGame": 0.54,
-          "sos": null
-        },
-        "Giants": {
-          "games": 24,
-          "rpg": 5,
-          "oppRpg": 4.92,
-          "hitsPerGame": 9.83,
-          "errorsPerGame": 0.88,
-          "sos": 0.52
-        },
-        "Athletics": {
-          "games": 25,
-          "rpg": 5.24,
-          "oppRpg": 6.84,
-          "hitsPerGame": 8.52,
-          "errorsPerGame": 0.44,
           "sos": null
         },
         "Marlins": {
@@ -148,22 +180,6 @@
           "errorsPerGame": 0.67,
           "sos": null
         },
-        "Rays": {
-          "games": 25,
-          "rpg": 3.76,
-          "oppRpg": 5,
-          "hitsPerGame": 8.08,
-          "errorsPerGame": 0.36,
-          "sos": null
-        },
-        "Royals": {
-          "games": 26,
-          "rpg": 5.27,
-          "oppRpg": 5.19,
-          "hitsPerGame": 9.54,
-          "errorsPerGame": 0.58,
-          "sos": null
-        },
         "Tigers": {
           "games": 25,
           "rpg": 4.44,
@@ -178,22 +194,6 @@
           "oppRpg": 4,
           "hitsPerGame": 8.54,
           "errorsPerGame": 0.54,
-          "sos": 0.52
-        },
-        "Pirates": {
-          "games": 25,
-          "rpg": 5.36,
-          "oppRpg": 5.8,
-          "hitsPerGame": 9.2,
-          "errorsPerGame": 0.76,
-          "sos": 0.52
-        },
-        "Mariners": {
-          "games": 25,
-          "rpg": 3.96,
-          "oppRpg": 4.28,
-          "hitsPerGame": 7.96,
-          "errorsPerGame": 0.64,
           "sos": 0.52
         },
         "Nationals": {
@@ -530,16 +530,16 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "NL West",
+      "conference": "AL East",
       "gameDate": "2026-06-25T00:00:00.000Z",
-      "team": "Padres",
-      "opponent": "Braves",
-      "points": 5,
+      "team": "Rays",
+      "opponent": "Royals",
+      "points": 13,
       "opponentPoints": 2,
       "rebounds": null,
       "assists": null,
       "yards": null,
-      "spread": 1.5,
+      "spread": -1.5,
       "atsResult": "W",
       "won": true,
       "teamRank": null,
@@ -568,10 +568,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 7,
-      "errors": 1,
+      "hits": 15,
+      "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401815895",
+      "sourceEventId": "401815899",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -741,38 +741,66 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-06-25T16:36:00.000Z",
-      "matchup": "Seattle Mariners at Pittsburgh Pirates",
-      "pickTeam": "Pittsburgh Pirates",
-      "opponent": "Seattle Mariners",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "Pittsburgh Pirates +1.5",
-      "score": 57,
-      "confidence": 52,
+      "gameDate": "2026-06-25T23:08:00.000Z",
+      "matchup": "Texas Rangers at Toronto Blue Jays",
+      "pickTeam": "Toronto Blue Jays",
+      "opponent": "Texas Rangers",
+      "spread": 5.5,
+      "modelSpread": 5.1,
+      "line": "Toronto Blue Jays +5.5",
+      "score": 61,
+      "confidence": 57,
       "rationaleSignals": [
         "Momentum edge +0.20 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample Pittsburgh Pirates: 25 games (mapped Pirates) vs Seattle Mariners: 25 games",
+        "ATS edge +0.200",
+        "History sample Toronto Blue Jays: 25 games (mapped Blue Jays) vs Texas Rangers: 26 games",
         "Home court (+1 pt adjustment)",
-        "Rest: Pittsburgh Pirates 2d rest vs Seattle Mariners 2d rest",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +3.4",
-        "Home SP: Braxton Ashcraft",
-        "Away SP: Bryan Woo",
-        "MLB model: 54.0% win prob (calibrated) | Edge vs market: +10.7%"
+        "Rest: Toronto Blue Jays 2d rest vs Texas Rangers 2d rest",
+        "Net Rating edge: +0.6",
+        "Home SP: Kevin Gausman",
+        "Away SP: MacKenzie Gore",
+        "MLB model: 60.6% win prob (calibrated) | Edge vs market: +52.2%"
       ],
       "momentumEdge": 0.2,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.6055,
+      "mlbEdge": 0.5222,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-06-25T23:11:00.000Z",
+      "matchup": "Chicago Cubs at New York Mets",
+      "pickTeam": "Chicago Cubs",
+      "opponent": "New York Mets",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Chicago Cubs +1.5",
+      "score": 59,
+      "confidence": 54,
+      "rationaleSignals": [
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample Chicago Cubs: 25 games (mapped Cubs) vs New York Mets: 25 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Chicago Cubs 2d rest vs New York Mets 2d rest",
+        "Net Rating edge: +5.6",
+        "Home SP: Freddy Peralta",
+        "Away SP: Matthew Boyd",
+        "MLB model: 54.6% win prob (calibrated) | Edge vs market: +6.0%"
+      ],
+      "momentumEdge": 0.8,
       "atsEdge": 0.3,
-      "mlbModelProb": 0.5402,
-      "mlbEdge": 0.1073,
+      "mlbModelProb": 0.5458,
+      "mlbEdge": 0.0604,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-06-25",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-06-25 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 2 eligible games found on 2026-06-25 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1431,6 +1459,14 @@
         "returnDate": "2027-04-01"
       },
       {
+        "player": "Karlo Matkovic",
+        "team": "New Orleans Pelicans",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Zion Williamson",
         "team": "New Orleans Pelicans",
         "position": "F",
@@ -1468,14 +1504,6 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Toe",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Karlo Matkovic",
-        "team": "New Orleans Pelicans",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Back",
         "returnDate": "2026-10-01"
       },
       {
@@ -1551,6 +1579,46 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Malik Monk",
+        "team": "Sacramento Kings",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Personal",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "De'Andre Hunter",
+        "team": "Sacramento Kings",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Eye",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "DeMar DeRozan",
+        "team": "Sacramento Kings",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Domantas Sabonis",
+        "team": "Sacramento Kings",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Zach LaVine",
+        "team": "Sacramento Kings",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Finger",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Russell Westbrook",
         "team": "Sacramento Kings",
         "position": "G",
@@ -1567,14 +1635,6 @@
         "returnDate": "2026-07-02"
       },
       {
-        "player": "Domantas Sabonis",
-        "team": "Sacramento Kings",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Keegan Murray",
         "team": "Sacramento Kings",
         "position": "F",
@@ -1583,43 +1643,11 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Malik Monk",
-        "team": "Sacramento Kings",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Personal",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Zach LaVine",
-        "team": "Sacramento Kings",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Finger",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "De'Andre Hunter",
-        "team": "Sacramento Kings",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Eye",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Drew Eubanks",
         "team": "Sacramento Kings",
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Thumb",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "DeMar DeRozan",
-        "team": "Sacramento Kings",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Hamstring",
         "returnDate": "2026-10-01"
       },
       {
@@ -1639,6 +1667,14 @@
         "returnDate": "2026-07-02"
       },
       {
+        "player": "Chucky Hepburn",
+        "team": "Toronto Raptors",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-07-02"
+      },
+      {
         "player": "Immanuel Quickley",
         "team": "Toronto Raptors",
         "position": "G",
@@ -1653,14 +1689,6 @@
         "status": "Day-To-Day",
         "injuryType": "Heel",
         "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Chucky Hepburn",
-        "team": "Toronto Raptors",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
-        "returnDate": "2026-07-02"
       },
       {
         "player": "Jaren Jackson Jr.",
@@ -2188,9 +2216,9 @@
         "player": "Michael Woods II",
         "team": "Denver Broncos",
         "position": "WR",
-        "status": "Injured Reserve",
+        "status": "Questionable",
         "injuryType": "Leg",
-        "returnDate": "2027-02-15"
+        "returnDate": "2026-08-01"
       },
       {
         "player": "Bo Nix",
@@ -2214,7 +2242,7 @@
         "position": "CB",
         "status": "Questionable",
         "injuryType": "Shoulder",
-        "returnDate": "2026-07-01"
+        "returnDate": "2026-08-01"
       },
       {
         "player": "Kendrick Law",
@@ -2793,6 +2821,14 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Mac Jones",
+        "team": "San Francisco 49ers",
+        "position": "QB",
+        "status": "Questionable",
+        "injuryType": "Shoulder",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Brandon Aiyuk",
         "team": "San Francisco 49ers",
         "position": "WR",
@@ -2807,14 +2843,6 @@
         "status": "Questionable",
         "injuryType": "Achilles",
         "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Mac Jones",
-        "team": "San Francisco 49ers",
-        "position": "QB",
-        "status": "Questionable",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-15"
       },
       {
         "player": "Darrick Forrest",
