@@ -305,6 +305,7 @@ export function openFromOpportunities(
       edge: opp.edge,
       stakeUsd: stake,
       estimate: opp.fair.estimate,
+      basis: opp.fair.basis,
       closeAt: nowIso,
       closeDevigMarketProb: +opp.line.devigMarketProb.toFixed(4),
       closeFairAmerican: Number.isFinite(closeFairAmerican) ? closeFairAmerican : NaN,

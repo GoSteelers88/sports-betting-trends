@@ -19,6 +19,12 @@ export const MODELS = {
   // Private NFL Backtest Learning Loop (offline offseason study, not on any
   // live path). Sonnet balances slate-sized reasoning against per-week cost.
   nflLoop: "claude-sonnet-4-6",
+  // The Sharp — public chatbot Lane A (persona-only) + the router's cheap
+  // ambiguity classifier. Haiku because ~90% of chat traffic is general
+  // persona Q&A with no tools and no DB reads; the cheapest tier fits.
+  // Lane B (live grounded analysis) deliberately reuses `analyst` (Sonnet),
+  // not this — never Opus.
+  chatPersona: "claude-haiku-4-5",
 } as const;
 
 export type ModelKey = keyof typeof MODELS;

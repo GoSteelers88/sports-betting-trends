@@ -10,6 +10,8 @@ import {
   scopeInjuriesToSlate,
   injuriesForTeams,
   statusTier,
+  matchTeam,
+  isMlbTeam,
   type ScopeInjury,
 } from "@/lib/injuries-scope";
 
@@ -364,6 +366,123 @@ export function getModelProbabilities(league: AgentLeague): {
   return { generatedAt: null, games: [] };
 }
 
+// ─── Tool: get_board_edges ──────────────────────────────────────────────────
+// Joins tonight's odds with the in-house model and returns, PER GAME, the
+// model-vs-market edge for the better side — sorted best-first. This exists so a
+// SLATE-LEVEL question ("what's tonight's best play?") can be answered with
+// GROUNDED data: the edge here is a real field (modelProb − best-price
+// impliedProb), not a number the chatbot computed in its head. The grounding
+// guard can verify edge/modelProb/impliedProb directly. Edge uses BEST price
+// (the desk's "always best line" rule), so it's the true bettable edge.
+
+export type BoardEdge = {
+  eventId: string;
+  matchup: string; // "Away @ Home"
+  commenceTime: string;
+  pick: string; // team name of the +edge side
+  side: "home" | "away";
+  modelProb: number; // 0–1 model win prob for the picked side
+  impliedProb: number; // 0–1 best-price implied prob for the picked side
+  edge: number; // modelProb − impliedProb (0–1 fraction)
+  bestBook: string | null;
+  bestPriceAmerican: number | null;
+};
+
+export function getBoardEdges(league: AgentLeague): {
+  generatedAt: string | null;
+  edges: BoardEdge[];
+  note: string;
+  dataWarning?: string;
+} {
+  const odds = getOdds(league);
+  const model = getModelProbabilities(league);
+
+  // MLB's odds feed carries NPB/KBO/CPBL/NCAA pollution — drop anything that
+  // isn't a real MLB matchup before joining (mirrors the dashboard's slate
+  // scope). Harmless for NBA (every team passes the no-op).
+  const cleanEvents =
+    league === "MLB"
+      ? odds.events.filter((e) => isMlbTeam(e.homeTeam) && isMlbTeam(e.awayTeam))
+      : odds.events;
+
+  // Edges above this are almost certainly a DATA ARTIFACT (a single stale/garbage
+  // book line that best-price picked up), not a real edge — an MLB/NBA moneyline
+  // edge in the real world tops out well under this. We compute edge vs the
+  // CONSENSUS (median across books), not best price, so one bad book can't mint a
+  // fake edge; we still report best price as where to actually bet. Anything over
+  // the ceiling is flagged suspicious and kept OUT of the playable set.
+  const ARTIFACT_CEILING = 0.2;
+
+  const edges: BoardEdge[] = [];
+  let suspicious = 0;
+  for (const m of model.games) {
+    const ev = cleanEvents.find(
+      (e) => matchTeam(e.homeTeam, m.homeTeam) && matchTeam(e.awayTeam, m.awayTeam)
+    );
+    if (!ev) continue;
+    // Edge is computed vs CONSENSUS (robust). Fall back to best price only if no
+    // consensus exists (thin market).
+    const homeImplied = ev.consensus.home?.impliedProb ?? ev.bestPrice.home?.impliedProb ?? null;
+    const awayImplied = ev.consensus.away?.impliedProb ?? ev.bestPrice.away?.impliedProb ?? null;
+    if (homeImplied == null || awayImplied == null) continue;
+    if (typeof m.homeWinProb !== "number" || typeof m.awayWinProb !== "number") continue;
+
+    const homeEdge = m.homeWinProb - homeImplied;
+    const awayEdge = m.awayWinProb - awayImplied;
+    const side: "home" | "away" = homeEdge >= awayEdge ? "home" : "away";
+    const modelProb = side === "home" ? m.homeWinProb : m.awayWinProb;
+    const impliedProb = side === "home" ? homeImplied : awayImplied;
+    const edge = modelProb - impliedProb;
+    // Where to actually bet — best price for the side (for display only).
+    const best = side === "home" ? ev.bestPrice.home : ev.bestPrice.away;
+
+    if (edge > ARTIFACT_CEILING) {
+      // Implausible — drop it from the survey rather than recommend a stale line.
+      suspicious++;
+      continue;
+    }
+
+    edges.push({
+      eventId: ev.eventId,
+      matchup: `${ev.awayTeam} @ ${ev.homeTeam}`,
+      commenceTime: ev.commenceTime,
+      pick: side === "home" ? ev.homeTeam : ev.awayTeam,
+      side,
+      modelProb: +modelProb.toFixed(4),
+      impliedProb: +impliedProb.toFixed(4),
+      edge: +edge.toFixed(4),
+      bestBook: best?.book ?? null,
+      bestPriceAmerican: best?.american ?? null,
+    });
+  }
+
+  edges.sort((a, b) => b.edge - a.edge);
+  const playable = edges.filter((e) => e.edge >= 0.06);
+  const suspiciousNote =
+    suspicious > 0
+      ? ` (${suspicious} game(s) had implausible >20% edges — stale/outlier lines — dropped.)`
+      : "";
+
+  let note: string;
+  if (edges.length === 0) {
+    note =
+      "No games could be joined between the odds feed and the model — data may be stale or non-overlapping. No read; don't force a play." +
+      suspiciousNote;
+  } else if (playable.length > 0) {
+    note = `${playable.length} game(s) clear the 6% edge floor (best first). edge = modelProb − consensus impliedProb; these are grounded fields, cite them directly. Bet at the best price/book shown.${suspiciousNote}`;
+  } else {
+    note = `No game clears the 6% edge floor tonight. Highest is ${(edges[0].edge * 100).toFixed(1)}% on ${edges[0].pick} — still a pass. The honest answer is "nothing on the board clears my number." Don't manufacture a play.${suspiciousNote}`;
+  }
+
+  const warn = odds.dataWarning || model.dataWarning;
+  return {
+    generatedAt: model.generatedAt,
+    edges,
+    note,
+    ...(warn ? { dataWarning: warn } : {}),
+  };
+}
+
 // ─── Tool: get_injuries ────────────────────────────────────────────────────
 
 type InjuryFile = { fetchedAt?: string; players?: Injury[] };
@@ -647,6 +766,126 @@ export function getHomeRunLikesForAgent(league: AgentLeague): {
   };
 }
 
+// ─── Tool: get_quant_desk_analysis (MLB only) ──────────────────────────────
+// Shows the analyst what the deterministic quant desk (Benter/Benham/Bloom)
+// has already flagged for today's MLB slate. The desk runs a separate,
+// code-only scan: model fair value → 3% edge floor → sharp-direction gate →
+// ¼-Kelly sizing. An open play here corroborates an analyst pick on the same
+// game. An empty result is a mild bearish signal for the slate.
+
+type QuantDeskBetStub = {
+  gameId?: string;
+  matchup?: string;
+  market?: string;
+  selection?: string;
+  commenceTime?: string;
+  priceAmerican?: number;
+  modelFairProb?: number;
+  devigMarketProb?: number;
+  edge?: number;
+  status?: "open" | "won" | "lost" | "void";
+  clvCents?: number | null;
+  beatClose?: boolean | null;
+};
+
+type QuantDeskBookFile = {
+  updatedAt?: string;
+  bets?: QuantDeskBetStub[];
+};
+
+export function getQuantDeskAnalysis(league: AgentLeague): {
+  available: boolean;
+  openCount: number;
+  openPlays: Array<{
+    gameId: string;
+    matchup: string;
+    selection: string;
+    market: string;
+    priceAmerican: number;
+    edge: number;
+    modelFairProb: number;
+    devigMarketProb: number;
+    commenceTime: string;
+  }>;
+  recentStats: {
+    settledCount: number;
+    wins: number;
+    losses: number;
+    clvBeatRatePct: number | null;
+    avgClvCents: number | null;
+  } | null;
+  note: string;
+  dataWarning?: string;
+} {
+  if (league !== "MLB") {
+    return {
+      available: false,
+      openCount: 0,
+      openPlays: [],
+      recentStats: null,
+      note: "Quant desk is MLB-only — no quant desk analysis available for this league.",
+    };
+  }
+
+  const file = "quant-desk-mlb-book.json";
+  const loaded = loadJsonWithStatus<QuantDeskBookFile>(file, {});
+  const warn = dataWarning(file, loaded.status, loaded.ageMs);
+
+  const bets = loaded.data.bets ?? [];
+  const openPlays = bets
+    .filter(b => b.status === "open")
+    .sort((a, b) => (b.edge ?? 0) - (a.edge ?? 0))
+    .map(b => ({
+      gameId: b.gameId ?? "",
+      matchup: b.matchup ?? "",
+      selection: b.selection ?? "",
+      market: b.market ?? "",
+      priceAmerican: b.priceAmerican ?? 0,
+      edge: b.edge ?? 0,
+      modelFairProb: b.modelFairProb ?? 0,
+      devigMarketProb: b.devigMarketProb ?? 0,
+      commenceTime: b.commenceTime ?? "",
+    }));
+
+  const settled = bets.filter(b => b.status === "won" || b.status === "lost");
+  const wins = settled.filter(b => b.status === "won").length;
+  const withClv = settled.filter(b => b.clvCents != null && b.beatClose != null);
+  const beatClvCount = withClv.filter(b => b.beatClose === true).length;
+  const avgClvCents =
+    withClv.length > 0
+      ? withClv.reduce((s, b) => s + (b.clvCents ?? 0), 0) / withClv.length
+      : null;
+
+  const recentStats =
+    settled.length > 0
+      ? {
+          settledCount: settled.length,
+          wins,
+          losses: settled.length - wins,
+          clvBeatRatePct:
+            withClv.length > 0 ? (beatClvCount / withClv.length) * 100 : null,
+          avgClvCents,
+        }
+      : null;
+
+  const topEdgePct = openPlays.length > 0
+    ? ((openPlays[0]?.edge ?? 0) * 100).toFixed(1)
+    : "0.0";
+  const note =
+    openPlays.length === 0
+      ? "No quant desk open plays for today's MLB slate. The deterministic model found no games clearing the 3% edge + sharp-direction floor. This is a mild bearish signal — don't force a pick, but your tools may still surface edge the model missed."
+      : `Quant desk has ${openPlays.length} open MLB play(s), highest edge first. These games cleared 3% model mispricing vs the de-vigged Pinnacle line AND sharp-direction agreement. A corroborating analyst pick on the same game is stronger evidence — cite the desk's top edge (${topEdgePct}%) in your thesis.`;
+
+  return {
+    available: true,
+    openCount: openPlays.length,
+    openPlays,
+    recentStats,
+    note,
+    ...(warn ? { dataWarning: warn } : {}),
+  };
+}
+
 // ─── Tool dispatch table ───────────────────────────────────────────────────
 
 export type ToolName =
@@ -659,7 +898,9 @@ export type ToolName =
   | "get_prop_projection"
   | "get_home_run_likes"
   | "get_dream_memory"
-  | "get_team_recent_records";
+  | "get_team_recent_records"
+  | "get_quant_desk_analysis"
+  | "get_board_edges";
 
 // Per-run dependencies the analyst passes in via buildToolHandlers(). Lets us
 // inject DB-backed snapshots (active memory rules, latest dream notes, per-team
@@ -725,6 +966,10 @@ export function buildToolHandlers(
           ? "No team has ≥2 graded picks in the last 14d."
           : "Teams listed here have ≥2 graded picks recently. Use this to avoid re-picking teams that are cold. If you must re-pick, explain in the thesis what's specifically different.",
     }),
+    get_quant_desk_analysis: input =>
+      getQuantDeskAnalysis((input as { league: AgentLeague }).league),
+    get_board_edges: input =>
+      getBoardEdges((input as { league: AgentLeague }).league),
   };
 }
 
@@ -857,6 +1102,26 @@ export const TOOL_DEFINITIONS = [
       type: "object" as const,
       properties: {},
       required: [],
+    },
+  },
+  {
+    name: "get_quant_desk_analysis",
+    description:
+      "MLB-only. Returns what the deterministic quant desk model (Benter/Benham/Bloom doctrine) has already flagged for today's slate. The desk is a separate, code-only engine: model fair value → 3% edge floor + sharp-direction agreement (de-vigged Pinnacle) → ¼-Kelly sizing. Returns: openPlays (current open bets, each with matchup, selection, edge, modelFairProb, devigMarketProb, priceAmerican), recentStats (settled record + CLV beat rate + avg CLV), and a note. A quant desk open play on a game you were already leaning toward is STRONG corroborating evidence — cite the desk's edge in your thesis. Zero open plays is a mild bearish signal but NOT a hard block. You CANNOT substitute quant desk edge for your own modelProb — you still MUST call get_model_probabilities and get_injuries for any game you pick. For non-MLB leagues, returns available=false.",
+    input_schema: {
+      type: "object" as const,
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      required: ["league"],
+    },
+  },
+  {
+    name: "get_board_edges",
+    description:
+      "THE BEST-PLAY SURVEY. Joins tonight's odds with the in-house model and returns, per game, the model-vs-market edge for the better side — sorted best-first. Use this to answer 'what's tonight's best play?' / 'what do you like?' across the whole slate in ONE call. Each entry: matchup, pick (the +edge side), modelProb, impliedProb (best price), edge (= modelProb − best-price impliedProb, a 0–1 fraction), bestBook, bestPriceAmerican, commenceTime. edge/modelProb/impliedProb are real grounded fields — cite them directly (an edge of 0.062 = 6.2%). Plus a note saying how many clear the 6% floor (or that nothing does, with the highest). This is the survey tool: call it for a slate-level question, then optionally get_injuries on the top candidate. Don't invent edges — read them here.",
+    input_schema: {
+      type: "object" as const,
+      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      required: ["league"],
     },
   },
 ];

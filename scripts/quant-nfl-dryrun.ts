@@ -1,5 +1,5 @@
 /**
- * quant-nfl-dryrun.ts — the QUIET NFL DRY-RUN (private report only).
+ * quant-nfl-dryrun.ts — Experiment No. 5 (NFL) QUIET DRY-RUN (private report only).
  *
  *   npm run quant:nfl:dryrun           # run the dry-run over cached weeks + report
  *   npm run quant:nfl:dryrun report    # read-only report of the persisted book

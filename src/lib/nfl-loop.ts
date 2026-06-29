@@ -1,4 +1,4 @@
-// nfl-loop.ts — core of the private NFL Backtest Learning Loop.
+// nfl-loop.ts — core of Experiment No. 5: the private NFL Backtest Learning Loop.
 //
 // Pure + tested: parse the nflverse games.csv spine, build the BLIND model input
 // (pre-game fields only — see the no-leakage guarantee in NFL_LOOP_SPEC.md),
@@ -26,6 +26,12 @@ export function gamesCsvPath(dir: string): string {
 }
 export function injuriesCsvPath(dir: string): string {
   return path.join(dir, "injuries.csv");
+}
+export function playerStatsCsvPath(dir: string): string {
+  return path.join(dir, "player_stats.csv");
+}
+export function propPicksLogPath(dir: string): string {
+  return path.join(dir, "prop-picks-log.jsonl");
 }
 export function cursorPath(dir: string): string {
   return path.join(dir, "cursor.json");
@@ -626,21 +632,31 @@ export type BlindWeek = {
   week: number;
   lessons: string; // the rolling lessons memo injected into the prompt
   games: BlindGame[];
+  // Player prop contexts (pre-game season averages, prior weeks only). Empty
+  // array when player_stats.csv is absent or cursor is at week 1 (cold-start).
+  playerContexts: BlindPlayerContext[];
 };
 
 /** Build the blind input for the cursor's week. `lessons` is the rolling memo;
  *  `injuries` is the (optional) pre-game injury report set — when omitted, every
  *  game's injury arrays are empty (the offline / no-cache path still works).
+ *  `playerStats` is the (optional) parsed player_stats.csv — when omitted or
+ *  empty, `playerContexts` is [] (graceful degradation).
  *
  *  This function is the ONLY place that decides which fields the model sees — it
  *  copies an explicit allowlist and never touches the post-game fields. Injuries
  *  are scoped per game to ONLY that game's away_team and home_team for this exact
- *  (season, phase, week); never the whole league. */
+ *  (season, phase, week); never the whole league.
+ *
+ *  Player contexts are derived ONLY from prior weeks (strict < cursor.week) so the
+ *  no-leakage guarantee extends to props. Only BlindPlayerContext (season averages)
+ *  is attached — never a raw PlayerStatRow. */
 export function buildBlindWeek(
   games: GameRow[],
   cursor: Cursor,
   lessons: string,
   injuries: InjuryRow[] = [],
+  playerStats: PlayerStatRow[] = [],
 ): BlindWeek {
   const slate = gamesForCursor(games, cursor);
   const standings = standingsBefore(games, cursor.season, cursor.phase, cursor.week);
@@ -691,6 +707,7 @@ export function buildBlindWeek(
     week: cursor.week,
     lessons,
     games: blindGames,
+    playerContexts: buildPlayerContexts(playerStats, cursor, injIndex),
   };
 }
 
@@ -1239,4 +1256,417 @@ function computeCalibration(rows: GradedRow[]): CalibrationBucket[] {
         realized: b.decisive > 0 ? +(b.wins / b.decisive).toFixed(3) : null,
       };
     });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Player stats (nflverse player_stats_<season>.csv) — the prop layer source
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Tokens that must NEVER appear in a serialized blind input for the prop layer.
+ *  Covers both the TypeScript field names used in grading and the nflverse CSV
+ *  column names so a future refactor can't accidentally let a column header slip
+ *  through. The no-leakage test asserts against this list. */
+export const PROP_FORBIDDEN_LEAK_TOKENS = [
+  "passing_yards",
+  "rushing_yards",
+  "receiving_yards",
+  "receiving_tds",
+  "rushing_tds",
+  "passing_tds",
+  "actualPassYds",
+  "actualRushYds",
+  "actualRecYds",
+  "actualTDs",
+] as const;
+
+export type PlayerStatRow = {
+  playerId: string;         // player_id column
+  playerName: string;       // player_display_name column
+  position: string;         // position column (QB/RB/WR/TE)
+  team: string;             // recent_team column
+  season: number;
+  week: number;
+  gameType: GameType;       // season_type column: "REG"→REG, "POST"→POST
+  passYds: number | null;
+  passTDs: number | null;
+  rushYds: number | null;
+  rushTDs: number | null;
+  receptions: number | null;
+  targets: number | null;
+  recYds: number | null;
+  recTDs: number | null;
+};
+
+export type PropStat = "passYds" | "passTDs" | "rushYds" | "recYds" | "recTDs";
+
+/** What the model sees per player — pre-game context derived from prior weeks.
+ *  NEVER contains a raw PlayerStatRow or any actual week result. */
+export type BlindPlayerContext = {
+  player: string;
+  position: string;
+  team: string;
+  gamesPlayed: number;      // prior games in cursor season with at least one stat > 0
+  injuryStatus: ReportStatus | null;
+  seasonAvg: {
+    passYds: number | null;
+    passTDs: number | null;
+    rushYds: number | null;
+    rushTDs: number | null;
+    recYds: number | null;
+    recTDs: number | null;
+    receptions: number | null;
+    targets: number | null;
+  };
+};
+
+export type PropPick = {
+  player: string;
+  team: string;
+  position: string;
+  stat: PropStat;
+  threshold: number;    // echo the standard threshold
+  side: "over" | "under";
+  confidence: number;   // 0-1
+  rationale: string;    // ≤200 chars
+};
+
+export type GradedPropRow = {
+  key: string;          // `${gameId}|${player}|${stat}` — NEVER overlaps picks-log.jsonl keys
+  season: number;
+  phase: GameType;
+  week: number;
+  gameId: string;
+  player: string;
+  team: string;
+  position: string;
+  stat: PropStat;
+  threshold: number;
+  side: "over" | "under";
+  confidence: number;
+  actualValue: number | null;
+  result: PickResult | "no-data";
+  rationale: string; // the model's ≤200-char reasoning, echoed from the PropPick
+  gradedAt: string;
+};
+
+const PROP_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);
+
+/** Parse a (possibly multi-season concatenated) nflverse player_stats CSV.
+ *  Multi-header detection mirrors parseInjuries: each season's header row
+ *  re-establishes the column map so concatenated files parse cleanly.
+ *  Only keeps QB/RB/WR/TE rows (other positions are irrelevant for props).
+ *  Column names: player_display_name, recent_team, season_type (not game_type). */
+export function parsePlayerStats(csvText: string): PlayerStatRow[] {
+  const matrix = parseCsv(csvText);
+  if (matrix.length === 0) return [];
+
+  let idx: Map<string, number> | null = null;
+  const out: PlayerStatRow[] = [];
+
+  for (const row of matrix) {
+    if (!row || row.length === 0 || (row.length === 1 && row[0] === "")) continue;
+    // Detect a header row by the presence of the required columns.
+    if (row[0]?.trim() === "player_id" || row.some((c) => c.trim() === "player_display_name")) {
+      idx = new Map();
+      row.forEach((h, i) => idx!.set(h.trim(), i));
+      continue;
+    }
+    if (!idx) continue; // data before any header — ignore
+
+    const col = (name: string): string | undefined => {
+      const i = idx!.get(name);
+      return i == null ? undefined : row[i];
+    };
+
+    const position = str(col("position"));
+    if (!PROP_POSITIONS.has(position)) continue;
+
+    // nflverse player_stats uses `season_type` (not `game_type`)
+    const gameType = normalizeGameType(str(col("season_type")));
+    if (gameType == null) continue;
+
+    const season = num(col("season"));
+    const week = num(col("week"));
+    const playerId = str(col("player_id"));
+    const playerName = str(col("player_display_name"));
+    const team = str(col("recent_team"));
+    if (season == null || week == null || !playerName) continue;
+
+    out.push({
+      playerId,
+      playerName,
+      position,
+      team,
+      season,
+      week,
+      gameType,
+      passYds: num(col("passing_yards")),
+      passTDs: num(col("passing_tds")),
+      rushYds: num(col("rushing_yards")),
+      rushTDs: num(col("rushing_tds")),
+      receptions: num(col("receptions")),
+      targets: num(col("targets")),
+      recYds: num(col("receiving_yards")),
+      recTDs: num(col("receiving_tds")),
+    });
+  }
+  return out;
+}
+
+/** Load the cached player_stats CSV. Returns [] when absent (graceful degradation:
+ *  the loop runs fine without props; cursor still advances). */
+export function loadPlayerStats(dir: string): PlayerStatRow[] {
+  const p = playerStatsCsvPath(dir);
+  if (!fs.existsSync(p)) return [];
+  return parsePlayerStats(fs.readFileSync(p, "utf8"));
+}
+
+function meanNonNull(values: (number | null)[]): number | null {
+  const valid = values.filter((v): v is number => v != null && Number.isFinite(v));
+  if (valid.length === 0) return null;
+  return valid.reduce((a, b) => a + b, 0) / valid.length;
+}
+
+/** Build the player contexts for a blind week from prior stats only.
+ *
+ *  THE LEAKAGE GATE: only rows where season < cursor.season, OR
+ *  (season === cursor.season AND week < cursor.week) are included.
+ *  Strictly less-than — NEVER <=.
+ *
+ *  For POST cursors: REG-season rows from the same season are included
+ *  (all 18 weeks of REG count as prior context for postseason).
+ *
+ *  Per-team caps: top-3 QB, top-3 RB, top-4 WR/TE by gamesPlayed.
+ *  QBs included if ≥1 prior game; RB/WR/TE if ≥2 prior games with any
+ *  relevant stat > 0. */
+export function buildPlayerContexts(
+  stats: PlayerStatRow[],
+  cursor: Cursor,
+  injIndex: Map<string, BlindInjury[]>,
+): BlindPlayerContext[] {
+  if (stats.length === 0) return [];
+
+  // Filter to prior weeks only — THE LEAKAGE GATE (strict <)
+  const cursorPhaseRank = phaseRank(cursor.phase);
+  const prior = stats.filter((r) => {
+    if (r.season < cursor.season) return true;
+    if (r.season > cursor.season) return false;
+    // same season
+    const rowPhaseRank = phaseRank(r.gameType);
+    if (rowPhaseRank < cursorPhaseRank) return true;
+    if (rowPhaseRank > cursorPhaseRank) return false;
+    // same phase — strictly less than week
+    return r.week < cursor.week;
+  });
+
+  if (prior.length === 0) return [];
+
+  // Group by playerName
+  type Acc = {
+    playerName: string;
+    position: string;
+    team: string;
+    rows: PlayerStatRow[];
+  };
+  const byPlayer = new Map<string, Acc>();
+  for (const r of prior) {
+    let acc = byPlayer.get(r.playerName);
+    if (!acc) {
+      acc = { playerName: r.playerName, position: r.position, team: r.team, rows: [] };
+      byPlayer.set(r.playerName, acc);
+    }
+    // Use the most recent team (last row wins by natural order)
+    acc.team = r.team;
+    acc.rows.push(r);
+  }
+
+  // Compute per-player context
+  const allContexts: BlindPlayerContext[] = [];
+  for (const acc of byPlayer.values()) {
+    const rows = acc.rows;
+
+    // Count "active games" = rows with at least one relevant stat > 0
+    const activeRows = rows.filter(
+      (r) =>
+        (r.passYds != null && r.passYds > 0) ||
+        (r.rushYds != null && r.rushYds > 0) ||
+        (r.recYds != null && r.recYds > 0) ||
+        (r.passTDs != null && r.passTDs > 0) ||
+        (r.rushTDs != null && r.rushTDs > 0) ||
+        (r.recTDs != null && r.recTDs > 0) ||
+        (r.receptions != null && r.receptions > 0),
+    );
+    const gamesPlayed = activeRows.length;
+
+    // Minimum-games filter by position
+    const pos = acc.position;
+    if (pos === "QB" && gamesPlayed < 1) continue;
+    if ((pos === "RB" || pos === "WR" || pos === "TE") && gamesPlayed < 2) continue;
+
+    // Look up injury status from the index for this cursor week
+    const injKey = injuryKey(cursor.season, cursor.phase, cursor.week, acc.team);
+    const teamInjuries = injIndex.get(injKey) ?? [];
+    const playerInj = teamInjuries.find(
+      (i) => i.player.toLowerCase() === acc.playerName.toLowerCase(),
+    );
+
+    allContexts.push({
+      player: acc.playerName,
+      position: pos,
+      team: acc.team,
+      gamesPlayed,
+      injuryStatus: playerInj ? playerInj.status : null,
+      seasonAvg: {
+        passYds: meanNonNull(rows.map((r) => r.passYds)),
+        passTDs: meanNonNull(rows.map((r) => r.passTDs)),
+        rushYds: meanNonNull(rows.map((r) => r.rushYds)),
+        rushTDs: meanNonNull(rows.map((r) => r.rushTDs)),
+        recYds: meanNonNull(rows.map((r) => r.recYds)),
+        recTDs: meanNonNull(rows.map((r) => r.recTDs)),
+        receptions: meanNonNull(rows.map((r) => r.receptions)),
+        targets: meanNonNull(rows.map((r) => r.targets)),
+      },
+    });
+  }
+
+  // Per-team caps: group by team + position, keep top by gamesPlayed
+  type TeamPos = string; // `${team}|${position}`
+  const perTeamPos = new Map<TeamPos, BlindPlayerContext[]>();
+  for (const ctx of allContexts) {
+    const k = `${ctx.team}|${ctx.position}`;
+    let list = perTeamPos.get(k);
+    if (!list) { list = []; perTeamPos.set(k, list); }
+    list.push(ctx);
+  }
+
+  const result: BlindPlayerContext[] = [];
+  for (const [key, list] of perTeamPos) {
+    const pos = key.split("|")[1];
+    const cap = pos === "QB" ? 3 : pos === "RB" ? 3 : 4; // WR/TE = 4
+    const sorted = list.sort((a, b) => b.gamesPlayed - a.gamesPlayed);
+    result.push(...sorted.slice(0, cap));
+  }
+
+  return result;
+}
+
+/** Grade one prop pick against the actual stat for that game.
+ *  actualStats is keyed by `${player}|${team}` (see actualStatKey) so two
+ *  same-named players on different teams grade against their own box score.
+ *  If the player+team is not found → no-data. */
+export function gradePropPick(
+  pick: PropPick,
+  gameId: string,
+  cursor: Cursor,
+  actualStats: Map<string, PlayerStatRow>,
+): GradedPropRow {
+  const key = `${gameId}|${pick.player}|${pick.stat}`;
+  const actual = actualStats.get(actualStatKey(pick.player, pick.team));
+  const actualValue = actual != null ? (actual[pick.stat] ?? null) : null;
+
+  let result: PickResult | "no-data";
+  if (actualValue == null) {
+    result = "no-data";
+  } else {
+    const diff = actualValue - pick.threshold;
+    // Push: within 0.5 of threshold (only applicable to integer thresholds;
+    // half-lines like 1.5 or 0.5 can never push by definition)
+    if (Math.abs(diff) < 0.5) {
+      result = "push";
+    } else if (diff > 0) {
+      result = pick.side === "over" ? "win" : "loss";
+    } else {
+      result = pick.side === "under" ? "win" : "loss";
+    }
+  }
+
+  return {
+    key,
+    season: cursor.season,
+    phase: cursor.phase,
+    week: cursor.week,
+    gameId,
+    player: pick.player,
+    team: pick.team,
+    position: pick.position,
+    stat: pick.stat,
+    threshold: pick.threshold,
+    side: pick.side,
+    confidence: pick.confidence,
+    actualValue,
+    result,
+    rationale: pick.rationale,
+    gradedAt: new Date().toISOString(),
+  };
+}
+
+/** Load all graded prop rows from prop-picks-log.jsonl. Returns [] when absent. */
+export function loadGradedPropRows(dir: string): GradedPropRow[] {
+  const p = propPicksLogPath(dir);
+  if (!fs.existsSync(p)) return [];
+  const out: GradedPropRow[] = [];
+  for (const line of fs.readFileSync(p, "utf8").split("\n")) {
+    const t = line.trim();
+    if (!t) continue;
+    try {
+      out.push(JSON.parse(t) as GradedPropRow);
+    } catch {
+      // skip corrupt line
+    }
+  }
+  return out;
+}
+
+/** Upsert prop rows keyed by `.key` into prop-picks-log.jsonl ONLY.
+ *  Never touches picksLogPath. */
+export function upsertGradedPropRows(
+  dir: string,
+  rows: GradedPropRow[],
+): { added: number; replaced: number } {
+  if (rows.length === 0) return { added: 0, replaced: 0 };
+  fs.mkdirSync(dir, { recursive: true });
+  const existing = loadGradedPropRows(dir);
+  const byKey = new Map<string, GradedPropRow>();
+  for (const r of existing) byKey.set(r.key, r);
+  let added = 0;
+  let replaced = 0;
+  for (const r of rows) {
+    if (byKey.has(r.key)) replaced++;
+    else added++;
+    byKey.set(r.key, r);
+  }
+  const all = [...byKey.values()];
+  const body = all.map((r) => JSON.stringify(r)).join("\n") + (all.length ? "\n" : "");
+  fs.writeFileSync(propPicksLogPath(dir), body);
+  return { added, replaced };
+}
+
+/** Stable compound key for actual-stat lookup. nflverse has real duplicate
+ *  display names (two "Mike Williams", LAC + NYJ, same week), so keying by
+ *  name alone silently grades a prop against the wrong player's box score.
+ *  Team disambiguates — both PlayerStatRow and PropPick carry the nflverse
+ *  `recent_team` code. Normalized (trim+upper) so abbreviation casing can't
+ *  split the key. */
+export function actualStatKey(player: string, team: string): string {
+  return `${player.trim()}|${team.trim().toUpperCase()}`;
+}
+
+/** Build a `${playerName}|${team}` → PlayerStatRow map for EXACTLY the cursor
+ *  week. This is the grading path ONLY — never passed to the model. */
+export function buildActualStatMap(
+  stats: PlayerStatRow[],
+  cursor: Cursor,
+): Map<string, PlayerStatRow> {
+  const map = new Map<string, PlayerStatRow>();
+  for (const r of stats) {
+    if (
+      r.season === cursor.season &&
+      r.gameType === cursor.phase &&
+      r.week === cursor.week
+    ) {
+      // Last row for this player+team wins (handles intra-team duplicates only)
+      map.set(actualStatKey(r.playerName, r.team), r);
+    }
+  }
+  return map;
 }

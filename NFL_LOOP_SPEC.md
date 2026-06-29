@@ -1,6 +1,7 @@
-# NFL Backtest Learning Loop (private, quiet)
+# Experiment No. 5 — NFL backtest learning loop (private, quiet)
 
-**Status: PRIVATE offseason training project.** Not wired to the dashboard, not
+**Status: PRIVATE offseason training project.** Designated **Experiment No. 5**
+in the lab (Parlay stays Experiment No. 4). Not wired to the dashboard, not
 committed, not pushed. All state lives under `data/private/nfl-loop/` (gitignored).
 The cadence ("1 week a day") is scheduled separately — there is no GitHub Action.
 
@@ -148,6 +149,64 @@ there is no slippage, no limits, no line-shopping friction here. Treat every
 positive ROI as an upper bound, not a tradeable result. This is a learning-loop
 study, not a betting system.
 
+## Player props layer (Experiment No. 5 extension)
+
+A separate prop-pick pass runs after the game-pick pass each week. It is fully
+optional — silently skipped when `player_stats.csv` is absent or `playerContexts`
+is empty. The cursor still advances and the game-pick log is unaffected.
+
+### Stat scope and thresholds
+
+| Stat | Key | Standard threshold |
+|---|---|---|
+| Passing yards | `passYds` | 250 |
+| Passing TDs | `passTDs` | 1.5 |
+| Rushing yards | `rushYds` | 75 |
+| Receiving yards | `recYds` | 50 |
+| Receiving TDs | `recTDs` | 0.5 |
+
+Positions in scope: QB, RB, WR, TE. All others are filtered at parse time.
+
+### No-leakage boundary for props
+
+Same hard rule as game picks: the model NEVER sees the current week's stats.
+`buildPlayerContexts` filters rows with `(season < cursor.season) ||
+(season === cursor.season && (phase < cursor.phase || (phase === cursor.phase
+&& week < cursor.week)))`. Strictly less-than — NEVER <=. The
+`PROP_FORBIDDEN_LEAK_TOKENS` constant lists both the TypeScript field names used in
+grading and the nflverse CSV column names, and `no-leakage.test.ts` asserts against
+them. If this test fails, the experiment is void.
+
+### Ingest order
+
+```
+npm run nfl:ingest              # games.csv
+npm run nfl:ingest-injuries     # injuries.csv (optional but recommended)
+npm run nfl:ingest-props-stats  # player_stats.csv (optional — props layer)
+npm run nfl:week                # pick → grade props → learn → advance
+```
+
+### Graceful degradation
+
+`player_stats.csv` absent → `playerContexts: []` → `propPickFn` returns `[]` →
+zero prop rows upserted → cursor advances normally. No error, no throw. Week-1
+cold-start is the same path: no prior weeks to average, so `playerContexts` is
+empty and props are silently skipped.
+
+### Log isolation
+
+Game picks log: `picks-log.jsonl` — keyed `${gameId}|${market}` (1 pipe).
+Prop picks log: `prop-picks-log.jsonl` — keyed `${gameId}|${player}|${stat}` (2 pipes).
+The key formats are structurally disjoint; `upsertGradedPropRows` writes ONLY to
+`propPicksLogPath` and never touches `picksLogPath`.
+
+### Reflect extension
+
+`makeClaudeReflectFn()` now takes a third argument `gradedProps: GradedPropRow[]`.
+The prompt includes a PROP RESULTS section listing decided (win/loss/push) prop
+outcomes so the learning loop can adjust prop strategy. max_tokens raised to 1500;
+memo word cap raised to 400 words.
+
 ## Operations
 
 - Engine: `src/lib/nfl-loop.ts` (pure: parse / blind-build / grade / stats / cursor),
@@ -156,9 +215,13 @@ study, not a betting system.
 - Ingest injuries: `npm run nfl:ingest-injuries` → fetches the per-season nflverse
   injury assets (`injuries_<season>.csv`; the combined `injuries.csv` asset 404s)
   and caches `injuries.csv`. Parses before writing; never caches a partial file.
-- Run one week: `npm run nfl:week` (pick → grade → learn → advance). Loads injuries
-  if cached and attaches them per game; runs fine without them (empty arrays).
+- Ingest player stats: `npm run nfl:ingest-props-stats` → fetches the per-season
+  nflverse `player_stats_<season>.csv` assets and caches `player_stats.csv`.
+  Parses before writing; verifies ≥1 row per fetched season. Optional: the loop
+  runs without it (props silently skipped).
+- Run one week: `npm run nfl:week` (pick → grade → prop-pick → grade props →
+  learn → advance). Loads injuries + player stats if cached; runs without them.
 - Read-only report: `npm run nfl:week report` (no key / no network).
-- State: `data/private/nfl-loop/{games.csv, injuries.csv, cursor.json, picks-log.jsonl, lessons/}`.
+- State: `data/private/nfl-loop/{games.csv, injuries.csv, player_stats.csv, cursor.json, picks-log.jsonl, prop-picks-log.jsonl, lessons/}`.
 - The pick step needs `ANTHROPIC_API_KEY`; `report` and all tests run without it
   (the pick function is injected; tests never touch the network).

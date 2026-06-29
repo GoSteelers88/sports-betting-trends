@@ -2,9 +2,12 @@ import { describe, it, expect } from "vitest";
 import {
   parseGames,
   parseInjuries,
+  parsePlayerStats,
   buildBlindWeek,
   FORBIDDEN_LEAK_TOKENS,
+  PROP_FORBIDDEN_LEAK_TOKENS,
   type Cursor,
+  type PlayerStatRow,
 } from "../nfl-loop";
 
 // A tiny 2-game fixture with FULL post-game results present. If the blind input
@@ -153,5 +156,104 @@ describe("no-leakage guarantee", () => {
 
   it("lessons memo is the only injected free-text context, passed through verbatim", () => {
     expect(blind.lessons).toBe("some prior lessons text");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Props no-leakage tests
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Player stat fixture: player P has rushYds=60 at wk4 and rushYds=120 at wk5.
+// With cursor at wk5 the model must only see the wk4 average (60), never wk5.
+function makePlayerStatRows(): PlayerStatRow[] {
+  const base = {
+    playerId: "00-100",
+    playerName: "Derrick Henry",
+    position: "RB",
+    team: "TEN",
+    season: 2023,
+    gameType: "REG" as const,
+    passYds: null,
+    passTDs: null,
+    rushTDs: 0,
+    receptions: null,
+    targets: null,
+    recYds: null,
+    recTDs: null,
+  };
+  return [
+    // prior weeks
+    { ...base, week: 1, rushYds: 40 },
+    { ...base, week: 2, rushYds: 55 },
+    { ...base, week: 3, rushYds: 70 },
+    { ...base, week: 4, rushYds: 60 },
+    // THE CURRENT WEEK — must NOT appear in seasonAvg
+    { ...base, week: 5, rushYds: 120 },
+  ];
+}
+
+describe("props no-leakage guarantee", () => {
+  const games = parseGames(CSV);
+  const injuries = parseInjuries(INJ_CSV);
+
+  it("current-week stat MUST NOT appear in BlindPlayerContext seasonAvg", () => {
+    // Cursor at wk5; player has wk4 rushYds=60 and wk5 rushYds=120.
+    // Expected seasonAvg.rushYds = mean(40,55,70,60) = 56.25, NOT 120.
+    const cursor: Cursor = { season: 2023, phase: "REG", week: 5 };
+    const playerStats = makePlayerStatRows();
+    const blind = buildBlindWeek(games, cursor, "", injuries, playerStats);
+    const henry = blind.playerContexts.find((c) => c.player === "Derrick Henry");
+    expect(henry).toBeDefined();
+    // Must include only wk1-4; wk5 rushYds=120 excluded
+    expect(henry!.seasonAvg.rushYds).toBeCloseTo(56.25, 2);
+    expect(henry!.seasonAvg.rushYds).not.toBeCloseTo(120, 0);
+    // NOTE: this test WOULD fail if the week filter used <= instead of <
+    // because wk5 (rushYds=120) would be included, raising the avg above 56.25
+  });
+
+  it("serialized blind input contains NONE of the PROP_FORBIDDEN_LEAK_TOKENS", () => {
+    const cursor: Cursor = { season: 2023, phase: "REG", week: 5 };
+    const playerStats = makePlayerStatRows();
+    const blind = buildBlindWeek(games, cursor, "", injuries, playerStats);
+    const serialized = JSON.stringify(blind);
+    for (const token of PROP_FORBIDDEN_LEAK_TOKENS) {
+      expect(serialized).not.toContain(token);
+    }
+  });
+
+  it("week-1 cold-start: playerContexts is empty when all stats are at wk1", () => {
+    // Only wk1 data, cursor at wk1 — nothing prior to show.
+    const cursor: Cursor = { season: 2023, phase: "REG", week: 1 };
+    const wk1Stats: PlayerStatRow[] = makePlayerStatRows().filter((r) => r.week === 1);
+    const blind = buildBlindWeek(games, cursor, "", injuries, wk1Stats);
+    expect(blind.playerContexts).toHaveLength(0);
+  });
+
+  it("graceful degradation: absent player stats produces playerContexts []", () => {
+    // Use the same cursor as the fixture (week 1, where the games CSV has data)
+    const cursor: Cursor = { season: 2023, phase: "REG", week: 1 };
+    // Pass empty array — simulates missing player_stats.csv
+    const blind = buildBlindWeek(games, cursor, "", injuries, []);
+    expect(blind.playerContexts).toHaveLength(0);
+    // Must not throw, and game picks must still work
+    expect(blind.games).toHaveLength(2);
+  });
+
+  it("BlindPlayerContext shape never contains raw PlayerStatRow fields", () => {
+    const cursor: Cursor = { season: 2023, phase: "REG", week: 5 };
+    const playerStats = makePlayerStatRows();
+    const blind = buildBlindWeek(games, cursor, "", injuries, playerStats);
+    for (const ctx of blind.playerContexts) {
+      // A BlindPlayerContext must have exactly these top-level keys
+      const keys = Object.keys(ctx).sort();
+      expect(keys).toEqual(
+        ["gamesPlayed", "injuryStatus", "player", "position", "seasonAvg", "team"].sort(),
+      );
+      // seasonAvg must not expose raw CSV column names
+      const ctxJson = JSON.stringify(ctx);
+      for (const token of PROP_FORBIDDEN_LEAK_TOKENS) {
+        expect(ctxJson).not.toContain(token);
+      }
+    }
   });
 });

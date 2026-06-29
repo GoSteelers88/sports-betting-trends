@@ -1,6 +1,6 @@
 /**
  * ingest-nfl-injuries.ts — fetch + cache the nflverse weekly injury reports for
- * the private NFL Backtest Learning Loop.
+ * Experiment No. 5: the private NFL Backtest Learning Loop.
  *
  *   npm run nfl:ingest-injuries
  *

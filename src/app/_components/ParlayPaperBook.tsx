@@ -6,6 +6,7 @@
 // ledger card until the first settle — a visual sibling of DevigPaperBook.
 
 import { getParlayLedgerView } from "@/lib/parlay-paper";
+import type { ParlayRetro } from "../_data/dashboard";
 import { KalshiEquityCurve } from "./KalshiEquityCurve";
 
 const fmtUsd = (n: number) =>
@@ -26,7 +27,7 @@ function gameTime(iso: string): string {
   return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
-export function ParlayPaperBook() {
+export function ParlayPaperBook({ retro }: { retro?: ParlayRetro | null }) {
   let view;
   try {
     view = getParlayLedgerView();
@@ -222,7 +223,127 @@ export function ParlayPaperBook() {
         the product. The book books nothing unless the compounded EV survives a per-leg haircut —
         the parlay&rsquo;s honest test of whether independent edges really multiply.
       </p>
+
+      {retro && <RetrospectivePanel retro={retro} />}
     </article>
+  );
+}
+
+// ─── RETROSPECTIVE panel (demoted, quarantined) ──────────────────────────────
+//
+// A muted sibling BELOW the live book. It is NOT the live pre-registered rule —
+// it is a favorites approximation backtested over the last 30 days, sourced from
+// a SEPARATE JSON (parlay-retro.json). It never tunes the live rule and is
+// visually demoted (muted background, smaller type) so the two tracks never
+// blur. The live book's tiles above are untouched.
+function RetrospectivePanel({ retro }: { retro: ParlayRetro }) {
+  const {
+    startingBankrollUsd,
+    endingEquityUsd,
+    days,
+    parlaysPlaced,
+    record,
+    winRatePct,
+    avgBreakEvenPct,
+    roiPct,
+    equityCurve,
+  } = retro;
+
+  const net = endingEquityUsd - startingBankrollUsd;
+  const netTone = net > 0 ? "var(--win)" : net < 0 ? "var(--loss)" : "var(--ink-3)";
+  const roiTone =
+    roiPct == null ? "var(--ink-3)" : roiPct > 0 ? "var(--win)" : roiPct < 0 ? "var(--loss)" : "var(--ink-3)";
+  // Win rate beat break-even? (the only honest "did it work" read at long prices)
+  const beatBreakEven =
+    winRatePct != null && avgBreakEvenPct != null ? winRatePct >= avgBreakEvenPct : null;
+
+  // KalshiEquityCurve wants { ts, equityUsd }; the retro curve keys by `day`.
+  const curve = equityCurve.map((p) => ({ ts: p.day, equityUsd: p.equityUsd }));
+
+  return (
+    <section
+      className="border-t-2 border-rule-strong bg-paper-3/40"
+      aria-label="Retrospective 30-day parlay backtest"
+    >
+      <header className="px-4 sm:px-5 py-3 border-b border-rule">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h4 className="eyebrow text-ink-2">Retrospective · {days}-day backtest</h4>
+          <span className="tag" style={{ color: "var(--ink-3)" }}>
+            Quarantined · not live
+          </span>
+        </div>
+        <p className="num text-[0.68rem] text-ink-3 leading-relaxed mt-1 max-w-3xl">
+          Favorites approximation — NOT the live +EV-vs-sharp rule; quarantined, never tunes it.
+          Multiple 3-leg short-favorite tickets/day, flat $100/ticket, settled on real box scores.
+          The equity line tracks a flat-stake bettor&rsquo;s running net, not Kelly compounding off
+          the bankroll (turnover exceeds the $10k book).
+        </p>
+      </header>
+
+      {/* Demoted metric strip — smaller, muted, visually distinct from the live tiles */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-rule border-b border-rule">
+        <RetroTile
+          label="Started → ended"
+          value={`${fmtUsd(startingBankrollUsd)} → ${fmtUsd(endingEquityUsd)}`}
+          sub={`${net >= 0 ? "+" : ""}${fmtUsd2(net)} net`}
+          tone={netTone}
+        />
+        <RetroTile
+          label="Record (W–L–P)"
+          value={`${record.wins}–${record.losses}–${record.pushes}`}
+          sub={`${parlaysPlaced} parlays`}
+        />
+        <RetroTile
+          label="Win rate"
+          value={winRatePct != null ? `${winRatePct.toFixed(1)}%` : "—"}
+          sub={
+            avgBreakEvenPct != null
+              ? `vs ${avgBreakEvenPct.toFixed(1)}% break-even${
+                  beatBreakEven == null ? "" : beatBreakEven ? " ✓" : " ✗"
+                }`
+              : "—"
+          }
+          tone={beatBreakEven == null ? undefined : beatBreakEven ? "var(--win)" : "var(--loss)"}
+        />
+        <RetroTile
+          label="Yield"
+          value={roiPct != null ? `${roiPct >= 0 ? "+" : ""}${roiPct.toFixed(2)}%` : "—"}
+          sub="flat-stake ROI"
+          tone={roiTone}
+        />
+      </div>
+
+      {curve.length >= 2 && (
+        <figure className="p-4">
+          <figcaption className="eyebrow text-ink-3 mb-3">
+            Equity curve · flat $100/ticket
+          </figcaption>
+          <KalshiEquityCurve data={curve} baseline={startingBankrollUsd} />
+        </figure>
+      )}
+    </section>
+  );
+}
+
+function RetroTile({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: string;
+}) {
+  return (
+    <div className="px-4 py-2.5">
+      <p className="eyebrow text-ink-3">{label}</p>
+      <p className="num text-sm mt-1 leading-snug" style={{ color: tone ?? "var(--ink-2)" }}>
+        {value}
+      </p>
+      {sub && <p className="eyebrow text-ink-3 mt-0.5">{sub}</p>}
+    </div>
   );
 }
 

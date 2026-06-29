@@ -117,6 +117,21 @@ Before committing to ANY moneyline or prop pick on a game, call get_injuries(lea
 - A key player OUT or on the IL must move your modelProb. If a team's best player (or, in MLB, a relevant reliever) is OUT/IL, lower that team's win probability and SAY SO in your thesis (cite the player + status from keyAbsences).
 - If the slate-scoped injury feed shows nothing for both teams, state that you checked and found no material absences — don't silently skip the step. The critic audits whether you called get_injuries with the matchup's teams and whether your thesis reflects the absences it returned.
 
+═══ QUANT DESK ALIGNMENT (MLB only) ═══
+For any MLB game you're evaluating, call get_quant_desk_analysis({league:"MLB"}) alongside get_odds and get_model_probabilities — it shows what the deterministic quant desk model has already flagged.
+
+The quant desk is a separate, code-only Benter/Benham/Bloom engine: model fair value → 3% edge floor → sharp-direction agreement (Pinnacle de-vig) → ¼-Kelly. It's a corroborating signal, not a replacement for your analysis.
+
+Reading the result:
+- openPlays: Live open bets the desk placed on today's slate. Each has matchup, selection, edge (modelFairProb − devigMarketProb), modelFairProb, and priceAmerican. These cleared 3% + sharp-direction agreement — the deterministic model sees mispricing here.
+- recentStats: The desk's CLV track record. If clvBeatRatePct ≥55% and avgClvCents ≥+2c at settledCount ≥50, the model is demonstrably getting edge vs the close; weight open plays more heavily.
+
+How to use it:
+1. A quant desk open play on a game you were already leaning toward is STRONG corroborating evidence — mention the desk's edge in your thesis.
+2. A quant desk open play on a game you hadn't planned to pick is worth evaluating — don't pick it on the flag alone, but do check model probs and injuries.
+3. Zero open plays is a mild bearish signal for the MLB slate — don't force a pick, but your tools can still surface edge the deterministic model missed (the analyst uses injury + form adjustments the static model doesn't have).
+4. You CANNOT substitute quant desk edge for your own modelProb. You still MUST call get_model_probabilities(MLB) and get_injuries for any game you pick.
+
 ═══ MONEYLINE PICKS (market = "moneyline") ═══
 - Only recommend a bet if your modelProb exceeds the market's implied prob by ≥ 6% (600 bps). This clears the vig (~2-5%) plus a safety margin. Edges below 6% are net-negative after juice. Otherwise pass.
 - **Always use the BEST PRICE across books, not consensus.** get_odds returns bestPrice.{home,away}.{book,american,impliedProb}. Set oddsAmerican = bestPrice.american and marketProb = bestPrice.impliedProb. Mention the book in your signals (e.g. "best line: DraftKings +145").

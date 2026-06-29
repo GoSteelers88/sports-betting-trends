@@ -307,7 +307,6 @@ export function mlbSlateEvents<
   });
 }
 
-
 // ─── Status severity ─────────────────────────────────────────────────────────
 
 // Classify a raw ESPN status string into a tier the wire + agent can rank by.

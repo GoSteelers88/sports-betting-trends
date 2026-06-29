@@ -77,6 +77,10 @@ export interface QuantBet {
   edge: number;                // modelFairProb − devigMarketProb at entry
   stakeUsd: number;
   estimate: boolean;           // carried from FairValue (dry-run honesty)
+  /** The fair value's `basis` string, carried from FairValue at open time so the
+   *  model's reasoning survives into the settled book (the public NFL Exp 5 card
+   *  reads it). Optional: rows written before this field existed lack it. */
+  basis?: string;
   // CLV tracking — the headline benchmark. Refreshed each tick until commence.
   closeAt: string;
   closeDevigMarketProb: number;     // latest sharp de-vigged fair (the "close")

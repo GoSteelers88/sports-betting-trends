@@ -12,6 +12,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { mlbSlateEvents } from "@/lib/injuries-scope";
 
 type Outcome = { name: string; price: number; point?: number };
 type Market = { key: "h2h" | "spreads" | "totals"; outcomes: Outcome[] };
@@ -385,12 +386,37 @@ async function main() {
       `${spec.sportKey}: FD=${fd.length} BV=${bv.length} → ${merged.length} merged (books: ${bookCounts})`,
     );
 
-    if (merged.length > 0) {
-      writeLeagueFile(outDir, spec.sportKey, merged);
+    // The baseball_mlb endpoint returns NPB/KBO/CPBL/NCAA games alongside real
+    // MLB. Scope the on-disk file to the 30 MLB franchises for ALL downstream
+    // consumers (agent get_odds, MarketFeed slate, injuries scoping, prop
+    // board). Only baseball_mlb — never the other sports.
+    // Guard (same spirit as the "0 events" guard): if filtering would empty an
+    // otherwise non-empty feed (allowlist bug on a real game day), keep the
+    // unfiltered set rather than writing an empty file.
+    let toWrite = merged;
+    if (spec.sportKey === "baseball_mlb" && merged.length > 0) {
+      const mlbOnly = mlbSlateEvents(merged);
+      if (mlbOnly.length > 0) {
+        const dropped = merged.length - mlbOnly.length;
+        if (dropped > 0) {
+          console.log(
+            `  baseball_mlb: filtered ${dropped} non-MLB (NPB/KBO/CPBL/NCAA) → ${mlbOnly.length} MLB games`,
+          );
+        }
+        toWrite = mlbOnly;
+      } else {
+        console.warn(
+          `baseball_mlb: MLB filter would empty a ${merged.length}-event feed — keeping unfiltered set (allowlist bug?)`,
+        );
+      }
+    }
+
+    if (toWrite.length > 0) {
+      writeLeagueFile(outDir, spec.sportKey, toWrite);
     } else {
       console.warn(`${spec.sportKey}: 0 events — leaving existing file in place`);
     }
-    all.push(...merged);
+    all.push(...toWrite);
   }
 
   if (all.length > 0) {
