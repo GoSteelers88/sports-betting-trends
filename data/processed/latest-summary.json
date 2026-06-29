@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-29T17:12:48.861Z",
+  "generatedAt": "2026-06-29T23:42:07.039Z",
   "ready": true,
   "recordsIngested": 789,
   "recordsCompleted": 789,
@@ -774,45 +774,24 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Chicago Cubs -1.5",
-      "score": 59,
-      "confidence": 54,
+      "score": 63,
+      "confidence": 59,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
         "ATS edge +0.000",
         "History sample Chicago Cubs: 25 games (mapped Cubs) vs San Diego Padres: 25 games",
         "Home court (+1 pt adjustment)",
         "Rest: Chicago Cubs 2d rest vs San Diego Padres 2d rest",
-        "Net Rating edge: +3.2"
+        "Net Rating edge: +3.2",
+        "Home SP: Shota Imanaga",
+        "Away SP: Griffin Canning",
+        "MLB model: 65.2% win prob (calibrated)"
       ],
       "momentumEdge": 0.4,
       "atsEdge": 0,
-      "mlbModelProb": null,
-      "mlbEdge": null
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-06-30T00:41:00.000Z",
-      "matchup": "Miami Marlins at Colorado Rockies",
-      "pickTeam": "Miami Marlins",
-      "opponent": "Colorado Rockies",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Miami Marlins -1.5",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Miami Marlins: 25 games (mapped Marlins) vs Colorado Rockies: 25 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Miami Marlins 2d rest vs Colorado Rockies 2d rest",
-        "Net Rating edge: +2.4"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6524,
+      "mlbEdge": 0.04,
+      "mlbCalibrated": true
     },
     {
       "league": "MLB",
@@ -821,9 +800,9 @@
       "matchup": "Washington Nationals at Boston Red Sox",
       "pickTeam": "Boston Red Sox",
       "opponent": "Washington Nationals",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Boston Red Sox -1.5",
+      "spread": -3.5,
+      "modelSpread": -3.2,
+      "line": "Boston Red Sox -3.5",
       "score": 57,
       "confidence": 52,
       "rationaleSignals": [
@@ -832,18 +811,22 @@
         "History sample Boston Red Sox: 25 games (mapped Red Sox) vs Washington Nationals: 26 games",
         "Home court (+1 pt adjustment)",
         "Rest: Boston Red Sox 2d rest vs Washington Nationals 2d rest",
-        "Net Rating edge: +2.8"
+        "Net Rating edge: +2.8",
+        "Home SP: Ranger Suarez",
+        "Away SP: Miles Mikolas",
+        "MLB model: 63.2% win prob (calibrated) | Edge vs market: -30.1%"
       ],
       "momentumEdge": 0.6,
       "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6324,
+      "mlbEdge": -0.3009,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-06-29",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 3 eligible games found on 2026-06-29 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 2 eligible games found on 2026-06-29 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -878,6 +861,14 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Nolan Traore",
+        "team": "Brooklyn Nets",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Day'Ron Sharpe",
         "team": "Brooklyn Nets",
         "position": "C",
@@ -907,14 +898,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Nolan Traore",
-        "team": "Brooklyn Nets",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Illness",
         "returnDate": "2026-10-01"
       },
       {
@@ -1278,19 +1261,19 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Bradley Beal",
-        "team": "LA Clippers",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Hip",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Luka Doncic",
         "team": "Los Angeles Lakers",
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Hamstring",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "GG Jackson",
+        "team": "Memphis Grizzlies",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
         "returnDate": "2026-10-01"
       },
       {
@@ -1366,27 +1349,11 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Ja Morant",
-        "team": "Memphis Grizzlies",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Elbow",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Ty Jerome",
         "team": "Memphis Grizzlies",
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "GG Jackson",
-        "team": "Memphis Grizzlies",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
         "returnDate": "2026-10-01"
       },
       {
@@ -1435,14 +1402,6 @@
         "position": "C",
         "status": "Day-To-Day",
         "injuryType": "Back",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Gary Trent Jr.",
-        "team": "Milwaukee Bucks",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Oblique",
         "returnDate": "2026-10-01"
       },
       {
@@ -1606,6 +1565,14 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Ja Morant",
+        "team": "Portland Trail Blazers",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Elbow",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Damian Lillard",
         "team": "Portland Trail Blazers",
         "position": "G",
@@ -1726,6 +1693,14 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Jusuf Nurkic",
+        "team": "Utah Jazz",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Nose",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Jaren Jackson Jr.",
         "team": "Utah Jazz",
         "position": "F",
@@ -1758,27 +1733,11 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Jusuf Nurkic",
-        "team": "Utah Jazz",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Nose",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Walker Kessler",
         "team": "Utah Jazz",
         "position": "C",
         "status": "Day-To-Day",
         "injuryType": "Shoulder",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Elijah Harkless",
-        "team": "Utah Jazz",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Hamstring",
         "returnDate": "2026-10-01"
       },
       {
@@ -2261,14 +2220,6 @@
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Lower Body",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Terrion Arnold",
-        "team": "Detroit Lions",
-        "position": "CB",
-        "status": "Questionable",
-        "injuryType": "Shoulder",
         "returnDate": "2026-08-01"
       },
       {
