@@ -1,55 +1,135 @@
 {
-  "generatedAt": "2026-07-01T16:39:06.085Z",
+  "generatedAt": "2026-07-01T23:54:30.345Z",
   "ready": true,
-  "recordsIngested": 797,
-  "recordsCompleted": 797,
+  "recordsIngested": 809,
+  "recordsCompleted": 809,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 770,
+      "games": 782,
       "conferences": [
-        "NL Central",
-        "NL West",
-        "AL West",
-        "AL Central",
-        "NL East",
+        "AL East",
         "Unknown",
-        "AL East"
+        "AL Central",
+        "AL West",
+        "NL East",
+        "NL Central",
+        "NL West"
       ],
-      "avgPoints": 4.64935064935065,
+      "avgPoints": 4.67774936061381,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
       "recentAvgPoints": 6.6,
       "recentAvgYards": null,
-      "trendScore": 62,
-      "trendSignal": "up",
+      "trendScore": 47,
+      "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 770,
-        "rpg": 4.65,
-        "oppRpg": 4.65,
-        "hitsPerGame": 8.44,
+        "games": 782,
+        "rpg": 4.68,
+        "oppRpg": 4.68,
+        "hitsPerGame": 8.45,
         "errorsPerGame": 0.52,
         "sos": 0.52
       },
       "teamAdvanced": {
-        "Cubs": {
+        "Orioles": {
+          "games": 28,
+          "rpg": 4.57,
+          "oppRpg": 4.39,
+          "hitsPerGame": 7.96,
+          "errorsPerGame": 0.75,
+          "sos": null
+        },
+        "White Sox": {
+          "games": 25,
+          "rpg": 5.16,
+          "oppRpg": 4.36,
+          "hitsPerGame": 8.52,
+          "errorsPerGame": 0.48,
+          "sos": null
+        },
+        "Guardians": {
           "games": 26,
-          "rpg": 5.42,
-          "oppRpg": 4.5,
-          "hitsPerGame": 8.62,
-          "errorsPerGame": 0.23,
+          "rpg": 3.69,
+          "oppRpg": 4.04,
+          "hitsPerGame": 7.38,
+          "errorsPerGame": 0.62,
+          "sos": null
+        },
+        "Rangers": {
+          "games": 27,
+          "rpg": 4.26,
+          "oppRpg": 4.85,
+          "hitsPerGame": 8.96,
+          "errorsPerGame": 0.44,
+          "sos": null
+        },
+        "Yankees": {
+          "games": 27,
+          "rpg": 4.15,
+          "oppRpg": 4.56,
+          "hitsPerGame": 7.37,
+          "errorsPerGame": 0.85,
+          "sos": null
+        },
+        "Tigers": {
+          "games": 26,
+          "rpg": 5.12,
+          "oppRpg": 3.23,
+          "hitsPerGame": 8.23,
+          "errorsPerGame": 0.42,
+          "sos": null
+        },
+        "Red Sox": {
+          "games": 27,
+          "rpg": 3.93,
+          "oppRpg": 4,
+          "hitsPerGame": 7.63,
+          "errorsPerGame": 0.37,
+          "sos": null
+        },
+        "Nationals": {
+          "games": 27,
+          "rpg": 5.3,
+          "oppRpg": 4.56,
+          "hitsPerGame": 8.63,
+          "errorsPerGame": 0.63,
+          "sos": null
+        },
+        "Cubs": {
+          "games": 27,
+          "rpg": 6.07,
+          "oppRpg": 4.44,
+          "hitsPerGame": 8.93,
+          "errorsPerGame": 0.22,
           "sos": 0.52
         },
         "Padres": {
-          "games": 26,
-          "rpg": 3.96,
-          "oppRpg": 4.35,
-          "hitsPerGame": 7.77,
-          "errorsPerGame": 0.38,
+          "games": 27,
+          "rpg": 3.93,
+          "oppRpg": 5.04,
+          "hitsPerGame": 7.89,
+          "errorsPerGame": 0.41,
+          "sos": null
+        },
+        "Blue Jays": {
+          "games": 27,
+          "rpg": 4.07,
+          "oppRpg": 4.89,
+          "hitsPerGame": 8.63,
+          "errorsPerGame": 0.56,
+          "sos": null
+        },
+        "Mets": {
+          "games": 27,
+          "rpg": 3.89,
+          "oppRpg": 5.19,
+          "hitsPerGame": 7.93,
+          "errorsPerGame": 0.93,
           "sos": null
         },
         "Astros": {
@@ -132,22 +212,6 @@
           "errorsPerGame": 0.72,
           "sos": 0.52
         },
-        "Orioles": {
-          "games": 27,
-          "rpg": 4.52,
-          "oppRpg": 4.52,
-          "hitsPerGame": 8,
-          "errorsPerGame": 0.78,
-          "sos": null
-        },
-        "White Sox": {
-          "games": 24,
-          "rpg": 5.33,
-          "oppRpg": 4.29,
-          "hitsPerGame": 8.71,
-          "errorsPerGame": 0.5,
-          "sos": null
-        },
         "Phillies": {
           "games": 27,
           "rpg": 5.67,
@@ -163,70 +227,6 @@
           "hitsPerGame": 9.31,
           "errorsPerGame": 0.73,
           "sos": 0.52
-        },
-        "Guardians": {
-          "games": 25,
-          "rpg": 3.48,
-          "oppRpg": 4.04,
-          "hitsPerGame": 7.24,
-          "errorsPerGame": 0.64,
-          "sos": null
-        },
-        "Rangers": {
-          "games": 26,
-          "rpg": 4.27,
-          "oppRpg": 4.69,
-          "hitsPerGame": 9,
-          "errorsPerGame": 0.46,
-          "sos": null
-        },
-        "Yankees": {
-          "games": 26,
-          "rpg": 4.23,
-          "oppRpg": 4.5,
-          "hitsPerGame": 7.38,
-          "errorsPerGame": 0.81,
-          "sos": null
-        },
-        "Tigers": {
-          "games": 25,
-          "rpg": 5.08,
-          "oppRpg": 3.28,
-          "hitsPerGame": 8.32,
-          "errorsPerGame": 0.44,
-          "sos": null
-        },
-        "Blue Jays": {
-          "games": 26,
-          "rpg": 3.88,
-          "oppRpg": 4.96,
-          "hitsPerGame": 8.5,
-          "errorsPerGame": 0.58,
-          "sos": null
-        },
-        "Mets": {
-          "games": 26,
-          "rpg": 3.92,
-          "oppRpg": 5.04,
-          "hitsPerGame": 8.04,
-          "errorsPerGame": 0.96,
-          "sos": null
-        },
-        "Red Sox": {
-          "games": 26,
-          "rpg": 4,
-          "oppRpg": 3.77,
-          "hitsPerGame": 7.58,
-          "errorsPerGame": 0.38,
-          "sos": null
-        },
-        "Nationals": {
-          "games": 26,
-          "rpg": 5.12,
-          "oppRpg": 4.65,
-          "hitsPerGame": 8.46,
-          "errorsPerGame": 0.65,
-          "sos": null
         },
         "Braves": {
           "games": 23,
@@ -555,12 +555,12 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "NL Central",
+      "conference": "AL East",
       "gameDate": "2026-07-01T00:00:00.000Z",
-      "team": "Cubs",
-      "opponent": "Padres",
-      "points": 9,
-      "opponentPoints": 7,
+      "team": "Orioles",
+      "opponent": "White Sox",
+      "points": 6,
+      "opponentPoints": 1,
       "rebounds": null,
       "assists": null,
       "yards": null,
@@ -593,10 +593,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 13,
+      "hits": 7,
       "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401815973",
+      "sourceEventId": "401815979",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -767,156 +767,6 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-07-01T16:36:00.000Z",
-      "matchup": "Chicago White Sox at Baltimore Orioles",
-      "pickTeam": "Chicago White Sox",
-      "opponent": "Baltimore Orioles",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "Chicago White Sox +1.5",
-      "score": 75,
-      "confidence": 71,
-      "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.100",
-        "History sample Chicago White Sox: 24 games (mapped White Sox) vs Baltimore Orioles: 27 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Chicago White Sox 2d rest vs Baltimore Orioles 2d rest",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +3.1",
-        "Home SP: Trey Gibson",
-        "Away SP: Erick Fedde",
-        "MLB model: 84.8% win prob (calibrated) | Edge vs market: +37.6%"
-      ],
-      "momentumEdge": 0.4,
-      "atsEdge": 0.1,
-      "mlbModelProb": 0.8484,
-      "mlbEdge": 0.3761,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-01T17:36:00.000Z",
-      "matchup": "Detroit Tigers at New York Yankees",
-      "pickTeam": "Detroit Tigers",
-      "opponent": "New York Yankees",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "Detroit Tigers +1.5",
-      "score": 68,
-      "confidence": 64,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.600",
-        "History sample Detroit Tigers: 25 games (mapped Tigers) vs New York Yankees: 26 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Detroit Tigers 2d rest vs New York Yankees 2d rest",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +3.7",
-        "Home SP: Cam Schlittler",
-        "Away SP: Tarik Skubal",
-        "MLB model: 72.8% win prob (calibrated) | Edge vs market: +26.8%"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.6,
-      "mlbModelProb": 0.7276,
-      "mlbEdge": 0.2678,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-01T18:21:00.000Z",
-      "matchup": "San Diego Padres at Chicago Cubs",
-      "pickTeam": "Chicago Cubs",
-      "opponent": "San Diego Padres",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Chicago Cubs 0",
-      "score": 62,
-      "confidence": 58,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge -0.100",
-        "History sample Chicago Cubs: 26 games (mapped Cubs) vs San Diego Padres: 26 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Chicago Cubs B2B vs San Diego Padres B2B",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +2.5",
-        "Home SP: Matthew Boyd",
-        "Away SP: JP Sears",
-        "MLB model: 60.2% win prob (calibrated) | Edge vs market: +5.3%"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": -0.1,
-      "mlbModelProb": 0.6017,
-      "mlbEdge": 0.0532,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-01T17:36:00.000Z",
-      "matchup": "Washington Nationals at Boston Red Sox",
-      "pickTeam": "Boston Red Sox",
-      "opponent": "Washington Nationals",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Boston Red Sox -1.5",
-      "score": 59,
-      "confidence": 54,
-      "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.100",
-        "History sample Boston Red Sox: 26 games (mapped Red Sox) vs Washington Nationals: 26 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Boston Red Sox 2d rest vs Washington Nationals 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +1.0",
-        "Home SP: Connelly Early",
-        "Away SP: Cade Cavalli",
-        "MLB model: 63.4% win prob (calibrated)"
-      ],
-      "momentumEdge": 0.4,
-      "atsEdge": 0.1,
-      "mlbModelProb": 0.6343,
-      "mlbEdge": 0.0343,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-01T17:11:00.000Z",
-      "matchup": "Texas Rangers at Cleveland Guardians",
-      "pickTeam": "Texas Rangers",
-      "opponent": "Cleveland Guardians",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "Texas Rangers +1.5",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Texas Rangers: 26 games (mapped Rangers) vs Cleveland Guardians: 25 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Texas Rangers 2d rest vs Cleveland Guardians 2d rest",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +0.9",
-        "Home SP: Tanner Bibee",
-        "Away SP: Jacob deGrom",
-        "MLB model: 54.9% win prob (calibrated) | Edge vs market: +6.2%"
-      ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.2,
-      "mlbModelProb": 0.5488,
-      "mlbEdge": 0.0622,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
       "gameDate": "2026-07-02T01:41:00.000Z",
       "matchup": "Los Angeles Dodgers at Athletics",
       "pickTeam": "Los Angeles Dodgers",
@@ -941,14 +791,44 @@
       "momentumEdge": 1,
       "atsEdge": 0.3,
       "mlbModelProb": 0.594,
-      "mlbEdge": -0.0313,
+      "mlbEdge": -0.0328,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-02T00:41:00.000Z",
+      "matchup": "Miami Marlins at Colorado Rockies",
+      "pickTeam": "Miami Marlins",
+      "opponent": "Colorado Rockies",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Miami Marlins -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample Miami Marlins: 25 games (mapped Marlins) vs Colorado Rockies: 25 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Miami Marlins B2B vs Colorado Rockies B2B",
+        "3 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +4.2",
+        "Home SP: Tanner Gordon",
+        "Away SP: Eury Pérez",
+        "MLB model: 54.6% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.8,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.5463,
+      "mlbEdge": -0.0335,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-01",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": null,
+  "bestBetsNote": "Only 2 eligible games found on 2026-07-01 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1156,6 +1036,14 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Illness",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Santi Aldama",
+        "team": "Dallas Mavericks",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
         "returnDate": "2026-10-01"
       },
       {
@@ -1431,14 +1319,6 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Santi Aldama",
-        "team": "Memphis Grizzlies",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Zach Edey",
         "team": "Memphis Grizzlies",
         "position": "C",
@@ -1631,19 +1511,19 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Jalen Williams",
-        "team": "Oklahoma City Thunder",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Thomas Sorber",
         "team": "Oklahoma City Thunder",
         "position": "C",
         "status": "Day-To-Day",
         "injuryType": "Knee",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Jalen Williams",
+        "team": "Oklahoma City Thunder",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Hamstring",
         "returnDate": "2026-10-01"
       },
       {
@@ -2441,14 +2321,6 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Ajani Carter",
-        "team": "Houston Texans",
-        "position": "CB",
-        "status": "Injured Reserve",
-        "injuryType": "Knee",
-        "returnDate": "2027-02-15"
-      },
-      {
         "player": "E.J. Speed",
         "team": "Houston Texans",
         "position": "LB",
@@ -2457,12 +2329,12 @@
         "returnDate": "2026-09-13"
       },
       {
-        "player": "Xavier Thomas",
+        "player": "Azeez Al-Shaair",
         "team": "Houston Texans",
         "position": "LB",
-        "status": "Injured Reserve",
-        "injuryType": "Undisclosed",
-        "returnDate": "2027-02-15"
+        "status": "Questionable",
+        "injuryType": "Thumb",
+        "returnDate": "2026-07-01"
       },
       {
         "player": "Spencer Shrader",
