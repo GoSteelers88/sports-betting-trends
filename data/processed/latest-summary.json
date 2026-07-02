@@ -1,55 +1,87 @@
 {
-  "generatedAt": "2026-07-02T16:16:25.989Z",
+  "generatedAt": "2026-07-02T23:44:49.320Z",
   "ready": true,
-  "recordsIngested": 795,
-  "recordsCompleted": 795,
+  "recordsIngested": 801,
+  "recordsCompleted": 801,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 768,
+      "games": 774,
       "conferences": [
+        "NL East",
         "NL Central",
+        "NL West",
         "AL West",
         "AL Central",
-        "NL West",
-        "NL East",
         "Unknown",
         "AL East"
       ],
-      "avgPoints": 4.673177083333333,
+      "avgPoints": 4.680878552971576,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 4.4,
+      "recentAvgPoints": 5.1,
       "recentAvgYards": null,
-      "trendScore": 48,
-      "trendSignal": "flat",
+      "trendScore": 30,
+      "trendSignal": "down",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 768,
-        "rpg": 4.67,
-        "oppRpg": 4.67,
+        "games": 774,
+        "rpg": 4.68,
+        "oppRpg": 4.68,
         "hitsPerGame": 8.45,
         "errorsPerGame": 0.52,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Phillies": {
+          "games": 28,
+          "rpg": 5.75,
+          "oppRpg": 4.68,
+          "hitsPerGame": 8.96,
+          "errorsPerGame": 0.61,
+          "sos": null
+        },
+        "Pirates": {
+          "games": 27,
+          "rpg": 5.22,
+          "oppRpg": 5.59,
+          "hitsPerGame": 9.48,
+          "errorsPerGame": 0.74,
+          "sos": 0.52
+        },
         "Brewers": {
-          "games": 26,
-          "rpg": 5.46,
-          "oppRpg": 4.08,
-          "hitsPerGame": 9.42,
-          "errorsPerGame": 0.27,
+          "games": 27,
+          "rpg": 5.33,
+          "oppRpg": 4.19,
+          "hitsPerGame": 9.22,
+          "errorsPerGame": 0.3,
           "sos": 0.52
         },
         "Reds": {
-          "games": 25,
-          "rpg": 3.8,
-          "oppRpg": 4.68,
-          "hitsPerGame": 7.52,
+          "games": 26,
+          "rpg": 3.92,
+          "oppRpg": 4.58,
+          "hitsPerGame": 7.65,
           "errorsPerGame": 0.88,
+          "sos": null
+        },
+        "Rockies": {
+          "games": 26,
+          "rpg": 5.73,
+          "oppRpg": 6.27,
+          "hitsPerGame": 9.46,
+          "errorsPerGame": 0.54,
+          "sos": 0.52
+        },
+        "Marlins": {
+          "games": 26,
+          "rpg": 4.85,
+          "oppRpg": 3.62,
+          "hitsPerGame": 8.77,
+          "errorsPerGame": 0.38,
           "sos": null
         },
         "Astros": {
@@ -66,22 +98,6 @@
           "oppRpg": 5.73,
           "hitsPerGame": 9.27,
           "errorsPerGame": 0.5,
-          "sos": null
-        },
-        "Rockies": {
-          "games": 25,
-          "rpg": 5.4,
-          "oppRpg": 6.36,
-          "hitsPerGame": 9.28,
-          "errorsPerGame": 0.56,
-          "sos": 0.52
-        },
-        "Marlins": {
-          "games": 25,
-          "rpg": 4.88,
-          "oppRpg": 3.2,
-          "hitsPerGame": 8.84,
-          "errorsPerGame": 0.4,
           "sos": null
         },
         "Athletics": {
@@ -211,22 +227,6 @@
           "hitsPerGame": 8.04,
           "errorsPerGame": 0.88,
           "sos": null
-        },
-        "Phillies": {
-          "games": 27,
-          "rpg": 5.93,
-          "oppRpg": 4.63,
-          "hitsPerGame": 9.15,
-          "errorsPerGame": 0.63,
-          "sos": null
-        },
-        "Pirates": {
-          "games": 26,
-          "rpg": 5.19,
-          "oppRpg": 5.77,
-          "hitsPerGame": 9.31,
-          "errorsPerGame": 0.77,
-          "sos": 0.52
         },
         "Braves": {
           "games": 23,
@@ -555,18 +555,18 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "NL Central",
+      "conference": "NL East",
       "gameDate": "2026-07-02T00:00:00.000Z",
-      "team": "Brewers",
-      "opponent": "Reds",
-      "points": 4,
-      "opponentPoints": 2,
+      "team": "Phillies",
+      "opponent": "Pirates",
+      "points": 1,
+      "opponentPoints": 6,
       "rebounds": null,
       "assists": null,
       "yards": null,
       "spread": -1.5,
-      "atsResult": "W",
-      "won": true,
+      "atsResult": "L",
+      "won": false,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -593,10 +593,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 8,
+      "hits": 4,
       "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401815986",
+      "sourceEventId": "401815994",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -767,38 +767,97 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-07-02T16:36:00.000Z",
-      "matchup": "Pittsburgh Pirates at Philadelphia Phillies",
-      "pickTeam": "Philadelphia Phillies",
-      "opponent": "Pittsburgh Pirates",
+      "gameDate": "2026-07-03T02:11:00.000Z",
+      "matchup": "San Diego Padres at Los Angeles Dodgers",
+      "pickTeam": "Los Angeles Dodgers",
+      "opponent": "San Diego Padres",
       "spread": -1.5,
       "modelSpread": -1.4,
-      "line": "Philadelphia Phillies -1.5",
-      "score": 69,
-      "confidence": 65,
+      "line": "Los Angeles Dodgers -1.5",
+      "score": 62,
+      "confidence": 58,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge -0.100",
+        "History sample Los Angeles Dodgers: 26 games (mapped Dodgers) vs San Diego Padres: 26 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Los Angeles Dodgers B2B vs San Diego Padres 2d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +4.0",
+        "Home SP: Roki Sasaki",
+        "Away SP: Randy Vásquez",
+        "MLB model: 67.6% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": -0.1,
+      "mlbModelProb": 0.6763,
+      "mlbEdge": 0.013,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-02T22:41:00.000Z",
+      "matchup": "Chicago White Sox at Cleveland Guardians",
+      "pickTeam": "Chicago White Sox",
+      "opponent": "Cleveland Guardians",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Chicago White Sox +1.5",
+      "score": 58,
+      "confidence": 53,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge -0.200",
-        "History sample Philadelphia Phillies: 27 games (mapped Phillies) vs Pittsburgh Pirates: 26 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Philadelphia Phillies 2d rest vs Pittsburgh Pirates 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +0.6",
-        "Home SP: Cristopher Sánchez",
-        "Away SP: Bubba Chandler",
-        "MLB model: 76.0% win prob (calibrated) | Edge vs market: +19.1%"
+        "ATS edge +0.200",
+        "History sample Chicago White Sox: 24 games (mapped White Sox) vs Cleveland Guardians: 25 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Chicago White Sox 2d rest vs Cleveland Guardians 2d rest",
+        "Net Rating edge: +3.0",
+        "Home SP: Slade Cecconi",
+        "Away SP: Davis Martin",
+        "MLB model: 55.5% win prob (calibrated) | Edge vs market: +30.6%"
       ],
       "momentumEdge": 0.4,
-      "atsEdge": -0.2,
-      "mlbModelProb": 0.7603,
-      "mlbEdge": 0.1905,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.5555,
+      "mlbEdge": 0.3055,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-02T23:41:00.000Z",
+      "matchup": "Tampa Bay Rays at Kansas City Royals",
+      "pickTeam": "Tampa Bay Rays",
+      "opponent": "Kansas City Royals",
+      "spread": 0,
+      "modelSpread": 0,
+      "line": "Tampa Bay Rays 0",
+      "score": 58,
+      "confidence": 53,
+      "rationaleSignals": [
+        "Momentum edge +1.00 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample Tampa Bay Rays: 25 games (mapped Rays) vs Kansas City Royals: 26 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Tampa Bay Rays 2d rest vs Kansas City Royals 2d rest",
+        "2 books: avg 0, variance 2.25 (high disagreement)",
+        "Net Rating edge: +6.5",
+        "Home SP: Stephen Kolek",
+        "Away SP: Ian Seymour",
+        "MLB model: 56.3% win prob (calibrated)"
+      ],
+      "momentumEdge": 1,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.5626,
+      "mlbEdge": 0.0358,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-02",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-07-02 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 3 eligible games found on 2026-07-02 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -966,14 +1025,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Shoulder",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Anfernee Simons",
-        "team": "Chicago Bulls",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Wrist",
         "returnDate": "2026-10-01"
       },
       {
@@ -1526,6 +1577,14 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Calf",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Anfernee Simons",
+        "team": "Philadelphia 76ers",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Wrist",
         "returnDate": "2026-10-01"
       },
       {
@@ -2523,20 +2582,20 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Christian Darrisaw",
-        "team": "Minnesota Vikings",
-        "position": "OT",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-07-01"
-      },
-      {
         "player": "Caleb Banks",
         "team": "Minnesota Vikings",
         "position": "DT",
         "status": "Questionable",
         "injuryType": "Foot",
         "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Christian Darrisaw",
+        "team": "Minnesota Vikings",
+        "position": "OT",
+        "status": "Questionable",
+        "injuryType": "Knee",
+        "returnDate": "2026-07-01"
       },
       {
         "player": "Gabe Jacas",
