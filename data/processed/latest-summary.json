@@ -1,46 +1,62 @@
 {
-  "generatedAt": "2026-07-03T16:00:56.400Z",
+  "generatedAt": "2026-07-03T23:41:21.963Z",
   "ready": true,
-  "recordsIngested": 783,
-  "recordsCompleted": 783,
+  "recordsIngested": 785,
+  "recordsCompleted": 785,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 756,
+      "games": 758,
       "conferences": [
+        "NL Central",
         "AL West",
         "AL Central",
         "NL West",
         "NL East",
-        "NL Central",
         "Unknown",
         "AL East"
       ],
-      "avgPoints": 4.7103174603174605,
+      "avgPoints": 4.721635883905013,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 5,
+      "recentAvgPoints": 5.9,
       "recentAvgYards": null,
-      "trendScore": 75,
-      "trendSignal": "up",
+      "trendScore": 26,
+      "trendSignal": "down",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 756,
-        "rpg": 4.71,
-        "oppRpg": 4.71,
+        "games": 758,
+        "rpg": 4.72,
+        "oppRpg": 4.72,
         "hitsPerGame": 8.46,
         "errorsPerGame": 0.52,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Cubs": {
+          "games": 26,
+          "rpg": 6.15,
+          "oppRpg": 5,
+          "hitsPerGame": 9.04,
+          "errorsPerGame": 0.27,
+          "sos": 0.52
+        },
+        "Cardinals": {
+          "games": 25,
+          "rpg": 5.56,
+          "oppRpg": 4.6,
+          "hitsPerGame": 9.04,
+          "errorsPerGame": 0.36,
+          "sos": null
+        },
         "Rangers": {
           "games": 26,
           "rpg": 4.42,
           "oppRpg": 4.85,
-          "hitsPerGame": 9.38,
+          "hitsPerGame": 9.35,
           "errorsPerGame": 0.42,
           "sos": null
         },
@@ -64,7 +80,7 @@
           "games": 25,
           "rpg": 4.6,
           "oppRpg": 4.4,
-          "hitsPerGame": 8.52,
+          "hitsPerGame": 8.48,
           "errorsPerGame": 0.68,
           "sos": 0.52
         },
@@ -156,14 +172,6 @@
           "errorsPerGame": 0.48,
           "sos": null
         },
-        "Cardinals": {
-          "games": 24,
-          "rpg": 5.08,
-          "oppRpg": 4.75,
-          "hitsPerGame": 8.71,
-          "errorsPerGame": 0.33,
-          "sos": null
-        },
         "Royals": {
           "games": 26,
           "rpg": 4.81,
@@ -201,7 +209,7 @@
           "rpg": 5.46,
           "oppRpg": 6.5,
           "hitsPerGame": 8.73,
-          "errorsPerGame": 0.31,
+          "errorsPerGame": 0.35,
           "sos": null
         },
         "Diamondbacks": {
@@ -252,20 +260,12 @@
           "errorsPerGame": 0.64,
           "sos": null
         },
-        "Cubs": {
-          "games": 25,
-          "rpg": 6.36,
-          "oppRpg": 4.52,
-          "hitsPerGame": 9.12,
-          "errorsPerGame": 0.24,
-          "sos": 0.52
-        },
         "Blue Jays": {
           "games": 25,
           "rpg": 4.16,
           "oppRpg": 4.84,
           "hitsPerGame": 8.64,
-          "errorsPerGame": 0.56,
+          "errorsPerGame": 0.6,
           "sos": null
         },
         "Mets": {
@@ -555,18 +555,18 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "AL West",
+      "conference": "NL Central",
       "gameDate": "2026-07-03T00:00:00.000Z",
-      "team": "Rangers",
-      "opponent": "Tigers",
-      "points": 10,
-      "opponentPoints": 4,
+      "team": "Cubs",
+      "opponent": "Cardinals",
+      "points": 1,
+      "opponentPoints": 17,
       "rebounds": null,
       "assists": null,
       "yards": null,
-      "spread": 1.5,
-      "atsResult": "W",
-      "won": true,
+      "spread": -1.5,
+      "atsResult": "L",
+      "won": false,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -593,10 +593,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 17,
-      "errors": 0,
+      "hits": 7,
+      "errors": 1,
       "source": "espn-public-api",
-      "sourceEventId": "401815997",
+      "sourceEventId": "401816007",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -791,34 +791,8 @@
       "momentumEdge": 0.8,
       "atsEdge": 0.1,
       "mlbModelProb": 0.6763,
-      "mlbEdge": -0.038,
+      "mlbEdge": -0.0439,
       "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-03T20:06:00.000Z",
-      "matchup": "St. Louis Cardinals at Chicago Cubs",
-      "pickTeam": "Chicago Cubs",
-      "opponent": "St. Louis Cardinals",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Chicago Cubs -1.5",
-      "score": 64,
-      "confidence": 60,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample Chicago Cubs: 25 games (mapped Cubs) vs St. Louis Cardinals: 24 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Chicago Cubs 3d rest vs St. Louis Cardinals 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.8"
-      ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.3,
-      "mlbModelProb": null,
-      "mlbEdge": null
     },
     {
       "league": "MLB",
@@ -827,18 +801,18 @@
       "matchup": "Tampa Bay Rays at Houston Astros",
       "pickTeam": "Tampa Bay Rays",
       "opponent": "Houston Astros",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Tampa Bay Rays 0",
-      "score": 59,
-      "confidence": 54,
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Tampa Bay Rays -1.5",
+      "score": 58,
+      "confidence": 53,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
         "ATS edge +0.300",
         "History sample Tampa Bay Rays: 25 games (mapped Rays) vs Houston Astros: 26 games",
         "Away (+-1 pt adjustment)",
         "Rest: Tampa Bay Rays 2d rest vs Houston Astros 2d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
+        "3 books: avg -1.5, variance 0 (tight consensus)",
         "Net Rating edge: +3.4"
       ],
       "momentumEdge": 0.4,
@@ -850,7 +824,7 @@
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-03",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 3 eligible games found on 2026-07-03 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 2 eligible games found on 2026-07-03 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
