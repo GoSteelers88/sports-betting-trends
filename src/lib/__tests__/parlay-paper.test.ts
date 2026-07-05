@@ -1,4 +1,4 @@
-// Unit tests for the parlay paper book (Experiment No. 4, PARLAY_PAPER_SPEC.md).
+// Unit tests for the parlay paper book (Experiment No. 4b, PARLAY_PAPER_SPEC.md).
 //
 // Everything load-bearing here is PURE given its inputs — assembly, EV, stake,
 // haircut, settlement, and accounting are decisions separated from the ESPN
@@ -201,19 +201,22 @@ describe("AC2 — correlated legs are refused", () => {
     expect(legsCorrelated(a, b)).toBe(true);
   });
 
-  it("a pitcher-K leg + an opposing-batter leg in the SAME game is refused with `correlated`", () => {
-    // Pitcher and the batter he faces share a gameId → same-game; the assembler
-    // first needs distinct games, so we pad with a third distinct-game leg and a
-    // legal alternative, and assert the correlated/same-game trio never opens.
+  it("a pitcher-K leg + an opposing-batter leg in the SAME game never share a ticket", () => {
+    // Pitcher and the batter he faces share a gameId → same-game. Under 4b a
+    // LEGAL 2-leg (one g1 leg + the g2 leg) may open, but no parlay may ever
+    // combine the two g1 legs.
     const pitcher = cand({ player: "Gerrit Cole", gameId: "g1", propType: "Strikeouts", team: "New York Yankees" });
     const oppBatter = cand({ player: "Rafael Devers", gameId: "g1", propType: "TotalBases", team: "Boston Red Sox" });
     const third = cand({ player: "Solo Leg", gameId: "g2", propType: "Strikeouts", team: "Chicago Cubs" });
     const tally = emptyTally();
     const { parlays } = assembleParlays([pitcher, oppBatter, third], new Set(), new Set(), 10_000, tally);
-    // pitcher+oppBatter share g1 → only 2 distinct games → can never form a trio.
-    expect(parlays).toHaveLength(0);
-    // The trio (pitcher, oppBatter, third) is caught by same-game (g1 twice).
-    expect(tally.sameGame + tally.correlated).toBeGreaterThanOrEqual(1);
+    const combinesSameGame = parlays.some((p) => {
+      const ids = new Set(p.legs.map((l) => l.legId));
+      return ids.has(pitcher.legId) && ids.has(oppBatter.legId);
+    });
+    expect(combinesSameGame).toBe(false);
+    // The pitcher+oppBatter pairing (and the trio containing it) is caught by same-game.
+    expect(tally.sameGame).toBeGreaterThanOrEqual(1);
   });
 
   it("a cross-game pitcher-K vs batter on DIFFERENT teams is independent (allowed)", () => {
@@ -451,7 +454,7 @@ describe("AC5 — look-ahead, idempotency, exposure, accounting", () => {
     expect(out[0].oddsAmerican).toBe(130); // the later tick won
   });
 
-  it("re-running the same slate opens no duplicate (deterministic id)", () => {
+  it("re-running the same slate opens no duplicate (open legs excluded, as in the cycle)", () => {
     const trio = [
       cand({ player: "A", gameId: "g1", team: "T1" }),
       cand({ player: "B", gameId: "g2", team: "T2" }),
@@ -460,10 +463,24 @@ describe("AC5 — look-ahead, idempotency, exposure, accounting", () => {
     const first = assembleParlays(trio, new Set(), new Set(), 10_000);
     expect(first.parlays).toHaveLength(1);
     const openId = first.parlays[0].id;
+    const openLegIds = new Set(first.parlays[0].legs.map((l) => l.legId));
 
-    // second run with the same slate, but now the id is already on the book
+    // second run with the same slate: the cycle passes the open parlay's legs
+    // as used AND its id as existing → nothing new can open.
+    const second = assembleParlays(trio, openLegIds, new Set([openId]), 10_000);
+    expect(second.parlays).toHaveLength(0);
+  });
+
+  it("an identical combo already on the book is skipped as dup", () => {
+    const pair = [
+      cand({ player: "A", gameId: "g1", team: "T1" }),
+      cand({ player: "B", gameId: "g2", team: "T2" }),
+    ];
+    const first = assembleParlays(pair, new Set(), new Set(), 10_000);
+    expect(first.parlays).toHaveLength(1);
+    // same slate again, book remembers the id but the legs are free (settled)
     const tally = emptyTally();
-    const second = assembleParlays(trio, new Set(), new Set([openId]), 10_000, tally);
+    const second = assembleParlays(pair, new Set(), new Set([first.parlays[0].id]), 10_000, tally);
     expect(second.parlays).toHaveLength(0);
     expect(tally.dup).toBeGreaterThanOrEqual(1);
   });
@@ -483,16 +500,19 @@ describe("AC5 — look-ahead, idempotency, exposure, accounting", () => {
     expect(new Set(usedLegIds).size).toBe(usedLegIds.length); // no leg twice
   });
 
-  it("a leg already committed in an OPEN parlay is not reused", () => {
+  it("a leg already committed in an OPEN parlay is not reused (free legs may still combine)", () => {
     const shared = cand({ player: "Shared", gameId: "g1", team: "T1" });
     const trio = [
       shared,
       cand({ player: "B", gameId: "g2", team: "T2" }),
       cand({ player: "C", gameId: "g3", team: "T3" }),
     ];
-    // shared.legId is already used by an open parlay → can't anchor a new one
+    // shared.legId is already committed → it appears in no new parlay; under 4b
+    // the two free legs legitimately form a 2-leg ticket.
     const { parlays } = assembleParlays(trio, new Set([shared.legId]), new Set(), 10_000);
-    expect(parlays).toHaveLength(0);
+    expect(parlays).toHaveLength(1);
+    expect(parlays[0].legs).toHaveLength(2);
+    expect(parlays[0].legs.map((l) => l.legId)).not.toContain(shared.legId);
   });
 
   it("exposure = Σ open stakes; equity = 10000 + Σ settled P&L; unsettled excluded from win-rate", () => {
@@ -527,5 +547,69 @@ describe("AC5 — look-ahead, idempotency, exposure, accounting", () => {
     expect(s.totalStakedUsd).toBe(0); // refunded, not decisive
     expect(s.realizedPnlUsd).toBe(0);
     expect(s.equityUsd).toBe(PARLAY_PAPER_CONFIG.startingBankrollUsd);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AC6 — Exp 4b: 2–3 leg selection (the quant chooses by parlay EV)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("AC6 — Exp 4b: 2–3 leg selection", () => {
+  it("config bounds the ticket at 2–3 legs", () => {
+    expect(PARLAY_PAPER_CONFIG.minLegs).toBe(2);
+    expect(PARLAY_PAPER_CONFIG.maxLegs).toBe(3);
+  });
+
+  it("TWO playable legs open a 2-leg parlay (4a's exactly-3 rule opened nothing)", () => {
+    const pair = [
+      cand({ player: "A", gameId: "g1", team: "T1" }),
+      cand({ player: "B", gameId: "g2", team: "T2" }),
+    ];
+    const { parlays } = assembleParlays(pair, new Set(), new Set(), 10_000);
+    expect(parlays).toHaveLength(1);
+    expect(parlays[0].legs).toHaveLength(2);
+    expect(new Set(parlays[0].legs.map((l) => l.gameId)).size).toBe(2);
+  });
+
+  it("with three valid +EV legs the quant prefers the 3-leg ticket over its 2-leg subsets", () => {
+    const trio = [
+      cand({ player: "A", gameId: "g1", team: "T1" }),
+      cand({ player: "B", gameId: "g2", team: "T2" }),
+      cand({ player: "C", gameId: "g3", team: "T3" }),
+    ];
+    const { parlays } = assembleParlays(trio, new Set(), new Set(), 10_000);
+    // one ticket, and it's the 3-leg — a +EV third leg always raises parlay EV,
+    // so the EV ranking picks the superset and the subsets lose their legs
+    expect(parlays).toHaveLength(1);
+    expect(parlays[0].legs).toHaveLength(3);
+  });
+
+  it("a 2-leg pair must also survive the −4pt-per-leg haircut", () => {
+    // fair 0.52 @ +100: pair EV = (0.52·2)² − 1 ≈ +8.2% at face, but at −4pt
+    // (0.48·2)² − 1 ≈ −7.8% → refused.
+    const pair = [
+      cand({ fairProb: 0.52, oddsAmerican: 100, gameId: "g1", team: "T1" }),
+      cand({ fairProb: 0.52, oddsAmerican: 100, gameId: "g2", team: "T2" }),
+    ];
+    const tally = emptyTally();
+    const { parlays } = assembleParlays(pair, new Set(), new Set(), 10_000, tally);
+    expect(parlays).toHaveLength(0);
+    expect(tally.haircut).toBeGreaterThanOrEqual(1);
+  });
+
+  it("five distinct-game legs split into a 3-leg and a 2-leg (no leg idle when a legal combo remains)", () => {
+    const five = [
+      cand({ player: "A", gameId: "g1", team: "T1" }),
+      cand({ player: "B", gameId: "g2", team: "T2" }),
+      cand({ player: "C", gameId: "g3", team: "T3" }),
+      cand({ player: "D", gameId: "g4", team: "T4" }),
+      cand({ player: "E", gameId: "g5", team: "T5" }),
+    ];
+    const { parlays } = assembleParlays(five, new Set(), new Set(), 10_000);
+    expect(parlays).toHaveLength(2);
+    const sizes = parlays.map((p) => p.legs.length).sort();
+    expect(sizes).toEqual([2, 3]);
+    const usedLegIds = parlays.flatMap((p) => p.legs.map((l) => l.legId));
+    expect(new Set(usedLegIds).size).toBe(5); // every leg used exactly once
   });
 });

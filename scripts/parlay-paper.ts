@@ -57,7 +57,7 @@ function legLine(l: ParlayBet["legs"][number]): string {
 function printStats(s: ParlayPaperStats) {
   const pnlColor = s.realizedPnlUsd > 0 ? G : s.realizedPnlUsd < 0 ? RED : D;
   console.log(
-    `\n${B}Parlay paper book${R}  ${D}($${PARLAY_PAPER_CONFIG.startingBankrollUsd.toLocaleString()} book · ${PARLAY_PAPER_CONFIG.legsPerParlay} legs · 3 distinct games · +EV legs ≥ ${(PARLAY_PAPER_CONFIG.evFloor * 100).toFixed(0)}% · ¼-Kelly on the combined)${R}`,
+    `\n${B}Parlay paper book${R}  ${D}($${PARLAY_PAPER_CONFIG.startingBankrollUsd.toLocaleString()} book · ${PARLAY_PAPER_CONFIG.minLegs}–${PARLAY_PAPER_CONFIG.maxLegs} legs · distinct games · +EV legs ≥ ${(PARLAY_PAPER_CONFIG.evFloor * 100).toFixed(0)}% · ¼-Kelly on the combined)${R}`,
   );
   console.log(
     `  equity ${B}${money(s.equityUsd)}${R}  ` +
@@ -77,7 +77,7 @@ function printStats(s: ParlayPaperStats) {
   }
   if (s.settledCount === 0 && s.openCount === 0) {
     console.log(
-      `  ${D}no parlays yet — the rule only fires on three independent +EV legs across three distinct games, which is rare. This is the honest book.${R}`,
+      `  ${D}no parlays yet — the rule only fires on 2–3 independent +EV legs across distinct games. This is the honest book.${R}`,
     );
   }
 }
