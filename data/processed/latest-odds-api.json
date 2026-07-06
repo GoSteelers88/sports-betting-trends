@@ -1,76 +1,17 @@
 {
-  "fetchedAt": "2026-07-05T23:43:36.985Z",
+  "fetchedAt": "2026-07-06T17:14:48.112Z",
   "leagues": "basketball_nba,basketball_wnba,baseball_mlb,icehockey_nhl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 14,
+  "eventCount": 13,
   "sampleEvent": {
-    "id": "fd_35785125",
+    "id": "fd_35788399",
     "sport_key": "basketball_wnba",
-    "commence_time": "2026-07-05T23:05:00.000Z",
-    "home_team": "Las Vegas Aces",
-    "away_team": "Indiana Fever"
+    "commence_time": "2026-07-06T23:30:00.000Z",
+    "home_team": "Washington Mystics",
+    "away_team": "Golden State Valkyries"
   },
   "events": [
-    {
-      "id": "fd_35785125",
-      "sport_key": "basketball_wnba",
-      "sport_title": "WNBA",
-      "commence_time": "2026-07-05T23:05:00.000Z",
-      "home_team": "Las Vegas Aces",
-      "away_team": "Indiana Fever",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Indiana Fever",
-                  "price": -104
-                },
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -122
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Indiana Fever",
-                  "price": -106,
-                  "point": -0.5
-                },
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -125,
-                  "point": 0.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -140,
-                  "point": 171.5
-                },
-                {
-                  "name": "Under",
-                  "price": 106,
-                  "point": 171.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_35788399",
       "sport_key": "basketball_wnba",
@@ -88,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Golden State Valkyries",
-                  "price": -194
+                  "price": -225
                 },
                 {
                   "name": "Washington Mystics",
-                  "price": 156
+                  "price": 180
                 }
               ]
             },
@@ -101,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "Golden State Valkyries",
-                  "price": -106,
+                  "price": -110,
                   "point": -5.5
                 },
                 {
                   "name": "Washington Mystics",
-                  "price": -114,
+                  "price": -110,
                   "point": 5.5
                 }
               ]
@@ -116,13 +57,62 @@
               "outcomes": [
                 {
                   "name": "Over",
+                  "price": -114,
+                  "point": 155.5
+                },
+                {
+                  "name": "Under",
+                  "price": -106,
+                  "point": 155.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Golden State Valkyries",
                   "price": -110,
-                  "point": 156.5
+                  "point": -5.5
+                },
+                {
+                  "name": "Washington Mystics",
+                  "price": -110,
+                  "point": 5.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -225
+                },
+                {
+                  "name": "Washington Mystics",
+                  "price": 185
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 156
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 156.5
+                  "point": 156
                 }
               ]
             }
@@ -147,11 +137,11 @@
               "outcomes": [
                 {
                   "name": "Connecticut Sun",
-                  "price": 760
+                  "price": 540
                 },
                 {
                   "name": "Minnesota Lynx",
-                  "price": -1400
+                  "price": -850
                 }
               ]
             },
@@ -160,13 +150,62 @@
               "outcomes": [
                 {
                   "name": "Connecticut Sun",
-                  "price": -106,
-                  "point": 14.5
+                  "price": -118,
+                  "point": 12.5
                 },
                 {
                   "name": "Minnesota Lynx",
-                  "price": -114,
-                  "point": -14.5
+                  "price": -104,
+                  "point": -12.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -105,
+                  "point": 165.5
+                },
+                {
+                  "name": "Under",
+                  "price": -115,
+                  "point": 165.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Connecticut Sun",
+                  "price": -110,
+                  "point": 12.5
+                },
+                {
+                  "name": "Minnesota Lynx",
+                  "price": -110,
+                  "point": -12.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Connecticut Sun",
+                  "price": 600
+                },
+                {
+                  "name": "Minnesota Lynx",
+                  "price": -950
                 }
               ]
             },
@@ -176,12 +215,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 166.5
+                  "point": 164.5
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 166.5
+                  "point": 164.5
                 }
               ]
             }
@@ -206,11 +245,11 @@
               "outcomes": [
                 {
                   "name": "Seattle Storm",
-                  "price": 136
+                  "price": 138
                 },
                 {
                   "name": "Los Angeles Sparks",
-                  "price": -168
+                  "price": -170
                 }
               ]
             },
@@ -219,13 +258,62 @@
               "outcomes": [
                 {
                   "name": "Seattle Storm",
-                  "price": -106,
-                  "point": 3.5
+                  "price": -120,
+                  "point": 4.5
                 },
                 {
                   "name": "Los Angeles Sparks",
+                  "price": -102,
+                  "point": -4.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -106,
+                  "point": 174.5
+                },
+                {
+                  "name": "Under",
                   "price": -114,
-                  "point": -3.5
+                  "point": 174.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Seattle Storm",
+                  "price": -115,
+                  "point": 4.5
+                },
+                {
+                  "name": "Los Angeles Sparks",
+                  "price": -105,
+                  "point": -4.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Seattle Storm",
+                  "price": 150
+                },
+                {
+                  "name": "Los Angeles Sparks",
+                  "price": -175
                 }
               ]
             },
@@ -235,12 +323,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 174.5
+                  "point": 174
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 174.5
+                  "point": 174
                 }
               ]
             }
@@ -278,12 +366,12 @@
               "outcomes": [
                 {
                   "name": "Dallas Wings",
-                  "price": -114,
+                  "price": -112,
                   "point": 5.5
                 },
                 {
                   "name": "New York Liberty",
-                  "price": -106,
+                  "price": -108,
                   "point": -5.5
                 }
               ]
@@ -293,13 +381,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -106,
-                  "point": 174.5
+                  "price": -115,
+                  "point": 175.5
                 },
                 {
                   "name": "Under",
-                  "price": -114,
-                  "point": 174.5
+                  "price": -105,
+                  "point": 175.5
                 }
               ]
             }
@@ -308,12 +396,12 @@
       ]
     },
     {
-      "id": "fd_35788405",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-05T20:31:00.000Z",
-      "home_team": "Athletics",
-      "away_team": "Miami Marlins",
+      "id": "fd_35791914",
+      "sport_key": "basketball_wnba",
+      "sport_title": "WNBA",
+      "commence_time": "2026-07-08T02:00:00.000Z",
+      "home_team": "Phoenix Mercury",
+      "away_team": "Chicago Sky",
       "bookmakers": [
         {
           "key": "fanduel",
@@ -323,12 +411,12 @@
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Miami Marlins",
-                  "price": -20000
+                  "name": "Chicago Sky",
+                  "price": 122
                 },
                 {
-                  "name": "Athletics",
-                  "price": 2200
+                  "name": "Phoenix Mercury",
+                  "price": -150
                 }
               ]
             },
@@ -336,14 +424,14 @@
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "Miami Marlins",
-                  "price": -490,
-                  "point": -3.5
-                },
-                {
-                  "name": "Athletics",
-                  "price": 320,
+                  "name": "Chicago Sky",
+                  "price": -120,
                   "point": 3.5
+                },
+                {
+                  "name": "Phoenix Mercury",
+                  "price": -102,
+                  "point": -3.5
                 }
               ]
             },
@@ -352,116 +440,34 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 102,
-                  "point": 14.5
+                  "price": -115,
+                  "point": 174.5
                 },
                 {
                   "name": "Under",
-                  "price": -136,
-                  "point": 14.5
+                  "price": -105,
+                  "point": 174.5
                 }
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35788413",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-05T23:21:00.000Z",
-      "home_team": "Los Angeles Dodgers",
-      "away_team": "San Diego Padres",
-      "bookmakers": [
+        },
         {
-          "key": "fanduel",
-          "title": "FanDuel",
+          "key": "bovada",
+          "title": "Bovada",
           "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "San Diego Padres",
-                  "price": 220
-                },
-                {
-                  "name": "Los Angeles Dodgers",
-                  "price": -295
-                }
-              ]
-            },
             {
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "San Diego Padres",
-                  "price": -104,
-                  "point": 1.5
+                  "name": "Chicago Sky",
+                  "price": -115,
+                  "point": 3
                 },
                 {
-                  "name": "Los Angeles Dodgers",
-                  "price": -125,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 100,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -132,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35788401",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-06T01:31:00.000Z",
-      "home_team": "Los Angeles Angels",
-      "away_team": "Boston Red Sox",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Boston Red Sox",
-                  "price": -154
-                },
-                {
-                  "name": "Los Angeles Angels",
-                  "price": 130
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Boston Red Sox",
-                  "price": 114,
-                  "point": -1.5
-                },
-                {
-                  "name": "Los Angeles Angels",
-                  "price": -137,
-                  "point": 1.5
+                  "name": "Phoenix Mercury",
+                  "price": -105,
+                  "point": -3
                 }
               ]
             },
@@ -471,12 +477,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 8
+                  "point": 175
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 8
+                  "point": 175
                 }
               ]
             }
@@ -501,11 +507,11 @@
               "outcomes": [
                 {
                   "name": "Philadelphia Phillies",
-                  "price": -172
+                  "price": -210
                 },
                 {
                   "name": "Kansas City Royals",
-                  "price": 144
+                  "price": 176
                 }
               ]
             },
@@ -514,12 +520,12 @@
               "outcomes": [
                 {
                   "name": "Philadelphia Phillies",
-                  "price": -102,
+                  "price": -134,
                   "point": -1.5
                 },
                 {
                   "name": "Kansas City Royals",
-                  "price": -118,
+                  "price": 112,
                   "point": 1.5
                 }
               ]
@@ -529,12 +535,61 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 102,
+                  "price": -106,
                   "point": 8.5
                 },
                 {
                   "name": "Under",
-                  "price": -124,
+                  "price": -114,
+                  "point": 8.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Phillies",
+                  "price": -135,
+                  "point": -1.5
+                },
+                {
+                  "name": "Kansas City Royals",
+                  "price": 115,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Phillies",
+                  "price": -215
+                },
+                {
+                  "name": "Kansas City Royals",
+                  "price": 175
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -105,
+                  "point": 8.5
+                },
+                {
+                  "name": "Under",
+                  "price": -115,
                   "point": 8.5
                 }
               ]
@@ -560,11 +615,11 @@
               "outcomes": [
                 {
                   "name": "New York Yankees",
-                  "price": 100
+                  "price": -106
                 },
                 {
                   "name": "Tampa Bay Rays",
-                  "price": -118
+                  "price": -110
                 }
               ]
             },
@@ -573,12 +628,12 @@
               "outcomes": [
                 {
                   "name": "New York Yankees",
-                  "price": 160,
+                  "price": 150,
                   "point": -1.5
                 },
                 {
                   "name": "Tampa Bay Rays",
-                  "price": -194,
+                  "price": -182,
                   "point": 1.5
                 }
               ]
@@ -594,6 +649,55 @@
                 {
                   "name": "Under",
                   "price": -120,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New York Yankees",
+                  "price": -230,
+                  "point": 1.5
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": 190,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New York Yankees",
+                  "price": -108
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": -112
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 105,
+                  "point": 7.5
+                },
+                {
+                  "name": "Under",
+                  "price": -125,
                   "point": 7.5
                 }
               ]
@@ -619,11 +723,11 @@
               "outcomes": [
                 {
                   "name": "Houston Astros",
-                  "price": 116
+                  "price": -102
                 },
                 {
                   "name": "Washington Nationals",
-                  "price": -136
+                  "price": -116
                 }
               ]
             },
@@ -632,13 +736,13 @@
               "outcomes": [
                 {
                   "name": "Houston Astros",
-                  "price": -178,
-                  "point": 1.5
+                  "price": 152,
+                  "point": -1.5
                 },
                 {
                   "name": "Washington Nationals",
-                  "price": 146,
-                  "point": -1.5
+                  "price": -184,
+                  "point": 1.5
                 }
               ]
             },
@@ -647,7 +751,56 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -122,
+                  "price": -120,
+                  "point": 9.5
+                },
+                {
+                  "name": "Under",
+                  "price": -102,
+                  "point": 9.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Houston Astros",
+                  "price": -185,
+                  "point": 1.5
+                },
+                {
+                  "name": "Washington Nationals",
+                  "price": 160,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Houston Astros",
+                  "price": 101
+                },
+                {
+                  "name": "Washington Nationals",
+                  "price": -121
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
                   "point": 9.5
                 },
                 {
@@ -691,12 +844,12 @@
               "outcomes": [
                 {
                   "name": "New York Mets",
-                  "price": -205,
+                  "price": -192,
                   "point": 1.5
                 },
                 {
                   "name": "Atlanta Braves",
-                  "price": 168,
+                  "price": 158,
                   "point": -1.5
                 }
               ]
@@ -706,13 +859,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
-                  "point": 8.5
+                  "price": -108,
+                  "point": 9
                 },
                 {
                   "name": "Under",
-                  "price": -105,
-                  "point": 8.5
+                  "price": -112,
+                  "point": 9
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New York Mets",
+                  "price": -185,
+                  "point": 1.5
+                },
+                {
+                  "name": "Atlanta Braves",
+                  "price": 160,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New York Mets",
+                  "price": 109
+                },
+                {
+                  "name": "Atlanta Braves",
+                  "price": -131
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 9
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 9
                 }
               ]
             }
@@ -737,11 +939,11 @@
               "outcomes": [
                 {
                   "name": "Milwaukee Brewers",
-                  "price": -116
+                  "price": -108
                 },
                 {
                   "name": "St. Louis Cardinals",
-                  "price": -102
+                  "price": -108
                 }
               ]
             },
@@ -750,12 +952,12 @@
               "outcomes": [
                 {
                   "name": "Milwaukee Brewers",
-                  "price": 150,
+                  "price": 158,
                   "point": -1.5
                 },
                 {
                   "name": "St. Louis Cardinals",
-                  "price": -182,
+                  "price": -192,
                   "point": 1.5
                 }
               ]
@@ -765,13 +967,170 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -106,
+                  "price": -114,
                   "point": 8
                 },
                 {
                   "name": "Under",
-                  "price": -114,
+                  "price": -106,
                   "point": 8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Milwaukee Brewers",
+                  "price": -230,
+                  "point": 1.5
+                },
+                {
+                  "name": "St. Louis Cardinals",
+                  "price": 190,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Milwaukee Brewers",
+                  "price": -111
+                },
+                {
+                  "name": "St. Louis Cardinals",
+                  "price": -109
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 8
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 8
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35791919",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-07-07T01:41:00.000Z",
+      "home_team": "San Diego Padres",
+      "away_team": "Arizona Diamondbacks",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Arizona Diamondbacks",
+                  "price": 106
+                },
+                {
+                  "name": "San Diego Padres",
+                  "price": -124
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Arizona Diamondbacks",
+                  "price": 168,
+                  "point": -1.5
+                },
+                {
+                  "name": "San Diego Padres",
+                  "price": -205,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -112,
+                  "point": 8.5
+                },
+                {
+                  "name": "Under",
+                  "price": -108,
+                  "point": 8.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Arizona Diamondbacks",
+                  "price": -200,
+                  "point": 1.5
+                },
+                {
+                  "name": "San Diego Padres",
+                  "price": 170,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Arizona Diamondbacks",
+                  "price": 103
+                },
+                {
+                  "name": "San Diego Padres",
+                  "price": -123
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 8.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 8.5
                 }
               ]
             }
@@ -796,11 +1155,11 @@
               "outcomes": [
                 {
                   "name": "Toronto Blue Jays",
-                  "price": -112
+                  "price": -110
                 },
                 {
                   "name": "San Francisco Giants",
-                  "price": -104
+                  "price": -106
                 }
               ]
             },
@@ -809,13 +1168,62 @@
               "outcomes": [
                 {
                   "name": "Toronto Blue Jays",
-                  "price": 150,
+                  "price": 155,
                   "point": -1.5
                 },
                 {
                   "name": "San Francisco Giants",
-                  "price": -182,
+                  "price": -188,
                   "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 7.5
+                },
+                {
+                  "name": "Under",
+                  "price": -102,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Toronto Blue Jays",
+                  "price": 155,
+                  "point": -1.5
+                },
+                {
+                  "name": "San Francisco Giants",
+                  "price": -180,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Toronto Blue Jays",
+                  "price": -112
+                },
+                {
+                  "name": "San Francisco Giants",
+                  "price": -108
                 }
               ]
             },
@@ -831,6 +1239,114 @@
                   "name": "Under",
                   "price": -115,
                   "point": 8
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35791915",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-07-07T02:11:00.000Z",
+      "home_team": "Los Angeles Dodgers",
+      "away_team": "Colorado Rockies",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Colorado Rockies",
+                  "price": 190
+                },
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": -230
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Colorado Rockies",
+                  "price": -105,
+                  "point": 1.5
+                },
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": -114,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 9.5
+                },
+                {
+                  "name": "Under",
+                  "price": -102,
+                  "point": 9.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Colorado Rockies",
+                  "price": -105,
+                  "point": 1.5
+                },
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": -115,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Colorado Rockies",
+                  "price": 195
+                },
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": -240
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 9.5
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
+                  "point": 9.5
                 }
               ]
             }
