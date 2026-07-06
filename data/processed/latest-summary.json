@@ -1,41 +1,57 @@
 {
-  "generatedAt": "2026-07-06T17:15:07.701Z",
+  "generatedAt": "2026-07-06T23:52:29.959Z",
   "ready": true,
-  "recordsIngested": 793,
-  "recordsCompleted": 793,
+  "recordsIngested": 795,
+  "recordsCompleted": 795,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 766,
+      "games": 768,
       "conferences": [
+        "AL Central",
+        "NL East",
         "AL West",
         "AL East",
-        "NL East",
         "NL Central",
-        "AL Central",
         "Unknown",
         "NL West"
       ],
-      "avgPoints": 4.714099216710183,
+      "avgPoints": 4.72265625,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 5.9,
+      "recentAvgPoints": 6.8,
       "recentAvgYards": null,
-      "trendScore": 46,
-      "trendSignal": "flat",
+      "trendScore": 75,
+      "trendSignal": "up",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 766,
-        "rpg": 4.71,
-        "oppRpg": 4.71,
-        "hitsPerGame": 8.45,
+        "games": 768,
+        "rpg": 4.72,
+        "oppRpg": 4.72,
+        "hitsPerGame": 8.47,
         "errorsPerGame": 0.54,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Royals": {
+          "games": 26,
+          "rpg": 5.08,
+          "oppRpg": 5.92,
+          "hitsPerGame": 9.15,
+          "errorsPerGame": 0.58,
+          "sos": null
+        },
+        "Phillies": {
+          "games": 27,
+          "rpg": 5.56,
+          "oppRpg": 4.96,
+          "hitsPerGame": 9.04,
+          "errorsPerGame": 0.59,
+          "sos": null
+        },
         "Angels": {
           "games": 26,
           "rpg": 4.65,
@@ -146,22 +162,6 @@
           "oppRpg": 4.52,
           "hitsPerGame": 8.72,
           "errorsPerGame": 0.4,
-          "sos": null
-        },
-        "Royals": {
-          "games": 25,
-          "rpg": 4.68,
-          "oppRpg": 6.12,
-          "hitsPerGame": 8.64,
-          "errorsPerGame": 0.6,
-          "sos": null
-        },
-        "Phillies": {
-          "games": 26,
-          "rpg": 5.73,
-          "oppRpg": 4.58,
-          "hitsPerGame": 9,
-          "errorsPerGame": 0.58,
           "sos": null
         },
         "Rangers": {
@@ -555,18 +555,18 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "AL West",
+      "conference": "AL Central",
       "gameDate": "2026-07-06T00:00:00.000Z",
-      "team": "Angels",
-      "opponent": "Red Sox",
-      "points": 5,
-      "opponentPoints": 7,
+      "team": "Royals",
+      "opponent": "Phillies",
+      "points": 15,
+      "opponentPoints": 1,
       "rebounds": null,
       "assists": null,
       "yards": null,
       "spread": 1.5,
-      "atsResult": "L",
-      "won": false,
+      "atsResult": "W",
+      "won": true,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -593,10 +593,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 9,
-      "errors": 1,
+      "hits": 22,
+      "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401816040",
+      "sourceEventId": "401816049",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -771,60 +771,33 @@
       "matchup": "New York Yankees at Tampa Bay Rays",
       "pickTeam": "Tampa Bay Rays",
       "opponent": "New York Yankees",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Tampa Bay Rays 0",
-      "score": 65,
-      "confidence": 61,
+      "spread": 3.5,
+      "modelSpread": 3.2,
+      "line": "Tampa Bay Rays +3.5",
+      "score": 63,
+      "confidence": 59,
       "rationaleSignals": [
         "Momentum edge +1.40 (last-10 trend proxy)",
         "ATS edge +0.700",
         "History sample Tampa Bay Rays: 26 games (mapped Rays) vs New York Yankees: 26 games",
         "Home court (+1 pt adjustment)",
         "Rest: Tampa Bay Rays 2d rest vs New York Yankees 2d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +6.8"
+        "Net Rating edge: +6.8",
+        "Home SP: Griffin Jax",
+        "Away SP: Cam Schlittler",
+        "MLB model: 54.5% win prob (calibrated) | Edge vs market: +40.2%"
       ],
       "momentumEdge": 1.4,
       "atsEdge": 0.7,
-      "mlbModelProb": null,
-      "mlbEdge": null
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-06T18:11:00.000Z",
-      "matchup": "Philadelphia Phillies at Kansas City Royals",
-      "pickTeam": "Philadelphia Phillies",
-      "opponent": "Kansas City Royals",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Philadelphia Phillies -1.5",
-      "score": 60,
-      "confidence": 56,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.100",
-        "History sample Philadelphia Phillies: 26 games (mapped Phillies) vs Kansas City Royals: 25 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Philadelphia Phillies 2d rest vs Kansas City Royals 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +5.7",
-        "Home SP: Luinder Avila",
-        "Away SP: Aaron Nola",
-        "MLB model: 64.0% win prob (calibrated)"
-      ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.1,
-      "mlbModelProb": 0.6403,
-      "mlbEdge": -0.0397,
+      "mlbModelProb": 0.5451,
+      "mlbEdge": 0.4022,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-06",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 2 eligible games found on 2026-07-06 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 1 eligible game found on 2026-07-06 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -834,6 +807,14 @@
   },
   "injuries": {
     "nba": [
+      {
+        "player": "RayJ Dennis",
+        "team": "Atlanta Hawks",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Achilles",
+        "returnDate": "2026-07-07"
+      },
       {
         "player": "Jock Landale",
         "team": "Atlanta Hawks",
@@ -851,44 +832,12 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Chaney Johnson",
-        "team": "Brooklyn Nets",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-06"
-      },
-      {
         "player": "Danny Wolf",
         "team": "Brooklyn Nets",
         "position": "F",
-        "status": "Day-To-Day",
+        "status": "Out",
         "injuryType": "Back",
-        "returnDate": "2026-07-06"
-      },
-      {
-        "player": "Tyler Bilodeau",
-        "team": "Brooklyn Nets",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-06"
-      },
-      {
-        "player": "Drake Powell",
-        "team": "Brooklyn Nets",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-06"
-      },
-      {
-        "player": "Ben Saraf",
-        "team": "Brooklyn Nets",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-06"
+        "returnDate": "2026-07-10"
       },
       {
         "player": "Nolan Traore",
@@ -896,22 +845,6 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Knee",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Day'Ron Sharpe",
-        "team": "Brooklyn Nets",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Thumb",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Josh Minott",
-        "team": "Brooklyn Nets",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
         "returnDate": "2026-10-01"
       },
       {
@@ -955,6 +888,14 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Noa Essengue",
+        "team": "Chicago Bulls",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Shoulder",
+        "returnDate": "2026-07-10"
+      },
+      {
         "player": "Zach Collins",
         "team": "Chicago Bulls",
         "position": "F",
@@ -968,14 +909,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Calf",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Noa Essengue",
-        "team": "Chicago Bulls",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Shoulder",
         "returnDate": "2026-10-01"
       },
       {
@@ -1403,6 +1336,14 @@
         "returnDate": "2026-07-06"
       },
       {
+        "player": "Nate Ament",
+        "team": "Milwaukee Bucks",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-07-06"
+      },
+      {
         "player": "Brayden Burries",
         "team": "Milwaukee Bucks",
         "position": "G",
@@ -1599,16 +1540,16 @@
         "team": "Sacramento Kings",
         "position": "G",
         "status": "Day-To-Day",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-06"
+        "injuryType": "day-to-day",
+        "returnDate": ""
       },
       {
         "player": "Dylan Cardwell",
         "team": "Sacramento Kings",
         "position": "C",
         "status": "Day-To-Day",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-06"
+        "injuryType": "day-to-day",
+        "returnDate": ""
       },
       {
         "player": "Darius Acuff Jr.",
@@ -1648,14 +1589,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Eye",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "DeMar DeRozan",
-        "team": "Sacramento Kings",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Hamstring",
         "returnDate": "2026-10-01"
       },
       {
@@ -1729,6 +1662,14 @@
         "status": "Day-To-Day",
         "injuryType": "Hamstring",
         "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Ace Bailey",
+        "team": "Utah Jazz",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
+        "returnDate": "2026-07-07"
       },
       {
         "player": "Jusuf Nurkic",
@@ -2923,14 +2864,6 @@
         "status": "Questionable",
         "injuryType": "Elbow",
         "returnDate": "2026-08-01"
-      },
-      {
-        "player": "C.J. Ravenell",
-        "team": "Tennessee Titans",
-        "position": "DE",
-        "status": "Injured Reserve",
-        "injuryType": "Undisclosed",
-        "returnDate": "2027-02-15"
       },
       {
         "player": "Oluwafemi Oladejo",
