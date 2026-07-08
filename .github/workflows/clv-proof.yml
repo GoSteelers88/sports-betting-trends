@@ -77,7 +77,9 @@ jobs:
         if: success()
         run: |
           git config user.name "clv-proof-bot"
-          git config user.email "clv-proof-bot@users.noreply.github.com"
+          # Author must be the GoSteelers88 GitHub-noreply identity or Vercel's
+          # unknown-author check BLOCKS every deploy (matches the other cron bots).
+          git config user.email "58962244+GoSteelers88@users.noreply.github.com"
           ALLOWED=( "data/processed/clv-proof-log.json" "data/processed/devig-paper-book.json" )
           # Defense in depth: refuse to commit if the log ever contains a
           # recognizable secret (it never should — it's pure odds data).
