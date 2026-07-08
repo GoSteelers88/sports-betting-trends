@@ -93,7 +93,7 @@ export function Hero({ data }: { data: DashboardData }) {
     <section id="front-page" className="pt-8 sm:pt-10">
       {/* Nameplate — shrunk to give the lead the room */}
       <div className="text-center">
-        <p className="eyebrow">Vol. 2026 · NBA + MLB Desk · Picks twice daily</p>
+        <p className="eyebrow">Vol. 2026 · NBA · MLB · WNBA Desk · Picks twice daily</p>
         <Reveal className="mt-2">
           <h1
             className="headline text-ink"
@@ -215,7 +215,7 @@ export function Hero({ data }: { data: DashboardData }) {
               value={`${shipped}`}
               sub={`${data.picks.games.length} game · ${data.picks.props.length} prop`}
             />
-            <RailRow label="Slate" value={`${inScopeSlate}`} sub="NBA + MLB tonight" />
+            <RailRow label="Slate" value={`${inScopeSlate}`} sub="NBA · MLB · WNBA tonight" />
           </dl>
         </aside>
       </div>

@@ -23,7 +23,10 @@ const MODEL_FILE: Record<AgentLeague, string | null> = {
   NCAAB: null,
 };
 
-const INJURY_FILE: Record<AgentLeague, string | null> = {
+// Exported so scope-integration.test.ts can assert this stays in lockstep with
+// the tools copy — their divergence (health had MLB:null while tools served the
+// real file) was a live bug caught in review.
+export const INJURY_FILE: Record<AgentLeague, string | null> = {
   NBA: "injuries-nba.json",
   WNBA: "injuries-wnba.json",
   MLB: "injuries-mlb.json",

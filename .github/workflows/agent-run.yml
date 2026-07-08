@@ -7,13 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       league:
-        description: League to analyze (NBA | MLB | BOTH)
+        description: League to analyze (NBA | MLB | WNBA | BOTH = all in-scope)
         required: true
         default: BOTH
         type: choice
         options:
           - NBA
           - MLB
+          - WNBA
           - BOTH
   schedule:
     # Off-the-hour offsets to dodge GH Actions cron congestion at :00/:30 boundaries.

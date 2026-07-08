@@ -10,6 +10,7 @@
 
 import { describe, it, expect } from "vitest";
 import { IN_SCOPE_LEAGUES, INJURY_FILE, getPlayerProps } from "../agent/tools";
+import { INJURY_FILE as HEALTH_INJURY_FILE } from "../agent/health";
 import { LEAGUE_TO_SPORT } from "../clv-tracker";
 import { PROP_GRADING_LEAGUES, SCOREBOARD, SUMMARY } from "../prop-grading";
 
@@ -51,5 +52,11 @@ describe("scope integration — every in-scope league is fully accountable", () 
     const res = getPlayerProps("WNBA");
     expect(res.available).toBe(false);
     expect(res.topProps).toEqual([]);
+  });
+
+  it("the tools and health INJURY_FILE maps stay in lockstep (no silent divergence)", () => {
+    // health.ts once had MLB:null while tools served injuries-mlb.json — a real
+    // bug. They are two copies of the same fact; this pins them together.
+    expect(HEALTH_INJURY_FILE).toEqual(INJURY_FILE);
   });
 });
