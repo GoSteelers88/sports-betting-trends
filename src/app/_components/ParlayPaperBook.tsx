@@ -46,12 +46,12 @@ export function ParlayPaperBook({ retro }: { retro?: ParlayRetro | null }) {
       <header className="px-4 sm:px-5 py-3" style={{ borderBottom: "3px double var(--rule-strong)" }}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-display font-semibold text-lg text-ink leading-tight">
-            Exp. No. 4 — Parlay paper, $10k
+            Exp. No. 4b — Parlay paper, $10k
           </h3>
           <span className="tag" style={{ color: "var(--blue)" }}>Paper · Live</span>
         </div>
         <p className="num text-[0.7rem] text-ink-2 leading-relaxed mt-1 max-w-3xl">
-          Combines {config.legsPerParlay} INDEPENDENT +EV prop legs from different games
+          Combines {config.minLegs}–{config.maxLegs} INDEPENDENT +EV prop legs from different games
           (correlation blocked) — opened only when the compounded EV stays positive after a
           −{haircutPts}pt/leg fair-prob haircut, sized at {config.kellyMultiplier}× Kelly on the
           combined price. Settled on real box scores.
@@ -144,9 +144,9 @@ export function ParlayPaperBook({ retro }: { retro?: ParlayRetro | null }) {
         </>
       ) : (
         <p className="px-4 sm:px-5 py-3 border-b border-rule tag" style={{ color: "var(--hold)" }}>
-          No independent +EV triples yet
+          No independent +EV combos yet
           {open.length === 0
-            ? ` · the book opens a parlay only when ≥${config.legsPerParlay} playable legs land across different games — an empty book is the honest result`
+            ? ` · the book opens a parlay only when ≥${config.minLegs} playable legs land across different games — an empty book is the honest result`
             : ` · ${open.length} parlay${open.length === 1 ? "" : "s"} riding`}
         </p>
       )}
@@ -219,7 +219,7 @@ export function ParlayPaperBook({ retro }: { retro?: ParlayRetro | null }) {
       <p className="eyebrow text-ink-3 leading-relaxed px-4 sm:px-5 py-2.5 border-t border-rule">
         Simulated · not financial advice. Legs are the props board&rsquo;s already-validated
         +EV quotes (≥{(config.evFloor * 100).toFixed(0)}% vs the de-vigged sharp prop line),
-        combined only across {config.legsPerParlay} distinct games so the joint probability is
+        combined only across distinct games ({config.minLegs}–{config.maxLegs} legs, one per game) so the joint probability is
         the product. The book books nothing unless the compounded EV survives a per-leg haircut —
         the parlay&rsquo;s honest test of whether independent edges really multiply.
       </p>

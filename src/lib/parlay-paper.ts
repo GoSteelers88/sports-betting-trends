@@ -34,7 +34,11 @@ import {
 export const PARLAY_PAPER_CONFIG = {
   startingBankrollUsd: 10_000,
   evFloor: 0.03, // a leg must be playable on the props board (EV ≥ 3% vs sharp)
-  legsPerParlay: 3, // exactly three legs, three distinct games
+  // Exp 4b (2026-07-05): 2–3 legs, one per distinct game. Exp 4a's exactly-3
+  // rule never assembled a ticket in 17 daily cycles (0 opened, 0 settled),
+  // so it was superseded on a clean book — see PARLAY_PAPER_SPEC.md.
+  minLegs: 2,
+  maxLegs: 3,
   haircutPerLegProb: 0.04, // −4pt per-leg fairProb haircut the parlay must still survive
   kellyMultiplier: 0.25, // quarter-Kelly on the COMBINED prob/odds (never per-leg product)
   maxStakePctEquity: 0.05, // cap any one parlay at 5% of equity
@@ -527,13 +531,24 @@ function toLeg(c: CandidateLeg): ParlayLeg {
 }
 
 /**
- * Greedy assembly of disjoint +EV three-leg parlays. Pure: given candidates +
- * the set of leg ids already used (across open parlays) + current equity, it
- * returns the new parlays to open and the per-reason skip tally. No I/O.
+ * Assembly of disjoint +EV parlays of minLegs..maxLegs legs (Exp 4b: 2–3).
+ * Pure: given candidates + the set of leg ids already used (across open
+ * parlays) + current equity, it returns the new parlays to open and the
+ * per-reason skip tally. No I/O.
  *
- * Greedy is deliberate: best-edge legs combine first, each leg lands in at most
- * one parlay (no exposure double-count), and the deterministic parlay id means
- * a rerun of the same slate produces the same ids → the open step de-dups them.
+ * The quant chooses in two stages:
+ *  1. ENUMERATE every valid combo (distinct games, uncorrelated, +EV, survives
+ *     the haircut) of every allowed size. Pools are small (a daily playable
+ *     slate is tens of legs, deduped), so exhaustive enumeration is cheap.
+ *  2. RANK by parlay EV and greedily take non-overlapping combos. A 3-leg
+ *     whose third leg is genuinely +EV always out-EVs its own 2-leg subset
+ *     (EV+1 multiplies by fairProb·decimal > 1), so the book naturally
+ *     prefers 3-leg tickets when the slate supports them and falls back to
+ *     2-leg tickets when it doesn't.
+ *
+ * Each leg lands in at most one parlay (no exposure double-count), and the
+ * deterministic parlay id means a rerun of the same slate produces the same
+ * ids → the open step de-dups them. Rank ties break on id for determinism.
  */
 export function assembleParlays(
   candidates: CandidateLeg[],
@@ -544,10 +559,10 @@ export function assembleParlays(
 ): AssemblyResult {
   const cfg = PARLAY_PAPER_CONFIG;
 
-  // Strongest legs first (highest single-leg edge), so greedy picks them up.
   // Candidates from buildCandidates are already gameId-filtered; this is a
   // defensive backstop for direct callers (e.g. tests) and does NOT re-tally
-  // no-gameId (buildCandidates owns that count).
+  // no-gameId (buildCandidates owns that count). Strongest legs first so the
+  // combo enumeration order (and therefore tally.started) is deterministic.
   const pool = [...candidates]
     .filter((c) => {
       if (!c.gameId) {
@@ -559,80 +574,96 @@ export function assembleParlays(
     })
     .sort((a, b) => edge(b) - edge(a));
 
+  // Stage 1 — enumerate every valid combo of every allowed size.
+  type ScoredCombo = { legs: ParlayLeg[]; id: string; ev: number; dec: number; prob: number };
+  const valid: ScoredCombo[] = [];
+
+  const consider = (combo: CandidateLeg[]): void => {
+    tally.started++;
+
+    // distinct games
+    const games = new Set(combo.map((l) => l.gameId));
+    if (games.size < combo.length) {
+      tally.sameGame++;
+      return;
+    }
+    // pairwise correlation (player/team/same-game backstop)
+    if (anyCorrelated(combo)) {
+      tally.correlated++;
+      return;
+    }
+
+    const legs = combo.map(toLeg);
+    const parlayEv = parlayExpectedValue(legs);
+    if (parlayEv <= 0) {
+      tally.negEV++;
+      return;
+    }
+    if (!survivesHaircut(legs, cfg.haircutPerLegProb)) {
+      tally.haircut++;
+      return;
+    }
+
+    valid.push({
+      legs,
+      id: parlayId(legs.map((l) => l.legId)),
+      ev: parlayEv,
+      dec: combinedDecimal(legs),
+      prob: combinedFairProb(legs),
+    });
+  };
+
+  const enumerate = (start: number, combo: CandidateLeg[]): void => {
+    if (combo.length >= cfg.minLegs) consider(combo);
+    if (combo.length >= cfg.maxLegs) return;
+    for (let i = start; i < pool.length; i++) {
+      if (alreadyUsedLegIds.has(pool[i].legId)) continue;
+      combo.push(pool[i]);
+      enumerate(i + 1, combo);
+      combo.pop();
+    }
+  };
+  enumerate(0, []);
+
+  // Stage 2 — rank by parlay EV (id tiebreak) and take disjoint combos.
+  valid.sort((a, b) => b.ev - a.ev || a.id.localeCompare(b.id));
+
   const used = new Set(alreadyUsedLegIds);
   const parlays: ParlayBet[] = [];
 
-  // Examine ordered triples without re-using a leg already committed this run.
-  // Each opened parlay commits its three legs to `used`; once an OUTER anchor
-  // (i or j) is consumed we must stop reusing it — break out of the inner loops
-  // so the next anchor is re-evaluated. (Re-checking only at loop entry would
-  // let a freshly-committed i/j be paired again with a later k.)
-  for (let i = 0; i < pool.length; i++) {
-    if (used.has(pool[i].legId)) continue;
-    for (let j = i + 1; j < pool.length; j++) {
-      if (used.has(pool[i].legId)) break; // anchor i was consumed → re-pick i
-      if (used.has(pool[j].legId)) continue;
-      for (let k = j + 1; k < pool.length; k++) {
-        if (used.has(pool[i].legId) || used.has(pool[j].legId)) break; // i/j consumed
-        if (used.has(pool[k].legId)) continue;
-        const trio = [pool[i], pool[j], pool[k]];
-        tally.started++;
-
-        // distinct games
-        const games = new Set(trio.map((l) => l.gameId));
-        if (games.size < cfg.legsPerParlay) {
-          tally.sameGame++;
-          continue;
-        }
-        // pairwise correlation (player/team/same-game backstop)
-        if (anyCorrelated(trio)) {
-          tally.correlated++;
-          continue;
-        }
-
-        const legs = trio.map(toLeg);
-        const parlayEv = parlayExpectedValue(legs);
-        if (parlayEv <= 0) {
-          tally.negEV++;
-          continue;
-        }
-        if (!survivesHaircut(legs, cfg.haircutPerLegProb)) {
-          tally.haircut++;
-          continue;
-        }
-
-        const dec = combinedDecimal(legs);
-        const prob = combinedFairProb(legs);
-        const stakeUsd = parlayStake(prob, dec, equityUsd);
-        if (stakeUsd <= 0) {
-          tally.tooSmall++;
-          continue;
-        }
-
-        const id = parlayId(legs.map((l) => l.legId));
-        if (existingParlayIds.has(id) || parlays.some((p) => p.id === id)) {
-          tally.dup++;
-          continue;
-        }
-
-        parlays.push({
-          id,
-          openedAt: "", // filled by caller (single now)
-          legs,
-          survivingLegIds: legs.map((l) => l.legId),
-          parlayDecimalOdds: +dec.toFixed(6),
-          parlayFairProb: +prob.toFixed(6),
-          parlayEV: +parlayEv.toFixed(6),
-          flipDelta: flipDelta(legs),
-          stakeUsd,
-          status: "open",
-          pnlUsd: null,
-          settledAt: null,
-        });
-        // commit these three legs so they can't appear in another parlay
-        for (const l of legs) used.add(l.legId);
-      }
+  for (const combo of valid) {
+    if (combo.legs.some((l) => used.has(l.legId))) {
+      tally.legReused++;
+      continue;
     }
+
+    const stakeUsd = parlayStake(combo.prob, combo.dec, equityUsd);
+    if (stakeUsd <= 0) {
+      tally.tooSmall++;
+      continue;
+    }
+
+    if (existingParlayIds.has(combo.id) || parlays.some((p) => p.id === combo.id)) {
+      tally.dup++;
+      continue;
+    }
+
+    parlays.push({
+      id: combo.id,
+      openedAt: "", // filled by caller (single now)
+      legs: combo.legs,
+      survivingLegIds: combo.legs.map((l) => l.legId),
+      parlayDecimalOdds: +combo.dec.toFixed(6),
+      parlayFairProb: +combo.prob.toFixed(6),
+      parlayEV: +combo.ev.toFixed(6),
+      flipDelta: flipDelta(combo.legs),
+      stakeUsd,
+      status: "open",
+      pnlUsd: null,
+      settledAt: null,
+    });
+    // commit these legs so they can't appear in another parlay
+    for (const l of combo.legs) used.add(l.legId);
   }
 
   return { parlays, tally };
@@ -712,7 +743,8 @@ export function getParlayLedgerView(dir = path.join(process.cwd(), "data", "proc
     stats,
     config: {
       evFloor: PARLAY_PAPER_CONFIG.evFloor,
-      legsPerParlay: PARLAY_PAPER_CONFIG.legsPerParlay,
+      minLegs: PARLAY_PAPER_CONFIG.minLegs,
+      maxLegs: PARLAY_PAPER_CONFIG.maxLegs,
       haircutPerLegProb: PARLAY_PAPER_CONFIG.haircutPerLegProb,
       kellyMultiplier: PARLAY_PAPER_CONFIG.kellyMultiplier,
     },

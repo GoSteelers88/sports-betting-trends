@@ -1,12 +1,31 @@
-# Experiment No. 4 — Parlay paper book (pre-registered)
+# Experiment No. 4b — Parlay paper book (pre-registered)
 
-**Hypothesis.** If three player-prop legs are each independently +EV against the
-de-vigged sharp (Pinnacle) line, and they are drawn from three *distinct,
-independent games*, then the parlay of the three is also +EV — and the
+## Registration history
+
+- **Exp 4a (registered 2026-06-14, superseded 2026-07-05):** exactly-3-leg rule.
+  In 17 daily cycles it never assembled a single ticket — **0 parlays opened, 0
+  settled** — because the daily playable pool (typically 1–7 legs, often
+  same-team or the same player quoted at multiple books) never yielded 3
+  uncorrelated legs across 3 distinct games that also survived the haircut.
+  Per this spec's own rule ("start a new numbered experiment instead"), the
+  rule change below is registered as **Exp 4b**. Nothing was tuned against
+  performance data — there was none; the book was empty. The $10k book carries
+  over untouched (only no-op equity snapshots exist).
+- **Exp 4b (registered 2026-07-05, before its first parlay opened):** **2–3
+  legs**, still one leg per distinct game, all other gates unchanged. Combo
+  selection is explicit: enumerate every valid 2- and 3-leg combo, rank by
+  parlay EV, greedily take non-overlapping combos. Because a 3-leg whose third
+  leg is +EV always out-EVs its own 2-leg subset, the book prefers 3-leg
+  tickets when the slate supports them and falls back to 2-leg tickets when it
+  doesn't.
+
+**Hypothesis.** If player-prop legs are each independently +EV against the
+de-vigged sharp (Pinnacle) line, and they are drawn from *distinct,
+independent games*, then the parlay of them is also +EV — and the
 compounded edge pays for the higher variance. Concretely we expect a positive
 realized **yield** (P&L ÷ amount staked) across a book of such parlays, even
 though most individual parlays lose (a 3-leg parlay of ~55% legs hits ~17% of
-the time).
+the time; a 2-leg ~30%).
 
 This is the natural extension of Experiment No. 1 (de-vig singles) and the
 props board: those proved we can find legs whose soft price beats the sharp
@@ -24,8 +43,9 @@ new numbered experiment instead).
 |---|---|
 | Leg source | props-board log rows flagged `playable` (EV ≥ **3%** vs the de-vigged sharp prop line), deduped to the latest tick per (player, propType, side, line, book) |
 | Leg eligibility | game `commence` still in the FUTURE at cycle time (no look-ahead) **and** a non-null `gameId` (a leg with no game identity is parlay-ineligible) |
-| Legs per parlay | exactly **3** |
-| Distinctness | the 3 legs must be in **3 distinct `gameId`s** — same-game combos forbidden |
+| Legs per parlay | **2–3** (Exp 4b; was exactly 3 under 4a) |
+| Combo choice | enumerate all valid 2- and 3-leg combos → rank by parlay EV (deterministic id tiebreak) → greedily take non-overlapping combos |
+| Distinctness | every leg in a **distinct `gameId`** — same-game combos forbidden |
 | Correlation block | even across games, refuse: same player; same-team stacks; a pitcher-strikeouts leg whose game contains a batter leg (same-game backstop). Skip reason `correlated`. |
 | Open gate | parlay true EV `Π(fairProb_i · decimal_i) − 1` must be **> 0** AND survive a **−4pt-per-leg** fairProb haircut (estimation-error guard) |
 | Recorded guard | the **flip-δ** (per-leg fairProb haircut that zeroes EV) is stored on every parlay |
@@ -68,7 +88,9 @@ At **n ≥ 30 settled parlays** (won + lost; full-void refunds don't count):
   by a non-trivial margin, else kill.
 
 Win rate alone is uninformative for parlays (most lose by design); **yield** is
-the verdict metric.
+the verdict metric. The 2-leg vs 3-leg yield split is **observational only**
+(logged for the eventual read, never a mid-flight gate — n per bucket will be
+small).
 
 ## Accounting
 
