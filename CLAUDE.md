@@ -11,11 +11,16 @@
 ## What This Is
 Full-stack sports betting platform with a Claude-powered agent layer. Tracks
 performance, generates picks, runs a 30-day paper trial, and (eventually)
-places bets on Kalshi. Scope: **NBA + MLB only** — hard-enforced via
+places bets on Kalshi. Scope: **NBA + MLB + WNBA** — hard-enforced via
 `IN_SCOPE_LEAGUES` + `isInScope()` at the `orchestrate()` and `analyze()`
 boundaries. WNBA/NHL/NCAAB were stripped on 2026-05-20 after they leaked
-into the paper trial and contaminated the CLV/ROI metrics. Legacy picks
-for those leagues remain in the DB so the dashboard can still surface them.
+into the paper trial and contaminated the CLV/ROI metrics; **WNBA was
+re-added 2026-06-30 by operator decision (trial-integrated, ML + props)** —
+its moneylines grade off the ESPN WNBA scoreboard and its props share the
+basketball box-score path. NHL/NCAAB remain stripped (in the DB only so the
+dashboard can surface legacy picks). NOTE: WNBA prop *generation* still needs
+a `latest-player-props-wnba.json` analyst feed (no scraper yet); moneylines
+are fully live.
 
 ## Stack
 - **Frontend**: Next.js 16.1.6 + React 19.2.3 + Tailwind v4 + GSAP entrance animations
@@ -27,6 +32,11 @@ for those leagues remain in the DB so the dashboard can still surface them.
 - **Scrapers**: Playwright (Node) + scrapling+patchright (Python legacy)
 - **Tests**: Vitest (`npm test`)
 - **Path alias**: `@/*` → `./src/*`
+
+> **Vercel MCP:** This project is connected to the Vercel MCP. Prefer the `mcp__vercel__*` tools
+> (`deploy_to_vercel`, `list_deployments`, `get_deployment`, `get_deployment_build_logs`,
+> `get_runtime_logs`, `get_project`) for Vercel deploys, status, and logs instead of the `vercel`
+> CLI. Master auto-promotes live; commits must be authored `nbberr@gmail.com` or Vercel blocks the build.
 
 ## How to Run Locally
 ```bash
