@@ -1,10 +1,11 @@
 {
-  "generatedAt": "2026-06-14T04:44:10.572Z",
+  "generatedAt": "2026-07-05T17:16:58.809Z",
   "mlbFeedFields": [
     "batter_hits",
     "batter_home_runs",
     "batter_rbis",
     "batter_runs_scored",
+    "batter_strikeouts",
     "pitcher_earned_runs",
     "pitcher_strikeouts"
   ],
@@ -116,21 +117,6 @@
       "synthesizedFields": [],
       "unlocks": "pricing the \"Stolen Bases 1+\" market",
       "why": "feed has no signal for [batter_stolen_bases] and no synthesis source available",
-      "impact": "medium",
-      "difficulty": "medium",
-      "priority": 9
-    },
-    {
-      "sport": "MLB",
-      "market": "Batter Strikeouts O/U",
-      "status": "missing",
-      "missingFields": [
-        "batter_strikeouts"
-      ],
-      "presentFields": [],
-      "synthesizedFields": [],
-      "unlocks": "pricing the \"Batter Strikeouts O/U\" market",
-      "why": "feed has no signal for [batter_strikeouts] and no synthesis source available",
       "impact": "medium",
       "difficulty": "medium",
       "priority": 9
@@ -305,11 +291,26 @@
       "impact": "medium",
       "difficulty": "low",
       "priority": 7
+    },
+    {
+      "sport": "MLB",
+      "market": "Batter Strikeouts O/U",
+      "status": "covered",
+      "missingFields": [],
+      "presentFields": [
+        "batter_strikeouts"
+      ],
+      "synthesizedFields": [],
+      "unlocks": "pricing the \"Batter Strikeouts O/U\" market",
+      "why": "all required per-game fields present in the feed",
+      "impact": "medium",
+      "difficulty": "medium",
+      "priority": 6
     }
   ],
   "summary": {
-    "covered": 7,
+    "covered": 8,
     "synthesized": 1,
-    "missing": 8
+    "missing": 7
   }
 }
