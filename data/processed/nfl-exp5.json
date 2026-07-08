@@ -1,208 +1,208 @@
 {
-  "generatedAt": "2026-06-14T19:24:26.280Z",
+  "generatedAt": "2026-07-05T17:17:10.256Z",
   "source": "nfl-quant-dryrun",
   "record": {
-    "wins": 51,
-    "losses": 30,
-    "pushes": 0
+    "wins": 189,
+    "losses": 120,
+    "pushes": 1
   },
-  "settled": 81,
+  "settled": 310,
   "clvBeatRatePct": 0,
-  "avgClvCents": -15.67,
-  "roiPct": 3.83,
+  "avgClvCents": -11.2,
+  "roiPct": 8.21,
   "note": "Leak-free Elo fair value vs nflverse ~closing lines. CLV ≈ 0 by construction for a dry-run (entry == close); research backtest, not live betting. Example picks are SETTLED historical blind picks only. Goes live for the 2026 season.",
   "examplePicks": [
     {
-      "matchup": "LA @ SEA",
-      "selection": "SEA ML",
+      "matchup": "BUF @ KC",
+      "selection": "KC ML",
       "market": "moneyline",
-      "edgePct": 4.9,
+      "edgePct": 12,
       "result": "won",
-      "explanation": "Model fair 61.2% vs de-vigged market 56.4% on SEA ML (-142) — 4.9-pt edge.",
-      "season": 2025,
+      "explanation": "Model fair 63.8% vs de-vigged market 51.7% on KC ML (-118) — 12.0-pt edge.",
+      "season": 2024,
       "week": 21
     },
     {
-      "matchup": "BUF @ DEN",
-      "selection": "DEN ML",
+      "matchup": "MIN @ DET",
+      "selection": "DET ML",
       "market": "moneyline",
-      "edgePct": 5.3,
+      "edgePct": 4.8,
       "result": "won",
-      "explanation": "Model fair 57.4% vs de-vigged market 52.2% on DEN ML (-120) — 5.3-pt edge.",
-      "season": 2025,
-      "week": 20
-    },
-    {
-      "matchup": "WAS @ PHI",
-      "selection": "PHI ML",
-      "market": "moneyline",
-      "edgePct": 15.8,
-      "result": "lost",
-      "explanation": "Model fair 77.5% vs de-vigged market 61.6% on PHI ML (-180) — 15.8-pt edge.",
-      "season": 2025,
+      "explanation": "Model fair 62.0% vs de-vigged market 57.2% on DET ML (-148) — 4.8-pt edge.",
+      "season": 2024,
       "week": 18
     },
     {
-      "matchup": "CAR @ TB",
-      "selection": "TB ML",
+      "matchup": "BUF @ NE",
+      "selection": "BUF ML",
+      "market": "moneyline",
+      "edgePct": 14.2,
+      "result": "lost",
+      "explanation": "Model fair 74.2% vs de-vigged market 60.0% on BUF ML (-166) — 14.2-pt edge.",
+      "season": 2024,
+      "week": 18
+    },
+    {
+      "matchup": "TEN @ JAX",
+      "selection": "JAX ML",
+      "market": "moneyline",
+      "edgePct": 9.5,
+      "result": "won",
+      "explanation": "Model fair 60.0% vs de-vigged market 50.4% on JAX ML (-112) — 9.5-pt edge.",
+      "season": 2024,
+      "week": 17
+    },
+    {
+      "matchup": "TEN @ IND",
+      "selection": "IND ML",
       "market": "moneyline",
       "edgePct": 3,
       "result": "won",
-      "explanation": "Model fair 61.3% vs de-vigged market 58.3% on TB ML (-155) — 3.0-pt edge.",
-      "season": 2025,
-      "week": 18
-    },
-    {
-      "matchup": "BAL @ GB",
-      "selection": "GB ML",
-      "market": "moneyline",
-      "edgePct": 5.1,
-      "result": "lost",
-      "explanation": "Model fair 61.4% vs de-vigged market 56.4% on GB ML (-142) — 5.1-pt edge.",
-      "season": 2025,
-      "week": 17
-    },
-    {
-      "matchup": "HOU @ LAC",
-      "selection": "LAC ML",
-      "market": "moneyline",
-      "edgePct": 6.1,
-      "result": "lost",
-      "explanation": "Model fair 57.9% vs de-vigged market 51.7% on LAC ML (-118) — 6.1-pt edge.",
-      "season": 2025,
-      "week": 17
-    },
-    {
-      "matchup": "JAX @ DEN",
-      "selection": "DEN ML",
-      "market": "moneyline",
-      "edgePct": 7.8,
-      "result": "lost",
-      "explanation": "Model fair 68.7% vs de-vigged market 60.9% on DEN ML (-175) — 7.8-pt edge.",
-      "season": 2025,
+      "explanation": "Model fair 66.7% vs de-vigged market 63.7% on IND ML (-198) — 3.0-pt edge.",
+      "season": 2024,
       "week": 16
     },
     {
-      "matchup": "MIN @ NYG",
+      "matchup": "HOU @ KC",
+      "selection": "KC ML",
+      "market": "moneyline",
+      "edgePct": 14.3,
+      "result": "won",
+      "explanation": "Model fair 75.9% vs de-vigged market 61.6% on KC ML (-180) — 14.3-pt edge.",
+      "season": 2024,
+      "week": 16
+    },
+    {
+      "matchup": "CHI @ MIN",
       "selection": "MIN ML",
       "market": "moneyline",
-      "edgePct": 5.7,
+      "edgePct": 3.3,
       "result": "won",
-      "explanation": "Model fair 62.9% vs de-vigged market 57.2% on MIN ML (-148) — 5.7-pt edge.",
-      "season": 2025,
-      "week": 16
+      "explanation": "Model fair 76.7% vs de-vigged market 73.4% on MIN ML (-325) — 3.3-pt edge.",
+      "season": 2024,
+      "week": 15
+    },
+    {
+      "matchup": "BUF @ DET",
+      "selection": "DET ML",
+      "market": "moneyline",
+      "edgePct": 5.5,
+      "result": "lost",
+      "explanation": "Model fair 59.8% vs de-vigged market 54.3% on DET ML (-130) — 5.5-pt edge.",
+      "season": 2024,
+      "week": 15
     }
   ],
   "props": {
     "record": {
-      "wins": 391,
-      "losses": 199,
-      "pushes": 6
+      "wins": 27,
+      "losses": 26,
+      "pushes": 2
     },
-    "settled": 596,
-    "noData": 391,
+    "settled": 55,
+    "noData": 1,
     "examples": [
       {
-        "player": "Patrick Mahomes",
-        "team": "KC",
+        "player": "Keenan Allen",
+        "team": "LAC",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "Allen avg 88.8 recYds on 11.2 tgts. GB defense is strong but Rivers volume to Allen is elite. SD likely trailing, boosting pass volume.",
+        "season": 2015,
+        "week": 6
+      },
+      {
+        "player": "Tom Brady",
+        "team": "NE",
         "stat": "passYds",
         "threshold": 250,
         "side": "over",
         "result": "win",
-        "rationale": "PHI allows 358 PA (strong but not elite vs pass), dome setting eliminates weather risk, Mahomes avg 252 yd/g with upside in high-stakes game vs 568 PF offense likely to force KC passing.",
-        "season": 2024,
-        "week": 22
+        "rationale": "Brady avg 346.75 yds/gm, IND defense allowing big passing (3-2, PA 113). Indoor dome game, no weather suppression. NE strong road favorite with elite QB pace.",
+        "season": 2015,
+        "week": 6
       },
       {
-        "player": "Jalen Hurts",
-        "team": "PHI",
-        "stat": "rushYds",
-        "threshold": 75,
-        "side": "under",
-        "result": "win",
-        "rationale": "Hurts averages only 37.8 rush yds/g this season. KC defense elite (369 PA), mobile QB containment is KC strength. Season avg well below 75 threshold with no injury boosting rush volume.",
-        "season": 2024,
-        "week": 22
-      },
-      {
-        "player": "Saquon Barkley",
-        "team": "PHI",
-        "stat": "rushYds",
-        "threshold": 75,
+        "player": "Tom Brady",
+        "team": "NE",
+        "stat": "passTDs",
+        "threshold": 1.5,
         "side": "over",
-        "result": "loss",
-        "rationale": "Barkley averages 103.3 rush yds/g, elite usage. PHI 568 PF offense dominates. KC allows 369 PA but run D tested in dome. Barkley well above threshold even in tough matchups.",
-        "season": 2024,
-        "week": 22
+        "result": "win",
+        "rationale": "Brady averaging 2.75 TDs/gm. IND defense below avg (PA 113 in 5 games). Indoor game, high-scoring NE offense, strong over lean.",
+        "season": 2015,
+        "week": 6
       },
       {
-        "player": "A.J. Brown",
-        "team": "PHI",
+        "player": "Rob Gronkowski",
+        "team": "NE",
         "stat": "recYds",
         "threshold": 50,
         "side": "over",
-        "result": "loss",
-        "rationale": "Brown averages 80.5 rec yds/g with 8.3 targets/g. Dome game, no injury listed, PHI explosive offense. KC secondary solid but Brown's volume and explosiveness supports over.",
-        "season": 2024,
-        "week": 22
+        "result": "push",
+        "rationale": "Gronk avg 93.75 recYds/gm with 8.25 tgts. Indoor game vs IND, Brady returning/elite. Strong usage and matchup both favor over.",
+        "season": 2015,
+        "week": 6
       },
       {
-        "player": "Travis Kelce",
-        "team": "KC",
+        "player": "Julian Edelman",
+        "team": "NE",
         "stat": "recYds",
         "threshold": 50,
-        "side": "under",
-        "result": "win",
-        "rationale": "Kelce averages only 62 rec yds/g this season, below his historic norms. PHI allows only 358 PA and has strong TE coverage. More likely to fall under 50 than a dominant performance.",
-        "season": 2024,
-        "week": 22
+        "side": "over",
+        "result": "push",
+        "rationale": "Edelman avg 99.75 recYds on 11.75 tgts/gm. Indoor game, Brady driving offense. Volume and matchup strongly support over.",
+        "season": 2015,
+        "week": 6
       },
       {
-        "player": "DeVonta Smith",
-        "team": "PHI",
+        "player": "DeAndre Hopkins",
+        "team": "HOU",
         "stat": "recYds",
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Smith averages 65.7 rec yds/g, healthy (injuryStatus None), 6.8 targets/g. Dome game favors passing. PHI likely to air it out vs KC; Smith provides consistent floor above threshold.",
-        "season": 2024,
-        "week": 22
+        "rationale": "Hopkins avg 115.6 recYds on 14.8 tgts/gm. JAX defense weak (PA 145, 1-4). Wind 18mph but warm (73F), Hopkins dominant target share.",
+        "season": 2015,
+        "week": 6
       },
       {
-        "player": "Saquon Barkley",
-        "team": "PHI",
-        "stat": "rushYds",
-        "threshold": 75,
-        "side": "over",
-        "result": "win",
-        "rationale": "Barkley averages 102.8 rush yds/game, faces WAS allowing 442 PA (weak defense). Home playoff game, dome-adjacent cold but manageable. Elite usage vs inferior run D.",
-        "season": 2024,
-        "week": 21
-      },
-      {
-        "player": "A.J. Brown",
-        "team": "PHI",
+        "player": "Larry Fitzgerald",
+        "team": "ARI",
         "stat": "recYds",
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "AJB averages 80 rec yds/game, 8.3 targets. WAS secondary is beatable (442 PA allowed). PHI home favorite in NFC Championship, expect pass volume. No injury flag.",
-        "season": 2024,
-        "week": 21
+        "rationale": "Fitzgerald avg 98 recYds on 8.8 tgts. PIT without Roethlisberger (Out), but ARI offense elite (4-1, PF 190). Wind 12mph, manageable per doctrine.",
+        "season": 2015,
+        "week": 6
+      },
+      {
+        "player": "Julio Jones",
+        "team": "ATL",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "Jones avg 109 recYds on 12.4 tgts. Dome game vs NO defense that's been torched (PA 143, 1-4). No weather concerns, elite usage.",
+        "season": 2015,
+        "week": 6
       }
     ]
   },
   "parlays": {
     "record": {
-      "wins": 75,
-      "losses": 213,
+      "wins": 5,
+      "losses": 23,
       "pushes": 0
     },
-    "settled": 288,
-    "roiPct": 86.33,
-    "winRatePct": 26,
-    "breakEvenPct": 14,
-    "avgLegsEdge": 0.1494,
-    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 26% win rate clears the 14% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
+    "settled": 28,
+    "roiPct": 24.25,
+    "winRatePct": 17.9,
+    "breakEvenPct": 13.7,
+    "avgLegsEdge": 0.1141,
+    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 17.9% win rate clears the 13.7% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
   }
 }

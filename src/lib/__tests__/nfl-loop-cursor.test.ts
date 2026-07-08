@@ -13,6 +13,7 @@ import {
   saveCursor,
   loadCursor,
   computeStatRecord,
+  LOOP_SEASONS,
   type Cursor,
   type GameRow,
   type GamePick,
@@ -75,8 +76,8 @@ describe("cursor advancement", () => {
     expect(loadCursor(dir)).toEqual(c);
   });
 
-  it("defaults to 2023 REG wk1 with no file", () => {
-    expect(loadCursor(dir)).toEqual({ season: 2023, phase: "REG", week: 1 });
+  it("defaults to the first LOOP_SEASON REG wk1 with no file", () => {
+    expect(loadCursor(dir)).toEqual({ season: LOOP_SEASONS[0], phase: "REG", week: 1 });
   });
 });
 

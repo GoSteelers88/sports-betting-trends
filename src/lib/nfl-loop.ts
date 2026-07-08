@@ -379,7 +379,15 @@ function injuryKey(season: number, phase: GameType, week: number, team: string):
 // Season / week ordering + cursor
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const LOOP_SEASONS = [2023, 2024, 2025] as const;
+// Walk-forward TRAINING window. The loop walks these seasons chronologically,
+// each week exactly once (no re-running the same data -- that's data-snooping).
+// 2025 is deliberately EXCLUDED as a held-out validation season: fullSchedule()
+// only covers LOOP_SEASONS, so the loop can never touch 2025 until we choose to
+// run a one-shot out-of-sample validation against it. 2026 is unplayed (no
+// results) so it is excluded automatically.
+export const LOOP_SEASONS = [
+  2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,
+] as const;
 export type LoopSeason = (typeof LOOP_SEASONS)[number];
 
 export type Cursor = {
