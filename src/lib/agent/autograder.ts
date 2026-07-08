@@ -216,10 +216,15 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
     finalsByLeague.set(lg, all);
   }
 
-  // Box-score lookups for prop picks. Only NBA + MLB have the player-stat
-  // extractor; props from other leagues fall through to unmatched.
+  // Box-score lookups for prop picks. NBA, MLB + WNBA have the player-stat
+  // extractor (WNBA shares the basketball box-score schema); props from any
+  // other league fall through to unmatched.
   const propLeagues = Array.from(
-    new Set(propPicks.map(p => p.league).filter((l): l is PropGradingLeague => l === "NBA" || l === "MLB"))
+    new Set(
+      propPicks
+        .map(p => p.league)
+        .filter((l): l is PropGradingLeague => l === "NBA" || l === "MLB" || l === "WNBA")
+    )
   );
   const lookupByLeague = new Map<PropGradingLeague, PlayerStatLookup>();
   for (const lg of propLeagues) {
@@ -292,7 +297,7 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
 
   // ─── prop branch ──────────────────────────────────────────────────────────
   for (const pick of propPicks) {
-    if (pick.league !== "NBA" && pick.league !== "MLB") {
+    if (pick.league !== "NBA" && pick.league !== "MLB" && pick.league !== "WNBA") {
       report.unmatched++;
       continue;
     }

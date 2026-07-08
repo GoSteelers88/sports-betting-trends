@@ -1,11 +1,12 @@
 // Run the orchestrator end-to-end for one or more leagues.
 // Usage: npm run agent:run -- NBA
 //        npm run agent:run -- MLB
-//        npm run agent:run -- BOTH   (NBA + MLB; default)
+//        npm run agent:run -- WNBA
+//        npm run agent:run -- BOTH   (all in-scope leagues; default)
 //
-// Scope tightened to NBA + MLB on 2026-05-20. BOTH and ALL both expand to
-// [NBA, MLB] now; passing WNBA/NHL/NCAAB explicitly will hit the scope guard
-// in orchestrate() and throw OutOfScopeLeagueError.
+// BOTH and ALL expand to IN_SCOPE_LEAGUES = [NBA, MLB, WNBA] (WNBA re-added
+// 2026-06-30). Passing NHL/NCAAB explicitly will hit the scope guard in
+// orchestrate() and throw OutOfScopeLeagueError.
 import { config } from "dotenv";
 config();
 

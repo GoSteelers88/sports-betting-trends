@@ -23,8 +23,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { prisma } from "./prisma";
 
-const LEAGUE_TO_SPORT: Record<string, string> = {
+// Exported so the scope-invariant test can assert every IN_SCOPE_LEAGUES entry
+// is CLV-accountable (has a sport key → closing-odds file). A missing entry
+// means picks in that league count toward the trial's sample/ROI but never get
+// CLV captured — the exact contamination WNBA was stripped for in 2026-05.
+export const LEAGUE_TO_SPORT: Record<string, string> = {
   NBA: "basketball_nba",
+  WNBA: "basketball_wnba",
   MLB: "baseball_mlb",
   NCAAB: "basketball_ncaab",
 };

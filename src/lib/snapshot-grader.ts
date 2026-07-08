@@ -43,10 +43,10 @@ async function gradeProps(daysBack: number): Promise<{ graded: number; unmatched
   const since = new Date(target);
   since.setUTCDate(since.getUTCDate() - 2);
 
-  // Both NBA and MLB props get graded — different stat lookups per league.
+  // NBA, MLB + WNBA props get graded — different stat lookups per league.
   const pending = await prisma.modelPickSnapshot.findMany({
     where: {
-      source: { in: ["prop_nba", "prop_mlb"] },
+      source: { in: ["prop_nba", "prop_mlb", "prop_wnba"] },
       result: null,
       createdAt: { gte: since },
     },
@@ -60,6 +60,9 @@ async function gradeProps(daysBack: number): Promise<{ graded: number; unmatched
   const mlbLookup: PlayerStatLookup = pending.some(p => p.source === "prop_mlb")
     ? await buildPlayerStatLookup("MLB", yyyymmddDate)
     : emptyLookup;
+  const wnbaLookup: PlayerStatLookup = pending.some(p => p.source === "prop_wnba")
+    ? await buildPlayerStatLookup("WNBA", yyyymmddDate)
+    : emptyLookup;
   let graded = 0;
   let unmatched = 0;
 
@@ -68,7 +71,8 @@ async function gradeProps(daysBack: number): Promise<{ graded: number; unmatched
       unmatched++;
       continue;
     }
-    const lookup = p.source === "prop_mlb" ? mlbLookup : nbaLookup;
+    const lookup =
+      p.source === "prop_mlb" ? mlbLookup : p.source === "prop_wnba" ? wnbaLookup : nbaLookup;
     const allEntries = lookup.byPlayer.get(normalizeName(p.player));
     if (!allEntries || allEntries.length === 0) {
       unmatched++;
@@ -157,11 +161,11 @@ async function gradeMarketPicks(daysBack: number): Promise<{ graded: number; unm
   });
   const byLeague: Record<string, EspnEvent[]> = {};
   for (const lg of new Set(pending.map(p => p.league))) {
-    if (lg !== "NBA" && lg !== "MLB") continue;
+    if (lg !== "NBA" && lg !== "MLB" && lg !== "WNBA") continue;
     const seen = new Set<string>();
     const events: EspnEvent[] = [];
     for (const d of dates) {
-      const board = await fetchJson<Espn>(`${SCOREBOARD[lg as "NBA" | "MLB"]}?dates=${d}`);
+      const board = await fetchJson<Espn>(`${SCOREBOARD[lg as "NBA" | "MLB" | "WNBA"]}?dates=${d}`);
       for (const ev of board?.events ?? []) {
         if (seen.has(ev.id)) continue;
         seen.add(ev.id);

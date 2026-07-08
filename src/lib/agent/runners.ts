@@ -21,7 +21,7 @@ const COOLDOWN_FILE = path.resolve(process.cwd(), "data", "processed", ".ingest-
 const COOLDOWN_MIN_MS = 90 * 60 * 1000; // 90 min between runs of the same script
 
 // Allowed scripts the orchestrator can run. Restricted to the agent's scope
-// (NBA + MLB + their inputs). Note: `ingest:odds` hits The Odds API for ALL
+// (NBA + MLB + WNBA + their inputs). Note: `ingest:odds` hits The Odds API for ALL
 // configured leagues — if you want to limit it, set THE_ODDS_LEAGUES_AGENT
 // in env (handled by ingest-odds-api.ts patches in a later iteration).
 export const ALLOWED_SCRIPTS = [

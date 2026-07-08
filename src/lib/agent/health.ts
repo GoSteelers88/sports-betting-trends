@@ -25,8 +25,8 @@ const MODEL_FILE: Record<AgentLeague, string | null> = {
 
 const INJURY_FILE: Record<AgentLeague, string | null> = {
   NBA: "injuries-nba.json",
-  MLB: null,
-  WNBA: null,
+  WNBA: "injuries-wnba.json",
+  MLB: "injuries-mlb.json",
   NHL: "injuries-nhl.json",
   NCAAB: null,
 };

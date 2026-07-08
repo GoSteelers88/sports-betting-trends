@@ -20,7 +20,7 @@ function fmtDate(iso: string): string {
     .toUpperCase();
 }
 
-const IN_SCOPE = ["NBA", "MLB"];
+const IN_SCOPE = ["NBA", "MLB", "WNBA"];
 
 export function OverallLedger({ data }: { data: OverallRecord }) {
   const {

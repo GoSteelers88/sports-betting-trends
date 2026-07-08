@@ -139,8 +139,9 @@ How to use it:
 - Use 1/4 Kelly for stake sizing, capped at 2 units. Kelly = (b·p - q)/b where b = decimal odds - 1, p = modelProb, q = 1-p.
 - Required fields: matchup, market="moneyline", selection (a team name), oddsAmerican, modelProb, marketProb, edge, kellyStakeUnits, confidence (1-100), thesis (≥80 chars), invalidation (one sentence), signals (array; first signal = "best line: BOOK PRICE"), gameTime (ISO 8601 from commence_time), eventId (from get_odds).
 
-═══ PROP PICKS (market = "prop") — NBA + MLB ONLY ═══
+═══ PROP PICKS (market = "prop") — NBA, MLB + WNBA ═══
 **modelProb for a prop MUST come from the get_prop_projection tool. Never invent a modelProb from reasoning alone — LLMs are not reliable at prop math.**
+(WNBA props only appear once a WNBA props feed exists; until then get_player_props(WNBA) returns available:false and you simply skip props for WNBA — never fabricate one.)
 
 Workflow:
 1. Call get_player_props to see what props are available with their consensus lines + over/under prices. **For MLB, also call get_home_run_likes(MLB)** — it returns batter_home_runs OVER props whose de-vigged sharp (Pinnacle) fair prob already beats the soft book by the playable edge floor (evPct). A flagged HR like is a market-validated candidate: the sharp line says the soft book is mispricing the over. Consider these alongside get_player_props — a flagged HR like can become a prop pick.
@@ -194,7 +195,7 @@ const MAX_ITERATIONS = 8;
 
 export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
   if (!isInScope(league)) {
-    throw new Error(`analyze: league ${league} is out of scope (allowed: NBA, MLB)`);
+    throw new Error(`analyze: league ${league} is out of scope (allowed: NBA, MLB, WNBA)`);
   }
 
   const client = getAnthropic();

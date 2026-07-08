@@ -19,7 +19,7 @@ import { critique, applyCritiqueToPicks, type CritiqueResult } from "./critic";
 import { applyBankrollGuard, type BankrollGuardResult } from "./bankroll";
 import { notifyPicks, notifyError } from "./notify";
 import type { GradedPick } from "./grader";
-import { isInScope, type AgentLeague } from "./tools";
+import { isInScope, IN_SCOPE_LEAGUES, type AgentLeague } from "./tools";
 import { getActiveMemoriesForScope } from "./memory";
 import { prisma } from "@/lib/prisma";
 
@@ -66,7 +66,7 @@ Operating procedure:
 
 Map of staleReasons → ingest scripts:
 - "odds file …" → ingest:odds
-- "model file …" / "model has 0 games" → ingest:nba-efficiency + ingest:nba-model (NBA), or ingest:mlb-model (MLB; also requires ingest:mlb-pitchers, ingest:mlb-bullpen, ingest:mlb-batting if those are also flagged)
+- "model file …" / "model has 0 games" → ingest:nba-efficiency + ingest:nba-model (NBA), ingest:wnba-efficiency + ingest:wnba-model (WNBA), or ingest:mlb-model (MLB; also requires ingest:mlb-pitchers, ingest:mlb-bullpen, ingest:mlb-batting if those are also flagged)
 - "injury file …" → ingest:injuries
 
 Respond with a brief plain-text summary at the end (1-3 sentences). The picks themselves are returned out-of-band — your text is just for the run log.`;
@@ -77,7 +77,7 @@ const TOOL_DEFS = [
     description: "Check freshness and sanity of odds/model/injury snapshots for a league. Pure code, no API cost.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: [...IN_SCOPE_LEAGUES] } },
       required: ["league"],
     },
   },
@@ -103,7 +103,7 @@ const TOOL_DEFS = [
       "Hand off to the analyst agent. Returns the analyst's picks (already grader-checked). Call this exactly once after data is healthy.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: [...IN_SCOPE_LEAGUES] } },
       required: ["league"],
     },
   },
@@ -115,7 +115,7 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
   if (!isInScope(league)) {
     await notifyError("orchestrate.outOfScope", `requested league=${league} is out of scope`, {
       league,
-      allowed: ["NBA", "MLB"],
+      allowed: [...IN_SCOPE_LEAGUES],
     });
     throw new OutOfScopeLeagueError(league);
   }

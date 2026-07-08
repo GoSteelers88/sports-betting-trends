@@ -1,15 +1,15 @@
-// Smoke test for the agent layer. Runs analyst on NBA + MLB and prints picks.
-// Usage: tsx scripts/smoke-agent.ts [NBA|MLB|NCAAB]
+// Smoke test for the agent layer. Runs analyst on the in-scope leagues and prints picks.
+// Usage: tsx scripts/smoke-agent.ts [NBA|MLB|WNBA]
 import { config } from "dotenv";
 config();
 
 import { analyze } from "../src/lib/agent/analyst";
-import type { AgentLeague } from "../src/lib/agent/tools";
+import { IN_SCOPE_LEAGUES, type AgentLeague } from "../src/lib/agent/tools";
 
 async function main() {
   const requested = (process.argv[2] ?? "BOTH").toUpperCase();
   const leagues: AgentLeague[] =
-    requested === "BOTH" ? ["NBA", "MLB"] : ([requested] as AgentLeague[]);
+    requested === "BOTH" ? [...IN_SCOPE_LEAGUES] : ([requested] as AgentLeague[]);
 
   for (const league of leagues) {
     console.log(`\n══════════════ ${league} ══════════════`);

@@ -4,12 +4,14 @@
  *
  * Data sources:
  *   https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries
+ *   https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/injuries
  *   https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
  *   https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/injuries
  *   https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/injuries
  *
  * Output (one file per league, same shape):
  *   data/processed/injuries-nba.json
+ *   data/processed/injuries-wnba.json
  *   data/processed/injuries-nfl.json
  *   data/processed/injuries-nhl.json
  *   data/processed/injuries-mlb.json
@@ -89,6 +91,7 @@ type LeagueSpec = {
 
 const LEAGUES: LeagueSpec[] = [
   { sport: "nba", espnSport: "basketball", espnLeague: "nba" },
+  { sport: "wnba", espnSport: "basketball", espnLeague: "wnba" },
   { sport: "nfl", espnSport: "football", espnLeague: "nfl" },
   { sport: "nhl", espnSport: "hockey", espnLeague: "nhl" },
   { sport: "mlb", espnSport: "baseball", espnLeague: "mlb" },

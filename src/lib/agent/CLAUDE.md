@@ -41,7 +41,7 @@ These are load-bearing. Don't relax them without explicit user buy-in.
 |---|---|---|
 | Critic JSON parse failure | `critic.ts:294-300` | Drop **all** picks for the run. Logged + notified. |
 | Orchestrator hard-stop after delegate | `orchestrator.ts:245` | `analystDone = true` ends the orchestrator's LLM loop immediately. |
-| Scope guard (NBA + MLB only) | `analyst.ts:170-172`, `orchestrator.ts:115-121` | `isInScope(league)` throws `OutOfScopeLeagueError` + notify. WNBA/NHL/NCAAB stripped 2026-05-20. |
+| Scope guard (NBA + MLB + WNBA) | `analyst.ts:170-172`, `orchestrator.ts:115-121` | `isInScope(league)` throws `OutOfScopeLeagueError` + notify. WNBA re-added 2026-06-30 (trial-integrated); NHL/NCAAB still stripped. |
 | Cross-run idempotency | `analyst.ts:368-376` | Prisma P2002 on `@@unique([league, gameDate, market, selection])` caught, counted as skipped, no throw. |
 | Critic floor safety net | `orchestrator.ts:324-356` | If critic kills ≥3 grader-kept picks on ≥3 raw, rescue top-edge pick at 0.5× (only if edge ≥6%). |
 | Grader edge tolerance band | `grader.ts:72-87` | Edges in `[5.5%, 6%)` → keep at 0.5× stake with warning. Below 5.5% → drop. |

@@ -54,6 +54,10 @@ type GameLogFile = {
 const DEFAULT_DAYS: Record<PropGradingLeague, number> = {
   NBA: 10,
   MLB: 14,
+  // WNBA plays ~3–4 games/week/team, so a 10-day window gives ~4–5 games per
+  // player — right at the projector's MIN_GAMES=5 floor. Widen slightly to 14
+  // so most rotation players clear the threshold.
+  WNBA: 14,
 };
 
 const OUT_DIR = path.resolve(process.cwd(), "data", "processed");
@@ -192,7 +196,7 @@ async function main() {
 
   let failures = 0;
   let successes = 0;
-  for (const league of ["NBA", "MLB"] as const) {
+  for (const league of ["NBA", "MLB", "WNBA"] as const) {
     const windowDays = days ?? DEFAULT_DAYS[league];
     console.log(`\n[${league}] building game log (${windowDays} day window)...`);
     const log = await buildGameLog(league, windowDays);

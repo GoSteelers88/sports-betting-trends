@@ -20,6 +20,7 @@ type OddsEvent = {
 const DEFAULT_LEAGUES = [
   "basketball_ncaab",
   "basketball_nba",
+  "basketball_wnba",
   "americanfootball_nfl",
   "baseball_mlb",
   "icehockey_nhl",

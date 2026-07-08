@@ -103,11 +103,13 @@ function dataWarning(file: string, status: DataStatus, ageMs: number | null): st
 export type AgentLeague = "NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB";
 
 // Leagues the pipeline is allowed to generate picks for. Tightened to NBA+MLB
-// after the 2026-05 paper trial showed WNBA/NHL picks were leaking through
-// scope-creep, contaminating the funding metrics, and bypassing the prop
-// autograder (NBA/MLB only). Other leagues remain in the AgentLeague type so
-// the autograder + dashboard can still surface legacy picks.
-export const IN_SCOPE_LEAGUES = ["NBA", "MLB"] as const;
+// on 2026-05-20 after the paper trial showed WNBA/NHL leaking through
+// scope-creep and contaminating the funding metrics. WNBA was RE-ADDED on
+// 2026-06-30 (trial-integrated, by operator decision) once its grading path
+// was confirmed wired: the autograder grades WNBA moneylines off the ESPN
+// WNBA scoreboard, and prop-grading.ts carries the WNBA box-score endpoints.
+// NHL/NCAAB remain out of scope (in AgentLeague only so legacy picks surface).
+export const IN_SCOPE_LEAGUES = ["NBA", "MLB", "WNBA"] as const;
 export type InScopeLeague = (typeof IN_SCOPE_LEAGUES)[number];
 
 export function isInScope(league: string): league is InScopeLeague {
@@ -487,13 +489,14 @@ export function getBoardEdges(league: AgentLeague): {
 
 type InjuryFile = { fetchedAt?: string; players?: Injury[] };
 
-// Every league we cover now has an ESPN injury snapshot written by
-// scripts/ingest-injuries.ts. NCAAB has no feed (return empty gracefully).
-const INJURY_FILE: Record<AgentLeague, string | null> = {
+// Every in-scope league has an ESPN injury snapshot written by
+// scripts/ingest-injuries.ts (NBA, WNBA, MLB, NHL). NCAAB has no feed
+// (return empty gracefully).
+export const INJURY_FILE: Record<AgentLeague, string | null> = {
   NBA: "injuries-nba.json",
+  WNBA: "injuries-wnba.json",
   MLB: "injuries-mlb.json",
   NHL: "injuries-nhl.json",
-  WNBA: null,
   NCAAB: null,
 };
 
@@ -620,14 +623,25 @@ type PropsFile = {
   props?: PropEntry[];
 };
 
+// Analyst-facing player-prop feeds, in PropEntry shape (topProps/props +
+// available flag), produced by the prop scrapers. MLB props reach the analyst
+// through get_mlb_signals + get_home_run_likes instead, so MLB is intentionally
+// not served here. WNBA reads latest-player-props-wnba.json — when that feed
+// doesn't exist yet the loader returns available:false and the analyst skips
+// props cleanly (no fabricated picks).
+const PLAYER_PROPS_FILE: Partial<Record<AgentLeague, string>> = {
+  NBA: "latest-player-props.json",
+  WNBA: "latest-player-props-wnba.json",
+};
+
 export function getPlayerProps(league: AgentLeague): {
   generatedAt: string | null;
   available: boolean;
   topProps: PropEntry[];
   dataWarning?: string;
 } {
-  if (league !== "NBA") return { generatedAt: null, available: false, topProps: [] };
-  const file = "latest-player-props.json";
+  const file = PLAYER_PROPS_FILE[league];
+  if (!file) return { generatedAt: null, available: false, topProps: [] };
   const loaded = loadJsonWithStatus<PropsFile>(file, {});
   const warn = dataWarning(file, loaded.status, loaded.ageMs);
   return {
@@ -704,7 +718,7 @@ export function getTrendSummary(
 // stat-level prop math; see OpticOdds + Anthropic research).
 
 export type PropProjectionInput = {
-  league: "NBA" | "MLB";
+  league: "NBA" | "MLB" | "WNBA";
   player: string;
   propType: string;
   line: number;
@@ -713,8 +727,8 @@ export type PropProjectionInput = {
 };
 
 export function getPropProjection(input: PropProjectionInput) {
-  if (input.league !== "NBA" && input.league !== "MLB") {
-    return { available: false, reason: "prop projection only supported for NBA + MLB" };
+  if (input.league !== "NBA" && input.league !== "MLB" && input.league !== "WNBA") {
+    return { available: false, reason: "prop projection only supported for NBA, MLB + WNBA" };
   }
   const proj = projectProp(input satisfies ProjectionInput);
   if (!proj) {
@@ -991,7 +1005,7 @@ export const TOOL_DEFINITIONS = [
       "Get today's consensus odds for all games in a league. Returns moneyline, spread, and total medians across major US books, with implied probabilities.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA"] } },
       required: ["league"],
     },
   },
@@ -1001,7 +1015,7 @@ export const TOOL_DEFINITIONS = [
       "Get the in-house model's win probabilities for today's games. NBA model includes expected margin and net ratings; MLB model is calibrated and pitcher-aware.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA"] } },
       required: ["league"],
     },
   },
@@ -1012,7 +1026,7 @@ export const TOOL_DEFINITIONS = [
     input_schema: {
       type: "object" as const,
       properties: {
-        league: { type: "string", enum: ["NBA", "MLB"] },
+        league: { type: "string", enum: ["NBA", "MLB", "WNBA"] },
         teams: {
           type: "array",
           items: { type: "string" },
@@ -1030,10 +1044,10 @@ export const TOOL_DEFINITIONS = [
   {
     name: "get_player_props",
     description:
-      "Get the top-ranked player props for the league with consensus lines and the model's pick side and confidence. Currently NBA only.",
+      "Get the top-ranked player props for the league with consensus lines and the model's pick side and confidence. Available for NBA and WNBA; returns available:false when no scraped props feed exists for the league today (skip props in that case).",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA"] } },
       required: ["league"],
     },
   },
@@ -1043,7 +1057,7 @@ export const TOOL_DEFINITIONS = [
       "Get a high-level trend summary for the league, including trend score, recent averages, and best-bet rankings.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA"] } },
       required: ["league"],
     },
   },
@@ -1053,18 +1067,18 @@ export const TOOL_DEFINITIONS = [
       "MLB-only advanced metrics from FanGraphs. Returns: regressionCandidates (batters with xwOBA - wOBA >= 0.020 = BABIP-suppressed, hits/total-bases overs are undervalued), velocityGainers (pitchers with rising FB velocity = strikeouts overs are undervalued), closerChanges (recent role shifts saves market may not have priced). Use to find props the market hasn't caught up with.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA"] } },
       required: [],
     },
   },
   {
     name: "get_prop_projection",
     description:
-      "REQUIRED source of modelProb for any prop pick you ship. Computes a deterministic projection from the player's last 10-14 games + opponent allowance. Returns: projected (adjusted mean), stddev, modelProb (probability of the chosen side hitting), nGames, rollingMean, opponentFactor (1.0 = neutral, <1 = tough matchup, >1 = soft), recentForm (last 5 values), notes. Returns { available: false } when the player has < 5 games in the window — in that case you MUST skip the prop, never invent a modelProb. Currently NBA + MLB only. propType uses the keys from get_player_props (player_points, player_rebounds, batter_hits, etc.). Opponent must be the full team displayName (e.g. 'Minnesota Timberwolves'), not abbreviations.",
+      "REQUIRED source of modelProb for any prop pick you ship. Computes a deterministic projection from the player's last 10-14 games + opponent allowance. Returns: projected (adjusted mean), stddev, modelProb (probability of the chosen side hitting), nGames, rollingMean, opponentFactor (1.0 = neutral, <1 = tough matchup, >1 = soft), recentForm (last 5 values), notes. Returns { available: false } when the player has < 5 games in the window — in that case you MUST skip the prop, never invent a modelProb. Supports NBA, MLB + WNBA (WNBA shares the basketball box-score schema). propType uses the keys from get_player_props (player_points, player_rebounds, batter_hits, etc.). Opponent must be the full team displayName (e.g. 'Minnesota Timberwolves'), not abbreviations.",
     input_schema: {
       type: "object" as const,
       properties: {
-        league: { type: "string", enum: ["NBA", "MLB"] },
+        league: { type: "string", enum: ["NBA", "MLB", "WNBA"] },
         player: { type: "string", description: "Full player display name" },
         propType: { type: "string", description: "Prop key (player_points, player_rebounds, batter_hits, etc.)" },
         line: { type: "number" },
@@ -1080,7 +1094,7 @@ export const TOOL_DEFINITIONS = [
       "MLB-only. Returns the current home-run 'likes' the props board has flagged: batter_home_runs OVER props whose de-vigged sharp (Pinnacle) fair probability beats the soft book's implied price by the playable EV floor. Each like has player, line, book, softAmerican, evPct (edge vs the soft book), team, opponent, and commence. The edge here is sharp-market-derived, not invented. Use this when generating MLB prop picks to find HR overs the soft books haven't caught up to — but you MUST still call get_prop_projection for the player to source the pick's modelProb (this tool supplies the market edge, not the projection), apply the ≥6% pick floor, and respect the one-prop-per-player cap. Returns count=0 / empty when no HR over currently clears the floor — don't force a pick.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA"] } },
       required: ["league"],
     },
   },
@@ -1110,7 +1124,7 @@ export const TOOL_DEFINITIONS = [
       "MLB-only. Returns what the deterministic quant desk model (Benter/Benham/Bloom doctrine) has already flagged for today's slate. The desk is a separate, code-only engine: model fair value → 3% edge floor + sharp-direction agreement (de-vigged Pinnacle) → ¼-Kelly sizing. Returns: openPlays (current open bets, each with matchup, selection, edge, modelFairProb, devigMarketProb, priceAmerican), recentStats (settled record + CLV beat rate + avg CLV), and a note. A quant desk open play on a game you were already leaning toward is STRONG corroborating evidence — cite the desk's edge in your thesis. Zero open plays is a mild bearish signal but NOT a hard block. You CANNOT substitute quant desk edge for your own modelProb — you still MUST call get_model_probabilities and get_injuries for any game you pick. For non-MLB leagues, returns available=false.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA"] } },
       required: ["league"],
     },
   },
@@ -1120,7 +1134,7 @@ export const TOOL_DEFINITIONS = [
       "THE BEST-PLAY SURVEY. Joins tonight's odds with the in-house model and returns, per game, the model-vs-market edge for the better side — sorted best-first. Use this to answer 'what's tonight's best play?' / 'what do you like?' across the whole slate in ONE call. Each entry: matchup, pick (the +edge side), modelProb, impliedProb (best price), edge (= modelProb − best-price impliedProb, a 0–1 fraction), bestBook, bestPriceAmerican, commenceTime. edge/modelProb/impliedProb are real grounded fields — cite them directly (an edge of 0.062 = 6.2%). Plus a note saying how many clear the 6% floor (or that nothing does, with the highest). This is the survey tool: call it for a slate-level question, then optionally get_injuries on the top candidate. Don't invent edges — read them here.",
     input_schema: {
       type: "object" as const,
-      properties: { league: { type: "string", enum: ["NBA", "MLB"] } },
+      properties: { league: { type: "string", enum: ["NBA", "MLB", "WNBA"] } },
       required: ["league"],
     },
   },

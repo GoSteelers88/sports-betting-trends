@@ -64,10 +64,10 @@ export function honestLeague(g: Pick<SlateGame, "league" | "homeTeam" | "awayTea
   return g.league;
 }
 
-/** In-scope = the trial's actual remit: real NBA + real MLB games. */
+/** In-scope = the trial's actual remit: real NBA + MLB + WNBA games. */
 export function isInScopeGame(g: Pick<SlateGame, "league" | "homeTeam" | "awayTeam">): boolean {
   const l = honestLeague(g);
-  return l === "NBA" || l === "MLB";
+  return l === "NBA" || l === "MLB" || l === "WNBA";
 }
 
 // ─── Prop label map (shared by hero, ledgers, props desk) ───────────────────

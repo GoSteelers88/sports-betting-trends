@@ -114,10 +114,9 @@ jobs:
 
       - name: Run orchestrator
         # Pass LEAGUE via env, never interpolate ${{ }} into shell bodies.
-        # Scope is NBA + MLB only — WNBA / NHL / NCAAB removed 2026-05-20
-        # after they leaked into the paper trial and contaminated metrics.
-        # The scope guard in orchestrate() will throw OutOfScopeLeagueError
-        # if anything else slips in via workflow_dispatch.
+        # Scope is NBA + MLB + WNBA (WNBA re-added 2026-06-30, trial-integrated);
+        # NHL / NCAAB remain removed. The scope guard in orchestrate() throws
+        # OutOfScopeLeagueError if anything else slips in via workflow_dispatch.
         env:
           LEAGUE: ${{ github.event.inputs.league || 'BOTH' }}
         run: npm run agent:run -- "$LEAGUE"
@@ -140,6 +139,8 @@ jobs:
             "data/processed/latest-summary.json"
             "data/processed/latest-player-props.json"
             "data/processed/injuries-nba.json"
+            "data/processed/injuries-wnba.json"
+            "data/processed/injuries-mlb.json"
             "data/processed/injuries-nfl.json"
             "data/processed/injuries-nhl.json"
             "data/processed/mlb-model-output.json"
@@ -156,6 +157,7 @@ jobs:
             "data/processed/statcast-pitching.json"
             "data/processed/player-gamelogs-mlb.json"
             "data/processed/player-gamelogs-nba.json"
+            "data/processed/player-gamelogs-wnba.json"
           )
           # Pre-commit secret scan — refuse to commit if any allowlisted file
           # contains a recognizable secret pattern. Defense in depth.

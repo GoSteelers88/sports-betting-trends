@@ -138,8 +138,8 @@ async function logMarketPicks(): Promise<{ count: number; errors: string[] }> {
 
 async function logPropsFile(
   fileName: string,
-  source: "prop_nba" | "prop_mlb",
-  league: "NBA" | "MLB"
+  source: "prop_nba" | "prop_mlb" | "prop_wnba",
+  league: "NBA" | "MLB" | "WNBA"
 ): Promise<{ count: number; errors: string[] }> {
   const file = readJson<{ available?: boolean; topProps?: PropEntry[]; props?: PropEntry[] }>(
     fileName,
@@ -202,9 +202,12 @@ export async function logTodaysSnapshots(): Promise<LogResult> {
   const market = await logMarketPicks();
   const nbaProps = await logPropsFile("latest-player-props.json", "prop_nba", "NBA");
   const mlbProps = await logPropsFile("latest-player-props-mlb.json", "prop_mlb", "MLB");
+  // WNBA props feed is not produced yet (no analyst-format scraper); logPropsFile
+  // returns 0 cleanly until latest-player-props-wnba.json exists.
+  const wnbaProps = await logPropsFile("latest-player-props-wnba.json", "prop_wnba", "WNBA");
   return {
     marketPicksLogged: market.count,
-    propsLogged: nbaProps.count + mlbProps.count,
-    errors: [...market.errors, ...nbaProps.errors, ...mlbProps.errors],
+    propsLogged: nbaProps.count + mlbProps.count + wnbaProps.count,
+    errors: [...market.errors, ...nbaProps.errors, ...mlbProps.errors, ...wnbaProps.errors],
   };
 }
