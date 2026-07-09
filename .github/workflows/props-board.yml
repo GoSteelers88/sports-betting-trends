@@ -91,9 +91,13 @@ jobs:
               exit 1
             fi
           done
-          git add "${ALLOWED[@]}" 2>/dev/null || true
+          # Stage individually: an atomic `git add A B C` fails and stages
+          # NOTHING if any single pathspec is missing (e.g. an off-slate
+          # league's feed — latest-sharp-props-nba.json doesn't exist in the
+          # NBA offseason). Add only files that actually exist this run.
+          for f in "${ALLOWED[@]}"; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
-            echo "no board-log changes to commit"
+            echo "no changes to commit"
             exit 0
           fi
           DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
