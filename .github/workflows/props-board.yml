@@ -66,7 +66,23 @@ jobs:
         run: |
           git config user.name "props-board-bot"
           git config user.email "58962244+GoSteelers88@users.noreply.github.com"
-          ALLOWED=( "data/processed/props-board-log.json" )
+          # Explicit filenames only — this array is NOT glob-expanded by the
+          # shell (it's a literal list), so every feed the ingest steps write
+          # must be named here. The raw sharp/soft prop feeds are what the chat
+          # get_props_board tool + the dashboard Prop Plays overlay read at
+          # runtime; committing them here is what gets them into the Vercel
+          # bundle. Reality (verified against the ingest scripts):
+          #   sharp: mlb, nba, wnba  (scrape-pinnacle-props.ts SPORTS)
+          #   soft:  mlb, wnba       (ingest-soft-props.ts SPORTS — NBA has no
+          #                           soft feed, so no latest-soft-props-nba.json)
+          ALLOWED=(
+            "data/processed/props-board-log.json"
+            "data/processed/latest-sharp-props-mlb.json"
+            "data/processed/latest-sharp-props-nba.json"
+            "data/processed/latest-sharp-props-wnba.json"
+            "data/processed/latest-soft-props-mlb.json"
+            "data/processed/latest-soft-props-wnba.json"
+          )
           SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|[Aa]uthorization":\s*"Bearer'
           for f in "${ALLOWED[@]}"; do
             [ -f "$f" ] || continue

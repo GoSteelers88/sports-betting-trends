@@ -379,7 +379,7 @@ export function getPlayerGamelog(
 type SharpPropsFile = { fetchedAt?: string; props?: SharpProp[] };
 type SoftPropsFile = { fetchedAt?: string; quotes?: SoftPropQuote[] };
 
-export function getPropsBoard(league: StatsLeague): {
+export type PropsBoardResult = {
   available: boolean;
   league: StatsLeague;
   count?: number;
@@ -387,25 +387,63 @@ export function getPropsBoard(league: StatsLeague): {
   topByEv?: PropsBoardRow[];
   note?: string;
   dataWarning?: string;
-} {
-  const slug = PROPS_SLUG[league];
-  if (!slug) {
-    return {
-      available: false,
-      league,
-      note: `no sharp/soft prop feed for ${league}`,
-    };
-  }
-  const sharpFile = `latest-sharp-props-${slug}.json`;
-  const softFile = `latest-soft-props-${slug}.json`;
-  const sharpLoaded = readStat<SharpPropsFile>(sharpFile, {});
-  const softLoaded = readStat<SoftPropsFile>(softFile, {});
+};
 
+// A loaded feed as the disk shell hands it to the pure core: the parsed file,
+// its data-derived age (from readStat, NOT mtime), and the missing/unknown flags.
+type LoadedFeed<T> = {
+  data: T;
+  ageMs: number | null;
+  missing: boolean;
+  unknownFreshness: boolean;
+};
+
+// A feed is "stale" for board-join purposes when EITHER its own fetchedAt age is
+// past the staleness budget, OR its freshness is unknown (no parseable
+// timestamp) — both mean "I can't prove these are tonight's prices." A stale
+// side must never be joined against a fresh side (that's the phantom-join: fresh
+// sharp lines priced against yesterday's soft prices → invented +EV).
+function feedIsStale(feed: LoadedFeed<unknown>): boolean {
+  if (feed.missing) return true;
+  if (feed.unknownFreshness) return true;
+  return feed.ageMs !== null && feed.ageMs > STALE_AGE_MS;
+}
+
+// The newest commence across a set of rows, in ms. NaN/absent → -Infinity so an
+// unparseable set reads as "already past" (conservative). Used to catch the case
+// where fetchedAt LOOKS fresh but every game in the file has already started
+// (e.g. a scraper that re-stamps fetchedAt but returns a cached old slate).
+function newestCommenceMs(rows: Array<{ commence?: string }>): number {
+  let newest = -Infinity;
+  for (const r of rows) {
+    const t = new Date(r.commence ?? "").getTime();
+    if (Number.isFinite(t) && t > newest) newest = t;
+  }
+  return newest;
+}
+
+/**
+ * PURE CORE — decide the props-board result from ALREADY-LOADED feeds + a clock.
+ * No fs, no I/O; deterministic in (sharp, soft, league, nowMs). This is where the
+ * phantom-join guard + commence filter live so they can be unit-tested with
+ * fixtures and an injected `now`, without touching disk. The disk shell
+ * (getPropsBoard) is the only thing that reads files.
+ */
+export function buildPropsBoardResult(
+  league: StatsLeague,
+  sharpLoaded: LoadedFeed<SharpPropsFile>,
+  softLoaded: LoadedFeed<SoftPropsFile>,
+  nowMs: number,
+  sharpFileName: string,
+  softFileName: string,
+): PropsBoardResult {
   const sharp = sharpLoaded.data.props ?? [];
   const soft = softLoaded.data.quotes ?? [];
 
   // Either feed missing/empty → no board to build. NBA hits this naturally
-  // (sharp file present, no soft file) — that's correct, not an error.
+  // (sharp file present, no soft file) — that's correct, not an error. This is
+  // the honest-empty path (sharp present + soft empty → available:false); do NOT
+  // weaken it.
   if (
     sharpLoaded.missing ||
     softLoaded.missing ||
@@ -419,15 +457,52 @@ export function getPropsBoard(league: StatsLeague): {
     };
   }
 
-  const rows = buildPropsBoard(sharp, soft, league);
+  // EITHER-SIDE-STALE GATE (phantom-join guard). If either feed's own fetchedAt
+  // is stale/unknown, OR its newest game has already started, we refuse to join
+  // fresh × stale. A fresh sharp file joined onto YESTERDAY's soft prices would
+  // manufacture +EV rows that don't exist. Off-window this makes the board
+  // honestly empty → the persona then says "I don't have tonight's prop board in
+  // front of me right now", never a phantom play.
+  const sharpStale = feedIsStale(sharpLoaded) || newestCommenceMs(sharp.map(p => ({ commence: p.cutoffAt }))) <= nowMs;
+  const softStale = feedIsStale(softLoaded) || newestCommenceMs(soft) <= nowMs;
+  if (sharpStale || softStale) {
+    return {
+      available: false,
+      league,
+      note: `no fresh ${league} prop board right now`,
+    };
+  }
+
+  // COMMENCE FILTER — drop rows whose game has already started (commence <= now),
+  // matching getHomeRunLikes' `commenceMs <= nowMs` no-look-ahead rule. The board
+  // row's `commence` is threaded from the soft quote by buildPropsBoard.
+  const rows = buildPropsBoard(sharp, soft, league).filter((r) => {
+    const t = new Date(r.commence).getTime();
+    return Number.isFinite(t) && t > nowMs;
+  });
+
+  // Every row's game already started → nothing upcoming to quote. Honest-empty,
+  // not a build error.
+  if (rows.length === 0) {
+    return {
+      available: false,
+      league,
+      note: `no upcoming ${league} prop games right now`,
+    };
+  }
+
   const byEvDesc = [...rows].sort((a, b) => b.evPct - a.evPct);
   const playable = byEvDesc.filter((r) => r.playable).slice(0, 15);
   const topByEv = byEvDesc.slice(0, 15);
 
-  // Staleness of either feed is worth surfacing (older = pre-lock lines).
+  // Staleness of either feed is worth surfacing (older = pre-lock lines). The
+  // hard stale gate above already returned available:false for a truly-stale
+  // feed; this note only fires in the fresh-but-borderline band the gate lets
+  // through (it won't, given the gate, but keep it so the wiring is honest if
+  // the thresholds ever diverge).
   const warn =
-    staleNote(sharpFile, sharpLoaded.ageMs, sharpLoaded.missing, sharpLoaded.unknownFreshness) ??
-    staleNote(softFile, softLoaded.ageMs, softLoaded.missing, softLoaded.unknownFreshness);
+    staleNote(sharpFileName, sharpLoaded.ageMs, sharpLoaded.missing, sharpLoaded.unknownFreshness) ??
+    staleNote(softFileName, softLoaded.ageMs, softLoaded.missing, softLoaded.unknownFreshness);
 
   return {
     available: true,
@@ -437,6 +512,39 @@ export function getPropsBoard(league: StatsLeague): {
     topByEv,
     ...(warn ? { dataWarning: warn } : {}),
   };
+}
+
+/**
+ * DISK SHELL — load the two feeds and delegate to the pure core. `now` is
+ * injectable for testing; defaults to the real clock. Never throws: readStat
+ * fail-softs to missing:true, and the core returns available:false for every
+ * empty/stale/off-window case.
+ */
+export function getPropsBoard(
+  league: StatsLeague,
+  now: Date = new Date(),
+): PropsBoardResult {
+  const slug = PROPS_SLUG[league];
+  if (!slug) {
+    return {
+      available: false,
+      league,
+      note: `no sharp/soft prop feed for ${league}`,
+    };
+  }
+  const sharpFile = `latest-sharp-props-${slug}.json`;
+  const softFile = `latest-soft-props-${slug}.json`;
+  const sharpLoaded = readStat<SharpPropsFile>(sharpFile, {});
+  const softLoaded = readStat<SoftPropsFile>(softFile, {});
+
+  return buildPropsBoardResult(
+    league,
+    sharpLoaded,
+    softLoaded,
+    now.getTime(),
+    sharpFile,
+    softFile,
+  );
 }
 
 // ─── Tool 5: getProbablePitchers (MLB only) ─────────────────────────────────

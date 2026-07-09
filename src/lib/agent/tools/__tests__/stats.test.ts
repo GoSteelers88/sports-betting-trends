@@ -4,6 +4,7 @@ import {
   getTeamEfficiency,
   getPlayerGamelog,
   getPropsBoard,
+  buildPropsBoardResult,
   getProbablePitchers,
   getMlbTeamStats,
   getParlayBook,
@@ -15,6 +16,7 @@ import {
   staleNote,
   type DeskRecord,
 } from "@/lib/agent/tools/stats";
+import type { SharpProp, SoftPropQuote } from "@/lib/props-board";
 
 // These tests run against the REAL committed snapshots in data/processed. They
 // assert structure + degradation, not brittle exact numbers (the snapshots
@@ -154,34 +156,180 @@ describe("getPlayerGamelog", () => {
   });
 });
 
-describe("getPropsBoard", () => {
-  it("happy path: MLB returns a board with playable + topByEv arrays", () => {
+describe("getPropsBoard (disk shell — degradation only)", () => {
+  // The committed feeds are cron snapshots; against the real clock they will
+  // usually be past their commence/freshness window, so we assert the shell
+  // returns a well-formed object and never throws — the JOIN LOGIC + guards are
+  // pinned deterministically below via the pure core with fixtures + injected now.
+  it("MLB returns a well-formed object, never throws", () => {
     const r = getPropsBoard("MLB");
-    expect(r.available).toBe(true);
-    expect(typeof r.count).toBe("number");
-    expect(Array.isArray(r.playable)).toBe(true);
-    expect(Array.isArray(r.topByEv)).toBe(true);
-    expect(r.topByEv!.length).toBeLessThanOrEqual(15);
-    expect(r.playable!.length).toBeLessThanOrEqual(15);
-    // topByEv is sorted by evPct desc
-    if (r.topByEv!.length > 1) {
-      expect(r.topByEv![0].evPct).toBeGreaterThanOrEqual(
-        r.topByEv![r.topByEv!.length - 1].evPct
-      );
+    expect(typeof r.available).toBe("boolean");
+    if (r.available) {
+      expect(typeof r.count).toBe("number");
+      expect(Array.isArray(r.playable)).toBe(true);
+      expect(Array.isArray(r.topByEv)).toBe(true);
+      expect(r.topByEv!.length).toBeLessThanOrEqual(15);
+      for (const row of r.playable!) expect(row.playable).toBe(true);
+    } else {
+      expect(typeof r.note).toBe("string");
     }
-    // every playable row is flagged playable
-    for (const row of r.playable!) expect(row.playable).toBe(true);
   });
 
   it("NBA has sharp but no soft feed → available:false (correct)", () => {
     const r = getPropsBoard("NBA");
     expect(r.available).toBe(false);
-    expect(r.note).toMatch(/no NBA sharp\/soft prop feed/);
+    // Either the missing-soft note or the fresh/commence gate — both are the
+    // honest-empty path; NBA can never be available (no soft feed exists).
+    expect(typeof r.note).toBe("string");
   });
 
   it("league with no props feed (NFL) → available:false", () => {
     const r = getPropsBoard("NFL");
     expect(r.available).toBe(false);
+    expect(r.note).toMatch(/no sharp\/soft prop feed for NFL/);
+  });
+});
+
+describe("buildPropsBoardResult (pure core — phantom-join guard + commence filter)", () => {
+  // A fixed "now": 2026-07-09T20:00:00Z. Upcoming games are AFTER it.
+  const NOW_MS = Date.parse("2026-07-09T20:00:00Z");
+  const UPCOMING = "2026-07-09T23:00:00Z"; // after now
+  const PAST = "2026-07-09T18:00:00Z"; // before now
+  const freshTs = new Date(NOW_MS - 60_000).toISOString(); // 1 min old → fresh
+
+  function sharpProp(commence: string): SharpProp {
+    return {
+      player: "Aaron Judge",
+      units: "HomeRuns",
+      line: 0.5,
+      overAmerican: -110,
+      underAmerican: -110,
+      fairOverProb: 0.6, // fair prob well above the soft implied → +EV Over
+      cutoffAt: commence,
+    };
+  }
+
+  function softQuote(commence: string): SoftPropQuote {
+    return {
+      player: "Aaron Judge",
+      market: "batter_home_runs", // → PROP_TYPE_MAP "HomeRuns"
+      line: 0.5,
+      side: "Over",
+      american: +120, // soft price generous vs fair 0.6 → clears playable floor
+      book: "fanduel",
+      commence,
+      gameId: "g1",
+      team: "NYY",
+      opponent: "BOS",
+    };
+  }
+
+  type Feed<T> = {
+    data: T;
+    ageMs: number | null;
+    missing: boolean;
+    unknownFreshness: boolean;
+  };
+  function feed<T>(data: T, ageMs: number | null, unknownFreshness = false): Feed<T> {
+    return { data, ageMs, missing: false, unknownFreshness };
+  }
+
+  it("both feeds fresh + upcoming → available:true with a joined row", () => {
+    const r = buildPropsBoardResult(
+      "MLB",
+      feed({ fetchedAt: freshTs, props: [sharpProp(UPCOMING)] }, 60_000),
+      feed({ fetchedAt: freshTs, quotes: [softQuote(UPCOMING)] }, 60_000),
+      NOW_MS,
+      "latest-sharp-props-mlb.json",
+      "latest-soft-props-mlb.json",
+    );
+    expect(r.available).toBe(true);
+    expect(r.count).toBe(1);
+    expect(r.topByEv![0].player).toBe("Aaron Judge");
+  });
+
+  it("PHANTOM-JOIN GUARD: fresh sharp + STALE soft (past freshness) → available:false, no join", () => {
+    const staleAgeMs = 7 * 60 * 60 * 1000; // 7h > STALE_AGE_MS (6h)
+    const r = buildPropsBoardResult(
+      "MLB",
+      feed({ fetchedAt: freshTs, props: [sharpProp(UPCOMING)] }, 60_000),
+      // soft: game still "upcoming" by commence, but fetchedAt age is stale →
+      // fresh sharp lines must NOT be priced against these old soft prices.
+      feed({ fetchedAt: new Date(NOW_MS - staleAgeMs).toISOString(), quotes: [softQuote(UPCOMING)] }, staleAgeMs),
+      NOW_MS,
+      "latest-sharp-props-mlb.json",
+      "latest-soft-props-mlb.json",
+    );
+    expect(r.available).toBe(false);
+    expect(r.count).toBeUndefined();
+    expect(r.note).toMatch(/no fresh MLB prop board/);
+  });
+
+  it("PHANTOM-JOIN GUARD: fresh sharp + soft whose newest commence already passed → available:false", () => {
+    const r = buildPropsBoardResult(
+      "MLB",
+      feed({ fetchedAt: freshTs, props: [sharpProp(UPCOMING)] }, 60_000),
+      // soft fetchedAt looks fresh, but every game in it already started →
+      // it's yesterday's slate re-stamped; refuse the join.
+      feed({ fetchedAt: freshTs, quotes: [softQuote(PAST)] }, 60_000),
+      NOW_MS,
+      "latest-sharp-props-mlb.json",
+      "latest-soft-props-mlb.json",
+    );
+    expect(r.available).toBe(false);
+    expect(r.note).toMatch(/no fresh MLB prop board/);
+  });
+
+  it("COMMENCE FILTER: rows whose game has started are dropped; only upcoming remain", () => {
+    const startedSharp = { ...sharpProp(PAST), player: "Started Player" };
+    const startedSoft = { ...softQuote(PAST), player: "Started Player" };
+    const r = buildPropsBoardResult(
+      "MLB",
+      feed(
+        { fetchedAt: freshTs, props: [sharpProp(UPCOMING), startedSharp] },
+        60_000,
+      ),
+      feed(
+        { fetchedAt: freshTs, quotes: [softQuote(UPCOMING), startedSoft] },
+        60_000,
+      ),
+      NOW_MS,
+      "latest-sharp-props-mlb.json",
+      "latest-soft-props-mlb.json",
+    );
+    expect(r.available).toBe(true);
+    // Only the upcoming game survived; the started one was filtered out.
+    expect(r.count).toBe(1);
+    for (const row of r.topByEv!) {
+      expect(new Date(row.commence).getTime()).toBeGreaterThan(NOW_MS);
+    }
+    expect(r.topByEv!.some((row) => row.player === "Started Player")).toBe(false);
+  });
+
+  it("honest-empty preserved: sharp present + soft empty → available:false (not weakened)", () => {
+    const r = buildPropsBoardResult(
+      "MLB",
+      feed({ fetchedAt: freshTs, props: [sharpProp(UPCOMING)] }, 60_000),
+      feed({ fetchedAt: freshTs, quotes: [] }, 60_000),
+      NOW_MS,
+      "latest-sharp-props-mlb.json",
+      "latest-soft-props-mlb.json",
+    );
+    expect(r.available).toBe(false);
+    expect(r.note).toMatch(/no MLB sharp\/soft prop feed/);
+  });
+
+  it("unknown-freshness soft (no fetchedAt) is treated as stale → available:false", () => {
+    const r = buildPropsBoardResult(
+      "MLB",
+      feed({ fetchedAt: freshTs, props: [sharpProp(UPCOMING)] }, 60_000),
+      feed({ quotes: [softQuote(UPCOMING)] }, null, true),
+      NOW_MS,
+      "latest-sharp-props-mlb.json",
+      "latest-soft-props-mlb.json",
+    );
+    expect(r.available).toBe(false);
+    expect(r.note).toMatch(/no fresh MLB prop board/);
   });
 });
 

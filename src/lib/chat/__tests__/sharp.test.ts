@@ -17,7 +17,7 @@ vi.mock("@/lib/prisma", () => ({
 
 import { answer, estimateTokens } from "../sharp";
 import { runLaneB, regroundLaneB } from "../laneB";
-import { buildLaneBSystemPrompt } from "../persona";
+import { buildLaneBSystemPrompt, DISCIPLINE_BLOCK, PERSONA_RULES } from "../persona";
 import type { SlateEntities } from "../router";
 
 function slate(): SlateEntities {
@@ -522,6 +522,57 @@ describe("multi-turn history reaches the model (FIX 2)", () => {
       { role: "assistant", content: "No — I grade on CLV, closing line value." },
       { role: "user", content: "and why does that matter?" },
     ]);
+  });
+});
+
+describe("persona never disowns props (DISCIPLINE_BLOCK + empty-board behavior)", () => {
+  it("DISCIPLINE_BLOCK states props are desk product on NBA/MLB/WNBA", () => {
+    // The vacuum this fills: the block used to name only LEAGUES, never MARKETS,
+    // and the model confabulated "the desk bets games, not props" into it.
+    expect(DISCIPLINE_BLOCK).toMatch(/player props/i);
+    expect(DISCIPLINE_BLOCK).toMatch(/desk product/i);
+    // And it explicitly forbids the disowning line.
+    expect(DISCIPLINE_BLOCK).toMatch(/the desk bets games, not props/i);
+    expect(DISCIPLINE_BLOCK.toLowerCase()).toContain(
+      "i don't have tonight's prop board in front of me right now"
+    );
+  });
+
+  it("PERSONA_RULES forbids lane-disowning and sources prop reads from the board", () => {
+    expect(PERSONA_RULES.toLowerCase()).toContain("player props are on the desk");
+    expect(PERSONA_RULES.toLowerCase()).toContain("prop reads come from the prop board");
+    expect(PERSONA_RULES).toMatch(/props aren't my lane/i); // named as a forbidden phrase
+  });
+
+  it("a props question with an empty board yields NO fabricated number and NO lane-disowning language", async () => {
+    // The desk HAS the read path but the board is empty tonight → the sanctioned
+    // data-availability line, grounded (no invented prop number), and NEVER a
+    // "props aren't my lane" refusal. The Lane B runner is injected returning the
+    // honest empty-board answer; we assert what ships is clean.
+    const { client } = fakeClient("unused-regen");
+    const laneBRunner = vi.fn().mockResolvedValue({
+      reply:
+        "I don't have tonight's prop board in front of me right now, so I'm not putting a number on a prop. No board, no play — that's the discipline.",
+      toolsUsed: ["get_props_board"],
+      toolResultTexts: [JSON.stringify({ available: false, note: "no fresh MLB prop board right now" })],
+      iterations: 1,
+    });
+    const res = await answer("any home run props you like on the Lakers tonight?", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+      laneBRunner: laneBRunner as never,
+    });
+    const lower = res.reply.toLowerCase();
+    // NO lane-disowning language.
+    expect(lower).not.toContain("props aren't my lane");
+    expect(lower).not.toContain("bets games, not props");
+    expect(lower).not.toContain("not my lane");
+    expect(lower).not.toContain("out of scope");
+    // NO fabricated prop number: the reply carries no over/under-style figure the
+    // tool didn't return (the tool returned available:false with no numbers).
+    expect(res.reply).not.toMatch(/\b\d+(\.\d+)?\s*(hr|home runs?|bases|strikeouts|points|rebounds|assists)\b/i);
+    expect(res.reply).not.toMatch(/[+-]\d{3}/); // no American odds figure
   });
 });
 

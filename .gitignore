@@ -94,5 +94,10 @@ data/backtest/
 # State (cursor, picks log, cached games.csv, lessons memos) is local-only and
 # must NOT be committed or pushed.
 data/private/
-data/processed/latest-sharp-props-*.json
-data/processed/latest-soft-props-*.json
+# NOTE: latest-sharp-props-*.json and latest-soft-props-*.json are NO LONGER
+# ignored — the props board (chat get_props_board + dashboard Prop Plays overlay)
+# reads them at runtime, so they MUST reach the Vercel bundle. They're committed
+# by props-board.yml's allowlist (with the same secret-grep guard as every other
+# auto-pushed data file). Un-ignoring and allowlisting MUST stay in lockstep: a
+# still-ignored file that's added to the allowlist is silently refused by
+# `git add … || true` and never ships (the WNBA-odds-file incident).
