@@ -80,8 +80,18 @@ const STATS_ONLY_ALLOWED = new Set<string>(PURE_STATS_TOOL_NAMES);
 export const LANE_B_STATS_TOOL_DEFINITIONS = [...PURE_STATS_TOOL_DEFINITIONS];
 
 // Mirror the analyst's ≤8 cap, but tighter for a public, latency-sensitive,
-// single-question turn.
-const MAX_ITERATIONS = 6;
+// single-question turn. With the "batch your tool calls" instruction in the
+// system prompt (persona.ts), 4 model round-trips — each running every tool the
+// model requests in that response — covers even the GO-DEEP toolset. Two stacked
+// 6-iteration loops (draft + strict regen) were the 504 root cause; the regen is
+// now a single no-tools rewrite (regroundLaneB) and this floor is lower.
+const MAX_ITERATIONS = 4;
+
+// Cap on the inlined prior-tool-results we feed the no-tools rewrite/finalize.
+// The raw per-tool slices are 120k each; a rewrite doesn't need all of it, and
+// keeping this bounded protects latency + the token budget. 20k chars (~5k
+// tokens) is plenty to re-state the numbers already fetched this turn.
+const REGROUND_RESULTS_CAP = 20_000;
 
 // A Lane B turn can call pipeline tools (bets mode) OR stats tools (either
 // mode), so toolsUsed spans both name spaces.
@@ -246,10 +256,101 @@ export async function runLaneB(
     break;
   }
 
+  // Empty-reply hole (Fable): if the loop exhausted MAX_ITERATIONS while the last
+  // response was STILL stop_reason:"tool_use", finalText is "". checkGrounding("")
+  // returns grounded:true VACUOUSLY → a blank reply ships as 200 and the frontend
+  // renders "The desk hit a snag". Force ONE no-tools finalize using only what we
+  // fetched, so the model MUST emit text (it cannot ask for another tool). If it
+  // STILL comes back empty, we return "" and sharp.ts treats it as ungrounded and
+  // falls back (belt-and-suspenders) rather than shipping blank.
+  let reply = finalText.trim();
+  if (!reply) {
+    reply = await noToolsAnswer(
+      client,
+      buildLaneBSystemPrompt(league, scope, mode),
+      userMessage,
+      toolResultTexts
+    );
+  }
+
   return {
-    reply: finalText.trim(),
+    reply: reply.trim(),
     toolsUsed: [...new Set(toolsUsed)],
     toolResultTexts,
     iterations,
   };
+}
+
+// ─── The no-tools rewrite primitive (shared by regen + empty-reply finalize) ──
+//
+// ONE messages.create with NO `tools` param. The model structurally cannot fetch
+// → it cannot fabricate a NEW number that then grounds; it can only re-state (or
+// omit) numbers already present in `priorToolResultTexts`. The FULL Lane B system
+// prompt is used (not enforcement-text-only) so the mode/scope boundaries — most
+// importantly the stats-mode "no pick on this league" rule, which checkGrounding
+// does NOT verify — survive the rewrite. The already-collected tool results are
+// inlined as a USER-role message (kept out of the highest-trust system slot).
+async function noToolsAnswer(
+  client: ReturnType<typeof getAnthropic>,
+  system: string,
+  userMessage: string,
+  priorToolResultTexts: string[],
+  extraSystem?: string
+): Promise<string> {
+  const fullSystem = extraSystem ? `${system}\n\n${extraSystem}` : system;
+  const inlined =
+    "TOOL RESULTS FROM THIS TURN (use ONLY numbers present here; if a number " +
+    "isn't here, do not state it):\n" +
+    priorToolResultTexts.join("\n").slice(0, REGROUND_RESULTS_CAP);
+
+  const resp = await client.messages.create({
+    model: MODELS.analyst,
+    max_tokens: 1500,
+    system: fullSystem,
+    // NO `tools` — the whole point. The model cannot fetch, so it cannot invent
+    // a new figure that would then pass the grounding re-check.
+    messages: [
+      { role: "user", content: userMessage.slice(0, 2000) },
+      { role: "user", content: inlined },
+    ],
+  });
+
+  return resp.content
+    .map((b) => (b.type === "text" ? b.text : ""))
+    .join("")
+    .trim();
+}
+
+// Grounding-enforcement instruction appended to the FULL Lane B system prompt on
+// a regen. It reinforces the grounding contract already in the prompt; it does
+// NOT replace it (the mode/scope no-bet boundaries must stay).
+export const REGROUND_ENFORCEMENT =
+  "GROUNDING ENFORCEMENT: your previous draft stated numbers that did not come from a tool result. " +
+  "Re-answer using ONLY numbers you can read directly from the tool results provided in this turn. " +
+  "If you cannot ground a number, do not state it. If the game has no qualifying edge or you lack the data, " +
+  "say plainly: no clean read, no bet — and explain the discipline. Do not invent any figure.";
+
+// Single NO-TOOLS rewrite on a grounding-guard failure. Replaces the old second
+// full up-to-6-iteration tool loop (the 504 root cause: two stacked loops + a
+// re-run of the 4 Turso pre-fetch reads). Because there are no tools, the model
+// cannot fetch a fresh number to fabricate-and-ground; it re-answers off the data
+// already read. The caller re-runs checkGrounding on the SAME haystack
+// (priorToolResultTexts) and, on a second failure, falls back.
+export async function regroundLaneB(
+  league: InScopeLeague | StatsLeague,
+  userMessage: string,
+  priorToolResultTexts: string[],
+  mode: "bets" | "stats" = "bets",
+  scope: "matchup" | "slate" = "matchup",
+  client = getAnthropic()
+): Promise<{ reply: string }> {
+  const system = buildLaneBSystemPrompt(league, scope, mode);
+  const reply = await noToolsAnswer(
+    client,
+    system,
+    userMessage,
+    priorToolResultTexts,
+    REGROUND_ENFORCEMENT
+  );
+  return { reply };
 }

@@ -10,7 +10,11 @@
 //     toolsUsed?: string[] }
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// 120s: even without the (now single no-tools) regen, a first loop alone on a fat
+// slate can approach 60s. This is load-bearing headroom; 120 is under the plan cap
+// (this repo already deploys maxDuration=300 on /api/agent/analyze and 120 on
+// /api/cron/grade).
+export const maxDuration = 120;
 
 import { NextRequest, NextResponse } from "next/server";
 import { answer } from "@/lib/chat/sharp";

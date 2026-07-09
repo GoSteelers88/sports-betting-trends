@@ -19,7 +19,7 @@ import {
   classifyAmbiguousWithModel,
   type SlateEntities,
 } from "./router";
-import { runLaneB, type LaneBToolName } from "./laneB";
+import { runLaneB, regroundLaneB, type LaneBToolName } from "./laneB";
 import { checkGrounding, DOCTRINE_FALLBACK, STATS_MODE_FALLBACK } from "./grounding";
 import type { InScopeLeague } from "@/lib/agent/tools";
 import type { StatsLeague } from "@/lib/agent/tools/stats";
@@ -276,37 +276,56 @@ async function answerCore(
     );
     await recordSpend(estimateTokens(message, first.reply, first.toolResultTexts), now);
 
-    // GUARD 4 — grounding guard. Every number must trace to a tool result.
-    const verdict = checkGrounding(first.reply, first.toolResultTexts);
+    // GUARD 4 — grounding guard. Every number must trace to a tool result. A
+    // BLANK first draft (the loop's forced no-tools finalize can still return "")
+    // must NOT pass: checkGrounding("") is vacuously grounded (zero claims), which
+    // would ship an empty reply as a 200. Treat blank as ungrounded so it takes
+    // the regen shot, and a double-blank then hits the fallback below.
+    const verdict = first.reply.trim()
+      ? checkGrounding(first.reply, first.toolResultTexts)
+      : { grounded: false, ungrounded: ["<empty-reply>"] };
     meta.grounded = verdict.grounded;
     if (verdict.grounded) {
       meta.outcome = "laneB_grounded";
       return laneBResponse(first.reply, first.toolsUsed, injectionAttempt);
     }
 
-    // One stricter regeneration.
+    // One stricter regeneration — a SINGLE no-tools rewrite (NOT a second full
+    // tool loop). With no tools the model cannot fetch a fresh number to
+    // fabricate-and-ground; it can only re-state numbers already in
+    // first.toolResultTexts (or omit them). The FULL Lane B system prompt is
+    // reused inside regroundLaneB, carrying mode + scope, so the stats-mode
+    // "no pick on this league" boundary survives (checkGrounding does NOT check
+    // for picks). We keep first.toolsUsed — no new tools ran.
     console.warn(
-      `[chat/sharp] grounding violation (regenerating). Ungrounded: ${verdict.ungrounded.join(", ")}`
+      `[chat/sharp] grounding violation (regenerating). requestId=${meta.requestId}. Ungrounded: ${verdict.ungrounded.join(", ")}`
     );
-    const strict = await runner(
+    const rewrite = await regroundLaneB(
       laneBLeague,
       message,
-      recentTurns,
-      client,
-      "GROUNDING ENFORCEMENT: your previous draft stated numbers that did not come from a tool result. " +
-        "Re-answer using ONLY numbers you can read directly from the tool results this turn. " +
-        "If you cannot ground a number, do not state it. If the game has no qualifying edge or you lack the data, " +
-        "say plainly: no clean read, no bet — and explain the discipline. Do not invent any figure.",
+      first.toolResultTexts,
+      laneBMode,
       scopeForB,
-      laneBMode
+      client
     );
-    await recordSpend(estimateTokens(message, strict.reply, strict.toolResultTexts), now);
+    // The rewrite is expensive — the inlined prior results ARE its input — so
+    // count them against the daily ceiling (mirror the old second-loop spend).
+    await recordSpend(
+      estimateTokens(message, rewrite.reply, first.toolResultTexts),
+      now
+    );
 
-    const verdict2 = checkGrounding(strict.reply, strict.toolResultTexts);
+    // Re-check on the SAME haystack as the first pass (first.toolResultTexts):
+    // the rewrite fetched nothing, so the grounding data is unchanged. A blank
+    // rewrite (empty-reply belt-and-suspenders) is treated as ungrounded → falls
+    // through to the mode-appropriate fallback rather than shipping "".
+    const verdict2 = rewrite.reply.trim()
+      ? checkGrounding(rewrite.reply, first.toolResultTexts)
+      : { grounded: false, ungrounded: ["<empty-reply>"] };
     meta.grounded = verdict2.grounded;
     if (verdict2.grounded) {
       meta.outcome = "laneB_grounded_retry";
-      return laneBResponse(strict.reply, strict.toolsUsed, injectionAttempt);
+      return laneBResponse(rewrite.reply, first.toolsUsed, injectionAttempt);
     }
 
     // Both drafts ungrounded → fail closed to the honest "no read" answer rather
@@ -325,7 +344,7 @@ async function answerCore(
       laneBMode === "stats"
         ? STATS_MODE_FALLBACK(String(laneBLeague))
         : DOCTRINE_FALLBACK;
-    return laneBResponse(fallback, strict.toolsUsed, injectionAttempt);
+    return laneBResponse(fallback, first.toolsUsed, injectionAttempt);
   }
 
   // ─── Lane A — persona-only (cheap, no tools, no DB reads) ───────────────────

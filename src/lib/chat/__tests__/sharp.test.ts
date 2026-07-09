@@ -16,7 +16,8 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import { answer, estimateTokens } from "../sharp";
-import { runLaneB } from "../laneB";
+import { runLaneB, regroundLaneB } from "../laneB";
+import { buildLaneBSystemPrompt } from "../persona";
 import type { SlateEntities } from "../router";
 
 function slate(): SlateEntities {
@@ -204,9 +205,14 @@ describe("Lane A persona path", () => {
 });
 
 describe("Lane B grounding fallback", () => {
-  it("an ungrounded Lane B reply falls back to the doctrine answer after a retry", async () => {
-    const { client } = fakeClient("unused-persona");
-    // Lane B runner that returns a fabricated number both times → must fall back.
+  it("an ungrounded Lane B reply falls back to the doctrine answer after a no-tools regen", async () => {
+    // The injected client is what the no-tools regen uses (regroundLaneB calls
+    // client.messages.create with NO tools). It returns another fabricated number
+    // → still ungrounded → falls back to the doctrine answer.
+    const { client, create } = fakeClient(
+      "The model still has the Lakers at 81%, a 19% edge."
+    );
+    // Lane B runner (the FIRST, full tool loop) returns a fabricated number once.
     const laneBRunner = vi.fn().mockResolvedValue({
       reply: "My model has the Lakers at 81%, a 19% edge — hammer it.",
       toolsUsed: ["get_odds", "get_model_probabilities"],
@@ -221,8 +227,13 @@ describe("Lane B grounding fallback", () => {
     });
     expect(res.lane).toBe("B");
     expect(res.reply.toLowerCase()).toContain("no bet");
-    // Called twice: initial draft + one stricter regeneration.
-    expect(laneBRunner).toHaveBeenCalledTimes(2);
+    // The runner (full tool loop) runs ONCE; the regen is a single no-tools call.
+    expect(laneBRunner).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledTimes(1);
+    // The regen call carried NO tools param — it is structurally unable to fetch
+    // a new number to fabricate-and-ground.
+    const regenArg = create.mock.calls[0][0] as { tools?: unknown };
+    expect(regenArg.tools).toBeUndefined();
   });
 
   it("a grounded Lane B reply is returned as-is", async () => {
@@ -245,10 +256,157 @@ describe("Lane B grounding fallback", () => {
   });
 });
 
+describe("grounding regen is a single NO-TOOLS rewrite (504 fix)", () => {
+  it("on a grounding failure, the regen makes a NO-TOOLS call, re-checks, and can recover", async () => {
+    // Regen (injected client) returns a GROUNDED rewrite (55% traces to the
+    // homeWinProb in first.toolResultTexts) → recovers without a fallback.
+    const { client, create } = fakeClient(
+      "Model and market both sit near 55%. No edge, pass."
+    );
+    const laneBRunner = vi.fn().mockResolvedValue({
+      // First draft fabricated an 81% / 19% edge → ungrounded.
+      reply: "Lakers 81%, a 19% edge — hammer it.",
+      toolsUsed: ["get_odds", "get_model_probabilities"],
+      toolResultTexts: [JSON.stringify({ homeWinProb: 0.55, awayWinProb: 0.45 })],
+      iterations: 2,
+    });
+    const res = await answer("read on the Lakers tonight?", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+      laneBRunner: laneBRunner as never,
+    });
+    expect(res.lane).toBe("B");
+    // The grounded rewrite shipped (not the fallback).
+    expect(res.reply.toLowerCase()).toContain("pass");
+    // Full tool loop ran once; regen was a single no-tools model call.
+    expect(laneBRunner).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledTimes(1);
+    const regenArg = create.mock.calls[0][0] as { tools?: unknown };
+    expect(regenArg.tools).toBeUndefined();
+    // Caller keeps first.toolsUsed (no new tools ran in the rewrite).
+    expect(res.toolsUsed).toEqual(["get_odds", "get_model_probabilities"]);
+  });
+
+  it("a fabricated number in the rewrite still fails checkGrounding and falls back", async () => {
+    // Regen invents a fresh unbacked number → the grounding invariant holds and
+    // we fall to the doctrine answer, never shipping the fabricated figure.
+    const { client } = fakeClient("Actually the edge is 22%, big value.");
+    const laneBRunner = vi.fn().mockResolvedValue({
+      reply: "Lakers 81%, a 19% edge — hammer it.",
+      toolsUsed: ["get_odds"],
+      toolResultTexts: [JSON.stringify({ homeWinProb: 0.55 })], // 22 not present
+      iterations: 2,
+    });
+    const res = await answer("read on the Lakers tonight?", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+      laneBRunner: laneBRunner as never,
+    });
+    expect(res.lane).toBe("B");
+    expect(res.reply.toLowerCase()).toContain("no bet");
+    expect(res.reply).not.toContain("22%");
+  });
+
+  it("regroundLaneB uses NO tools and the FULL Lane B system prompt (mode + scope carried)", async () => {
+    const create = vi.fn().mockResolvedValue({
+      stop_reason: "end_turn",
+      content: [{ type: "text", text: "rewritten answer" }],
+    });
+    const client = { messages: { create } } as never;
+    const out = await regroundLaneB(
+      "NBA",
+      "read on the Lakers?",
+      [JSON.stringify({ homeWinProb: 0.55 })],
+      "bets",
+      "matchup",
+      client
+    );
+    expect(out.reply).toBe("rewritten answer");
+    const arg = create.mock.calls[0][0] as { tools?: unknown; system: string };
+    // NO tools param → cannot fetch → cannot fabricate-and-ground.
+    expect(arg.tools).toBeUndefined();
+    // Full Lane B system prompt (the grounding contract text is in it), not just
+    // the enforcement blurb.
+    expect(arg.system).toContain("GROUNDING CONTRACT");
+    expect(arg.system).toContain("GROUNDING ENFORCEMENT");
+  });
+
+  it("BLOCKER: a stats-mode regen still forbids a pick (mode-specific no-bet boundary in the prompt)", async () => {
+    const create = vi.fn().mockResolvedValue({
+      stop_reason: "end_turn",
+      content: [{ type: "text", text: "Bruins are 41-12. I don't bet that league." }],
+    });
+    const client = { messages: { create } } as never;
+    await regroundLaneB(
+      "NHL",
+      "how are the Bruins doing?",
+      [JSON.stringify({ available: true })],
+      "stats", // ← the load-bearing arg
+      "slate",
+      client
+    );
+    const arg = create.mock.calls[0][0] as { system: string };
+    // The rewrite's system prompt is the STATS-mode Lane B prompt: it must carry
+    // the "do NOT issue a pick/edge/stake on NHL" boundary (checkGrounding does
+    // NOT verify picks, so an enforcement-only rewrite could ship a grounded
+    // NHL "play" off standings). Proven by matching the real stats prompt.
+    const statsPrompt = buildLaneBSystemPrompt("NHL", "slate", "stats");
+    expect(statsPrompt).toContain("do NOT issue a pick");
+    expect(arg.system.startsWith(statsPrompt)).toBe(true);
+  });
+});
+
+describe("empty-reply hole is closed (Fable; 6→4 makes it fire more)", () => {
+  it("cap-exhaustion with a still-tool_use last response forces a NO-TOOLS finalize (non-empty)", async () => {
+    // Every turn asks for a tool → the loop exhausts MAX_ITERATIONS with
+    // finalText "". The forced no-tools finalize must produce a real answer.
+    let call = 0;
+    const create = vi.fn().mockImplementation((args: { tools?: unknown }) => {
+      call++;
+      // The finalize call is the one WITHOUT tools → return text there.
+      if (args.tools === undefined) {
+        return Promise.resolve({
+          stop_reason: "end_turn",
+          content: [{ type: "text", text: "Pass — near 55%, no edge." }],
+        });
+      }
+      // Tool-loop turns always ask for another tool → never emit text.
+      return Promise.resolve({
+        stop_reason: "tool_use",
+        content: [{ type: "tool_use", id: `t${call}`, name: "get_odds", input: {} }],
+      });
+    });
+    const client = { messages: { create } } as never;
+
+    // Stats mode: the loop + forced-finalize primitive is identical, and stats
+    // mode only touches getDeskRecordSummary (which degrades to null on the
+    // mocked prisma), avoiding the bets-mode memory reads not stubbed here.
+    const res = await runLaneB(
+      "NHL",
+      "how are the Bruins?",
+      [],
+      client,
+      undefined,
+      "slate",
+      "stats"
+    );
+    // Never ships blank: the forced no-tools finalize answered.
+    expect(res.reply).not.toBe("");
+    expect(res.reply).toContain("Pass");
+    // The last create call was the tools-absent finalize.
+    const lastArg = create.mock.calls.at(-1)![0] as { tools?: unknown };
+    expect(lastArg.tools).toBeUndefined();
+  });
+});
+
 describe("stats-mode grounding fallback is mode-appropriate (SHOULD-FIX 5)", () => {
   it("an ungrounded NHL stats turn falls back to the stats line, NOT the NBA/MLB doctrine", async () => {
-    const { client } = fakeClient("unused-persona");
-    // Stats-mode runner returns a fabricated stat both times → double-ungrounded.
+    // The no-tools regen (injected client) returns another fabricated stat →
+    // still ungrounded → mode-appropriate stats fallback.
+    const { client } = fakeClient("The Bruins are still 41-12, cruising.");
+    // Stats-mode runner (first, full loop) returns a fabricated stat once.
     const laneBRunner = vi.fn().mockResolvedValue({
       reply: "The Bruins are 41-12, cruising.",
       toolsUsed: ["get_standings"],
@@ -267,7 +425,7 @@ describe("stats-mode grounding fallback is mode-appropriate (SHOULD-FIX 5)", () 
     expect(res.reply.toLowerCase()).toContain("won't guess");
     // Must NOT be the bets doctrine ("no read means no bet" / "no bet").
     expect(res.reply.toLowerCase()).not.toContain("no bet");
-    expect(laneBRunner).toHaveBeenCalledTimes(2); // draft + stricter retry
+    expect(laneBRunner).toHaveBeenCalledTimes(1); // full loop once; regen is no-tools
   });
 });
 
