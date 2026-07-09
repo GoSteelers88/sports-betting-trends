@@ -53,21 +53,35 @@ export type DataHealth = {
   entries: DataHealthEntry[];
 };
 
-function statHours(file: string): number | null {
-  try {
-    const stats = fs.statSync(file);
-    return (Date.now() - stats.mtimeMs) / (1000 * 60 * 60);
-  } catch {
-    return null;
-  }
-}
-
 function readJson<T>(file: string): T | null {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8")) as T;
   } catch {
     return null;
   }
+}
+
+// Age (hours) from the DATA'S OWN in-file timestamp — never the filesystem
+// mtime, which is untrustworthy here: the Vercel bundle resets it (→ everything
+// looks stale) AND GH Actions checkout resets it to now (→ genuinely-old files
+// look fresh, the inverse bug). Reads fetchedAt | generatedAt | updatedAt
+// (Date.parse handles both "Z" and "+00:00").
+//
+// Returns:
+//   number  → parsed a timestamp; age is real.
+//   null    → present + parsed but NO readable timestamp (absent/unparseable).
+//             Callers treat this as UNKNOWN freshness (a stale reason), NEVER
+//             silent-fresh — Date.parse NaN must not slip through as recent.
+export function ageHoursFromData(data: unknown): number | null {
+  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+    return null;
+  }
+  const rec = data as Record<string, unknown>;
+  const raw = rec.fetchedAt ?? rec.generatedAt ?? rec.updatedAt;
+  if (typeof raw !== "string") return null;
+  const parsed = Date.parse(raw);
+  if (!Number.isFinite(parsed)) return null;
+  return (Date.now() - parsed) / (1000 * 60 * 60);
 }
 
 type OddsFile = { fetchedAt?: string; events?: unknown[] };
@@ -81,7 +95,7 @@ export function checkHealth(league: AgentLeague): DataHealth {
   // Odds
   const oddsPath = path.join(PROCESSED, ODDS_FILE[league]);
   const odds = readJson<OddsFile>(oddsPath);
-  const oddsAge = statHours(oddsPath);
+  const oddsAge = ageHoursFromData(odds);
   const oddsCount = odds?.events?.length ?? null;
   entries.push({
     source: "odds",
@@ -92,7 +106,9 @@ export function checkHealth(league: AgentLeague): DataHealth {
     eventCount: oddsCount,
   });
   if (!odds) reasons.push(`odds file missing for ${league}`);
-  else if (oddsAge !== null && oddsAge > STALENESS_HOURS)
+  else if (oddsAge === null)
+    reasons.push(`odds file has no freshness metadata — treat as unknown age`);
+  else if (oddsAge > STALENESS_HOURS)
     reasons.push(`odds file ${oddsAge.toFixed(1)}h old (>${STALENESS_HOURS}h threshold)`);
   else if (oddsCount === 0) reasons.push(`odds file has 0 events`);
 
@@ -101,7 +117,7 @@ export function checkHealth(league: AgentLeague): DataHealth {
   if (modelFileName) {
     const modelPath = path.join(PROCESSED, modelFileName);
     const model = readJson<ModelFile>(modelPath);
-    const modelAge = statHours(modelPath);
+    const modelAge = ageHoursFromData(model);
     const modelCount = model?.results?.length ?? model?.data?.results?.length ?? null;
     entries.push({
       source: "model",
@@ -112,7 +128,9 @@ export function checkHealth(league: AgentLeague): DataHealth {
       eventCount: modelCount,
     });
     if (!model) reasons.push(`model file missing for ${league}`);
-    else if (modelAge !== null && modelAge > STALENESS_HOURS)
+    else if (modelAge === null)
+      reasons.push(`model file has no freshness metadata — treat as unknown age`);
+    else if (modelAge > STALENESS_HOURS)
       reasons.push(`model file ${modelAge.toFixed(1)}h old`);
     else if (modelCount === 0) reasons.push(`model has 0 games`);
 
@@ -129,7 +147,7 @@ export function checkHealth(league: AgentLeague): DataHealth {
   if (injuryFileName) {
     const injuryPath = path.join(PROCESSED, injuryFileName);
     const inj = readJson<InjuryFile>(injuryPath);
-    const injAge = statHours(injuryPath);
+    const injAge = ageHoursFromData(inj);
     entries.push({
       source: "injuries",
       file: injuryFileName,
@@ -138,7 +156,9 @@ export function checkHealth(league: AgentLeague): DataHealth {
       ageHours: injAge,
       eventCount: inj?.players?.length ?? null,
     });
-    if (inj && injAge !== null && injAge > 24) {
+    if (inj && injAge === null) {
+      reasons.push(`injury file has no freshness metadata — treat as unknown age`);
+    } else if (inj && injAge !== null && injAge > 24) {
       reasons.push(`injury file ${injAge.toFixed(1)}h old`);
     }
   }

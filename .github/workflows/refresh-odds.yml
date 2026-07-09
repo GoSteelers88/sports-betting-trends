@@ -1,0 +1,102 @@
+name: Refresh odds (light, pre-first-pitch)
+
+# CHEAP odds + injury refresh only — NO Playwright scrapes, NO Sonnet
+# orchestrator/analyst. Runs once mid-afternoon ET so getBoardEdges joins the
+# morning model against fresh odds at read time (edges stay coherent) and the
+# chat/props layer sees current prices before first pitch. The heavy analyze
+# pass stays on agent-run.yml.
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # 19:37 UTC = ~3:37pm ET — after most lineups, before first pitch.
+    - cron: "37 19 * * *"
+
+permissions:
+  contents: write   # needed to push refreshed odds/injury files back to the repo
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+      THE_ODDS_LEAGUES: basketball_nba,baseball_mlb,basketball_wnba,icehockey_nhl
+      THE_ODDS_REGIONS: us
+      THE_ODDS_MARKETS: h2h,spreads,totals
+      THE_ODDS_ODDS_FORMAT: american
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # full history so we can push back; default is shallow
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Refresh odds + injuries (cheap ingest only — no scrapes, no LLM)
+        run: |
+          npm run ingest:odds || echo "odds refresh failed (non-fatal)"
+          npm run ingest:injuries || echo "injuries refresh failed (non-fatal)"
+          npm run ingest:free || echo "summary refresh failed (non-fatal)"
+
+      - name: Commit refreshed odds/injury data back to repo (allowlisted files only)
+        if: success()
+        run: |
+          # Commit author MUST be this identity or the Vercel deploy is BLOCKED.
+          git config user.name "agent-bot"
+          git config user.email "58962244+GoSteelers88@users.noreply.github.com"
+          # Allowlist — the cheap-ingest subset only: odds files + summary +
+          # injury files. Anything else in data/processed/ is ignored (protects
+          # against accidental leakage if a script writes a credential into a
+          # snapshot).
+          ALLOWED=(
+            "data/processed/latest-odds-api.json"
+            "data/processed/latest-odds-api-baseball_mlb.json"
+            "data/processed/latest-odds-api-basketball_nba.json"
+            "data/processed/latest-odds-api-basketball_ncaab.json"
+            "data/processed/latest-odds-api-basketball_wnba.json"
+            "data/processed/latest-odds-api-icehockey_nhl.json"
+            "data/processed/latest-summary.json"
+            "data/processed/injuries-nba.json"
+            "data/processed/injuries-wnba.json"
+            "data/processed/injuries-mlb.json"
+            "data/processed/injuries-nfl.json"
+            "data/processed/injuries-nhl.json"
+          )
+          # Pre-commit secret scan — refuse to commit if any allowlisted file
+          # contains a recognizable secret pattern. Defense in depth. Mirrors
+          # agent-run.yml exactly.
+          SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|api\.vercel\.com/v1/integrations/deploy/|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|"(THE_ODDS_API_KEY|DISCORD_BOT_TOKEN|ANTHROPIC_API_KEY|TURSO_AUTH_TOKEN|KALSHI_API_KEY|CRON_SECRET|ASSISTANT_SECRET)"|[Aa]uthorization":\s*"Bearer'
+          for f in "${ALLOWED[@]}"; do
+            [ -f "$f" ] || continue
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
+              exit 1
+            fi
+          done
+          # Stage only allowlisted files
+          git add "${ALLOWED[@]}" 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no data changes to commit"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
+          git commit -m "auto-publish: odds refresh ${DATE_TAG} (odds + injuries)"
+          # Push with rebase to handle concurrent commits. Ingest scripts also
+          # write non-allowlisted files, leaving the working tree dirty and
+          # blocking `git pull --rebase`; --autostash + rebase-abort pins the
+          # rebase to our commit only and discards the unstaged side-effects.
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin master && git push origin master && break
+            echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            git stash drop 2>/dev/null || true
+            sleep 5
+          done

@@ -429,6 +429,75 @@ describe("stats-mode grounding fallback is mode-appropriate (SHOULD-FIX 5)", () 
   });
 });
 
+describe("plumbing-leak guard ships a fallback, never the leak (A2)", () => {
+  it("a GROUNDED but leaky Lane B bets reply is replaced by the doctrine fallback", async () => {
+    const { client } = fakeClient("unused-regen");
+    // Grounded (no fabricated numbers) so it passes checkGrounding on the first
+    // pass and reaches laneBResponse — where the leak guard catches it. No regen
+    // is triggered (terminal): we never rebuild the 504.
+    const laneBRunner = vi.fn().mockResolvedValue({
+      reply:
+        "I don't have the full tool results back yet… still loading. Let me fire all the tools at once.",
+      toolsUsed: ["get_odds"],
+      toolResultTexts: [JSON.stringify({ events: [] })],
+      iterations: 2,
+    });
+    const res = await answer("what's your read on the Lakers tonight?", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+      laneBRunner: laneBRunner as never,
+    });
+    expect(res.lane).toBe("B");
+    // Shipped the doctrine fallback, NOT the leak.
+    expect(res.reply).toBe(
+      "I don't have a clean live read on that game right now — the numbers I'd need aren't in front of me, " +
+        "and on this discipline, no read means no bet. If the desk had an edge on it tonight, it'd show as a pick on the board. " +
+        "Ask me about a different NBA, MLB, or WNBA game, or come back once tonight's lines have firmed up."
+    );
+    expect(res.reply).not.toContain("still loading");
+    // Terminal: the runner ran once, no no-tools regen was triggered by the leak.
+    expect(laneBRunner).toHaveBeenCalledTimes(1);
+  });
+
+  it("a leaky STATS reply gets the stats fallback, not the bets doctrine", async () => {
+    const { client } = fakeClient("unused-regen");
+    const laneBRunner = vi.fn().mockResolvedValue({
+      reply: "Give me a sec to run the full slate analysis on the Bruins.",
+      toolsUsed: ["get_standings"],
+      toolResultTexts: [JSON.stringify({ available: true })],
+      iterations: 1,
+    });
+    const res = await answer("how are the Bruins doing in the NHL?", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+      laneBRunner: laneBRunner as never,
+    });
+    expect(res.lane).toBe("B");
+    expect(res.reply).toMatch(/NHL/);
+    expect(res.reply.toLowerCase()).toContain("won't guess");
+    expect(res.reply.toLowerCase()).not.toContain("no bet");
+    expect(res.reply.toLowerCase()).not.toContain("slate analysis");
+  });
+
+  it("a Lane A persona leak is replaced by the clean in-character line", async () => {
+    // Persona (Lane A) reply leaks plumbing → replaced by LANE_A_LEAK_FALLBACK.
+    const { client } = fakeClient(
+      "memory and rules loaded cleanly — let me fire the tools."
+    );
+    const res = await answer("what's your betting philosophy?", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+    });
+    expect(res.lane).toBe("A");
+    expect(res.reply.toLowerCase()).not.toContain("memory and rules loaded");
+    expect(res.reply.toLowerCase()).not.toContain("fire the tools");
+    expect(res.reply).toContain("the discipline");
+  });
+});
+
 describe("multi-turn history reaches the model (FIX 2)", () => {
   it("threads recentTurns into the Lane A persona conversation", async () => {
     const { client, create } = fakeClient("CLV is closing line value.");

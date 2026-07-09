@@ -24,16 +24,37 @@ const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 // GH Actions ingest cadence (every 8h) plus headroom.
 const STALE_AGE_MS = 6 * 60 * 60 * 1000;
 
-export type DataStatus = "ok" | "stale" | "missing" | "malformed";
+// "unknown" = file present + parsed, but no readable in-file timestamp
+// (bare-array file, absent field, or an unparseable value). Treated like stale
+// in the warning below — NEVER silent-fresh (the NaN trap: NaN > STALE is false).
+export type DataStatus = "ok" | "stale" | "missing" | "malformed" | "unknown";
 
 export type LoadResult<T> = {
   data: T;
   status: DataStatus;
   // Last-modified time of the file. Null if the file is missing.
   mtimeMs: number | null;
-  // Age in milliseconds, computed at load time. Null if missing.
+  // Age in milliseconds, computed from the DATA'S OWN in-file timestamp (NOT
+  // mtime). Null if missing, malformed, or the timestamp is unknown.
   ageMs: number | null;
 };
+
+// Compute the data's age from its OWN timestamp, never the filesystem mtime.
+// Vercel's bundle resets mtime (→ everything reads "stale"); GH Actions checkout
+// resets it to now (→ genuinely-old files read "fresh", the inverse bug). We read
+// fetchedAt | generatedAt | updatedAt (Date.parse handles both "Z" and "+00:00").
+// Unparseable/absent/non-envelope → { ageMs: null, unknown: true } (NOT fresh).
+export function freshnessFromData(data: unknown): { ageMs: number | null; unknown: boolean } {
+  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+    return { ageMs: null, unknown: true };
+  }
+  const rec = data as Record<string, unknown>;
+  const raw = rec.fetchedAt ?? rec.generatedAt ?? rec.updatedAt;
+  if (typeof raw !== "string") return { ageMs: null, unknown: true };
+  const parsed = Date.parse(raw);
+  if (!Number.isFinite(parsed)) return { ageMs: null, unknown: true };
+  return { ageMs: Date.now() - parsed, unknown: false };
+}
 
 // In-process de-dupe set so each (file, status) emission is logged once per
 // process. Without this, every tool call on a stale/missing file would
@@ -42,44 +63,59 @@ const _emittedWarnings = new Set<string>();
 
 function loadJsonWithStatus<T>(file: string, fallback: T): LoadResult<T> {
   const fullPath = path.join(PROCESSED, file);
-  let stat: fs.Stats;
+  // mtime is retained ONLY for the reported mtimeMs field — it is NOT used for
+  // freshness (it's untrustworthy: reset by the Vercel bundle AND by GH Actions
+  // checkout). Freshness comes from the data's own in-file timestamp below.
+  let mtimeMs: number | null = null;
   try {
-    stat = fs.statSync(fullPath);
+    mtimeMs = fs.statSync(fullPath).mtimeMs;
   } catch {
-    emitWarning(file, "missing", null);
-    return { data: fallback, status: "missing", mtimeMs: null, ageMs: null };
+    // stat failing usually means missing; the read below is the real gate.
   }
 
-  const ageMs = Date.now() - stat.mtimeMs;
   let raw: string;
   try {
     raw = fs.readFileSync(fullPath, "utf8");
   } catch {
     emitWarning(file, "missing", null);
-    return { data: fallback, status: "missing", mtimeMs: stat.mtimeMs, ageMs };
+    return { data: fallback, status: "missing", mtimeMs, ageMs: null };
   }
 
+  // PARSE-FIRST: we must parse before we can read the timestamp. Malformed path
+  // preserved exactly (→ malformed, no age).
   let parsed: T;
   try {
     parsed = JSON.parse(raw) as T;
   } catch (err) {
     console.error(`loadJsonWithStatus: malformed JSON in ${file}:`, err);
-    emitWarning(file, "malformed", ageMs);
-    return { data: fallback, status: "malformed", mtimeMs: stat.mtimeMs, ageMs };
+    emitWarning(file, "malformed", null);
+    return { data: fallback, status: "malformed", mtimeMs, ageMs: null };
   }
 
-  if (ageMs > STALE_AGE_MS) {
-    emitWarning(file, "stale", ageMs);
-    return { data: parsed, status: "stale", mtimeMs: stat.mtimeMs, ageMs };
+  const { ageMs, unknown } = freshnessFromData(parsed);
+  if (unknown) {
+    // No readable timestamp → UNKNOWN freshness. Warn (never silent-fresh),
+    // never fall back to mtime as a freshness proof.
+    emitWarning(file, "unknown", null);
+    return { data: parsed, status: "unknown", mtimeMs, ageMs: null };
   }
-  return { data: parsed, status: "ok", mtimeMs: stat.mtimeMs, ageMs };
+  if (ageMs !== null && ageMs > STALE_AGE_MS) {
+    emitWarning(file, "stale", ageMs);
+    return { data: parsed, status: "stale", mtimeMs, ageMs };
+  }
+  return { data: parsed, status: "ok", mtimeMs, ageMs };
 }
 
 function emitWarning(file: string, status: DataStatus, ageMs: number | null): void {
   const key = `${file}:${status}`;
   if (_emittedWarnings.has(key)) return;
   _emittedWarnings.add(key);
-  const ageStr = ageMs !== null ? `${(ageMs / 3_600_000).toFixed(1)}h old` : "no mtime";
+  const ageStr =
+    ageMs !== null
+      ? `${(ageMs / 3_600_000).toFixed(1)}h old`
+      : status === "unknown"
+        ? "no freshness metadata"
+        : "no age";
   console.warn(`[tools/loadJson] ${status.toUpperCase()}: ${file} (${ageStr})`);
 }
 
@@ -91,6 +127,9 @@ function dataWarning(file: string, status: DataStatus, ageMs: number | null): st
   const ageHrs = ageMs !== null ? (ageMs / 3_600_000).toFixed(1) : "unknown";
   if (status === "stale") {
     return `DATA WARNING: ${file} is ${ageHrs}h old (stale > ${STALE_AGE_MS / 3_600_000}h). Numbers may not reflect the current slate — treat with caution and prefer skipping rather than picking on stale data.`;
+  }
+  if (status === "unknown") {
+    return `DATA WARNING: ${file} has no freshness metadata — treat its numbers as possibly old and prefer skipping over picking on data of unknown age.`;
   }
   if (status === "missing") {
     return `DATA ERROR: ${file} is missing. This tool returned empty/fallback data. You cannot reliably pick from missing data — pass on any pick that depends on this file.`;

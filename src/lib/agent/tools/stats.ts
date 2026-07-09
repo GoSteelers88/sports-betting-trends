@@ -27,51 +27,92 @@ const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 // DATA WARNING back to the chat layer in-band (same 6h cadence as index.ts).
 const STALE_AGE_MS = 6 * 60 * 60 * 1000;
 
+// ─── In-file freshness helper (shared shape with tools/index.ts) ─────────────
+//
+// Age is computed from the DATA'S OWN timestamp, never the filesystem mtime.
+// Vercel's bundle resets mtime (~2018 → everything reads "stale") and GitHub
+// Actions `checkout` resets mtime to now (→ genuinely-old files read "fresh" —
+// the inverse bug). The only trustworthy clock is the timestamp the ingest
+// script stamped INTO the file: fetchedAt | generatedAt | updatedAt.
+//
+// Returns:
+//   ageMs = number  → we parsed a timestamp; age is real.
+//   ageMs = null + unknownFreshness = true → file present + parsed, but no
+//           parseable timestamp field (bare-array standings, absent field, or an
+//           unparseable value). This is NOT "fresh" — it's UNKNOWN, and the note
+//           below treats it like stale (never silent-fresh, the NaN trap).
+export function freshnessFromData(
+  data: unknown
+): { ageMs: number | null; unknownFreshness: boolean } {
+  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+    // Bare arrays (standings-*.json) + primitives carry no envelope timestamp.
+    return { ageMs: null, unknownFreshness: true };
+  }
+  const rec = data as Record<string, unknown>;
+  const raw = rec.fetchedAt ?? rec.generatedAt ?? rec.updatedAt;
+  if (typeof raw !== "string") {
+    return { ageMs: null, unknownFreshness: true };
+  }
+  // Date.parse handles both "…Z" and "…+00:00" offsets. NaN on failure → we must
+  // NOT treat that as fresh (NaN > STALE is false → silent-fresh). Route to
+  // unknown instead.
+  const parsed = Date.parse(raw);
+  if (!Number.isFinite(parsed)) {
+    return { ageMs: null, unknownFreshness: true };
+  }
+  return { ageMs: Date.now() - parsed, unknownFreshness: false };
+}
+
 // ─── Self-contained sync reader ─────────────────────────────────────────────
 
 /**
  * Read a data/processed JSON file synchronously. Returns the parsed data (or
- * the caller's fallback on any error), the file's age in ms, and a `missing`
- * flag. NEVER throws — any stat/read/parse failure degrades to
- * { data: fallback, ageMs: null, missing: true }.
+ * the caller's fallback on any error), the DATA'S age in ms (from its in-file
+ * timestamp, NOT mtime), a `missing` flag, and `unknownFreshness` (present +
+ * parsed but no readable timestamp). NEVER throws — any stat/read/parse failure
+ * degrades to { data: fallback, ageMs: null, missing: true }.
+ *
+ * PARSE-FIRST: we must parse the JSON before we can read its timestamp; the
+ * malformed-JSON path is preserved (→ missing:true, as before).
  */
 export function readStat<T>(
   file: string,
   fallback: T
-): { data: T; ageMs: number | null; missing: boolean } {
+): { data: T; ageMs: number | null; missing: boolean; unknownFreshness: boolean } {
   const fullPath = path.join(PROCESSED, file);
-  let stat: fs.Stats;
-  try {
-    stat = fs.statSync(fullPath);
-  } catch {
-    return { data: fallback, ageMs: null, missing: true };
-  }
-  const ageMs = Date.now() - stat.mtimeMs;
   let raw: string;
   try {
     raw = fs.readFileSync(fullPath, "utf8");
   } catch {
-    return { data: fallback, ageMs: null, missing: true };
+    return { data: fallback, ageMs: null, missing: true, unknownFreshness: false };
   }
+  let parsed: T;
   try {
-    return { data: JSON.parse(raw) as T, ageMs, missing: false };
+    parsed = JSON.parse(raw) as T;
   } catch {
-    return { data: fallback, ageMs: null, missing: true };
+    return { data: fallback, ageMs: null, missing: true, unknownFreshness: false };
   }
+  const { ageMs, unknownFreshness } = freshnessFromData(parsed);
+  return { data: parsed, ageMs, missing: false, unknownFreshness };
 }
 
 /**
  * Human-readable staleness note for the chat layer, matching the index.ts
  * voice. Returns undefined when the file is fresh and present (the common
- * path — keeps tool output clean).
+ * path — keeps tool output clean). `unknownFreshness` (present but no readable
+ * timestamp) is treated like stale: warn, never silent-fresh.
  */
 export function staleNote(
   file: string,
   ageMs: number | null,
-  missing: boolean
+  missing: boolean,
+  unknownFreshness = false
 ): string | undefined {
   if (missing) {
     return `DATA ERROR: ${file} is missing. This tool returned empty/fallback data. You cannot reliably answer from missing data — say so rather than guess.`;
+  }
+  if (unknownFreshness) {
+    return `DATA WARNING: ${file} has no freshness metadata — treat its numbers as possibly old and prefer caution over confident recency claims.`;
   }
   if (ageMs !== null && ageMs > STALE_AGE_MS) {
     const ageHrs = (ageMs / 3_600_000).toFixed(1);
@@ -160,8 +201,8 @@ export function getStandings(league: StatsLeague): {
     };
   }
   const file = `standings-${slug}.json`;
-  const { data, ageMs, missing } = readStat<StandingsRow[]>(file, []);
-  const warn = staleNote(file, ageMs, missing);
+  const { data, ageMs, missing, unknownFreshness } = readStat<StandingsRow[]>(file, []);
+  const warn = staleNote(file, ageMs, missing, unknownFreshness);
   const teams = Array.isArray(data) ? data : [];
   if (missing || teams.length === 0) {
     return {
@@ -221,8 +262,8 @@ export function getTeamEfficiency(league: StatsLeague): {
     };
   }
   const file = `${slug}-efficiency.json`;
-  const { data, ageMs, missing } = readStat<EfficiencyFile>(file, {});
-  const warn = staleNote(file, ageMs, missing);
+  const { data, ageMs, missing, unknownFreshness } = readStat<EfficiencyFile>(file, {});
+  const warn = staleNote(file, ageMs, missing, unknownFreshness);
   const teamsObj = data.teams ?? {};
   const teams: EfficiencyRow[] = Object.entries(teamsObj)
     .map(([team, v]) => ({ team, ...v }))
@@ -285,8 +326,8 @@ export function getPlayerGamelog(
     return { available: false, league, note: "player name is required" };
   }
   const file = `player-gamelogs-${slug}.json`;
-  const { data, ageMs, missing } = readStat<GamelogFile>(file, {});
-  const warn = staleNote(file, ageMs, missing);
+  const { data, ageMs, missing, unknownFreshness } = readStat<GamelogFile>(file, {});
+  const warn = staleNote(file, ageMs, missing, unknownFreshness);
   const players = data.players ?? {};
   const knownPlayerCount = Object.keys(players).length;
 
@@ -385,8 +426,8 @@ export function getPropsBoard(league: StatsLeague): {
 
   // Staleness of either feed is worth surfacing (older = pre-lock lines).
   const warn =
-    staleNote(sharpFile, sharpLoaded.ageMs, sharpLoaded.missing) ??
-    staleNote(softFile, softLoaded.ageMs, softLoaded.missing);
+    staleNote(sharpFile, sharpLoaded.ageMs, sharpLoaded.missing, sharpLoaded.unknownFreshness) ??
+    staleNote(softFile, softLoaded.ageMs, softLoaded.missing, softLoaded.unknownFreshness);
 
   return {
     available: true,
@@ -447,8 +488,8 @@ export function getProbablePitchers(): {
     return {
       available: false,
       note: "no probable-pitchers data right now",
-      ...(staleNote(pFile, pLoaded.ageMs, pLoaded.missing)
-        ? { dataWarning: staleNote(pFile, pLoaded.ageMs, pLoaded.missing) }
+      ...(staleNote(pFile, pLoaded.ageMs, pLoaded.missing, pLoaded.unknownFreshness)
+        ? { dataWarning: staleNote(pFile, pLoaded.ageMs, pLoaded.missing, pLoaded.unknownFreshness) }
         : {}),
     };
   }
@@ -484,8 +525,8 @@ export function getProbablePitchers(): {
   });
 
   const warn =
-    staleNote(pFile, pLoaded.ageMs, pLoaded.missing) ??
-    staleNote(scFile, scLoaded.ageMs, scLoaded.missing);
+    staleNote(pFile, pLoaded.ageMs, pLoaded.missing, pLoaded.unknownFreshness) ??
+    staleNote(scFile, scLoaded.ageMs, scLoaded.missing, scLoaded.unknownFreshness);
 
   return {
     available: true,
@@ -568,9 +609,9 @@ export function getMlbTeamStats(team: string): {
   const weather = resolveKeyed(weatherLoaded.data.games, team);
 
   const warn =
-    staleNote(battingFile, battingLoaded.ageMs, battingLoaded.missing) ??
-    staleNote(bullpenFile, bullpenLoaded.ageMs, bullpenLoaded.missing) ??
-    staleNote(weatherFile, weatherLoaded.ageMs, weatherLoaded.missing);
+    staleNote(battingFile, battingLoaded.ageMs, battingLoaded.missing, battingLoaded.unknownFreshness) ??
+    staleNote(bullpenFile, bullpenLoaded.ageMs, bullpenLoaded.missing, bullpenLoaded.unknownFreshness) ??
+    staleNote(weatherFile, weatherLoaded.ageMs, weatherLoaded.missing, weatherLoaded.unknownFreshness);
 
   // available only if we resolved the team in at least one of the three files.
   if (!batting && !bullpen && !weather) {
@@ -621,8 +662,8 @@ export function getParlayBook(): {
   dataWarning?: string;
 } {
   const file = "parlay-paper-book.json";
-  const { data, ageMs, missing } = readStat<ParlayBookFile>(file, {});
-  const warn = staleNote(file, ageMs, missing);
+  const { data, ageMs, missing, unknownFreshness } = readStat<ParlayBookFile>(file, {});
+  const warn = staleNote(file, ageMs, missing, unknownFreshness);
 
   if (missing) {
     return {

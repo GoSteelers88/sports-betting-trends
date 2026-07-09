@@ -32,17 +32,62 @@ export const DOCTRINE_FALLBACK =
 // honest, mode-appropriate line: no clean numbers, no guessing.
 export function STATS_MODE_FALLBACK(league: string): string {
   return (
-    `I don't have clean ${league} numbers in front of me right now — the standings/stats I'd need aren't loading, ` +
-    "and I won't guess. I put my name on real numbers or nothing. Ask me again once the data's back, " +
+    `I don't have clean ${league} numbers in front of me right now — the standings/stats I'd need aren't in front of me, ` +
+    "and I won't guess. I put my name on real numbers or nothing. Ask me again in a bit, " +
     "or point me at tonight's NBA, MLB, or WNBA board, which I bet."
   );
 }
+
+// The Lane A leak fallback — a clean, in-character line for when the persona
+// lane trips the leak guard. Contains NONE of the A2 markers (verified: no
+// "tool results", no "fire the tools", no "still loading", etc.) so it can
+// never itself re-trip the guard.
+export const LANE_A_LEAK_FALLBACK =
+  "Let's keep it on the number. Point me at a specific NBA, MLB, or WNBA matchup " +
+  "and I'll give you the desk's read — value, price, and whether it clears my edge floor. " +
+  "No matchup, no manufactured play; that's the discipline.";
 
 export type GroundingVerdict = {
   grounded: boolean;
   // The numeric tokens we could not trace to any tool result.
   ungrounded: string[];
 };
+
+// ─── The persona/plumbing leak guard (belt-and-suspenders, ADDITIVE) ─────────
+//
+// The grounding guard above is the credibility kill-switch and stays exactly as
+// it is. This is a SEPARATE, deterministic scan for the ONE failure the model
+// occasionally slips into: narrating its own plumbing ("I don't have the full
+// tool results back yet… still loading… let me fire all the tools"). A leak is
+// a STYLE problem, not a fabrication — so the markers here are TIGHT and
+// high-precision: a marginal miss just means a slightly-off reply shipped, which
+// is far cheaper than a false positive nuking a legitimate baseball answer
+// ("loading the bases"). Precision over recall, deliberately.
+//
+// On a hit the caller ships the mode-appropriate fallback (NOT a regen — a regen
+// is exactly the 504 spiral we just removed) and logs which marker matched.
+const LEAK_MARKERS: ReadonlyArray<{ name: string; re: RegExp }> = [
+  { name: "tool-results", re: /tool results?/i },
+  { name: "fire-the-tools", re: /fire (all )?the tools/i },
+  { name: "run-the-tools", re: /(pull|call|re-?run) (the|my|all) tools/i },
+  { name: "memory-rules-loaded", re: /memory and rules loaded/i },
+  { name: "run-full-slate-analysis", re: /run the full slate analysis/i },
+  {
+    name: "still-loading",
+    re: /still loading|data (is |are )?(still )?loading|haven'?t (fully )?loaded|results? (aren'?t|not) (back|in)( yet)?/i,
+  },
+];
+
+export type LeakVerdict = { leaked: boolean; marker?: string };
+
+// Scan a reply for a plumbing/process leak. Returns the FIRST matching marker's
+// name (for the forensic log) or { leaked:false }. Pure + fully unit-testable.
+export function checkLeak(reply: string): LeakVerdict {
+  for (const { name, re } of LEAK_MARKERS) {
+    if (re.test(reply)) return { leaked: true, marker: name };
+  }
+  return { leaked: false };
+}
 
 // ─── The grounding whitelist ─────────────────────────────────────────────────
 //
@@ -428,6 +473,14 @@ export function checkGrounding(
   // raw tokens the extractor will emit for them, so they're skipped below.
   const yearOkRaws = collectYearRaws(reply);
 
+  // Clock-time tokens ("9:40 PM", "12:05") are ALWAYS OK — a game start time is
+  // not a money number and can't currently ground (commenceTime is excluded and
+  // there's no time bucket), so a "schedule for today" answer listing times
+  // would falsely flag ungrounded and get forced into the regen/fallback. We
+  // collect the exact raw tokens the extractor emits for each clock time and
+  // skip them below. Fabrication risk on a start time is ~zero.
+  const timeOkRaws = collectTimeRaws(reply);
+
   // Record-form tokens: the exact raw tokens the extractor emits for every
   // hyphenated N-M the reply actually writes ("24-7" → "24" and "-7"; "12-2 at
   // home" → "12" and "-2"). A record-column value (wins/losses/parsed splits)
@@ -437,6 +490,7 @@ export function checkGrounding(
 
   for (const claim of claims) {
     if (yearOkRaws.has(claim.raw)) continue;
+    if (timeOkRaws.has(claim.raw)) continue;
 
     // Free small-count / doctrine integers ("1 unit", "6% floor", the RG phone
     // number). Gate on INTEGER values only: a sub-1 rate like ".787" truncates
@@ -506,6 +560,21 @@ function collectYearRaws(text: string): Set<string> {
   // Bare 4-digit years.
   for (const m of text.matchAll(/\b(19\d{2}|20\d{2})\b/g)) {
     if (isYear(Number(m[1]))) ok.add(m[1]!);
+  }
+  return ok;
+}
+
+// Collect the exact raw tokens (as extractClaims emits them) for every clock
+// time in the text: "9:40" → "9" and "40"; "12:05 PM" → "12" and "05". Mirrors
+// collectYearRaws/collectRecordRaws. The extractor splits on the colon (it isn't
+// part of a number), so both the hour and the minute surface as separate bare
+// tokens — we collect both so neither flags ungrounded. A game start time is
+// prose, never a bet claim.
+function collectTimeRaws(text: string): Set<string> {
+  const ok = new Set<string>();
+  for (const m of text.matchAll(/\b(\d{1,2}):(\d{2})\b/g)) {
+    ok.add(m[1]!); // hour, e.g. "9" or "12"
+    ok.add(m[2]!); // minute, e.g. "40" or "05" — emitted verbatim by the extractor
   }
   return ok;
 }

@@ -20,7 +20,13 @@ import {
   type SlateEntities,
 } from "./router";
 import { runLaneB, regroundLaneB, type LaneBToolName } from "./laneB";
-import { checkGrounding, DOCTRINE_FALLBACK, STATS_MODE_FALLBACK } from "./grounding";
+import {
+  checkGrounding,
+  checkLeak,
+  DOCTRINE_FALLBACK,
+  STATS_MODE_FALLBACK,
+  LANE_A_LEAK_FALLBACK,
+} from "./grounding";
 import type { InScopeLeague } from "@/lib/agent/tools";
 import type { StatsLeague } from "@/lib/agent/tools/stats";
 
@@ -287,7 +293,14 @@ async function answerCore(
     meta.grounded = verdict.grounded;
     if (verdict.grounded) {
       meta.outcome = "laneB_grounded";
-      return laneBResponse(first.reply, first.toolsUsed, injectionAttempt);
+      return laneBResponse(
+        first.reply,
+        first.toolsUsed,
+        injectionAttempt,
+        laneBMode,
+        laneBLeague,
+        meta
+      );
     }
 
     // One stricter regeneration — a SINGLE no-tools rewrite (NOT a second full
@@ -325,7 +338,14 @@ async function answerCore(
     meta.grounded = verdict2.grounded;
     if (verdict2.grounded) {
       meta.outcome = "laneB_grounded_retry";
-      return laneBResponse(rewrite.reply, first.toolsUsed, injectionAttempt);
+      return laneBResponse(
+        rewrite.reply,
+        first.toolsUsed,
+        injectionAttempt,
+        laneBMode,
+        laneBLeague,
+        meta
+      );
     }
 
     // Both drafts ungrounded → fail closed to the honest "no read" answer rather
@@ -344,12 +364,37 @@ async function answerCore(
       laneBMode === "stats"
         ? STATS_MODE_FALLBACK(String(laneBLeague))
         : DOCTRINE_FALLBACK;
-    return laneBResponse(fallback, first.toolsUsed, injectionAttempt);
+    return laneBResponse(
+      fallback,
+      first.toolsUsed,
+      injectionAttempt,
+      laneBMode,
+      laneBLeague,
+      meta
+    );
   }
 
   // ─── Lane A — persona-only (cheap, no tools, no DB reads) ───────────────────
   const reply = await runPersona(message, recentTurns, client, injectionAttempt);
   await recordSpend(estimateTokens(message, reply, []), now);
+
+  // Leak guard on the Lane A output (belt-and-suspenders, additive). Same
+  // policy as Lane B: on a plumbing leak we DO NOT ship it and DO NOT regen —
+  // we replace it terminally with a clean in-character line and mark the
+  // outcome. LANE_A_LEAK_FALLBACK is guard-clean so it can't re-trip.
+  const leak = checkLeak(reply);
+  if (leak.leaked) {
+    console.warn(
+      `[chat/sharp] Lane A plumbing leak blocked (requestId=${meta.requestId}, marker=${leak.marker}). Shipping fallback.`
+    );
+    meta.outcome = "laneA_leak_fallback";
+    return {
+      reply: LANE_A_LEAK_FALLBACK,
+      lane: "A",
+      ...(injectionAttempt ? { intercepted: "injection" as const } : {}),
+    };
+  }
+
   meta.outcome = injectionAttempt ? "laneA_injection" : "laneA_persona";
   return {
     reply,
@@ -358,13 +403,34 @@ async function answerCore(
   };
 }
 
+// The SINGLE Lane B exit. This is the choke point for grounded-first,
+// grounded-retry, AND the fallback ships — so the leak guard here covers
+// first-pass, regen, and the empty-reply finalize in one place. If the reply
+// leaks the desk's plumbing, we DO NOT ship it and DO NOT regen (a regen is the
+// exact 504 spiral we removed) — we replace it TERMINALLY with the
+// mode-appropriate fallback (which is itself guard-clean, so it can't re-trip).
 function laneBResponse(
   reply: string,
   toolsUsed: LaneBToolName[],
-  injectionAttempt: boolean
+  injectionAttempt: boolean,
+  mode: "bets" | "stats",
+  league: InScopeLeague | StatsLeague | null,
+  meta: TurnMeta
 ): ChatResponse {
+  const leak = checkLeak(reply);
+  let finalReply = reply;
+  if (leak.leaked) {
+    console.warn(
+      `[chat/sharp] Lane B plumbing leak blocked (requestId=${meta.requestId}, mode=${mode}, marker=${leak.marker}). Shipping fallback.`
+    );
+    finalReply =
+      mode === "stats"
+        ? STATS_MODE_FALLBACK(String(league))
+        : DOCTRINE_FALLBACK;
+    meta.outcome = "laneB_leak_fallback";
+  }
   return {
-    reply,
+    reply: finalReply,
     lane: "B",
     toolsUsed,
     ...(injectionAttempt ? { intercepted: "injection" as const } : {}),

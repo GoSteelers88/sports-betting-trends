@@ -87,11 +87,54 @@ export const LANE_B_STATS_TOOL_DEFINITIONS = [...PURE_STATS_TOOL_DEFINITIONS];
 // now a single no-tools rewrite (regroundLaneB) and this floor is lower.
 const MAX_ITERATIONS = 4;
 
-// Cap on the inlined prior-tool-results we feed the no-tools rewrite/finalize.
-// The raw per-tool slices are 120k each; a rewrite doesn't need all of it, and
-// keeping this bounded protects latency + the token budget. 20k chars (~5k
-// tokens) is plenty to re-state the numbers already fetched this turn.
-const REGROUND_RESULTS_CAP = 20_000;
+// Budget on the inlined prior-tool-results we feed the no-tools rewrite/finalize.
+//
+// This is a WHOLE-PAYLOAD budget, NOT a blind char-slice. The old
+// `join("\n").slice(0, 20_000)` cut a single tool result MID-JSON (get_injuries
+// for MLB alone is ~26KB, so three tools ≈ 44KB got sliced mid-object), and the
+// model — reading a truncated, malformed payload — accurately narrated the
+// incompleteness ("I don't have the full tool results back yet"). That was the
+// literal source of the plumbing leak. inlineToolResults() below includes only
+// WHOLE payloads up to this budget and DROPS trailing ones behind a neutral
+// marker, so the model never sees a mid-object cut. 40k chars (~10k tokens) is
+// cheap for a once-per-violation call and fits the real slate.
+const REGROUND_RESULTS_BUDGET = 40_000;
+
+// The marker appended when we drop trailing whole payloads for length. Neutral +
+// bounded — the model reads it as "there was more, it's fine", not as a fetch
+// that failed or is "still loading" (which would itself read as a plumbing leak).
+const OMITTED_MARKER = "\n[additional tool results omitted for length]";
+
+// Build the inlined tool-result block for the no-tools rewrite/finalize. Includes
+// WHOLE tool-result strings in order up to REGROUND_RESULTS_BUDGET; once the next
+// whole payload would blow the budget, it stops and appends OMITTED_MARKER. The
+// model therefore only ever sees complete, parseable JSON objects — never a
+// mid-object cut it would (correctly) narrate as incomplete.
+export function inlineToolResults(toolResultTexts: string[]): string {
+  const kept: string[] = [];
+  let used = 0;
+  let omitted = false;
+  for (const t of toolResultTexts) {
+    // +1 for the "\n" join we'll add between blocks.
+    const cost = t.length + (kept.length > 0 ? 1 : 0);
+    if (used + cost > REGROUND_RESULTS_BUDGET && kept.length > 0) {
+      omitted = true;
+      break;
+    }
+    // A single payload larger than the whole budget: include it alone rather than
+    // ship an empty block (better one whole result than none), then stop.
+    kept.push(t);
+    used += cost;
+    if (used >= REGROUND_RESULTS_BUDGET) {
+      omitted = toolResultTexts.length > kept.length;
+      break;
+    }
+  }
+  if (omitted && kept.length < toolResultTexts.length) {
+    return kept.join("\n") + OMITTED_MARKER;
+  }
+  return kept.join("\n");
+}
 
 // A Lane B turn can call pipeline tools (bets mode) OR stats tools (either
 // mode), so toolsUsed spans both name spaces.
@@ -301,7 +344,7 @@ async function noToolsAnswer(
   const inlined =
     "TOOL RESULTS FROM THIS TURN (use ONLY numbers present here; if a number " +
     "isn't here, do not state it):\n" +
-    priorToolResultTexts.join("\n").slice(0, REGROUND_RESULTS_CAP);
+    inlineToolResults(priorToolResultTexts);
 
   const resp = await client.messages.create({
     model: MODELS.analyst,

@@ -2,7 +2,14 @@
 // result this turn. An ungrounded number must be caught.
 
 import { describe, it, expect } from "vitest";
-import { checkGrounding, extractNumbers, DOCTRINE_FALLBACK } from "../grounding";
+import {
+  checkGrounding,
+  checkLeak,
+  extractNumbers,
+  DOCTRINE_FALLBACK,
+  LANE_A_LEAK_FALLBACK,
+  STATS_MODE_FALLBACK,
+} from "../grounding";
 
 describe("number extraction", () => {
   it("pulls prices, percents, decimals, and lines", () => {
@@ -55,6 +62,75 @@ describe("grounding verdict", () => {
   it("the doctrine fallback says no read, no bet", () => {
     expect(DOCTRINE_FALLBACK.toLowerCase()).toContain("no read");
     expect(DOCTRINE_FALLBACK.toLowerCase()).toContain("no bet");
+  });
+});
+
+describe("leak guard (A2) — high-precision plumbing markers only", () => {
+  it("flags the reported plumbing leak (tool results not back / still loading)", () => {
+    const v = checkLeak(
+      "I don't have the full tool results back yet… still loading. Let me fire all the tools at once."
+    );
+    expect(v.leaked).toBe(true);
+    expect(v.marker).toBeTruthy();
+  });
+
+  it("flags 'data is still loading' phrasing", () => {
+    expect(checkLeak("The data is still loading, give me a sec.").leaked).toBe(true);
+    expect(checkLeak("My results aren't back yet.").leaked).toBe(true);
+    expect(checkLeak("memory and rules loaded cleanly").leaked).toBe(true);
+    expect(checkLeak("let me run the full slate analysis").leaked).toBe(true);
+    expect(checkLeak("give me a sec to re-run the tools").leaked).toBe(true);
+  });
+
+  it("does NOT false-positive on legit baseball 'loading the bases'", () => {
+    const v = checkLeak("Dodgers loading the bases, model likes the over.");
+    expect(v.leaked).toBe(false);
+  });
+
+  it("does NOT false-positive on a normal grounded read", () => {
+    expect(
+      checkLeak("Best line +145, model 58%, a 7% edge — 1 unit. No bet if the SP scratches.")
+        .leaked
+    ).toBe(false);
+    expect(checkLeak("No edge here. Pass. That's the discipline.").leaked).toBe(false);
+  });
+
+  it("the fallback constants are themselves guard-clean (never re-trip)", () => {
+    expect(checkLeak(DOCTRINE_FALLBACK).leaked).toBe(false);
+    expect(checkLeak(STATS_MODE_FALLBACK("NHL")).leaked).toBe(false);
+    expect(checkLeak(LANE_A_LEAK_FALLBACK).leaked).toBe(false);
+  });
+
+  it("STATS_MODE_FALLBACK no longer contains 'loading' (A3)", () => {
+    expect(STATS_MODE_FALLBACK("NHL").toLowerCase()).not.toContain("loading");
+  });
+});
+
+describe("schedule questions ground on first pass (B4 — clock times exempt)", () => {
+  it("a reply listing game start times grounds even with no numeric tool backing", () => {
+    // "MLB schedule for today" answered from get_odds: the reply lists clock
+    // times. commenceTime can't ground (excluded, no time bucket), so without
+    // the exemption these tokens would flag ungrounded and force a regen.
+    const reply =
+      "Tonight's MLB slate: Dodgers-Padres 9:40 PM, Yankees-Sox 7:05, Cubs-Cards 8:15.";
+    const toolResults = [
+      JSON.stringify({
+        events: [
+          { home: "Dodgers", away: "Padres", commenceTime: "2026-07-09T01:40:00Z" },
+          { home: "Yankees", away: "Red Sox", commenceTime: "2026-07-08T23:05:00Z" },
+        ],
+      }),
+    ];
+    const v = checkGrounding(reply, toolResults);
+    expect(v.grounded).toBe(true);
+  });
+
+  it("still catches a fabricated money number in a schedule-style reply", () => {
+    // The time exemption must NOT wave through a real bet claim. "13% edge" is
+    // not a clock time and must still fail.
+    const reply = "First pitch 7:05. My model has a 13% edge on the over.";
+    const v = checkGrounding(reply, [JSON.stringify({ games: [{ edge: 0.04 }] })]);
+    expect(v.grounded).toBe(false);
   });
 });
 
