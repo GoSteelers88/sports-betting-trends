@@ -6,19 +6,11 @@ import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { getHomeRunLikes, type HomeRunLike } from "@/lib/props-board";
-import {
-  buildMlbPropPlays,
-  type MlbPropPlaysBoard,
-  type SharpPropRow,
-  type SoftQuoteRow,
-} from "@/lib/mlb-prop-plays";
-import type { MlbGameLogFile } from "@/lib/mlb-prop-distributions";
+import type { MlbPropPlaysBoard } from "@/lib/mlb-prop-plays";
+import { loadMlbPropPlays, MLB_ODDS_FILE } from "@/lib/mlb-prop-plays-loader";
 import {
   slateTeamsFromEvents,
-  isTeamOnSlate,
   scopeInjuriesToSlate,
-  mlbSlateEvents,
-  easternDateOf,
   type ScopeInjury,
 } from "@/lib/injuries-scope";
 import { assessFreshness, MAX_AGE_HOURS } from "@/lib/data-freshness";
@@ -472,9 +464,12 @@ type RawOddsEvent = {
 };
 type RawOddsFile = { events?: RawOddsEvent[] };
 
+// MLB references the single-source MLB_ODDS_FILE from the prop-plays loader so the
+// dashboard's odds read and the loader's slate-scoping read can never diverge on a
+// feed rename (Finding 2). The loader → dashboard import is one-way (no cycle).
 const ODDS_FILE: Record<"NBA" | "MLB" | "WNBA" | "NHL", string> = {
   NBA: "latest-odds-api-basketball_nba.json",
-  MLB: "latest-odds-api-baseball_mlb.json",
+  MLB: MLB_ODDS_FILE,
   WNBA: "latest-odds-api-basketball_wnba.json",
   NHL: "latest-odds-api-icehockey_nhl.json",
 };
@@ -630,103 +625,13 @@ function loadPlayerProps(): PlayerProp[] {
 }
 
 // ─── MLB prop plays (by-stat threshold ladders, model-first) ─────────────────
-
-type SharpPropsFileShape = { fetchedAt?: string; props?: SharpPropRow[] };
-type SoftPropsFileShape = { fetchedAt?: string; quotes?: SoftQuoteRow[] };
-
-/** Build the by-stat MLB ladder board from the gamelog distribution model,
- *  scoped to tonight's MLB slate teams, with sharp/soft market overlay.
- *  Pure read — any missing file degrades to an empty board (section hides). */
-// The feed's own primary slate date = the MOST COMMON US-Eastern game-date among
-// the (already MLB-filtered) events. Returns null when there are no dated events.
-// We scope the prop board to this — derived from the data, never the wall clock —
-// so the board reflects "the games in this feed" regardless of when it renders.
-function primaryEasternSlateDate(
-  events: Array<{ commence_time?: string }>,
-): string | null {
-  const counts = new Map<string, number>();
-  for (const e of events) {
-    const d = easternDateOf(e.commence_time);
-    if (d) counts.set(d, (counts.get(d) ?? 0) + 1);
-  }
-  let best: string | null = null;
-  let bestN = 0;
-  for (const [d, n] of counts) {
-    // Tie-break toward the EARLIER date (the sooner slate is "today's").
-    if (n > bestN || (n === bestN && best !== null && d < best)) {
-      best = d;
-      bestN = n;
-    }
-  }
-  return best;
-}
-
-// Tonight's probable starting pitchers, from the MLB Stats API ingest. Shape:
-// { games: [{ homePitcher: { name }, awayPitcher: { name } }] }. Used to gate
-// pitcher prop ladders so non-starters can't surface phantom K/ER plays.
-type PitchersTodayFile = {
-  games?: Array<{
-    homePitcher?: { name?: string } | null;
-    awayPitcher?: { name?: string } | null;
-  }>;
-};
-
-function loadMlbPropPlays(): MlbPropPlaysBoard {
-  const gamelog = readJson<MlbGameLogFile | null>("player-gamelogs-mlb.json", null);
-  const odds = readJson<RawOddsFile>(ODDS_FILE.MLB, { events: [] });
-  const sharpFile = readJson<SharpPropsFileShape>("latest-sharp-props-mlb.json", {});
-  const softFile = readJson<SoftPropsFileShape>("latest-soft-props-mlb.json", {});
-  const pitchersToday = readJson<PitchersTodayFile>("mlb-pitchers-today.json", {});
-
-  // Market overlay must be FRESH or it's dropped. A stale sharp/soft prop file
-  // would overlay yesterday's lines/prices on today's model ladders — a quieter
-  // version of the same disease. When a market file is past its freshness budget
-  // we pass NO rows for that side, so the board falls back to model-only ladders
-  // (honest) instead of showing month-old edges as live. (The gamelog's own
-  // staleness is gated inside buildMlbPropPlays, which empties the whole board.)
-  const sharpFresh = assessFreshness(sharpFile.fetchedAt ?? null, MAX_AGE_HOURS.PROPS_QUOTE).isFresh;
-  const softFresh = assessFreshness(softFile.fetchedAt ?? null, MAX_AGE_HOURS.PROPS_QUOTE).isFresh;
-  const sharp: SharpPropsFileShape = sharpFresh ? sharpFile : {};
-  const soft: SoftPropsFileShape = softFresh ? softFile : {};
-  // Present file (even with no games) → gate; missing file (default {}, no
-  // `games` array) → undefined → gate disabled so a read failure can't silently
-  // empty the whole pitcher board.
-  const probableStarters = Array.isArray(pitchersToday.games)
-    ? pitchersToday.games
-        .flatMap(g => [g.homePitcher?.name, g.awayPitcher?.name])
-        .filter((n): n is string => typeof n === "string" && n.length > 0)
-    : undefined;
-
-  // Slate teams = the real MLB teams on THIS feed's slate. The baseball_mlb
-  // endpoint carries NPB/KBO/CPBL/NCAA games AND (via Bovada's preMatchOnly
-  // board) can span multiple days, so:
-  //  1. mlbSlateEvents strips everything that isn't one of the 30 MLB franchises
-  //     (both sides must be MLB) — kills the foreign/college pollution.
-  //  2. We then scope to the feed's OWN primary slate date (the modal US-Eastern
-  //     game-date among the MLB events), NOT the wall clock. Deriving the date
-  //     from the data — not from easternToday() — is critical: the odds snapshot
-  //     is static (bundled at build / last ingest), so comparing it to the live
-  //     clock would EMPTY the board every night at midnight ET once "today" rolls
-  //     past the snapshot's date. Scoping to the feed's own date shows "the games
-  //     in the current feed" and never vanishes from clock drift, while still
-  //     dropping a stray next-day game on a sparse/multi-day board.
-  const mlbTeamEvents = mlbSlateEvents(odds.events ?? []); // MLB-only, no date filter
-  const slateDate = primaryEasternSlateDate(mlbTeamEvents);
-  const mlbEvents = slateDate
-    ? mlbTeamEvents.filter((e) => easternDateOf(e.commence_time) === slateDate)
-    : mlbTeamEvents;
-  const slateTeams = slateTeamsFromEvents(mlbEvents);
-  const isSlateTeam = (team: string | null): boolean =>
-    !!team && isTeamOnSlate(team, slateTeams);
-
-  return buildMlbPropPlays({
-    gamelog,
-    isSlateTeam,
-    sharp: sharp.props ?? [],
-    soft: soft.quotes ?? [],
-    probableStarters,
-  });
-}
+//
+// The disk shell that used to live here (loadMlbPropPlays + primaryEasternSlateDate
+// + the sharp/soft freshness gate + slate scoping) was extracted to the shared,
+// testable module @/lib/mlb-prop-plays-loader so the chat desk's get_model_prop_board
+// tool can read the SAME board the dashboard renders. The dashboard now imports
+// loadMlbPropPlays from there (byte-for-byte identical behavior — default nowMs =
+// Date.now(), default dir = <cwd>/data/processed).
 
 // ─── Exp 4 retrospective (favorites-combinatorics backtest) ─────────────────
 

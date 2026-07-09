@@ -19,6 +19,12 @@ import {
   type SoftPropQuote,
   type PropsBoardRow,
 } from "@/lib/props-board";
+import {
+  loadMlbPropPlays,
+  loadMlbPropSlateStatus,
+  type MlbPropSlateStatus,
+} from "@/lib/mlb-prop-plays-loader";
+import type { MlbPropPlaysBoard } from "@/lib/mlb-prop-plays";
 
 // Base dir for every file-backed tool. Resolved once at module load.
 const PROCESSED = path.resolve(process.cwd(), "data", "processed");
@@ -547,6 +553,190 @@ export function getPropsBoard(
   );
 }
 
+// ─── Tool 4b: getModelPropBoard (MLB only) ──────────────────────────────────
+//
+// A COMPLETELY DIFFERENT surface from getPropsBoard. This is the desk's window
+// onto the exact MODEL prop board the dashboard's "MLB Prop Plays" section
+// renders: for tonight's MLB-slate hitters/starters, OUR distribution model's
+// P(stat ≥ k) at each milestone rung — a HR/hits/TB/RBI/runs/K PROJECTION, not a
+// market +EV edge. getPropsBoard/get_home_run_likes answer "where is the desk's
+// +EV EDGE?"; this answers "what does our model project tonight?". A model
+// projection is a LEAN / CONTEXT, never a "we like this prop" call — that call
+// still requires a real market-board edge (the 6% / playable-floor discipline).
+//
+// The dashboard board (buildMlbPropPlays) may attach a market OVERLAY on a rung
+// when a fresh sharp/soft line maps to it (edge/evPct/bestPrice/playable). The
+// CHAT projection DELIBERATELY DOES NOT carry any of that: this tool is
+// STRUCTURALLY a projection-only surface. The ONLY tool that may surface a +EV
+// prop play is get_props_board (the de-vigged MARKET board, with its own
+// commence + either-side-stale gates). See projectModelPropBoard below.
+
+// One projected rung, chat-compact: STRICTLY the model projection. There is NO
+// market/price/edge/play field on this shape by construction — so the model can
+// never dress a rung up as a "+EV play." A +EV MARKET claim requires a real
+// de-vigged SHARP price on get_props_board; this surface is a labeled model LEAN
+// / CONTEXT and nothing else. The dashboard keeps the overlay (via
+// buildMlbPropPlays / PlayRung); the chat view strips it here.
+export type ModelPropRung = {
+  threshold: number;         // k in "P(stat ≥ k)"
+  label: string;             // "1+", "2+", …
+  modelProb: number;         // OUR distribution model's probability (a PROJECTION)
+};
+
+// One player's projection for one stat: the top few rungs (most-likely first).
+export type ModelPropPlayer = {
+  player: string;
+  team: string | null;
+  stat: string;              // e.g. "batter_home_runs"
+  statLabel: string;         // e.g. "Home Runs"
+  topRungs: ModelPropRung[];
+};
+
+export type ModelPropStatGroup = {
+  stat: string;
+  label: string;
+  players: ModelPropPlayer[];
+};
+
+export type ModelPropBoardResult =
+  | {
+      available: false;
+      league: "MLB";
+      note: string;
+      // Provenance survives even the empty/stale path (honest "why").
+      generatedAt?: string | null;
+      stale?: boolean;
+      dataWarning?: string;
+    }
+  | {
+      available: true;
+      league: "MLB";
+      // Unmistakable framing for the model: these are PROJECTIONS, not +EV plays.
+      kind: "model_projection";
+      generatedAt: string | null;
+      stale: boolean;
+      totalPlayers: number;
+      // The headline HR ladder, surfaced prominently (the desk's most-asked prop).
+      homeRuns: ModelPropPlayer[];
+      // The other stat groups' top projected players (hits/TB/RBI/runs/K …).
+      otherStats: ModelPropStatGroup[];
+      dataWarning?: string;
+    };
+
+// How many players to surface per stat group, and rungs per player, in the
+// COMPACT chat projection (the full board is much larger; the desk needs a
+// readable digest, not the whole dashboard payload).
+const MODEL_PROP_PLAYERS_PER_STAT = 6;
+const MODEL_PROP_RUNGS_PER_PLAYER = 4;
+const HOME_RUN_STAT = "batter_home_runs";
+
+// PURE projection — shape the compact chat view from an ALREADY-LOADED board and
+// the slate's wall-clock status. Deterministic in (board, slate); no fs. The disk
+// reads live in getModelPropBoard.
+//
+// TWO gates, both mirroring getPropsBoard's post-3861586 discipline:
+//   1. FIELD STRIP — a rung exposes ONLY the model projection (threshold/label/
+//      modelProb). Every market/price/edge/play field is dropped by CONSTRUCTION
+//      (the ModelPropRung type has none), so a projection can never surface as a
+//      "+EV play." Sharp-confirmed rungs included: this is a projection tool.
+//   2. COMMENCE + ODDS-STALENESS — the slate must be honestly "tonight's": the
+//      odds snapshot fresh AND at least one game still upcoming. A started/stale
+//      slate returns available:false so the desk says it doesn't have tonight's
+//      board rather than presenting last night's as tonight.
+export function projectModelPropBoard(
+  board: MlbPropPlaysBoard,
+  slate: MlbPropSlateStatus,
+): ModelPropBoardResult {
+  const toPlayer = (
+    l: MlbPropPlaysBoard["groups"][number]["ladders"][number],
+    statLabel: string,
+    stat: string,
+  ): ModelPropPlayer => ({
+    player: l.player,
+    team: l.team,
+    stat,
+    statLabel,
+    // ONLY the model projection survives to chat. No marketProb/edge/bestPrice/
+    // bestBook/evPct/playable — those are dashboard-only (PlayRung). Stripping
+    // them structurally is the whole point: there is no play-shaped field left
+    // for the model to cite as a market edge.
+    topRungs: l.rungs.slice(0, MODEL_PROP_RUNGS_PER_PLAYER).map((r) => ({
+      threshold: r.threshold,
+      label: r.label,
+      modelProb: r.modelProb, // the legitimate projection — grounds via PROB_KEYS
+    })),
+  });
+
+  // COMMENCE + ODDS-STALENESS GATE (chat-only). Off-window/stale → honest empty,
+  // so the desk never presents a finished slate as tonight's. The dashboard path
+  // is unaffected (it never calls this gate).
+  if (!slate.oddsFresh || !slate.hasUpcomingGame) {
+    return {
+      available: false,
+      league: "MLB",
+      note: "no MLB model prop projections for tonight's slate right now",
+      generatedAt: board.generatedAt,
+      stale: board.stale,
+    };
+  }
+
+  // Empty board (no gamelog, nobody on the slate, or the gamelog was stale and
+  // buildMlbPropPlays emptied it) → available:false with an honest, in-character
+  // note (no data-mechanics narration — the persona bans it).
+  if (board.groups.length === 0) {
+    return {
+      available: false,
+      league: "MLB",
+      note: "no MLB model prop projections for tonight's slate right now",
+      generatedAt: board.generatedAt,
+      stale: board.stale,
+    };
+  }
+
+  const homeRunGroup = board.groups.find((g) => g.stat === HOME_RUN_STAT);
+  const homeRuns = (homeRunGroup?.ladders ?? [])
+    .slice(0, MODEL_PROP_PLAYERS_PER_STAT)
+    .map((l) => toPlayer(l, homeRunGroup!.label, homeRunGroup!.stat));
+
+  const otherStats: ModelPropStatGroup[] = board.groups
+    .filter((g) => g.stat !== HOME_RUN_STAT)
+    .map((g) => ({
+      stat: g.stat,
+      label: g.label,
+      players: g.ladders
+        .slice(0, MODEL_PROP_PLAYERS_PER_STAT)
+        .map((l) => toPlayer(l, g.label, g.stat)),
+    }));
+
+  return {
+    available: true,
+    league: "MLB",
+    kind: "model_projection",
+    generatedAt: board.generatedAt,
+    stale: board.stale,
+    totalPlayers: board.totalPlayers,
+    homeRuns,
+    otherStats,
+  };
+}
+
+/**
+ * DISK SHELL — MLB-only. Load the shared model prop-plays board (the SAME one the
+ * dashboard renders) and project it to the compact chat view. `now` is injectable
+ * for testing. Never throws: the loader fail-softs to an empty board on any read
+ * error, and projectModelPropBoard returns available:false for the empty/stale
+ * case. These are MODEL PROJECTIONS (leans/context), NOT market +EV plays.
+ */
+export function getModelPropBoard(now: Date = new Date()): ModelPropBoardResult {
+  const nowMs = now.getTime();
+  const board = loadMlbPropPlays({ nowMs });
+  // The chat-only commence + odds-freshness gate reads the SAME odds snapshot the
+  // board scoped to, but judges it against the wall clock (the dashboard scopes to
+  // the feed's own slate date and never applies this gate — its board is unchanged).
+  const slate = loadMlbPropSlateStatus({ nowMs });
+  return projectModelPropBoard(board, slate);
+}
+
 // ─── Tool 5: getProbablePitchers (MLB only) ─────────────────────────────────
 
 type RawProbablePitcher = string | { name?: string } | null | undefined;
@@ -835,6 +1025,7 @@ export const STATS_TOOL_NAMES = [
   "get_team_efficiency",
   "get_player_gamelog",
   "get_props_board",
+  "get_model_prop_board",
   "get_probable_pitchers",
   "get_mlb_team_stats",
   "get_parlay_book",
@@ -850,11 +1041,19 @@ export type StatsToolName = (typeof STATS_TOOL_NAMES)[number];
 // are bet-shaped: the props board returns +EV plays (book/side/price/EV) and the
 // parlay book returns open +EV parlays — so they are EXCLUDED from stats mode.
 //
+// `get_model_prop_board` is ALSO bet-shaped: although its headline is model
+// PROJECTIONS (not +EV plays), buildMlbPropPlays attaches a playable market
+// overlay (edge/evPct/playable) on any rung a fresh sharp/soft line touches — so
+// a rung CAN carry a playable +EV edge. That's a play-capable surface, so it's
+// stripped from stats-mode turns exactly like get_props_board. It stays on the
+// BETS-mode menu (MLB only).
+//
 // `get_desk_record` STAYS in stats mode on purpose: it's the desk's honest,
 // league-independent settled track record (CLV/ROI/W-L), useful for "how's the
 // desk doing?" even in a hockey conversation. It surfaces no play.
 export const BET_SHAPED_STATS_TOOL_NAMES = [
   "get_props_board",
+  "get_model_prop_board",
   "get_parlay_book",
 ] as const;
 
@@ -924,6 +1123,16 @@ export const STATS_TOOL_DEFINITIONS = [
         league: { type: "string", enum: PROPS_LEAGUES },
       },
       required: ["league"],
+    },
+  },
+  {
+    name: "get_model_prop_board",
+    description:
+      "MLB-only, read-only. Returns OUR MODEL'S prop PROJECTIONS for tonight's slate — the same underlying model the site's 'MLB Prop Plays' section shows. For each slate hitter/probable-starter it gives our distribution model's probability of clearing each milestone (P(home runs ≥ 1), P(hits ≥ 2), P(total bases ≥ 3), RBI/runs/strikeout ladders), with the headline HOME-RUN projections surfaced first. Each rung carries ONLY the model probability (modelProb) — there is NO price, edge, EV, or 'playable' field, by design. These are MODEL PROJECTIONS / leans / context — NOT market +EV edges, and NEVER a 'we like this prop' call. This is DIFFERENT from get_props_board and get_home_run_likes, which return the desk's de-vigged market +EV plays (the only thing that earns a prop play). Use this to answer 'what home-run / prop leans does the model have tonight?' when the +EV market prop board isn't populated — speak to these strictly as clearly-labeled model projections, never as a +EV play or an edge. Returns available:false when there is no fresh tonight's slate (odds snapshot stale or every game already started), no slate gamelog, or the model board is stale. Snapshot data, not live.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
     },
   },
   {
@@ -1004,6 +1213,7 @@ export function buildStatsHandlers(
     },
     get_props_board: (input) =>
       getPropsBoard((input as { league: StatsLeague }).league),
+    get_model_prop_board: () => getModelPropBoard(),
     get_probable_pitchers: () => getProbablePitchers(),
     get_mlb_team_stats: (input) =>
       getMlbTeamStats((input as { team: string }).team),

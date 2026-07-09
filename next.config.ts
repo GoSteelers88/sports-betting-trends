@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
     "/api/player-props": ["./data/processed/**/*"],
     "/api/debug-odds": ["./data/processed/**/*"],
     "/api/assistant/query": ["./data/processed/**/*"],
+    "/api/chat": ["./data/processed/**/*"],
     "/api/cron/refresh": [],
     "/api/cron/ingest": [],
     "/api/picks/today": ["./data/processed/**/*"],

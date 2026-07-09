@@ -5,6 +5,8 @@ import {
   getPlayerGamelog,
   getPropsBoard,
   buildPropsBoardResult,
+  getModelPropBoard,
+  projectModelPropBoard,
   getProbablePitchers,
   getMlbTeamStats,
   getParlayBook,
@@ -12,11 +14,15 @@ import {
   buildStatsHandlers,
   STATS_TOOL_NAMES,
   STATS_TOOL_DEFINITIONS,
+  BET_SHAPED_STATS_TOOL_NAMES,
+  PURE_STATS_TOOL_NAMES,
   readStat,
   staleNote,
   type DeskRecord,
 } from "@/lib/agent/tools/stats";
 import type { SharpProp, SoftPropQuote } from "@/lib/props-board";
+import type { MlbPropPlaysBoard } from "@/lib/mlb-prop-plays";
+import type { MlbPropSlateStatus } from "@/lib/mlb-prop-plays-loader";
 
 // These tests run against the REAL committed snapshots in data/processed. They
 // assert structure + degradation, not brittle exact numbers (the snapshots
@@ -333,6 +339,300 @@ describe("buildPropsBoardResult (pure core — phantom-join guard + commence fil
   });
 });
 
+describe("getModelPropBoard / projectModelPropBoard", () => {
+  // A slate that is honestly "tonight's": odds snapshot fresh + a game still
+  // upcoming. The commence/odds gate passes with this; started-slate tests pass
+  // the "no upcoming game" variant.
+  const FRESH_UPCOMING_SLATE: MlbPropSlateStatus = {
+    oddsFresh: true,
+    newestCommenceMs: Date.now() + 3 * 60 * 60 * 1000,
+    hasUpcomingGame: true,
+  };
+  // Every game already started (finished/started-slate): fresh odds, but nothing
+  // upcoming. This is the exploit's wall-clock condition.
+  const STARTED_SLATE: MlbPropSlateStatus = {
+    oddsFresh: true,
+    newestCommenceMs: Date.now() - 12 * 60 * 60 * 1000,
+    hasUpcomingGame: false,
+  };
+
+  // A minimal fresh board with an HR group + a hits group, one player each,
+  // matching the MlbPropPlaysBoard shape (buildMlbPropPlays' output).
+  function boardFixture(): MlbPropPlaysBoard {
+    const rung = (threshold: number, label: string, modelProb: number) => ({
+      threshold,
+      label,
+      modelProb,
+      marketProb: null,
+      edge: null,
+      bestPrice: null,
+      bestBook: null,
+      evPct: null,
+      playable: false,
+    });
+    const ladder = (
+      player: string,
+      stat: "batter_home_runs" | "batter_hits",
+      statLabel: string,
+      kind: "batter",
+    ) => ({
+      player,
+      team: "New York Yankees",
+      stat,
+      statLabel,
+      kind,
+      mean: 1,
+      method: "negative-binomial" as const,
+      nGames: 8,
+      derived: false,
+      lowConfidence: false,
+      rungs: [rung(1, "1+", 0.42), rung(2, "2+", 0.12)],
+      topEdge: null,
+      hasPlayable: false,
+    });
+    return {
+      generatedAt: "2026-05-21T12:00:00Z",
+      windowAgeHours: 6,
+      stale: false,
+      groups: [
+        {
+          stat: "batter_home_runs",
+          label: "Home Runs",
+          kind: "batter",
+          ladders: [ladder("Aaron Judge", "batter_home_runs", "Home Runs", "batter")],
+        },
+        {
+          stat: "batter_hits",
+          label: "Hits",
+          kind: "batter",
+          ladders: [ladder("Juan Soto", "batter_hits", "Hits", "batter")],
+        },
+      ],
+      modeledStats: ["Home Runs", "Hits"],
+      totalPlayers: 2,
+    };
+  }
+
+  it("projects the projection shape: HR headline + other stats, all model-labeled", () => {
+    const r = projectModelPropBoard(boardFixture(), FRESH_UPCOMING_SLATE);
+    expect(r.available).toBe(true);
+    if (!r.available) return;
+    expect(r.league).toBe("MLB");
+    expect(r.kind).toBe("model_projection"); // unmistakably MODEL, not +EV
+    expect(r.generatedAt).toBe("2026-05-21T12:00:00Z");
+    expect(r.stale).toBe(false);
+    expect(r.totalPlayers).toBe(2);
+    // HR ladder surfaced prominently with player/team/stat/threshold/model prob.
+    expect(r.homeRuns.length).toBe(1);
+    const hr = r.homeRuns[0];
+    expect(hr.player).toBe("Aaron Judge");
+    expect(hr.team).toBe("New York Yankees");
+    expect(hr.stat).toBe("batter_home_runs");
+    expect(hr.topRungs[0].threshold).toBe(1);
+    expect(hr.topRungs[0].modelProb).toBeCloseTo(0.42, 4);
+    // Other stat groups exclude HR and carry their own players.
+    expect(r.otherStats.some((g) => g.stat === "batter_home_runs")).toBe(false);
+    const hits = r.otherStats.find((g) => g.stat === "batter_hits")!;
+    expect(hits.players[0].player).toBe("Juan Soto");
+  });
+
+  // A board whose rungs carry a full market overlay — INCLUDING a sharp-confirmed
+  // rung — proving that the CHAT projection strips the play fields from EVERY
+  // rung, not just the no-sharp ones. This is the reviewers' blocker: pre-fix,
+  // the sharp-confirmed rung leaked playable:true/evPct/bestPrice/bestBook to chat.
+  function overlaidBoard(): MlbPropPlaysBoard {
+    return {
+      generatedAt: "2026-05-21T12:00:00Z",
+      windowAgeHours: 6,
+      stale: false,
+      groups: [
+        {
+          stat: "batter_home_runs",
+          label: "Home Runs",
+          kind: "batter",
+          ladders: [
+            {
+              player: "Aaron Judge",
+              team: "New York Yankees",
+              stat: "batter_home_runs",
+              statLabel: "Home Runs",
+              kind: "batter",
+              mean: 0.5,
+              method: "negative-binomial" as const,
+              nGames: 8,
+              derived: false,
+              lowConfidence: false,
+              rungs: [
+                // NO-SHARP rung: soft-only, playable off the model prob alone.
+                {
+                  threshold: 1,
+                  label: "1+",
+                  modelProb: 0.363,
+                  marketProb: null,
+                  edge: null,
+                  bestPrice: 200,
+                  bestBook: "DraftKings",
+                  evPct: 8.87,
+                  playable: true,
+                },
+                // SHARP-CONFIRMED rung: a real de-vigged sharp line mapped here.
+                {
+                  threshold: 2,
+                  label: "2+",
+                  modelProb: 0.14,
+                  marketProb: 0.1,
+                  edge: 0.04,
+                  bestPrice: 650,
+                  bestBook: "FanDuel",
+                  evPct: 12.5,
+                  playable: true,
+                },
+              ],
+              topEdge: 0.04,
+              hasPlayable: true,
+            },
+          ],
+        },
+      ],
+      modeledStats: ["Home Runs"],
+      totalPlayers: 1,
+    };
+  }
+
+  it("DISCIPLINE: the chat projection carries NO play/market field on ANY rung (sharp-confirmed included)", () => {
+    const r = projectModelPropBoard(overlaidBoard(), FRESH_UPCOMING_SLATE);
+    expect(r.available).toBe(true);
+    if (!r.available) return;
+
+    // Board-wide quantifier: NOT ONE rung — HR headline or any other stat — may
+    // expose a play/market/price/edge field. Re-adding one to the chat view goes
+    // red here. (These fields don't exist on ModelPropRung, so we assert via the
+    // key set, which is the structural guarantee.)
+    const bannedKeys = [
+      "playable",
+      "evPct",
+      "edge",
+      "bestPrice",
+      "bestBook",
+      "marketProb",
+      "marketFair",
+      "sharpConfirmed",
+    ];
+    const allRungs = [r.homeRuns[0], ...r.otherStats.flatMap((s) => s.players)]
+      .flatMap((p) => p.topRungs);
+    expect(allRungs.length).toBeGreaterThan(0);
+    for (const rung of allRungs) {
+      // The projection headline SURVIVES…
+      expect(typeof rung.modelProb).toBe("number");
+      expect(typeof rung.threshold).toBe("number");
+      // …and no market/play field is present at all.
+      for (const k of bannedKeys) {
+        expect(rung).not.toHaveProperty(k);
+      }
+      // Exactly the projection keys, nothing more.
+      expect(Object.keys(rung).sort()).toEqual(["label", "modelProb", "threshold"]);
+    }
+  });
+
+  it("STARTED SLATE: fresh files but every game already commenced → NO play fields + available:false", () => {
+    // The finished-game exploit: prop files fresh per the 30h budget, but the
+    // whole slate has already started. The chat gate must refuse to present it as
+    // tonight's board — regardless of any overlay the board carries.
+    const r = projectModelPropBoard(overlaidBoard(), STARTED_SLATE);
+    expect(r.available).toBe(false);
+    if (r.available) {
+      // Belt-and-suspenders: even if a future regression made it available, NO
+      // rung may carry a play/market field.
+      const allRungs = [r.homeRuns[0], ...r.otherStats.flatMap((s) => s.players)]
+        .flatMap((p) => p.topRungs);
+      for (const rung of allRungs) {
+        expect(rung).not.toHaveProperty("playable");
+        expect(rung).not.toHaveProperty("evPct");
+        expect(rung).not.toHaveProperty("bestPrice");
+      }
+      return;
+    }
+    expect(r.note).toMatch(/no MLB model prop projections/);
+  });
+
+  it("STALE ODDS: odds snapshot past budget → available:false even with an upcoming-looking board", () => {
+    const staleOdds: MlbPropSlateStatus = {
+      oddsFresh: false,
+      newestCommenceMs: Date.now() + 3 * 60 * 60 * 1000,
+      hasUpcomingGame: true,
+    };
+    const r = projectModelPropBoard(overlaidBoard(), staleOdds);
+    expect(r.available).toBe(false);
+    if (r.available) return;
+    expect(r.note).toMatch(/no MLB model prop projections/);
+  });
+
+  it("empty board → available:false with an honest note (no data-mechanics narration)", () => {
+    const empty: MlbPropPlaysBoard = {
+      generatedAt: null,
+      windowAgeHours: null,
+      stale: false,
+      groups: [],
+      modeledStats: [],
+      totalPlayers: 0,
+    };
+    const r = projectModelPropBoard(empty, FRESH_UPCOMING_SLATE);
+    expect(r.available).toBe(false);
+    if (r.available) return;
+    expect(r.note).toMatch(/no MLB model prop projections/);
+    // No banned data-mechanics words in the note.
+    expect(r.note).not.toMatch(/freshness budget|gamelog|game-log/i);
+    expect(r.stale).toBe(false);
+  });
+
+  it("stale board (fresh slate) → available:false, provenance preserved, clean note", () => {
+    const stale: MlbPropPlaysBoard = {
+      generatedAt: "2026-04-01T00:00:00Z",
+      windowAgeHours: 999,
+      stale: true,
+      groups: [],
+      modeledStats: [],
+      totalPlayers: 0,
+    };
+    const r = projectModelPropBoard(stale, FRESH_UPCOMING_SLATE);
+    expect(r.available).toBe(false);
+    if (r.available) return;
+    expect(r.stale).toBe(true);
+    expect(r.generatedAt).toBe("2026-04-01T00:00:00Z");
+    expect(r.note).toMatch(/no MLB model prop projections/);
+    // Clean, in-character note — no mechanics narration.
+    expect(r.note).not.toMatch(/freshness budget|gamelog|game-log/i);
+  });
+
+  it("getModelPropBoard (disk shell) returns a well-formed result against real snapshots", () => {
+    // Runs against committed data/processed — assert SHAPE + fail-soft, not a
+    // specific slate (which is cron-tied). Either available with the projection
+    // fields, or a clean available:false.
+    const r = getModelPropBoard();
+    expect(r.league).toBe("MLB");
+    if (r.available) {
+      expect(r.kind).toBe("model_projection");
+      expect(Array.isArray(r.homeRuns)).toBe(true);
+      expect(Array.isArray(r.otherStats)).toBe(true);
+      expect(typeof r.totalPlayers).toBe("number");
+    } else {
+      expect(typeof r.note).toBe("string");
+    }
+  });
+
+  it("is registered + bet-shaped (stripped from stats mode, kept in bets mode)", () => {
+    expect(STATS_TOOL_NAMES).toContain("get_model_prop_board");
+    expect(BET_SHAPED_STATS_TOOL_NAMES).toContain("get_model_prop_board");
+    // Bet-shaped ⇒ NOT in the pure-stats (stats-mode) surface.
+    expect(PURE_STATS_TOOL_NAMES).not.toContain("get_model_prop_board");
+    // Handler exists and returns a well-formed object.
+    const handlers = buildStatsHandlers(null);
+    const out = handlers.get_model_prop_board({}) as { league: string; available: boolean };
+    expect(out.league).toBe("MLB");
+    expect(typeof out.available).toBe("boolean");
+  });
+});
+
 describe("getProbablePitchers", () => {
   // Off-season / off-day → no games. Assert SHAPE, not a non-empty slate.
   it("returns a well-formed object; when games are present they carry the shape", () => {
@@ -456,8 +756,8 @@ describe("getDeskRecord", () => {
 
 describe("STATS_TOOL_NAMES + STATS_TOOL_DEFINITIONS", () => {
   it("names and definitions are 1:1 and aligned", () => {
-    expect(STATS_TOOL_NAMES.length).toBe(8);
-    expect(STATS_TOOL_DEFINITIONS.length).toBe(8);
+    expect(STATS_TOOL_NAMES.length).toBe(9);
+    expect(STATS_TOOL_DEFINITIONS.length).toBe(9);
     const defNames = STATS_TOOL_DEFINITIONS.map((d) => d.name).sort();
     expect(defNames).toEqual([...STATS_TOOL_NAMES].sort());
   });
@@ -472,7 +772,7 @@ describe("STATS_TOOL_NAMES + STATS_TOOL_DEFINITIONS", () => {
   });
 
   it("no-param tools declare empty properties + required", () => {
-    for (const name of ["get_probable_pitchers", "get_parlay_book", "get_desk_record"]) {
+    for (const name of ["get_probable_pitchers", "get_parlay_book", "get_desk_record", "get_model_prop_board"]) {
       const d = STATS_TOOL_DEFINITIONS.find((x) => x.name === name)!;
       expect(Object.keys(d.input_schema.properties)).toEqual([]);
       expect(d.input_schema.required).toEqual([]);
