@@ -16,6 +16,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import { answer, estimateTokens } from "../sharp";
+import { runLaneB } from "../laneB";
 import type { SlateEntities } from "../router";
 
 function slate(): SlateEntities {
@@ -68,10 +69,10 @@ describe("spend governor (model never called when closed)", () => {
   });
 });
 
-describe("scope gate (out-of-scope → refusal, no fabricated read)", () => {
-  it("soccer question gets the off-desk refusal with no model call", async () => {
+describe("scope gate — refuse tier (no data → refusal, no fabricated read)", () => {
+  it("golf question gets the off-desk refusal with no model call", async () => {
     const { client, create } = fakeClient("should not be used");
-    const res = await answer("who wins the Premier League match tonight?", NO_TURNS, {
+    const res = await answer("who wins the Masters this weekend?", NO_TURNS, {
       client,
       slate: slate(),
       spendCheck: openSpend,
@@ -81,15 +82,97 @@ describe("scope gate (out-of-scope → refusal, no fabricated read)", () => {
     expect(res.reply.toLowerCase()).toContain("off my desk");
     expect(create).not.toHaveBeenCalled();
   });
-  it("NFL gets the research acknowledgment, not a fabricated read", async () => {
-    const { client } = fakeClient("x");
-    const res = await answer("any read on the Chiefs game?", NO_TURNS, {
+  it("tennis + UFC also refuse (no model call)", async () => {
+    for (const q of ["any Wimbledon picks?", "give me a UFC play"]) {
+      const { client, create } = fakeClient("should not be used");
+      const res = await answer(q, NO_TURNS, { client, slate: slate(), spendCheck: openSpend });
+      expect(res.intercepted).toBe("out_of_scope");
+      expect(create).not.toHaveBeenCalled();
+    }
+  });
+});
+
+describe("scope gate — stats-only tier (NFL/NHL/soccer → Lane B stats mode)", () => {
+  it("an NFL question routes to Lane B in stats mode via the injected runner", async () => {
+    const { client } = fakeClient("unused-persona");
+    const laneBRunner = vi.fn().mockResolvedValue({
+      reply: "Chiefs are 11-3, top of the AFC West. I'll show you the numbers, but I don't bet that league.",
+      toolsUsed: ["get_standings"],
+      toolResultTexts: [JSON.stringify({ available: true, teams: [{ team: "Chiefs", wins: 11, losses: 3 }] })],
+      iterations: 1,
+    });
+    const res = await answer("what are the Chiefs' standings this year?", NO_TURNS, {
       client,
       slate: slate(),
       spendCheck: openSpend,
+      laneBRunner: laneBRunner as never,
     });
-    expect(res.intercepted).toBe("out_of_scope");
-    expect(res.reply.toLowerCase()).toContain("research");
+    expect(res.lane).toBe("B");
+    expect(res.intercepted).toBeUndefined();
+    // Runner called with the stats-only StatsLeague + scope + mode="stats".
+    expect(laneBRunner).toHaveBeenCalledTimes(1);
+    const args = laneBRunner.mock.calls[0];
+    expect(args[0]).toBe("NFL"); // league
+    expect(args[5]).toBe("slate"); // scope
+    expect(args[6]).toBe("stats"); // mode
+  });
+});
+
+// BLOCKER-adjacent PIN — the mode wiring is load-bearing, so pin it with the
+// REAL runLaneB (not a stubbed runner). If someone swapped the stats tool defs
+// for the full defs, this goes red: it inspects the actual `tools` array handed
+// to client.messages.create AND proves a bet-shaped/pipeline tool_use gets the
+// "not available in this chat" refusal instead of executing.
+describe("stats-mode wiring (REAL runLaneB, mocked Anthropic)", () => {
+  it("hands the model the STATS defs and refuses a get_board_edges tool_use", async () => {
+    const seenTools: Array<Array<{ name: string }>> = [];
+    let call = 0;
+    const create = vi.fn().mockImplementation((args: { tools?: Array<{ name: string }> }) => {
+      seenTools.push(args.tools ?? []);
+      call++;
+      if (call === 1) {
+        // First turn: the model tries a bettable pipeline tool it must NOT have.
+        return Promise.resolve({
+          stop_reason: "tool_use",
+          content: [
+            { type: "tool_use", id: "t1", name: "get_board_edges", input: { league: "NFL" } },
+          ],
+        });
+      }
+      // Second turn: the model settles for a text answer.
+      return Promise.resolve({
+        stop_reason: "end_turn",
+        content: [{ type: "text", text: "Chiefs are 11-3. I don't bet that league." }],
+      });
+    });
+    const client = { messages: { create } } as never;
+
+    const res = await runLaneB(
+      "NFL",
+      "what are the Chiefs' standings?",
+      [],
+      client,
+      undefined,
+      "slate",
+      "stats"
+    );
+
+    // (1) The tools array is the STATS defs: get_standings present, and the
+    // bettable pipeline tool get_board_edges is NOT offered.
+    const firstTools = seenTools[0].map((t) => t.name);
+    expect(firstTools).toContain("get_standings");
+    expect(firstTools).not.toContain("get_board_edges");
+    // And the bet-shaped stats tools are stripped too.
+    expect(firstTools).not.toContain("get_props_board");
+    expect(firstTools).not.toContain("get_parlay_book");
+
+    // (2) The refused tool_use never executed — it received the explicit
+    // "not available in this chat" refusal, surfaced in the collected results.
+    const refusal = res.toolResultTexts.find((t) => t.includes("not available in this chat"));
+    expect(refusal).toBeDefined();
+    expect(refusal).toContain("get_board_edges");
+    // get_board_edges must NOT appear in toolsUsed (it never ran).
+    expect(res.toolsUsed).not.toContain("get_board_edges");
   });
 });
 
@@ -159,6 +242,32 @@ describe("Lane B grounding fallback", () => {
     expect(res.lane).toBe("B");
     expect(res.reply.toLowerCase()).toContain("pass");
     expect(laneBRunner).toHaveBeenCalledTimes(1); // grounded → no retry
+  });
+});
+
+describe("stats-mode grounding fallback is mode-appropriate (SHOULD-FIX 5)", () => {
+  it("an ungrounded NHL stats turn falls back to the stats line, NOT the NBA/MLB doctrine", async () => {
+    const { client } = fakeClient("unused-persona");
+    // Stats-mode runner returns a fabricated stat both times → double-ungrounded.
+    const laneBRunner = vi.fn().mockResolvedValue({
+      reply: "The Bruins are 41-12, cruising.",
+      toolsUsed: ["get_standings"],
+      toolResultTexts: [JSON.stringify({ available: false })], // nothing grounds 41/12
+      iterations: 1,
+    });
+    const res = await answer("how are the Bruins doing in the NHL?", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+      laneBRunner: laneBRunner as never,
+    });
+    expect(res.lane).toBe("B");
+    // Mode-appropriate: names the league, says it won't guess.
+    expect(res.reply).toMatch(/NHL/);
+    expect(res.reply.toLowerCase()).toContain("won't guess");
+    // Must NOT be the bets doctrine ("no read means no bet" / "no bet").
+    expect(res.reply.toLowerCase()).not.toContain("no bet");
+    expect(laneBRunner).toHaveBeenCalledTimes(2); // draft + stricter retry
   });
 });
 

@@ -62,6 +62,98 @@ export async function getRecentRecord(
   return rec;
 }
 
+export type DeskRecordSummary = {
+  byLeague: Array<{
+    league: string;
+    windowDays: number;
+    total: number;
+    wins: number;
+    losses: number;
+    pushes: number;
+    pnlUnits: number;
+    roi: number | null;
+  }>;
+  overall: {
+    total: number;
+    wins: number;
+    losses: number;
+    pnlUnits: number;
+    roi: number | null;
+  };
+};
+
+// One-query desk record across the betting-remit leagues, for the chat bot's
+// get_desk_record tool. Groups the last N days of graded outcomes by league and
+// rolls up an overall line (ROI from actual staked units).
+//
+// On a DB error returns NULL — NOT an empty 0-0 summary. A well-formed empty
+// summary would make get_desk_record report available:true, total:0, so the
+// public bot would claim "no graded picks in 30 days" during a Turso blip —
+// stating a falsehood about the desk's record. null → get_desk_record degrades
+// to available:false ("desk record not loaded"), which is honest. Callers
+// (buildStatsHandlers) already accept null.
+export async function getDeskRecordSummary(
+  leagues: readonly string[],
+  windowDays = 30
+): Promise<DeskRecordSummary | null> {
+  const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000);
+  try {
+    const outcomes = await prisma.agentOutcome.findMany({
+      where: {
+        gradedAt: { gte: since },
+        result: { in: ["win", "loss", "push"] },
+        pick: { league: { in: [...leagues] } },
+      },
+      include: { pick: true },
+    });
+
+    type Acc = { total: number; wins: number; losses: number; pushes: number; pnlUnits: number; stake: number };
+    const byLg = new Map<string, Acc>();
+    for (const lg of leagues) {
+      byLg.set(lg, { total: 0, wins: 0, losses: 0, pushes: 0, pnlUnits: 0, stake: 0 });
+    }
+    const o = { total: 0, wins: 0, losses: 0, pnlUnits: 0, stake: 0 };
+
+    for (const row of outcomes) {
+      const acc = byLg.get(row.pick.league);
+      if (!acc) continue;
+      const pnl = row.unitsPnl ?? 0;
+      const stake = row.pick.kellyStakeUnits ?? 0;
+      acc.total++; o.total++;
+      if (row.result === "win") { acc.wins++; o.wins++; }
+      else if (row.result === "loss") { acc.losses++; o.losses++; }
+      else acc.pushes++;
+      acc.pnlUnits += pnl; o.pnlUnits += pnl;
+      acc.stake += stake; o.stake += stake;
+    }
+
+    const byLeague = [...byLg.entries()].map(([league, a]) => ({
+      league,
+      windowDays,
+      total: a.total,
+      wins: a.wins,
+      losses: a.losses,
+      pushes: a.pushes,
+      pnlUnits: +a.pnlUnits.toFixed(2),
+      roi: a.stake > 0 ? +(a.pnlUnits / a.stake).toFixed(4) : null,
+    }));
+
+    return {
+      byLeague,
+      overall: {
+        total: o.total,
+        wins: o.wins,
+        losses: o.losses,
+        pnlUnits: +o.pnlUnits.toFixed(2),
+        roi: o.stake > 0 ? +(o.pnlUnits / o.stake).toFixed(4) : null,
+      },
+    };
+  } catch (err) {
+    console.error("[memory] getDeskRecordSummary failed:", err);
+    return null;
+  }
+}
+
 export function formatRecordForPrompt(rec: RecentRecord): string {
   if (rec.total === 0) {
     return `(no graded picks in last ${rec.windowDays} days — small-sample mode, be extra conservative)`;

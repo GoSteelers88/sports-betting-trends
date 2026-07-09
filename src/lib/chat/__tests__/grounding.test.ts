@@ -154,3 +154,232 @@ describe("fabricated-edge regression (full realistic payload)", () => {
     expect(v.grounded).toBe(false);
   });
 });
+
+// ─── BLOCKER 2: stat integers must NOT back fabricated prices; stats must still
+// ground; years never flag; string records ground their splits. ──────────────
+describe("stat-value grounding (records/ratings) vs fabricated prices", () => {
+  // A pure get_standings result: win/loss columns, winPct, pointDiff, and
+  // hyphenated home/away record strings. NO price/line/american field anywhere.
+  const standingsOnly = [
+    JSON.stringify({
+      available: true,
+      league: "NBA",
+      teams: [
+        {
+          team: "Boston Celtics",
+          abbreviation: "BOS",
+          wins: 22,
+          losses: 5,
+          winPct: 0.815,
+          homeRecord: "12-2",
+          awayRecord: "10-3",
+          pointDiff: 11,
+          streak: "W4",
+          conference: "East",
+        },
+        {
+          team: "Detroit Pistons",
+          abbreviation: "DET",
+          wins: 29,
+          losses: 10,
+          winPct: 0.744,
+          homeRecord: "16-4",
+          awayRecord: "13-6",
+          pointDiff: 7,
+          streak: "L2",
+          conference: "East",
+        },
+      ],
+    }),
+  ];
+
+  it("(a) a fabricated -110 does NOT ground when only a standings result is present", () => {
+    // -110 is a made-up American price. The standings result has NO price field;
+    // its stat integers (wins 22/29, pointDiff 11/7, etc.) are EXACT-match stat
+    // values, none equal to 110. So -110 must be flagged ungrounded.
+    const v = checkGrounding(
+      "I'd lay them at -110 here, easy price.",
+      standingsOnly
+    );
+    expect(v.grounded).toBe(false);
+    expect(v.ungrounded).toContain("-110");
+  });
+
+  it("(b) a legit record '22-5' grounds off the standings result", () => {
+    // "22-5" → the extractor emits 22 and -5; wins:22 and losses:5 are exact
+    // stat values, so both component tokens ground.
+    const v = checkGrounding(
+      "Boston is 22-5 — best record in the East.",
+      standingsOnly
+    );
+    expect(v.grounded).toBe(true);
+  });
+
+  it("(c) a '2025-26 season' reference never flags the year ungrounded", () => {
+    const v = checkGrounding(
+      "Through the 2025-26 season, Boston sits at 22-5.",
+      standingsOnly
+    );
+    // 2025 / -26 are year tokens (always OK); 22 / -5 ground off the record.
+    expect(v.grounded).toBe(true);
+    expect(v.ungrounded).not.toContain("2025");
+    expect(v.ungrounded).not.toContain("-26");
+  });
+
+  it("(d) a cited home/away split from a string record grounds", () => {
+    // Boston's homeRecord is "12-2" → parsed to [12, 2]; awayRecord "10-3" →
+    // [10, 3]. Citing the split must ground off those parsed component integers.
+    const v = checkGrounding(
+      "They're 12-2 at home and 10-3 on the road.",
+      standingsOnly
+    );
+    expect(v.grounded).toBe(true);
+  });
+
+  it("a fabricated defensive-rating-shaped price still fails (no exact stat, no price)", () => {
+    // Regression on the specific exploit: a made-up spread/total near a rating.
+    const effPayload = [
+      JSON.stringify({
+        available: true,
+        league: "NBA",
+        teams: [{ team: "Celtics", netRtg: 9.2, offRtg: 118.4, defRtg: 109.2, pace: 99.1 }],
+      }),
+    ];
+    // defRtg is 109.2; a fabricated "-109" price is NOT an exact match (109 ≠
+    // 109.2) and there is no price field → ungrounded.
+    const v = checkGrounding("Take them at -109.", effPayload);
+    expect(v.grounded).toBe(false);
+    expect(v.ungrounded).toContain("-109");
+  });
+
+  it("a correctly-cited rating grounds by exact match", () => {
+    const effPayload = [
+      JSON.stringify({
+        available: true,
+        teams: [{ team: "Celtics", netRtg: 9.2, offRtg: 118.4, defRtg: 109.2, pace: 99.1 }],
+      }),
+    ];
+    const v = checkGrounding("Their net rating is 9.2, top of the league.", effPayload);
+    expect(v.grounded).toBe(true);
+  });
+});
+
+// ─── FIX 3: a fabricated SIGNED price must NOT ground off a positive stat
+// integer of equal magnitude via a sign flip. ────────────────────────────────
+describe("FIX 3 — signed price cannot borrow a positive stat integer", () => {
+  // A pure get_team_efficiency result whose awayDefRtg is the integer 107. The
+  // old abs/sign-flip match let a fabricated "-107" price ground off it.
+  const effPayload = [
+    JSON.stringify({
+      available: true,
+      league: "NBA",
+      teams: [
+        {
+          team: "Boston Celtics",
+          netRtg: -3.4, // a REAL negative rating — must still ground SIGNED
+          offRtg: 112.1,
+          defRtg: 115.5,
+          awayDefRtg: 107,
+        },
+      ],
+    }),
+  ];
+
+  it("a fabricated '-107' does NOT ground off awayDefRtg:107 (no sign flip)", () => {
+    const v = checkGrounding("Take them at -107 here, great price.", effPayload);
+    expect(v.grounded).toBe(false);
+    expect(v.ungrounded).toContain("-107");
+  });
+
+  it("a legit positive '107' still grounds off awayDefRtg:107 (same sign)", () => {
+    const v = checkGrounding("Their away defensive rating is 107.", effPayload);
+    expect(v.grounded).toBe(true);
+  });
+
+  it("a legit NEGATIVE rating still grounds by SIGNED exact match", () => {
+    const v = checkGrounding("Boston's net rating is -3.4, below water.", effPayload);
+    expect(v.grounded).toBe(true);
+  });
+
+  it("a bare '7' cannot borrow the 7 from a '24-7' record (record-raw gate)", () => {
+    // Record columns ground ONLY a claim written in hyphenated N-M form.
+    const standings = [
+      JSON.stringify({
+        available: true,
+        teams: [{ team: "Boston", wins: 24, losses: 7, record: "24-7" }],
+      }),
+    ];
+    // "lay the 7" — a bare 7, NOT written as a record → must NOT ground off the
+    // loss column / record split.
+    const bare = checkGrounding("I'd lay the 7 here.", standings);
+    expect(bare.grounded).toBe(false);
+    expect(bare.ungrounded).toContain("7");
+    // But the cited record split still grounds.
+    const cited = checkGrounding("They're 24-7 on the year.", standings);
+    expect(cited.grounded).toBe(true);
+  });
+});
+
+// ─── FIX 1 + FIX 2: get_board_edges bestPriceAmerican grounds; leading-dot
+// (.787) decimals ground off ops. ─────────────────────────────────────────────
+describe("FIX 1 — bestPriceAmerican from get_board_edges grounds a cited price", () => {
+  const boardEdges = [
+    JSON.stringify({
+      generatedAt: "2026-07-09T22:00:00Z",
+      edges: [
+        {
+          eventId: "abc123",
+          matchup: "Astros @ Yankees",
+          pick: "New York Yankees",
+          side: "home",
+          modelProb: 0.62,
+          impliedProb: 0.55,
+          edge: 0.07,
+          bestBook: "fanduel",
+          bestPriceAmerican: -135,
+        },
+      ],
+    }),
+  ];
+
+  it("a reply citing edge + best price + book from get_board_edges grounds", () => {
+    const reply =
+      "Best play is the Yankees — 7% edge, best price -135 at FanDuel, model at 62%.";
+    const v = checkGrounding(reply, boardEdges);
+    expect(v.grounded).toBe(true);
+  });
+
+  it("a fabricated price NOT equal to bestPriceAmerican still fails", () => {
+    const v = checkGrounding("Take the Yankees at -108.", boardEdges);
+    expect(v.grounded).toBe(false);
+    expect(v.ungrounded).toContain("-108");
+  });
+});
+
+describe("FIX 2 — leading-dot decimals (.787) ground off an ops field", () => {
+  const mlbStats = [
+    JSON.stringify({
+      available: true,
+      league: "MLB",
+      teams: [
+        { team: "New York Yankees", ops: 0.787, obp: 0.34, slg: 0.447, avg: 0.265 },
+      ],
+    }),
+  ];
+
+  it("'.787 OPS' grounds off ops:0.787 (leading-dot routed to the prob path)", () => {
+    const v = checkGrounding("The Yankees are posting a .787 OPS.", mlbStats);
+    expect(v.grounded).toBe(true);
+  });
+
+  it("'hitting .265' grounds off avg:0.265", () => {
+    const v = checkGrounding("They're hitting .265 as a team.", mlbStats);
+    expect(v.grounded).toBe(true);
+  });
+
+  it("a fabricated '.850 OPS' with no matching ops fails (comment made true)", () => {
+    const v = checkGrounding("They're up at a .850 OPS.", mlbStats);
+    expect(v.grounded).toBe(false);
+    expect(v.ungrounded).toContain(".850");
+  });
+});

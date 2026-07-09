@@ -388,8 +388,8 @@ function Intro() {
     <div className="space-y-3">
       <p className="text-[0.9rem] text-ink leading-relaxed">
         <span className="font-display font-semibold">The desk is open.</span> Ask
-        me about tonight&apos;s NBA or MLB board, a bet you&apos;re eyeing, or why
-        there&apos;s no pick on a game.
+        me about tonight&apos;s NBA, MLB, or WNBA board, a bet you&apos;re eyeing,
+        or why there&apos;s no pick on a game.
       </p>
       <p className="text-[0.8rem] text-ink-2 leading-relaxed">
         I chase value, not action. If the number&apos;s wrong, I&apos;ll tell you.

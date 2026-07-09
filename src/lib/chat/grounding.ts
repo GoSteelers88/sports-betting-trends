@@ -24,7 +24,19 @@
 export const DOCTRINE_FALLBACK =
   "I don't have a clean live read on that game right now — the numbers I'd need aren't in front of me, " +
   "and on this discipline, no read means no bet. If the desk had an edge on it tonight, it'd show as a pick on the board. " +
-  "Ask me about a different NBA or MLB game, or come back once tonight's lines have firmed up.";
+  "Ask me about a different NBA, MLB, or WNBA game, or come back once tonight's lines have firmed up.";
+
+// The STATS-MODE fallback (a league we do NOT bet — NFL/NHL/NCAAB). When we
+// can't ground a stats answer, the bets-mode doctrine ("ask me about a different
+// NBA/MLB/WNBA game") is nonsense to someone asking about hockey. This is the
+// honest, mode-appropriate line: no clean numbers, no guessing.
+export function STATS_MODE_FALLBACK(league: string): string {
+  return (
+    `I don't have clean ${league} numbers in front of me right now — the standings/stats I'd need aren't loading, ` +
+    "and I won't guess. I put my name on real numbers or nothing. Ask me again once the data's back, " +
+    "or point me at tonight's NBA, MLB, or WNBA board, which I bet."
+  );
+}
 
 export type GroundingVerdict = {
   grounded: boolean;
@@ -35,15 +47,19 @@ export type GroundingVerdict = {
 // ─── The grounding whitelist ─────────────────────────────────────────────────
 //
 // We collect numbers ONLY from these VALUE keys, walking the parsed tool-result
-// objects. Two buckets, because percents and prices ground differently:
+// objects. THREE buckets, because percents, prices, and stat values ground
+// differently:
 //
-//   PRICE_KEYS  — raw American odds / lines / points. A ±1 tolerance is fine
-//                 here (-110 vs -111 is the same bet to a bettor); these are
-//                 NEVER a valid backing for a percent/edge claim.
-//   PROB_KEYS   — probabilities (0–1 decimals) and edges (0–1 fractions, or the
-//                 occasional already-percentized field). These are the ONLY
-//                 valid backing for a percent/edge claim, and they match TIGHTLY
-//                 (the claimed percent must be within ~0.5pp of value*100).
+//   PRICE_KEYS      — raw American odds / lines / points. A ±1 tolerance is fine
+//                     here (-110 vs -111 is the same bet to a bettor); NEVER a
+//                     valid backing for a percent/edge claim.
+//   PROB_KEYS       — probabilities (0–1 decimals) and edges (0–1 fractions, or
+//                     an already-percentized field). The ONLY valid backing for
+//                     a percent/edge claim; matches TIGHTLY (~0.5pp).
+//   STAT_VALUE_KEYS — stat-derived integers/decimals (records, ratings,
+//                     point-diff, pace, ERAs, ledger figures). Ground by EXACT
+//                     match (tolerance 0) so a fabricated price/line/total can't
+//                     borrow a dense stat integer that merely sits within ±1.
 //
 // Audited against the read tools' return shapes in src/lib/agent/tools/index.ts
 // (get_odds, get_model_probabilities, get_player_props, get_prop_projection,
@@ -62,9 +78,22 @@ const PROB_KEYS: ReadonlySet<string> = new Set([
   "modelProb",
   "fairOverProb",
   "fairUnderProb",
+  "fairProb", // props-board row: fair prob of the quoted side (0–1)
   "evPct", // already a percent (e.g. 7.4 means 7.4%) — handled below
   "clvBeatRatePct", // already a percent
   "confidence", // 0–1 prop confidence
+  // ─── stats tools (0–1 fractions, or small rate decimals spoken as .XXX) ───
+  "winPct", // standings win% (0–1)
+  "roi", // desk record ROI (0–1 fraction)
+  "ops", // MLB batting — spoken as ".850" (0.850 × 100 grounds the decimal claim)
+  "obp",
+  "slg",
+  "avg",
+  "xwobaAgainst", // statcast — ~.310 decimal
+  "wobaAgainst",
+  "estSlgAgainst",
+  "estBaAgainst",
+  "precipPct", // weather — already a percent (0–100)
 ]);
 
 // Keys whose value is ALREADY expressed as a percent (e.g. 7.4 = 7.4%), so we
@@ -72,9 +101,17 @@ const PROB_KEYS: ReadonlySet<string> = new Set([
 const ALREADY_PERCENT_KEYS: ReadonlySet<string> = new Set([
   "evPct",
   "clvBeatRatePct",
+  "precipPct",
 ]);
 
 // Price / line / point value keys → contribute price-grounding values (±1).
+//
+// STRICTLY betting prices/lines/points here — a ±1 tolerance is a bettor's
+// "same bet" band (-110 vs -111). Stat-derived integers/decimals (records,
+// ratings, point-diff, pace, ERAs) are DELIBERATELY NOT here: a dense integer
+// like a defensive rating (~110) or a win column (~45) inside a ±1 band would
+// let a FABRICATED price/line/total (-110, a +4.5 spread) "ground" off a stat.
+// Those live in STAT_VALUE_KEYS below, checked by EXACT match instead.
 const PRICE_KEYS: ReadonlySet<string> = new Set([
   "american",
   "line",
@@ -85,20 +122,80 @@ const PRICE_KEYS: ReadonlySet<string> = new Set([
   "homePrice",
   "awayPrice",
   "priceAmerican",
+  "bestPriceAmerican", // get_board_edges: best-price American for the +edge side
   "softAmerican",
+  "sharpOverAmerican", // props-board row sharp prices
+  "sharpUnderAmerican",
   "projected",
   "stddev",
   "rollingMean",
   "clvCents",
   "avgClvCents",
   "expectedMargin",
+  "recentAvgPoints",
+]);
+
+// ─── Stat-value keys (exact match, tolerance 0) ──────────────────────────────
+//
+// Stat-derived integers and decimals a legitimately-cited stats answer quotes:
+// records (win/loss columns), team ratings, point differentials, pace, ERAs,
+// pitch metrics, ledger figures. They must STILL ground when correctly cited —
+// but by EXACT match (not the ±1 price band), so a made-up American price can't
+// borrow a rating/record that merely happens to sit within a point of it.
+const STAT_VALUE_KEYS: ReadonlySet<string> = new Set([
+  // standings / desk record
+  "pointDiff",
+  // team efficiency ratings
+  "netRtg",
+  "offRtg",
+  "defRtg",
+  "pace",
+  "homeNetRtg",
+  "homeOffRtg",
+  "homeDefRtg",
+  "awayNetRtg",
+  "awayOffRtg",
+  "awayDefRtg",
+  // statcast pitching / mlb team stats
   "k9",
   "fbVelocity",
   "velocityDelta",
   "woba",
   "xwoba",
   "xwobaGap",
-  "recentAvgPoints",
+  "xera", // ~3.50
+  "bullpenEra",
+  "fatigueScore",
+  // weather
+  "tempF",
+  "windMph",
+  "windFactor",
+  // desk record / parlay ledger figures
+  "pnlUnits",
+  "equityUsd",
+  "realizedPnlUsd",
+  "exposureUsd",
+]);
+
+// Numeric keys whose value is a WIN/LOSS RECORD COLUMN ("45-20" → wins:45,
+// losses:20). These are NOT plain stat values: a bare "45" or "20" in prose is
+// almost never a cited record column, so a record component may back a claim
+// ONLY when the reply writes it in hyphenated N-M form (see recordValues +
+// collectRecordRaws). Kept out of STAT_VALUE_KEYS so they can't ground a bare
+// integer / a fabricated price by exact match.
+const RECORD_COMPONENT_KEYS: ReadonlySet<string> = new Set([
+  "wins", // spoken in records like "45-20"
+  "losses",
+]);
+
+// String-valued keys that carry a hyphenated record ("29-10-2", "22-5"). Their
+// component integers feed the RECORD bucket so a cited split/record grounds —
+// but only against a claim written in hyphenated N-M form.
+const RECORD_STRING_KEYS: ReadonlySet<string> = new Set([
+  "homeRecord",
+  "awayRecord",
+  "record",
+  "streak", // e.g. "W3" has no hyphen; harmless — only hyphen-splits contribute
 ]);
 
 // Keys we EXPLICITLY refuse to ground on even if numeric — time/id/count/
@@ -119,20 +216,30 @@ const EXCLUDED_KEYS: ReadonlySet<string> = new Set([
   "eventId",
   "gameId",
   "id",
+  "playerId",
   "tool_use_id",
   "pickId",
   "bookCount",
   "nGames",
+  "gamesPlayed",
+  "gamesLast3Days",
   "pa",
   "ip",
   "iterations",
   "openCount",
   "settledCount",
-  "wins",
-  "losses",
+  "total", // desk-record sample-size count (not a bet value)
+  "pushes",
   "count",
   "weight",
+  "windowDays",
 ]);
+
+// NOTE (wins/losses): NOT excluded — standings + the desk record report them as
+// real values the bot cites (e.g. "45-20"). They ground via STAT_VALUE_KEYS by
+// EXACT match (tolerance 0), NOT as prices (±1): a fabricated -110 must never
+// borrow a win column near 110. gamesPlayed/total/pushes stay excluded
+// (sample-size counts, never a bet claim).
 
 // ─── Number-claim extraction from the REPLY ──────────────────────────────────
 
@@ -160,7 +267,13 @@ export function extractNumbers(text: string): string[] {
 export function extractClaims(text: string): NumberClaim[] {
   const out: NumberClaim[] = [];
   // Signed/unsigned number with optional decimal, optionally followed by % .
-  const re = /([+-]?\d+(?:\.\d+)?)(\s*%)?/g;
+  // Two number forms:
+  //   1. leading-dot decimals ".787", "-.310" — MUST be tried FIRST so the dot
+  //      isn't stranded and the digits captured as a bare integer (787). These
+  //      are baseball rate stats (OPS/OBP/SLG/AVG, .XXX) that read as sub-1
+  //      probabilities and ground against the prob bucket (×100 vs ops/obp/…).
+  //   2. standard integers/decimals "145", "7.2", "-110", "0.58".
+  const re = /([+-]?\.\d+|[+-]?\d+(?:\.\d+)?)(\s*%)?/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
     const numStr = m[1];
@@ -182,6 +295,16 @@ type Haystack = {
   // Price/line values (raw). A claimed price N is grounded iff some entry is
   // within PRICE_TOLERANCE of |N|.
   prices: number[];
+  // Stat values (ratings, pointDiff, pace, ERAs, ledger figures). A
+  // non-price/non-percent claim grounds off these by EXACT match (tolerance 0)
+  // — a made-up price can't borrow a stat that merely sits within a point.
+  // SIGNED-exact only: a fabricated "-107" can NOT borrow a positive rating
+  // "107" via a sign flip.
+  statValues: number[];
+  // Record-column integers (win/loss columns + hyphenated record splits). These
+  // ground ONLY a claim the reply writes in hyphenated N-M form (see
+  // collectRecordRaws), so a bare "lay the 7" can't borrow the 7 from a "24-7".
+  recordValues: number[];
 };
 
 // Tolerance for a claimed percent/edge: must match a percentized prob/edge value
@@ -202,6 +325,8 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 function buildHaystack(toolResultTexts: string[]): Haystack {
   const percents: number[] = [];
   const prices: number[] = [];
+  const statValues: number[] = [];
+  const recordValues: number[] = [];
 
   const visit = (node: unknown): void => {
     if (Array.isArray(node)) {
@@ -214,6 +339,16 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
         visit(val);
         continue;
       }
+
+      // String-valued record keys ("29-10-2", "22-5") → split into component
+      // integers so a cited split/record grounds by exact match.
+      if (typeof val === "string") {
+        if (RECORD_STRING_KEYS.has(key)) {
+          for (const n of parseRecordString(val)) recordValues.push(n);
+        }
+        continue;
+      }
+
       if (typeof val !== "number" || !Number.isFinite(val)) continue;
       // Belt-and-suspenders: never ground on a time/id/count field even if one
       // were ever mistakenly added to a whitelist.
@@ -226,6 +361,22 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
         // we deliberately do NOT add it to prices — percents ground percents.
       } else if (PRICE_KEYS.has(key)) {
         prices.push(val);
+      } else if (RECORD_COMPONENT_KEYS.has(key)) {
+        // Win/loss record column → RECORD bucket, which grounds only a claim
+        // written in hyphenated N-M form. A bare "lay the 7" must not borrow a
+        // win column that happens to be 7.
+        recordValues.push(val);
+      } else if (STAT_VALUE_KEYS.has(key)) {
+        // Stat-derived value → EXACT-match bucket only. Deliberately NOT added
+        // to prices: a fabricated -110/+4.5 must not borrow a rating or a win
+        // column that happens to sit within a point.
+        statValues.push(val);
+      } else if (/^(player|batter|pitcher)_[a-z_]+$/.test(key)) {
+        // Per-game / league-average stat lines from get_player_gamelog +
+        // get_player_props (player_points, batter_hits, pitcher_strikeouts, …).
+        // Raw counts → exact-match stat values (not the ±1 price band, for the
+        // same reason: a dense count shouldn't back a fabricated price).
+        statValues.push(val);
       }
       // Any other key (timestamps, ids, counts) contributes nothing.
     }
@@ -241,7 +392,22 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
     visit(parsed);
   }
 
-  return { percents, prices };
+  return { percents, prices, statValues, recordValues };
+}
+
+// Parse a hyphenated record string into its component non-negative integers.
+// "29-10-2" → [29, 10, 2]; "22-5" → [22, 5]. Anything non-numeric is skipped so
+// a streak like "W3" or a stray string contributes nothing.
+function parseRecordString(s: string): number[] {
+  const parts = s.split("-");
+  const out: number[] = [];
+  for (const p of parts) {
+    const t = p.trim();
+    if (!/^\d+$/.test(t)) return []; // not a clean record → contribute nothing
+    out.push(Number(t));
+  }
+  // Require at least two components (a real W-L record), else it's just a number.
+  return out.length >= 2 ? out : [];
 }
 
 // ─── The verdict ─────────────────────────────────────────────────────────────
@@ -256,14 +422,36 @@ export function checkGrounding(
   const hay = buildHaystack(toolResultTexts);
   const ungrounded: string[] = [];
 
+  // Year tokens are ALWAYS OK — a season reference ("2025-26 season", "since
+  // 1998") is prose, never a bet claim, and must never flag ungrounded. We
+  // pre-scan the reply for 4-digit years and YYYY-YY spans and collect the exact
+  // raw tokens the extractor will emit for them, so they're skipped below.
+  const yearOkRaws = collectYearRaws(reply);
+
+  // Record-form tokens: the exact raw tokens the extractor emits for every
+  // hyphenated N-M the reply actually writes ("24-7" → "24" and "-7"; "12-2 at
+  // home" → "12" and "-2"). A record-column value (wins/losses/parsed splits)
+  // may back a claim ONLY if the claim's raw token is one of these — so a bare
+  // "lay the 7" can't borrow the 7 from a "24-7" record that's only in the data.
+  const recordOkRaws = collectRecordRaws(reply);
+
   for (const claim of claims) {
+    if (yearOkRaws.has(claim.raw)) continue;
+
+    // Free small-count / doctrine integers ("1 unit", "6% floor", the RG phone
+    // number). Gate on INTEGER values only: a sub-1 rate like ".787" truncates
+    // to 0 and must NOT be waved through here as "0" — it has to ground against
+    // the prob bucket (ops/obp/slg/avg, ×100) via the sub-1 path below. Percent
+    // claims keep the count-exemption ("6%" floor doctrine) as before.
     const bare = String(Math.abs(Math.trunc(claim.value)));
-    if (ALWAYS_OK.has(bare)) continue;
+    const isSubOneDecimal =
+      !claim.isPercent && Math.abs(claim.value) > 0 && Math.abs(claim.value) < 1;
+    if (!isSubOneDecimal && ALWAYS_OK.has(bare)) continue;
 
     if (claim.isPercent) {
       // Percent/edge claim → ONLY a percentized prob/edge value can back it, and
       // only within a tight tolerance. A "10% edge" must match a real
-      // edge/prob, not a timestamp "10" or a price "-110".
+      // edge/prob, not a timestamp "10", a price "-110", or a stat integer.
       if (!groundsAsPercent(claim.value, hay.percents)) {
         ungrounded.push(claim.raw);
       }
@@ -272,7 +460,6 @@ export function checkGrounding(
 
     // Non-percent claim. It might still be a probability stated as a decimal
     // ("model has them at 0.58"): a 0–1 value grounds against percents (×100).
-    // Otherwise it's a price/line and grounds against prices with ±1.
     if (claim.value > 0 && claim.value < 1) {
       if (!groundsAsPercent(claim.value * 100, hay.percents)) {
         ungrounded.push(claim.raw);
@@ -280,12 +467,47 @@ export function checkGrounding(
       continue;
     }
 
-    if (!groundsAsPrice(claim.value, hay.prices)) {
+    // Otherwise it's a price/line OR a cited stat value. It grounds if ANY of:
+    //   • a real price/line is within ±1 (the bettor's "same bet" band), OR
+    //   • a non-record stat value matches EXACTLY and with the SAME SIGN
+    //     (ratings/pointDiff/ERAs — tolerance 0, no abs/sign-flip), OR
+    //   • a record column matches EXACTLY *and* the reply wrote this token in
+    //     hyphenated N-M form (recordOkRaws).
+    // Signed-exact (no abs) is what stops a fabricated "-107" borrowing a
+    // positive rating "107"; the record-raw gate stops a bare "7" borrowing a
+    // "24-7" record split.
+    const recordOk =
+      recordOkRaws.has(claim.raw) &&
+      groundsAsRecordValue(claim.value, hay.recordValues);
+    if (
+      !groundsAsPrice(claim.value, hay.prices) &&
+      !groundsAsStatValue(claim.value, hay.statValues) &&
+      !recordOk
+    ) {
       ungrounded.push(claim.raw);
     }
   }
 
   return { grounded: ungrounded.length === 0, ungrounded };
+}
+
+// Collect the exact raw tokens (as extractClaims would emit them) for every
+// year-like reference in the text, so they bypass grounding. Handles a lone
+// 4-digit year ("2025", "1998") and a YYYY-YY span ("2025-26" → the extractor
+// emits "2025" and "-26", both collected here).
+function collectYearRaws(text: string): Set<string> {
+  const ok = new Set<string>();
+  const isYear = (n: number) => n >= 1900 && n <= 2099;
+  // YYYY-YY spans first.
+  for (const m of text.matchAll(/\b(19\d{2}|20\d{2})-(\d{2})\b/g)) {
+    ok.add(m[1]!); // "2025"
+    ok.add(`-${m[2]!}`); // "-26" (regex sign-capture on the hyphenated tail)
+  }
+  // Bare 4-digit years.
+  for (const m of text.matchAll(/\b(19\d{2}|20\d{2})\b/g)) {
+    if (isYear(Number(m[1]))) ok.add(m[1]!);
+  }
+  return ok;
 }
 
 // A claimed percent N is grounded iff some percent value is within PCT_TOLERANCE.
@@ -304,4 +526,42 @@ function groundsAsPrice(claimed: number, prices: number[]): boolean {
     if (Math.abs(Math.abs(p) - absClaim) <= PRICE_TOLERANCE) return true;
     return false;
   });
+}
+
+// A claimed stat value grounds iff some stat value matches EXACTLY and with the
+// SAME SIGN (tolerance 0, NO absolute-value fallback). Signed-exact is the whole
+// point: a legit negative netRtg still matches its stored negative value, but a
+// fabricated signed price "-107" can NOT borrow a positive rating "107" via a
+// sign flip. Records (which need abs-awareness for the "-7"/"7" split) are
+// handled separately by groundsAsRecordValue, gated on the reply writing N-M.
+const STAT_VALUE_EPSILON = 1e-9;
+function groundsAsStatValue(claimed: number, statValues: number[]): boolean {
+  return statValues.some((s) => Math.abs(s - claimed) <= STAT_VALUE_EPSILON);
+}
+
+// A claimed record component grounds iff some record integer matches EXACTLY,
+// absolute-value aware — the extractor emits "-7" for the second column of a
+// "24-7" record, which must match the stored positive 7. This abs match is only
+// reachable AFTER the caller confirms the claim's raw token was written in
+// hyphenated N-M form (recordOkRaws), so a bare "7" can never reach here.
+function groundsAsRecordValue(claimed: number, recordValues: number[]): boolean {
+  const absClaim = Math.abs(claimed);
+  return recordValues.some(
+    (s) =>
+      Math.abs(s - claimed) <= STAT_VALUE_EPSILON ||
+      Math.abs(Math.abs(s) - absClaim) <= STAT_VALUE_EPSILON
+  );
+}
+
+// Collect the exact raw tokens (as extractClaims emits them) for every
+// hyphenated N-M record form the reply writes: "24-7" → "24" and "-7";
+// "12-2 at home" → "12" and "-2". Mirrors collectYearRaws. A record-column
+// value backs a claim only if the claim's raw token is in this set.
+function collectRecordRaws(text: string): Set<string> {
+  const ok = new Set<string>();
+  for (const m of text.matchAll(/\b(\d+)-(\d+)\b/g)) {
+    ok.add(m[1]!); // "24"  (leading component — extractor emits it bare)
+    ok.add(`-${m[2]!}`); // "-7" (trailing component — extractor sign-captures it)
+  }
+  return ok;
 }
