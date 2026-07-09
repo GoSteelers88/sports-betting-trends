@@ -60,7 +60,7 @@ describe("Lane B read-only allowlist", () => {
     }
   });
 
-  it("the stats tools add exactly the eight named read tools", () => {
+  it("the stats tools add exactly the nine named read tools", () => {
     expect([...STATS_TOOL_NAMES].sort()).toEqual(
       [
         "get_desk_record",
@@ -68,6 +68,7 @@ describe("Lane B read-only allowlist", () => {
         "get_player_gamelog",
         "get_probable_pitchers",
         "get_props_board",
+        "get_model_prop_board",
         "get_standings",
         "get_team_efficiency",
         "get_mlb_team_stats",
@@ -96,9 +97,12 @@ describe("Lane B STATS-MODE tool surface (a league we do NOT bet)", () => {
   // with book/side/price) and get_parlay_book (open +EV parlays) MUST be absent
   // from the stats-mode tool DEFINITIONS. This test goes red the instant anyone
   // re-adds a bet-shaped tool to the stats surface.
-  it("stats mode EXCLUDES the bet-shaped tools: get_props_board AND get_parlay_book", () => {
+  it("stats mode EXCLUDES the bet-shaped tools: get_props_board, get_model_prop_board AND get_parlay_book", () => {
     const names = new Set(LANE_B_STATS_TOOL_DEFINITIONS.map((d) => d.name));
     expect(names.has("get_props_board")).toBe(false);
+    // get_model_prop_board is bet-shaped (a rung can carry a playable market
+    // overlay), so it too is stripped from the stats-mode surface.
+    expect(names.has("get_model_prop_board")).toBe(false);
     expect(names.has("get_parlay_book")).toBe(false);
   });
 

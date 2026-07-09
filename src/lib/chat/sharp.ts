@@ -95,6 +95,11 @@ type TurnMeta = {
   grounded: boolean | null;
   intercepted: ChatResponse["intercepted"] | null;
   outcome: string;
+  // Prompt-cache telemetry from the Lane B tool loop (0 for Lane A turns, which
+  // don't cache). cacheReadTokens > 0 on a multi-iteration Lane B turn confirms
+  // the tools+system prefix is being served from cache. Token counts only — no PII.
+  cacheReadTokens: number;
+  cacheCreationTokens: number;
 };
 
 // Cheap, dependency-free request id. crypto.randomUUID is available in the
@@ -135,6 +140,8 @@ function logTurn(meta: TurnMeta, reply: string): void {
       grounded: meta.grounded,
       intercepted: meta.intercepted,
       outcome: meta.outcome,
+      cacheReadTokens: meta.cacheReadTokens,
+      cacheCreationTokens: meta.cacheCreationTokens,
       replyLen: reply.length,
       replyHash: replyHash(reply),
     })
@@ -155,6 +162,8 @@ export async function answer(
     grounded: null,
     intercepted: null,
     outcome: "ok",
+    cacheReadTokens: 0,
+    cacheCreationTokens: 0,
   };
   // On a throw we emit a marker line (so even failed turns leave a trail) and
   // re-raise — the route's catch renders the user-facing error message.
@@ -281,6 +290,10 @@ async function answerCore(
       laneBMode
     );
     await recordSpend(estimateTokens(message, first.reply, first.toolResultTexts), now);
+    // Prompt-cache telemetry from the Lane B loop → structured turn log (cost
+    // visibility + how we confirm cache_read_input_tokens > 0 in prod).
+    meta.cacheReadTokens = first.cacheReadTokens;
+    meta.cacheCreationTokens = first.cacheCreationTokens;
 
     // GUARD 4 — grounding guard. Every number must trace to a tool result. A
     // BLANK first draft (the loop's forced no-tools finalize can still return "")

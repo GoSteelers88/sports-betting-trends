@@ -20,6 +20,19 @@ import { runLaneB, regroundLaneB } from "../laneB";
 import { buildLaneBSystemPrompt, DISCIPLINE_BLOCK, PERSONA_RULES } from "../persona";
 import type { SlateEntities } from "../router";
 
+// The `system` passed to messages.create is now a cached block array
+// ([{type:"text", text, cache_control}]) instead of a bare string (prompt
+// caching). This flattens it back to the prompt text so assertions can check
+// content, whichever shape the SDK arg carries.
+function systemText(s: unknown): string {
+  if (typeof s === "string") return s;
+  if (Array.isArray(s))
+    return s
+      .map((b) => (b && typeof b === "object" && "text" in b ? String((b as { text: unknown }).text) : ""))
+      .join("");
+  return "";
+}
+
 function slate(): SlateEntities {
   const ent: SlateEntities = { teams: new Map(), tokens: new Map(), players: new Map() };
   ent.teams.set("los angeles lakers", "NBA");
@@ -324,13 +337,13 @@ describe("grounding regen is a single NO-TOOLS rewrite (504 fix)", () => {
       client
     );
     expect(out.reply).toBe("rewritten answer");
-    const arg = create.mock.calls[0][0] as { tools?: unknown; system: string };
+    const arg = create.mock.calls[0][0] as { tools?: unknown; system: unknown };
     // NO tools param → cannot fetch → cannot fabricate-and-ground.
     expect(arg.tools).toBeUndefined();
     // Full Lane B system prompt (the grounding contract text is in it), not just
-    // the enforcement blurb.
-    expect(arg.system).toContain("GROUNDING CONTRACT");
-    expect(arg.system).toContain("GROUNDING ENFORCEMENT");
+    // the enforcement blurb. (system is now a cached block array; read the text.)
+    expect(systemText(arg.system)).toContain("GROUNDING CONTRACT");
+    expect(systemText(arg.system)).toContain("GROUNDING ENFORCEMENT");
   });
 
   it("BLOCKER: a stats-mode regen still forbids a pick (mode-specific no-bet boundary in the prompt)", async () => {
@@ -347,14 +360,15 @@ describe("grounding regen is a single NO-TOOLS rewrite (504 fix)", () => {
       "slate",
       client
     );
-    const arg = create.mock.calls[0][0] as { system: string };
+    const arg = create.mock.calls[0][0] as { system: unknown };
     // The rewrite's system prompt is the STATS-mode Lane B prompt: it must carry
     // the "do NOT issue a pick/edge/stake on NHL" boundary (checkGrounding does
     // NOT verify picks, so an enforcement-only rewrite could ship a grounded
     // NHL "play" off standings). Proven by matching the real stats prompt.
+    // (system is now a cached block array; read the text out before matching.)
     const statsPrompt = buildLaneBSystemPrompt("NHL", "slate", "stats");
     expect(statsPrompt).toContain("do NOT issue a pick");
-    expect(arg.system.startsWith(statsPrompt)).toBe(true);
+    expect(systemText(arg.system).startsWith(statsPrompt)).toBe(true);
   });
 });
 
@@ -542,6 +556,38 @@ describe("persona never disowns props (DISCIPLINE_BLOCK + empty-board behavior)"
     expect(PERSONA_RULES.toLowerCase()).toContain("player props are on the desk");
     expect(PERSONA_RULES.toLowerCase()).toContain("prop reads come from the prop board");
     expect(PERSONA_RULES).toMatch(/props aren't my lane/i); // named as a forbidden phrase
+  });
+
+  it("DISCIPLINE_BLOCK distinguishes the MARKET +EV board from the MODEL projection board", () => {
+    // The fix's core: the desk must not conflate a model PROJECTION with a +EV
+    // EDGE, and must not say "no props" when the model board has them.
+    expect(DISCIPLINE_BLOCK.toLowerCase()).toContain("market +ev prop board");
+    expect(DISCIPLINE_BLOCK.toLowerCase()).toContain("model prop board");
+    expect(DISCIPLINE_BLOCK.toLowerCase()).toContain("projection");
+    // A projection is a lean/context, never a +EV play.
+    expect(DISCIPLINE_BLOCK.toLowerCase()).toContain("no board edge, no prop play");
+    // Never claim there are "no home-run props" when the model board has them.
+    expect(DISCIPLINE_BLOCK.toLowerCase()).toContain('"no home-run props"');
+  });
+
+  it("PERSONA_RULES sources prop reads from the model board as CONTEXT, not a +EV play", () => {
+    // The PROP READS rule must name the model prop board as a projection/lean,
+    // never a market edge.
+    const lower = PERSONA_RULES.toLowerCase();
+    expect(lower).toContain("model prop board");
+    expect(lower).toContain("projection");
+    // The market board is still the only thing that earns a +EV call.
+    expect(lower).toContain("market prop-board edge");
+  });
+
+  it("the Lane B BETS tool surface lists get_model_prop_board alongside get_props_board", () => {
+    // The tool-surface paragraph lives in the Lane B system prompt (not the
+    // exported PERSONA_RULES), so assert against the built prompt.
+    const laneB = buildLaneBSystemPrompt("MLB", "matchup", "bets");
+    expect(laneB).toContain("get_model_prop_board");
+    expect(laneB).toContain("get_props_board");
+    // Framed as MODEL projections, distinct from the +EV market board.
+    expect(laneB.toLowerCase()).toContain("model prop projections");
   });
 
   it("a props question with an empty board yields NO fabricated number and NO lane-disowning language", async () => {

@@ -147,7 +147,45 @@ export type LaneBResult = {
   // guard to verify every numeric claim traces back to data we actually read.
   toolResultTexts: string[];
   iterations: number;
+  // Prompt-cache telemetry summed across the loop's model calls. cacheReadTokens
+  // > 0 on a multi-iteration turn confirms the stable tools+system prefix is
+  // being served from Anthropic's 5-min ephemeral cache (verified in prod logs).
+  // Both are cost/latency-only signals; they do NOT change model-visible content.
+  cacheReadTokens: number;
+  cacheCreationTokens: number;
 };
+
+// ─── Prompt-cache breakpoint helper (rolling conversation breakpoint) ─────────
+//
+// Marks EXACTLY ONE cache_control breakpoint on the conversation: the LAST
+// content block of the LAST array-content message. It first clears any prior
+// cache_control marks so the rolling breakpoint doesn't accumulate (which would
+// blow the 4-breakpoint budget over a long loop). Together with the ONE
+// breakpoint on the system block (built once before the loop), total = 2 ≤ 4.
+//
+// Seed/user messages have STRING content (nothing to mark — skipped on iter 1);
+// the assistant `response.content` and the tool_result arrays we push ARE arrays
+// (marked from iter 2 on). This is byte-invisible to the model: cache_control is
+// caching metadata, not content — the model's view is unchanged, and it is NOT
+// part of toolResultTexts (collected separately from the message blocks).
+function markRollingCacheBreakpoint(
+  messages: Array<{ role: string; content: unknown }>
+): void {
+  for (const m of messages)
+    if (Array.isArray(m.content))
+      for (const b of m.content)
+        if (b && typeof b === "object" && "cache_control" in b)
+          delete (b as { cache_control?: unknown }).cache_control;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const c = messages[i].content;
+    if (Array.isArray(c) && c.length > 0) {
+      const last = c[c.length - 1];
+      if (last && typeof last === "object")
+        (last as { cache_control?: unknown }).cache_control = { type: "ephemeral" };
+      break;
+    }
+  }
+}
 
 // Build a tool-handler map restricted to the allowlist. Even if the model
 // hallucinates a write-tool name, there's no handler for it and we return an
@@ -228,6 +266,18 @@ export async function runLaneB(
   let system = buildLaneBSystemPrompt(league, scope, mode);
   if (extraInstruction) system += `\n\n${extraInstruction}`;
 
+  // Prompt caching: the system string → a single cached text block, built ONCE
+  // before the loop so it is byte-stable across every iteration. Render order is
+  // tools → system → messages, so a cache_control breakpoint on this (the last
+  // and only) system block caches the WHOLE stable prefix — the 20 tool defs AND
+  // the system prompt — together. That prefix is re-sent unchanged on all ~4
+  // Sonnet round-trips per turn; caching it is the latency win. This is breakpoint
+  // #1 of 2 (the rolling conversation breakpoint below is #2). System is
+  // string | Array<TextBlockParam> in the SDK, so no cast is needed here.
+  const cachedSystem = [
+    { type: "text" as const, text: system, cache_control: { type: "ephemeral" as const } },
+  ];
+
   // Seed with the (sanitized) recent turns the client sent back, then the new
   // question. We cap history defensively.
   const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [];
@@ -240,17 +290,29 @@ export async function runLaneB(
   const toolResultTexts: string[] = [];
   let iterations = 0;
   let finalText = "";
+  // Prompt-cache telemetry, summed across the loop (undefined usage fields → 0).
+  let cacheReadTokens = 0;
+  let cacheCreationTokens = 0;
 
   while (iterations < MAX_ITERATIONS) {
     iterations++;
+    // Rolling conversation breakpoint (#2 of 2): mark the last block of the last
+    // array-content message, clearing any prior mark so exactly ONE exists. On
+    // iter 1 the seed messages are all string-content → nothing is marked (the
+    // short prefix silently won't cache, which is fine). From iter 2 on, the
+    // pushed assistant/tool_result arrays get the breakpoint so each round-trip
+    // reuses the growing conversation prefix. Well under the 20-block lookback.
+    markRollingCacheBreakpoint(messages);
     const response = await client.messages.create({
       model: MODELS.analyst,
       max_tokens: 1500,
-      system,
+      system: cachedSystem,
       tools: toolDefs,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       messages: messages as any,
     });
+    cacheReadTokens += response.usage?.cache_read_input_tokens ?? 0;
+    cacheCreationTokens += response.usage?.cache_creation_input_tokens ?? 0;
 
     messages.push({ role: "assistant", content: response.content });
 
@@ -321,6 +383,8 @@ export async function runLaneB(
     toolsUsed: [...new Set(toolsUsed)],
     toolResultTexts,
     iterations,
+    cacheReadTokens,
+    cacheCreationTokens,
   };
 }
 
@@ -349,7 +413,13 @@ async function noToolsAnswer(
   const resp = await client.messages.create({
     model: MODELS.analyst,
     max_tokens: 1500,
-    system: fullSystem,
+    // Cache the system block (same block-array form as the tool loop). No tools
+    // here, so this caches just the system prompt — still a win across the
+    // repeated regen/finalize calls that reuse the same (league,scope,mode)
+    // prompt. Content the model sees is byte-identical to the plain string.
+    system: [
+      { type: "text" as const, text: fullSystem, cache_control: { type: "ephemeral" as const } },
+    ],
     // NO `tools` — the whole point. The model cannot fetch, so it cannot invent
     // a new figure that would then pass the grounding re-check.
     messages: [
