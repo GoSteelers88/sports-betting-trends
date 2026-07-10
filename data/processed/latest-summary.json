@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T16:34:27.400Z",
+  "generatedAt": "2026-07-10T23:36:44.446Z",
   "ready": true,
   "recordsIngested": 791,
   "recordsCompleted": 791,
@@ -767,54 +767,32 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-07-10T22:41:00.000Z",
-      "matchup": "Philadelphia Phillies at Detroit Tigers",
-      "pickTeam": "Detroit Tigers",
-      "opponent": "Philadelphia Phillies",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Detroit Tigers 0",
-      "score": 62,
-      "confidence": 58,
+      "gameDate": "2026-07-11T02:11:00.000Z",
+      "matchup": "Arizona Diamondbacks at Los Angeles Dodgers",
+      "pickTeam": "Los Angeles Dodgers",
+      "opponent": "Arizona Diamondbacks",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Los Angeles Dodgers -1.5",
+      "score": 69,
+      "confidence": 65,
       "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.400",
-        "History sample Detroit Tigers: 25 games (mapped Tigers) vs Philadelphia Phillies: 26 games",
+        "Momentum edge +0.40 (last-10 trend proxy)",
+        "ATS edge -0.100",
+        "History sample Los Angeles Dodgers: 26 games (mapped Dodgers) vs Arizona Diamondbacks: 26 games",
         "Home court (+1 pt adjustment)",
-        "Rest: Detroit Tigers 2d rest vs Philadelphia Phillies 2d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +3.5"
+        "Rest: Los Angeles Dodgers 2d rest vs Arizona Diamondbacks B2B",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +0.9",
+        "Home SP: Shohei Ohtani",
+        "Away SP: Eduardo Rodriguez",
+        "MLB model: 73.8% win prob (calibrated) | Edge vs market: +5.9%"
       ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.4,
-      "mlbModelProb": null,
-      "mlbEdge": null
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-10T23:11:00.000Z",
-      "matchup": "Cleveland Guardians at Miami Marlins",
-      "pickTeam": "Miami Marlins",
-      "opponent": "Cleveland Guardians",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Miami Marlins 0",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Miami Marlins: 26 games (mapped Marlins) vs Cleveland Guardians: 24 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Miami Marlins 2d rest vs Cleveland Guardians 2d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +2.2"
-      ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "momentumEdge": 0.4,
+      "atsEdge": -0.1,
+      "mlbModelProb": 0.738,
+      "mlbEdge": 0.0592,
+      "mlbCalibrated": true
     },
     {
       "league": "MLB",
@@ -826,8 +804,8 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Minnesota Twins -1.5",
-      "score": 58,
-      "confidence": 53,
+      "score": 62,
+      "confidence": 58,
       "rationaleSignals": [
         "Momentum edge +1.00 (last-10 trend proxy)",
         "ATS edge +0.100",
@@ -835,44 +813,169 @@
         "Home court (+1 pt adjustment)",
         "Rest: Minnesota Twins 2d rest vs Los Angeles Angels B2B",
         "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +2.7"
+        "Net Rating edge: +2.7",
+        "Home SP: Zebby Matthews",
+        "Away SP: Grayson Rodriguez",
+        "MLB model: 64.8% win prob (calibrated)"
       ],
       "momentumEdge": 1,
       "atsEdge": 0.1,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6485,
+      "mlbEdge": 0.0369,
+      "mlbCalibrated": true
     },
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-07-10T22:46:00.000Z",
-      "matchup": "New York Yankees at Washington Nationals",
-      "pickTeam": "Washington Nationals",
-      "opponent": "New York Yankees",
+      "gameDate": "2026-07-10T23:11:00.000Z",
+      "matchup": "Chicago Cubs at Cincinnati Reds",
+      "pickTeam": "Chicago Cubs",
+      "opponent": "Cincinnati Reds",
       "spread": 1.5,
       "modelSpread": 1.4,
-      "line": "Washington Nationals +1.5",
+      "line": "Chicago Cubs +1.5",
+      "score": 61,
+      "confidence": 57,
+      "rationaleSignals": [
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample Chicago Cubs: 25 games (mapped Cubs) vs Cincinnati Reds: 25 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Chicago Cubs 2d rest vs Cincinnati Reds 2d rest",
+        "Net Rating edge: +1.8",
+        "Home SP: Hunter Greene",
+        "Away SP: Shota Imanaga",
+        "MLB model: 59.9% win prob (calibrated) | Edge vs market: +6.8%"
+      ],
+      "momentumEdge": 0.8,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.5986,
+      "mlbEdge": 0.0681,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-10T22:41:00.000Z",
+      "matchup": "Philadelphia Phillies at Detroit Tigers",
+      "pickTeam": "Detroit Tigers",
+      "opponent": "Philadelphia Phillies",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Detroit Tigers -1.5",
+      "score": 59,
+      "confidence": 54,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.400",
+        "History sample Detroit Tigers: 25 games (mapped Tigers) vs Philadelphia Phillies: 26 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Detroit Tigers 2d rest vs Philadelphia Phillies 2d rest",
+        "Net Rating edge: +3.5",
+        "Home SP: Jack Flaherty",
+        "Away SP: Aaron Nola",
+        "MLB model: 57.1% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.4,
+      "mlbModelProb": 0.5706,
+      "mlbEdge": -0.0127,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-10T23:11:00.000Z",
+      "matchup": "Cleveland Guardians at Miami Marlins",
+      "pickTeam": "Miami Marlins",
+      "opponent": "Cleveland Guardians",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Miami Marlins -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Miami Marlins: 26 games (mapped Marlins) vs Cleveland Guardians: 24 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Miami Marlins 2d rest vs Cleveland Guardians 2d rest",
+        "Net Rating edge: +2.2",
+        "Home SP: Sandy Alcantara",
+        "Away SP: Parker Messick",
+        "MLB model: 56.3% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.8,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.5627,
+      "mlbEdge": -0.0025,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-10T23:41:00.000Z",
+      "matchup": "Athletics at Chicago White Sox",
+      "pickTeam": "Chicago White Sox",
+      "opponent": "Athletics",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Chicago White Sox -1.5",
       "score": 57,
       "confidence": 52,
       "rationaleSignals": [
         "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample Washington Nationals: 25 games (mapped Nationals) vs New York Yankees: 26 games",
+        "ATS edge +0.400",
+        "History sample Chicago White Sox: 25 games (mapped White Sox) vs Athletics: 25 games",
         "Home court (+1 pt adjustment)",
-        "Rest: Washington Nationals 3d rest vs New York Yankees 2d rest",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +2.6"
+        "Rest: Chicago White Sox 2d rest vs Athletics 2d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +2.8",
+        "Home SP: Sean Burke",
+        "Away SP: Jacob Lopez",
+        "MLB model: 59.8% win prob (calibrated)"
       ],
       "momentumEdge": 0.6,
-      "atsEdge": 0.3,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "atsEdge": 0.4,
+      "mlbModelProb": 0.5984,
+      "mlbEdge": -0.0457,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-11T00:16:00.000Z",
+      "matchup": "Atlanta Braves at St. Louis Cardinals",
+      "pickTeam": "Atlanta Braves",
+      "opponent": "St. Louis Cardinals",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Atlanta Braves -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.000",
+        "History sample Atlanta Braves: 24 games (mapped Braves) vs St. Louis Cardinals: 27 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Atlanta Braves 2d rest vs St. Louis Cardinals 2d rest",
+        "3 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: -0.2",
+        "Home SP: Kyle Leahy",
+        "Away SP: Chris Sale",
+        "MLB model: 62.8% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.2,
+      "atsEdge": 0,
+      "mlbModelProb": 0.628,
+      "mlbEdge": 0.0368,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-10",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 4 eligible games found on 2026-07-10 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": null,
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -897,6 +1000,14 @@
         "status": "Day-To-Day",
         "injuryType": "Knee",
         "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Joshua Jefferson",
+        "team": "Brooklyn Nets",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-07-11"
       },
       {
         "player": "Danny Wolf",
@@ -1231,8 +1342,8 @@
         "team": "Memphis Grizzlies",
         "position": "F",
         "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-07-10"
+        "injuryType": "day-to-day",
+        "returnDate": ""
       },
       {
         "player": "Karim Lopez",
@@ -1345,30 +1456,6 @@
         "status": "Day-To-Day",
         "injuryType": "Back",
         "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Pete Nance",
-        "team": "Milwaukee Bucks",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-10"
-      },
-      {
-        "player": "Nate Ament",
-        "team": "Milwaukee Bucks",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-10"
-      },
-      {
-        "player": "Cormac Ryan",
-        "team": "Milwaukee Bucks",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-07-10"
       },
       {
         "player": "Kyle Kuzma",
@@ -2285,19 +2372,19 @@
         "returnDate": "2026-09-13"
       },
       {
-        "player": "Spencer Shrader",
-        "team": "Indianapolis Colts",
-        "position": "PK",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL + MCL",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Daniel Jones",
         "team": "Indianapolis Colts",
         "position": "QB",
         "status": "Questionable",
         "injuryType": "Achilles",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Spencer Shrader",
+        "team": "Indianapolis Colts",
+        "position": "PK",
+        "status": "Questionable",
+        "injuryType": "Knee - ACL + MCL",
         "returnDate": "2026-08-01"
       },
       {
@@ -2857,7 +2944,7 @@
         "team": "Tennessee Titans",
         "position": "DE",
         "status": "Questionable",
-        "injuryType": "Lower Leg",
+        "injuryType": "Hamstring",
         "returnDate": "2026-07-01"
       },
       {
