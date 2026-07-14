@@ -1,44 +1,20 @@
 {
-  "generatedAt": "2026-07-13T23:33:11.418Z",
+  "generatedAt": "2026-07-14T15:43:22.851Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 4,
+  "recordCount": 5,
   "errors": [],
   "data": {
-    "generatedAt": "2026-07-13T23:33:11.418Z",
+    "generatedAt": "2026-07-14T15:43:22.851Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 15,
-    "gameCount": 4,
+    "gameCount": 5,
     "results": [
-      {
-        "eventId": "fd_35812251",
-        "homeTeam": "Atlanta Dream",
-        "awayTeam": "Los Angeles Sparks",
-        "homeWinProb": 0.6642,
-        "awayWinProb": 0.3358,
-        "expectedMargin": 6.5,
-        "homeNetRtg": 6.545454545454546,
-        "awayNetRtg": -4.555555555555555,
-        "calibrated": false,
-        "startTime": "2026-07-13T23:08:00.000Z"
-      },
-      {
-        "eventId": "fd_35812248",
-        "homeTeam": "Minnesota Lynx",
-        "awayTeam": "Phoenix Mercury",
-        "homeWinProb": 0.7364,
-        "awayWinProb": 0.2636,
-        "expectedMargin": 9.78,
-        "homeNetRtg": 11.5,
-        "awayNetRtg": -6.909090909090909,
-        "calibrated": false,
-        "startTime": "2026-07-14T01:00:00.000Z"
-      },
       {
         "eventId": "fd_35816154",
         "homeTeam": "Connecticut Sun",
@@ -49,7 +25,7 @@
         "homeNetRtg": -1.6363636363636365,
         "awayNetRtg": -8.909090909090908,
         "calibrated": false,
-        "startTime": "2026-07-14T15:00:00.000Z"
+        "startTime": "2026-07-14T15:05:00.000Z"
       },
       {
         "eventId": "fd_35816155",
@@ -62,6 +38,42 @@
         "awayNetRtg": -6.9,
         "calibrated": false,
         "startTime": "2026-07-14T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35819848",
+        "homeTeam": "Chicago Sky",
+        "awayTeam": "Seattle Storm",
+        "homeWinProb": 0.6664,
+        "awayWinProb": 0.3336,
+        "expectedMargin": 6.59,
+        "homeNetRtg": -0.6,
+        "awayNetRtg": -11.909090909090908,
+        "calibrated": false,
+        "startTime": "2026-07-15T16:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35819847",
+        "homeTeam": "Minnesota Lynx",
+        "awayTeam": "Los Angeles Sparks",
+        "homeWinProb": 0.712,
+        "awayWinProb": 0.288,
+        "expectedMargin": 8.62,
+        "homeNetRtg": 10.818181818181818,
+        "awayNetRtg": -5,
+        "calibrated": false,
+        "startTime": "2026-07-15T17:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35819846",
+        "homeTeam": "Indiana Fever",
+        "awayTeam": "Golden State Valkyries",
+        "homeWinProb": 0.6129,
+        "awayWinProb": 0.3871,
+        "expectedMargin": 4.38,
+        "homeNetRtg": 9.090909090909092,
+        "awayNetRtg": 2.7,
+        "calibrated": false,
+        "startTime": "2026-07-16T00:00:00.000Z"
       }
     ]
   }
