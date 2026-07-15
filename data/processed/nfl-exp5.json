@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T09:31:30.548Z",
+  "generatedAt": "2026-07-15T09:35:53.294Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,24 +95,13 @@
   ],
   "props": {
     "record": {
-      "wins": 56,
-      "losses": 39,
+      "wins": 60,
+      "losses": 43,
       "pushes": 3
     },
-    "settled": 98,
-    "noData": 1,
+    "settled": 106,
+    "noData": 3,
     "examples": [
-      {
-        "player": "Todd Gurley",
-        "team": "LA",
-        "stat": "rushYds",
-        "threshold": 75,
-        "side": "over",
-        "result": "loss",
-        "rationale": "Gurley avg 110.7 rush yds/gm (6 games). CHI defense weak (221 PA allowed). Dome game removes weather concern. Gurley far above threshold on strong usage.",
-        "season": 2015,
-        "week": 10
-      },
       {
         "player": "Tom Brady",
         "team": "NE",
@@ -120,9 +109,9 @@
         "threshold": 250,
         "side": "over",
         "result": "win",
-        "rationale": "Brady avg 338.6 yds/gm vs NYG allowing 247 PF (porous secondary). NE 8-0, likely to air it out. Mild wind 8mph. Strong over edge.",
+        "rationale": "Brady avg 338 yds/g, NE 9-0, BUF defense allows 231 PF. Edelman out but LaFell back, Gronk elite. Cold 29F but Brady historically unaffected. Strong over lean.",
         "season": 2015,
-        "week": 10
+        "week": 11
       },
       {
         "player": "Tom Brady",
@@ -130,10 +119,10 @@
         "stat": "passTDs",
         "threshold": 1.5,
         "side": "over",
-        "result": "win",
-        "rationale": "Brady averaging 2.75 TDs/gm, NYG allowing 226 PA (weak D). NE road favorite concern partially offset by dominant season trend.",
+        "result": "loss",
+        "rationale": "Brady avg 2.67 TDs/g on 9-0 NE. BUF defense mid-tier. Gronk averaging 0.89 TD/g. High-scoring NE offense makes 2+ TDs likely.",
         "season": 2015,
-        "week": 10
+        "week": 11
       },
       {
         "player": "Rob Gronkowski",
@@ -141,10 +130,10 @@
         "stat": "recYds",
         "threshold": 50,
         "side": "over",
-        "result": "win",
-        "rationale": "Gronk avg 86.6 rec yds, 8.5 targets/gm. NYG lost Larry Donnell (Out) at TE so Gronk matchup remains elite. Brady-Gronk vs porous NYG secondary.",
+        "result": "loss",
+        "rationale": "Gronk avg 89.6 rec yds/g with 8.3 targets. Edelman out boosts share. BUF soft vs TEs. NE dominant offense at home vs divisional foe.",
         "season": 2015,
-        "week": 10
+        "week": 11
       },
       {
         "player": "DeAndre Hopkins",
@@ -153,31 +142,9 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Hopkins avg 108.75 yds on 14 targets/gm. CIN 8-0 but playing at home means HOU may trail and throw. Hopkins dominant usage makes under hard to justify.",
+        "rationale": "Hopkins avg 103 rec yds/g with 13.7 targets. NYJ solid but Hopkins elite usage. Indoor closed roof game. Replacement QB (Mallett/Yates) forces volume to Hopkins.",
         "season": 2015,
-        "week": 10
-      },
-      {
-        "player": "Antonio Brown",
-        "team": "PIT",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "AB avg 111.3 yds/gm on 11.1 targets. CLE 2-7, weak secondary. Ben Roethlisberger questionable but even backup QBs target AB heavily at home.",
-        "season": 2015,
-        "week": 10
-      },
-      {
-        "player": "Drew Brees",
-        "team": "NO",
-        "stat": "passYds",
-        "threshold": 250,
-        "side": "over",
-        "result": "loss",
-        "rationale": "Brees avg 345.4 yds, WAS allowing 195 PA (weak D). Calm wind 5mph, outdoor. NO likely to trail or engage in shootout vs WAS offense.",
-        "season": 2015,
-        "week": 10
+        "week": 11
       },
       {
         "player": "Larry Fitzgerald",
@@ -186,23 +153,56 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Fitzgerald avg 88.25 yds, 8.75 targets/gm. SEA home but ARI 6-2 in a competitive game. Fitz elite usage regardless of matchup difficulty.",
+        "rationale": "Fitzgerald avg 92.9 rec yds/g, 9.3 targets. ARI vs CIN indoor closed dome. Palmer avg 305 yds/g. ARI 7-2 high-powered offense, Fitz elite usage.",
         "season": 2015,
-        "week": 10
+        "week": 11
+      },
+      {
+        "player": "Julio Jones",
+        "team": "ATL",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "Jones avg 114 rec yds/g with 13.2 targets, elite usage. IND backup Hasselbeck starting means game likely competitive. Dome game boosts passing volume.",
+        "season": 2015,
+        "week": 11
+      },
+      {
+        "player": "Adrian Peterson",
+        "team": "MIN",
+        "stat": "rushYds",
+        "threshold": 75,
+        "side": "over",
+        "result": "loss",
+        "rationale": "AP avg 106.8 rush yds/g. MIN 7-2 run-first vs 6-3 GB. Cold 30F outdoor game favors running. MIN strong home team, AP dominant volume.",
+        "season": 2015,
+        "week": 11
+      },
+      {
+        "player": "Jonathan Stewart",
+        "team": "CAR",
+        "stat": "rushYds",
+        "threshold": 75,
+        "side": "under",
+        "result": "loss",
+        "rationale": "Stewart avg 73.6 rush yds/g, right at threshold. CAR 9-0 likely to run conservative but WAS defense solid (PA 209). Marginal avg plus WAS run D keeps under.",
+        "season": 2015,
+        "week": 11
       }
     ]
   },
   "parlays": {
     "record": {
       "wins": 13,
-      "losses": 35,
+      "losses": 38,
       "pushes": 0
     },
-    "settled": 48,
-    "roiPct": 99.15,
-    "winRatePct": 27.1,
-    "breakEvenPct": 13.6,
-    "avgLegsEdge": 0.1237,
-    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 27.1% win rate clears the 13.6% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
+    "settled": 51,
+    "roiPct": 87.44,
+    "winRatePct": 25.5,
+    "breakEvenPct": 13.7,
+    "avgLegsEdge": 0.125,
+    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 25.5% win rate clears the 13.7% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
   }
 }
