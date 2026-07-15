@@ -1,24 +1,24 @@
 {
-  "fetchedAt": "2026-07-14T23:33:46.525Z",
+  "fetchedAt": "2026-07-15T15:48:27.912Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 10,
+  "eventCount": 1,
   "sampleEvent": {
-    "id": "fd_35819068",
+    "id": "fd_35816161",
     "sport_key": "baseball_mlb",
-    "commence_time": "2026-07-15T00:01:00.000Z",
-    "home_team": "National League",
-    "away_team": "American League"
+    "commence_time": "2026-07-16T23:11:00.000Z",
+    "home_team": "Philadelphia Phillies",
+    "away_team": "New York Mets"
   },
   "events": [
     {
-      "id": "fd_35819068",
+      "id": "fd_35816161",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
-      "commence_time": "2026-07-15T00:01:00.000Z",
-      "home_team": "National League",
-      "away_team": "American League",
+      "commence_time": "2026-07-16T23:11:00.000Z",
+      "home_team": "Philadelphia Phillies",
+      "away_team": "New York Mets",
       "bookmakers": [
         {
           "key": "fanduel",
@@ -28,12 +28,12 @@
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "American League",
-                  "price": 116
+                  "name": "New York Mets",
+                  "price": 112
                 },
                 {
-                  "name": "National League",
-                  "price": -134
+                  "name": "Philadelphia Phillies",
+                  "price": -132
                 }
               ]
             },
@@ -41,13 +41,13 @@
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "American League",
-                  "price": -184,
+                  "name": "New York Mets",
+                  "price": -182,
                   "point": 1.5
                 },
                 {
-                  "name": "National League",
-                  "price": 152,
+                  "name": "Philadelphia Phillies",
+                  "price": 150,
                   "point": -1.5
                 }
               ]
@@ -57,57 +57,47 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -104,
-                  "point": 8.5
+                  "price": -122,
+                  "point": 9.5
                 },
                 {
                   "name": "Under",
-                  "price": -118,
-                  "point": 8.5
+                  "price": 100,
+                  "point": 9.5
                 }
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35823552",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-15T04:00:00.000Z",
-      "home_team": "Hokkaido Nippon-Ham Fighters",
-      "away_team": "Fukuoka Hawks",
-      "bookmakers": [
+        },
         {
-          "key": "fanduel",
-          "title": "FanDuel",
+          "key": "bovada",
+          "title": "Bovada",
           "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Fukuoka Hawks",
-                  "price": 126
-                },
-                {
-                  "name": "Hokkaido Nippon-Ham Fighters",
-                  "price": -154
-                }
-              ]
-            },
             {
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "Fukuoka Hawks",
-                  "price": -168,
+                  "name": "New York Mets",
+                  "price": -180,
                   "point": 1.5
                 },
                 {
-                  "name": "Hokkaido Nippon-Ham Fighters",
-                  "price": 134,
+                  "name": "Philadelphia Phillies",
+                  "price": 155,
                   "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New York Mets",
+                  "price": 111
+                },
+                {
+                  "name": "Philadelphia Phillies",
+                  "price": -133
                 }
               ]
             },
@@ -116,485 +106,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 104,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -130,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35823547",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-15T09:00:00.000Z",
-      "home_team": "Hiroshima Toyo Carp",
-      "away_team": "Yokohama Dena Baystars",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Yokohama Dena Baystars",
-                  "price": -158
-                },
-                {
-                  "name": "Hiroshima Toyo Carp",
-                  "price": 130
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Yokohama Dena Baystars",
-                  "price": 128,
-                  "point": -1.5
-                },
-                {
-                  "name": "Hiroshima Toyo Carp",
-                  "price": -160,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -130,
-                  "point": 5.5
-                },
-                {
-                  "name": "Under",
-                  "price": 104,
-                  "point": 5.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35823549",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-15T09:00:00.000Z",
-      "home_team": "Saitama Seibu Lions",
-      "away_team": "Chiba Lotte Marines",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Chiba Lotte Marines",
-                  "price": 116
-                },
-                {
-                  "name": "Saitama Seibu Lions",
-                  "price": -142
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Chiba Lotte Marines",
-                  "price": -215,
-                  "point": 1.5
-                },
-                {
-                  "name": "Saitama Seibu Lions",
-                  "price": 168,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -106,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": -118,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35823550",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-15T09:00:00.000Z",
-      "home_team": "Tokyo Yakult Swallows",
-      "away_team": "Yomiuri Giants",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Yomiuri Giants",
-                  "price": -134
-                },
-                {
-                  "name": "Tokyo Yakult Swallows",
-                  "price": 110
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Yomiuri Giants",
-                  "price": 136,
-                  "point": -1.5
-                },
-                {
-                  "name": "Tokyo Yakult Swallows",
-                  "price": -172,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 110,
-                  "point": 7.5
-                },
-                {
-                  "name": "Under",
-                  "price": -138,
-                  "point": 7.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35823551",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-15T09:00:00.000Z",
-      "home_team": "Chunichi Dragons",
-      "away_team": "Hanshin Tigers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Hanshin Tigers",
-                  "price": -118
-                },
-                {
-                  "name": "Chunichi Dragons",
-                  "price": -104
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Hanshin Tigers",
-                  "price": 152,
-                  "point": -1.5
-                },
-                {
-                  "name": "Chunichi Dragons",
-                  "price": -192,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -142,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": 114,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35823555",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-15T09:00:00.000Z",
-      "home_team": "Tohoku Rakuten Golden Eagles",
-      "away_team": "Orix Buffaloes",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Orix Buffaloes",
-                  "price": -106
-                },
-                {
-                  "name": "Tohoku Rakuten Golden Eagles",
-                  "price": -114
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Orix Buffaloes",
-                  "price": 168,
-                  "point": -1.5
-                },
-                {
-                  "name": "Tohoku Rakuten Golden Eagles",
-                  "price": -215,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -104,
-                  "point": 7.5
-                },
-                {
-                  "name": "Under",
                   "price": -120,
-                  "point": 7.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35824719",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-15T10:35:00.000Z",
-      "home_team": "Rakuten Monkeys",
-      "away_team": "Uni Lions",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Uni Lions",
-                  "price": -120
-                },
-                {
-                  "name": "Rakuten Monkeys",
-                  "price": -110
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Uni Lions",
-                  "price": 162,
-                  "point": -1.5
-                },
-                {
-                  "name": "Rakuten Monkeys",
-                  "price": -220,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -102,
-                  "point": 6.5
+                  "point": 9.5
                 },
                 {
                   "name": "Under",
-                  "price": -132,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35824720",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-15T10:35:00.000Z",
-      "home_team": "CTBC Brothers",
-      "away_team": "Wei Chuan Dragons",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Wei Chuan Dragons",
-                  "price": -168
-                },
-                {
-                  "name": "CTBC Brothers",
-                  "price": 124
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Wei Chuan Dragons",
-                  "price": 102,
-                  "point": -1.5
-                },
-                {
-                  "name": "CTBC Brothers",
-                  "price": -136,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 104,
-                  "point": 7.5
-                },
-                {
-                  "name": "Under",
-                  "price": -136,
-                  "point": 7.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35824721",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-07-15T10:35:00.000Z",
-      "home_team": "TSG Hawks",
-      "away_team": "Fubon Guardians",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Fubon Guardians",
-                  "price": -106
-                },
-                {
-                  "name": "TSG Hawks",
-                  "price": -128
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Fubon Guardians",
-                  "price": -225,
-                  "point": 1.5
-                },
-                {
-                  "name": "TSG Hawks",
-                  "price": 164,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 106,
-                  "point": 7.5
-                },
-                {
-                  "name": "Under",
-                  "price": -138,
-                  "point": 7.5
+                  "price": 100,
+                  "point": 9.5
                 }
               ]
             }
