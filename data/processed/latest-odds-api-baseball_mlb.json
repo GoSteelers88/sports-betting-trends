@@ -1,9 +1,9 @@
 {
-  "fetchedAt": "2026-07-15T23:42:51.349Z",
+  "fetchedAt": "2026-07-16T15:49:52.326Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 2,
+  "eventCount": 5,
   "sampleEvent": {
     "id": "fd_35816161",
     "sport_key": "baseball_mlb",
@@ -29,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "New York Mets",
-                  "price": 106
+                  "price": 110
                 },
                 {
                   "name": "Philadelphia Phillies",
-                  "price": -124
+                  "price": -130
                 }
               ]
             },
@@ -42,13 +42,13 @@
               "outcomes": [
                 {
                   "name": "New York Mets",
-                  "price": 158,
-                  "point": -1.5
+                  "price": -176,
+                  "point": 1.5
                 },
                 {
                   "name": "Philadelphia Phillies",
-                  "price": -192,
-                  "point": 1.5
+                  "price": 146,
+                  "point": -1.5
                 }
               ]
             },
@@ -57,12 +57,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -118,
+                  "price": -110,
                   "point": 9.5
                 },
                 {
                   "name": "Under",
-                  "price": -104,
+                  "price": -110,
                   "point": 9.5
                 }
               ]
@@ -78,12 +78,12 @@
               "outcomes": [
                 {
                   "name": "New York Mets",
-                  "price": -180,
+                  "price": -175,
                   "point": 1.5
                 },
                 {
                   "name": "Philadelphia Phillies",
-                  "price": 155,
+                  "price": 150,
                   "point": -1.5
                 }
               ]
@@ -121,6 +121,222 @@
       ]
     },
     {
+      "id": "fd_35816170",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-07-17T23:06:00.000Z",
+      "home_team": "New York Yankees",
+      "away_team": "Los Angeles Dodgers",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": -110
+                },
+                {
+                  "name": "New York Yankees",
+                  "price": -106
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": 146,
+                  "point": -1.5
+                },
+                {
+                  "name": "New York Yankees",
+                  "price": -176,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 9
+                },
+                {
+                  "name": "Under",
+                  "price": -102,
+                  "point": 9
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": 150,
+                  "point": -1.5
+                },
+                {
+                  "name": "New York Yankees",
+                  "price": -175,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": -112
+                },
+                {
+                  "name": "New York Yankees",
+                  "price": -108
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 9
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
+                  "point": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35816169",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-07-17T23:11:00.000Z",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Pittsburgh Pirates",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Pittsburgh Pirates",
+                  "price": 106
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": -124
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Pittsburgh Pirates",
+                  "price": -205,
+                  "point": 1.5
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": 168,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -114,
+                  "point": 7.5
+                },
+                {
+                  "name": "Under",
+                  "price": -106,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Pittsburgh Pirates",
+                  "price": -200,
+                  "point": 1.5
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": 170,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Pittsburgh Pirates",
+                  "price": 106
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": -126
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -115,
+                  "point": 7.5
+                },
+                {
+                  "name": "Under",
+                  "price": -105,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "fd_35816158",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
@@ -137,11 +353,198 @@
               "outcomes": [
                 {
                   "name": "Chicago White Sox",
-                  "price": 112
+                  "price": 116
                 },
                 {
                   "name": "Toronto Blue Jays",
-                  "price": -132
+                  "price": -136
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Chicago White Sox",
+                  "price": -184,
+                  "point": 1.5
+                },
+                {
+                  "name": "Toronto Blue Jays",
+                  "price": 152,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 8.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 8.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Chicago White Sox",
+                  "price": -180,
+                  "point": 1.5
+                },
+                {
+                  "name": "Toronto Blue Jays",
+                  "price": 155,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Chicago White Sox",
+                  "price": 115
+                },
+                {
+                  "name": "Toronto Blue Jays",
+                  "price": -138
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 8.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 8.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35816168",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-07-18T00:11:00.000Z",
+      "home_team": "Kansas City Royals",
+      "away_team": "San Diego Padres",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "San Diego Padres",
+                  "price": -108
+                },
+                {
+                  "name": "Kansas City Royals",
+                  "price": -108
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "San Diego Padres",
+                  "price": 142,
+                  "point": -1.5
+                },
+                {
+                  "name": "Kansas City Royals",
+                  "price": -172,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -118,
+                  "point": 10
+                },
+                {
+                  "name": "Under",
+                  "price": -104,
+                  "point": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "San Diego Padres",
+                  "price": 145,
+                  "point": -1.5
+                },
+                {
+                  "name": "Kansas City Royals",
+                  "price": -170,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "San Diego Padres",
+                  "price": -110
+                },
+                {
+                  "name": "Kansas City Royals",
+                  "price": -110
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -115,
+                  "point": 10
+                },
+                {
+                  "name": "Under",
+                  "price": -105,
+                  "point": 10
                 }
               ]
             }
