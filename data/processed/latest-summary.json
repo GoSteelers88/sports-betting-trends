@@ -1,34 +1,34 @@
 {
-  "generatedAt": "2026-07-17T15:37:03.809Z",
+  "generatedAt": "2026-07-17T23:33:02.647Z",
   "ready": true,
-  "recordsIngested": 705,
-  "recordsCompleted": 705,
+  "recordsIngested": 707,
+  "recordsCompleted": 707,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 678,
+      "games": 680,
       "conferences": [
+        "AL East",
         "NL East",
         "Unknown",
         "NL Central",
-        "AL East",
         "AL Central",
         "AL West",
         "NL West"
       ],
-      "avgPoints": 4.615044247787611,
+      "avgPoints": 4.616176470588235,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 4.6,
+      "recentAvgPoints": 4.8,
       "recentAvgYards": null,
-      "trendScore": 32,
-      "trendSignal": "down",
+      "trendScore": 75,
+      "trendSignal": "up",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 678,
+        "games": 680,
         "rpg": 4.62,
         "oppRpg": 4.62,
         "hitsPerGame": 8.25,
@@ -36,6 +36,22 @@
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Red Sox": {
+          "games": 24,
+          "rpg": 4.83,
+          "oppRpg": 2.79,
+          "hitsPerGame": 8.04,
+          "errorsPerGame": 0.29,
+          "sos": null
+        },
+        "Rays": {
+          "games": 24,
+          "rpg": 4.58,
+          "oppRpg": 3.88,
+          "hitsPerGame": 8.67,
+          "errorsPerGame": 0.63,
+          "sos": null
+        },
         "Phillies": {
           "games": 24,
           "rpg": 5.04,
@@ -116,14 +132,6 @@
           "errorsPerGame": 1,
           "sos": null
         },
-        "Red Sox": {
-          "games": 23,
-          "rpg": 4.61,
-          "oppRpg": 2.91,
-          "hitsPerGame": 7.74,
-          "errorsPerGame": 0.3,
-          "sos": null
-        },
         "Reds": {
           "games": 22,
           "rpg": 3.82,
@@ -163,14 +171,6 @@
           "hitsPerGame": 8.18,
           "errorsPerGame": 0.5,
           "sos": 0.52
-        },
-        "Rays": {
-          "games": 23,
-          "rpg": 4.78,
-          "oppRpg": 3.61,
-          "hitsPerGame": 8.91,
-          "errorsPerGame": 0.61,
-          "sos": null
         },
         "Mariners": {
           "games": 22,
@@ -571,18 +571,18 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "NL East",
-      "gameDate": "2026-07-16T00:00:00.000Z",
-      "team": "Phillies",
-      "opponent": "Mets",
-      "points": 1,
-      "opponentPoints": 4,
+      "conference": "AL East",
+      "gameDate": "2026-07-17T00:00:00.000Z",
+      "team": "Red Sox",
+      "opponent": "Rays",
+      "points": 10,
+      "opponentPoints": 0,
       "rebounds": null,
       "assists": null,
       "yards": null,
-      "spread": -1.5,
-      "atsResult": "L",
-      "won": false,
+      "spread": 1.5,
+      "atsResult": "W",
+      "won": true,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -609,10 +609,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 4,
-      "errors": 1,
+      "hits": 15,
+      "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401816143",
+      "sourceEventId": "401872178",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -783,34 +783,126 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-07-17T17:36:00.000Z",
+      "gameDate": "2026-07-17T23:11:00.000Z",
       "matchup": "Tampa Bay Rays at Boston Red Sox",
       "pickTeam": "Boston Red Sox",
       "opponent": "Tampa Bay Rays",
-      "spread": 0.8,
-      "modelSpread": 0.7,
-      "line": "Boston Red Sox +0.8",
-      "score": 61,
-      "confidence": 57,
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Boston Red Sox +1.5",
+      "score": 67,
+      "confidence": 63,
       "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Boston Red Sox: 23 games (mapped Red Sox) vs Tampa Bay Rays: 23 games",
+        "Momentum edge +1.20 (last-10 trend proxy)",
+        "ATS edge +0.400",
+        "History sample Boston Red Sox: 24 games (mapped Red Sox) vs Tampa Bay Rays: 24 games",
         "Home court (+1 pt adjustment)",
-        "Rest: Boston Red Sox 6d rest vs Tampa Bay Rays 6d rest",
-        "4 books: avg 0.8, variance 1.69 (high disagreement)",
-        "Net Rating edge: +3.1"
+        "Rest: Boston Red Sox B2B vs Tampa Bay Rays B2B",
+        "Net Rating edge: +6.1",
+        "Home SP: Jake Bennett",
+        "Away SP: Griffin Jax",
+        "MLB model: 62.4% win prob (calibrated) | Edge vs market: +24.2%"
       ],
-      "momentumEdge": 0.8,
+      "momentumEdge": 1.2,
+      "atsEdge": 0.4,
+      "mlbModelProb": 0.6238,
+      "mlbEdge": 0.2421,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-18T00:41:00.000Z",
+      "matchup": "Cincinnati Reds at Colorado Rockies",
+      "pickTeam": "Colorado Rockies",
+      "opponent": "Cincinnati Reds",
+      "spread": 0,
+      "modelSpread": 0,
+      "line": "Colorado Rockies 0",
+      "score": 59,
+      "confidence": 54,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample Colorado Rockies: 23 games (mapped Rockies) vs Cincinnati Reds: 22 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Colorado Rockies 6d rest vs Cincinnati Reds 6d rest",
+        "2 books: avg 0, variance 2.25 (high disagreement)",
+        "Net Rating edge: +0.1",
+        "Home SP: Gabriel Hughes",
+        "Away SP: Brady Singer",
+        "MLB model: 59.9% win prob (calibrated) | Edge vs market: +6.2%"
+      ],
+      "momentumEdge": 0,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.5993,
+      "mlbEdge": 0.0623,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-17T23:16:00.000Z",
+      "matchup": "Texas Rangers at Atlanta Braves",
+      "pickTeam": "Atlanta Braves",
+      "opponent": "Texas Rangers",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Atlanta Braves -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample Atlanta Braves: 22 games (mapped Braves) vs Texas Rangers: 23 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Atlanta Braves 6d rest vs Texas Rangers 6d rest",
+        "Net Rating edge: +2.0",
+        "Home SP: Chris Sale",
+        "Away SP: Cal Quantrill",
+        "MLB model: 68.5% win prob (calibrated) | Edge vs market: -6.2%"
+      ],
+      "momentumEdge": 0,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.6846,
+      "mlbEdge": -0.0622,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-18T01:41:00.000Z",
+      "matchup": "Washington Nationals at Athletics",
+      "pickTeam": "Washington Nationals",
+      "opponent": "Athletics",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Washington Nationals -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Washington Nationals: 22 games (mapped Nationals) vs Athletics: 22 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Washington Nationals 6d rest vs Athletics 6d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +3.9",
+        "Home SP: Gage Jump",
+        "Away SP: Cade Cavalli",
+        "MLB model: 61.6% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.6,
       "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6161,
+      "mlbEdge": 0.0473,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-17",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-07-17 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 4 eligible games found on 2026-07-17 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -906,6 +998,30 @@
         "position": "C",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Noa Essengue",
+        "team": "Chicago Bulls",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Thumb",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Caleb Wilson",
+        "team": "Chicago Bulls",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Rest",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Dailyn Swain",
+        "team": "Chicago Bulls",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Wrist",
         "returnDate": "2026-10-01"
       },
       {
@@ -1594,7 +1710,31 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Rest",
-        "returnDate": "2026-07-17"
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Maxime Raynaud",
+        "team": "Sacramento Kings",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Rest",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Dylan Cardwell",
+        "team": "Sacramento Kings",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Thumb",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Darius Acuff Jr.",
+        "team": "Sacramento Kings",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Rest",
+        "returnDate": "2026-10-01"
       },
       {
         "player": "Zach LaVine",
@@ -1698,7 +1838,7 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Ribs",
-        "returnDate": "2026-07-17"
+        "returnDate": "2026-10-01"
       },
       {
         "player": "Ace Bailey",
@@ -1706,7 +1846,15 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Back",
-        "returnDate": "2026-07-17"
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Darryn Peterson",
+        "team": "Utah Jazz",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Rest",
+        "returnDate": "2026-10-01"
       },
       {
         "player": "Cody Williams",
@@ -1714,7 +1862,7 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Illness",
-        "returnDate": "2026-07-17"
+        "returnDate": "2026-10-01"
       },
       {
         "player": "Jusuf Nurkic",
@@ -2052,6 +2200,14 @@
         "position": "DT",
         "status": "Questionable",
         "injuryType": "Neck",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Roschon Johnson",
+        "team": "Chicago Bears",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Thumb",
         "returnDate": "2026-08-01"
       },
       {
@@ -2703,14 +2859,6 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Andrew Thomas",
-        "team": "New York Giants",
-        "position": "OT",
-        "status": "Questionable",
-        "injuryType": "Foot",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Kenyon Sadiq",
         "team": "New York Jets",
         "position": "TE",
@@ -2756,14 +2904,6 @@
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Lower Body",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Makai Lemon",
-        "team": "Philadelphia Eagles",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
         "returnDate": "2026-08-01"
       },
       {
