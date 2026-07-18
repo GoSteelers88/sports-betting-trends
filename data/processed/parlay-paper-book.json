@@ -1,6 +1,63 @@
 {
-  "updatedAt": "2026-07-17T22:30:38.035Z",
-  "parlays": [],
+  "updatedAt": "2026-07-18T22:31:36.366Z",
+  "parlays": [
+    {
+      "id": "caitlinclark|rebounds|over|3.5|draftkings|cb4f9fb87d3e9c98bee6b12fbd21fdab~zacklittell|strikeouts|over|2.5|draftkings|ded1e582d76a9362d25395cef8921336",
+      "openedAt": "2026-07-18T22:31:36.366Z",
+      "legs": [
+        {
+          "legId": "zacklittell|strikeouts|over|2.5|draftkings|ded1e582d76a9362d25395cef8921336",
+          "player": "Zack Littell",
+          "gameId": "ded1e582d76a9362d25395cef8921336",
+          "team": "Athletics",
+          "opponent": "Washington Nationals",
+          "propType": "Strikeouts",
+          "line": 2.5,
+          "side": "Over",
+          "oddsAmerican": -118,
+          "book": "draftkings",
+          "fairProb": 0.6026,
+          "decimal": 1.847457627118644,
+          "commence": "2026-07-19T02:06:00Z",
+          "league": "MLB",
+          "status": "open",
+          "actual": null,
+          "finalScore": null
+        },
+        {
+          "legId": "caitlinclark|rebounds|over|3.5|draftkings|cb4f9fb87d3e9c98bee6b12fbd21fdab",
+          "player": "Caitlin Clark",
+          "gameId": "cb4f9fb87d3e9c98bee6b12fbd21fdab",
+          "team": "Indiana Fever",
+          "opponent": "New York Liberty",
+          "propType": "Rebounds",
+          "line": 3.5,
+          "side": "Over",
+          "oddsAmerican": -118,
+          "book": "draftkings",
+          "fairProb": 0.5635,
+          "decimal": 1.847457627118644,
+          "commence": "2026-07-19T00:00:00Z",
+          "league": "WNBA",
+          "status": "open",
+          "actual": null,
+          "finalScore": null
+        }
+      ],
+      "survivingLegIds": [
+        "zacklittell|strikeouts|over|2.5|draftkings|ded1e582d76a9362d25395cef8921336",
+        "caitlinclark|rebounds|over|3.5|draftkings|cb4f9fb87d3e9c98bee6b12fbd21fdab"
+      ],
+      "parlayDecimalOdds": 3.4131,
+      "parlayFairProb": 0.339565,
+      "parlayEV": 0.15897,
+      "flipDelta": 0.041412659932044335,
+      "stakeUsd": 163.81,
+      "status": "open",
+      "pnlUsd": null,
+      "settledAt": null
+    }
+  ],
   "ledger": [
     {
       "ts": "2026-06-20T22:48:47.277Z",
@@ -278,6 +335,16 @@
       "realizedPnlUsd": 0,
       "exposureUsd": 0,
       "openCount": 0,
+      "settledCount": 0,
+      "wins": 0,
+      "losses": 0
+    },
+    {
+      "ts": "2026-07-18T22:31:36.366Z",
+      "equityUsd": 10000,
+      "realizedPnlUsd": 0,
+      "exposureUsd": 163.81,
+      "openCount": 1,
       "settledCount": 0,
       "wins": 0,
       "losses": 0
