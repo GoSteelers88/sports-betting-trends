@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-18T15:11:38.919Z",
+  "generatedAt": "2026-07-18T23:35:24.225Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 5,
+  "recordCount": 7,
   "errors": [],
   "data": {
-    "generatedAt": "2026-07-18T15:11:38.919Z",
+    "generatedAt": "2026-07-18T23:35:24.225Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 15,
-    "gameCount": 5,
+    "gameCount": 7,
     "results": [
       {
         "eventId": "fd_35829927",
@@ -37,7 +37,7 @@
         "homeNetRtg": 12.272727272727273,
         "awayNetRtg": -6.3076923076923075,
         "calibrated": false,
-        "startTime": "2026-07-19T00:00:00.000Z"
+        "startTime": "2026-07-19T00:05:00.000Z"
       },
       {
         "eventId": "fd_35829926",
@@ -74,6 +74,30 @@
         "awayNetRtg": -10,
         "calibrated": false,
         "startTime": "2026-07-19T20:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35833576",
+        "homeTeam": "Phoenix Mercury",
+        "awayTeam": "Connecticut Sun",
+        "homeWinProb": 0.5593,
+        "awayWinProb": 0.4407,
+        "expectedMargin": 2.27,
+        "homeNetRtg": -5.4,
+        "awayNetRtg": -7.111111111111111,
+        "calibrated": false,
+        "startTime": "2026-07-19T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35836960",
+        "homeTeam": "Toronto Tempo",
+        "awayTeam": "Las Vegas Aces",
+        "homeWinProb": 0.4721,
+        "awayWinProb": 0.5279,
+        "expectedMargin": -1.07,
+        "homeNetRtg": -3.923076923076923,
+        "awayNetRtg": 1.7777777777777777,
+        "calibrated": false,
+        "startTime": "2026-07-21T00:00:00.000Z"
       }
     ]
   }
