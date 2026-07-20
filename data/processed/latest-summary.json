@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T16:01:41.091Z",
+  "generatedAt": "2026-07-20T23:37:48.366Z",
   "ready": true,
   "recordsIngested": 723,
   "recordsCompleted": 723,
@@ -790,21 +790,24 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Boston Red Sox -1.5",
-      "score": 62,
-      "confidence": 58,
+      "score": 63,
+      "confidence": 59,
       "rationaleSignals": [
         "Momentum edge +0.60 (last-10 trend proxy)",
         "ATS edge +0.300",
         "History sample Boston Red Sox: 24 games (mapped Red Sox) vs Baltimore Orioles: 22 games",
         "Home court (+1 pt adjustment)",
         "Rest: Boston Red Sox 2d rest vs Baltimore Orioles 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +2.6"
+        "Net Rating edge: +2.6",
+        "Home SP: Payton Tolle",
+        "Away SP: Shane Baz",
+        "MLB model: 63.5% win prob (calibrated)"
       ],
       "momentumEdge": 0.6,
       "atsEdge": 0.3,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6349,
+      "mlbEdge": -0.0054,
+      "mlbCalibrated": true
     },
     {
       "league": "MLB",
@@ -816,8 +819,8 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Arizona Diamondbacks -1.5",
-      "score": 61,
-      "confidence": 57,
+      "score": 63,
+      "confidence": 59,
       "rationaleSignals": [
         "Momentum edge +1.20 (last-10 trend proxy)",
         "ATS edge +0.500",
@@ -825,18 +828,80 @@
         "Home court (+1 pt adjustment)",
         "Rest: Arizona Diamondbacks 2d rest vs Athletics 2d rest",
         "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +6.1"
+        "Net Rating edge: +6.1",
+        "Home SP: Mitch Bratt",
+        "Away SP: Jeffrey Springs",
+        "MLB model: 63.7% win prob (calibrated)"
       ],
       "momentumEdge": 1.2,
       "atsEdge": 0.5,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6373,
+      "mlbEdge": 0.0439,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-20T23:08:00.000Z",
+      "matchup": "Tampa Bay Rays at Toronto Blue Jays",
+      "pickTeam": "Toronto Blue Jays",
+      "opponent": "Tampa Bay Rays",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Toronto Blue Jays +1.5",
+      "score": 61,
+      "confidence": 57,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.000",
+        "History sample Toronto Blue Jays: 22 games (mapped Blue Jays) vs Tampa Bay Rays: 25 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Toronto Blue Jays 2d rest vs Tampa Bay Rays 2d rest",
+        "Net Rating edge: +1.0",
+        "Home SP: Dylan Cease",
+        "Away SP: Nick Martinez",
+        "MLB model: 64.2% win prob (calibrated) | Edge vs market: +15.2%"
+      ],
+      "momentumEdge": 0,
+      "atsEdge": 0,
+      "mlbModelProb": 0.6417,
+      "mlbEdge": 0.1515,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-20T23:06:00.000Z",
+      "matchup": "Pittsburgh Pirates at New York Yankees",
+      "pickTeam": "Pittsburgh Pirates",
+      "opponent": "New York Yankees",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Pittsburgh Pirates +1.5",
+      "score": 58,
+      "confidence": 53,
+      "rationaleSignals": [
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.000",
+        "History sample Pittsburgh Pirates: 23 games (mapped Pirates) vs New York Yankees: 24 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Pittsburgh Pirates 2d rest vs New York Yankees 2d rest",
+        "Net Rating edge: +2.0",
+        "Home SP: Ryan Weathers",
+        "Away SP: Braxton Ashcraft",
+        "MLB model: 56.5% win prob (calibrated) | Edge vs market: +25.2%"
+      ],
+      "momentumEdge": 0.2,
+      "atsEdge": 0,
+      "mlbModelProb": 0.5647,
+      "mlbEdge": 0.2522,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-20",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 2 eligible games found on 2026-07-20 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 4 eligible games found on 2026-07-20 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -2593,19 +2658,27 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Luke Musgrave",
-        "team": "Green Bay Packers",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Tucker Kraft",
         "team": "Green Bay Packers",
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Knee - ACL",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Devonte Wyatt",
+        "team": "Green Bay Packers",
+        "position": "DT",
+        "status": "Questionable",
+        "injuryType": "Ankle",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Luke Musgrave",
+        "team": "Green Bay Packers",
+        "position": "TE",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
         "returnDate": "2026-08-01"
       },
       {
@@ -3025,19 +3098,19 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Kenyon Sadiq",
-        "team": "New York Jets",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Abdomen",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Cade Klubnik",
         "team": "New York Jets",
         "position": "QB",
         "status": "Questionable",
         "injuryType": "Back",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Kenyon Sadiq",
+        "team": "New York Jets",
+        "position": "TE",
+        "status": "Questionable",
+        "injuryType": "Abdomen",
         "returnDate": "2026-08-01"
       },
       {
@@ -3102,7 +3175,7 @@
         "position": "TE",
         "status": "Out",
         "injuryType": "Undisclosed",
-        "returnDate": "2026-08-13"
+        "returnDate": "2026-08-01"
       },
       {
         "player": "Mac Jones",
@@ -3153,12 +3226,36 @@
         "returnDate": "2026-08-01"
       },
       {
+        "player": "Kenny McIntosh",
+        "team": "Seattle Seahawks",
+        "position": "RB",
+        "status": "Out",
+        "injuryType": "Knee - ACL",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Tyrone Broden",
+        "team": "Seattle Seahawks",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Nick Emmanwori",
+        "team": "Seattle Seahawks",
+        "position": "S",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Deven Eastern",
         "team": "Seattle Seahawks",
         "position": "DT",
         "status": "Out",
         "injuryType": "Undisclosed",
-        "returnDate": "2026-08-15"
+        "returnDate": "2026-08-01"
       },
       {
         "player": "Zach Charbonnet",
@@ -3185,11 +3282,11 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Kenny McIntosh",
-        "team": "Seattle Seahawks",
+        "player": "Bucky Irving",
+        "team": "Tampa Bay Buccaneers",
         "position": "RB",
         "status": "Questionable",
-        "injuryType": "Knee - ACL",
+        "injuryType": "Shoulder",
         "returnDate": "2026-08-01"
       },
       {
@@ -3198,14 +3295,6 @@
         "position": "CB",
         "status": "Questionable",
         "injuryType": "Leg",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Bucky Irving",
-        "team": "Tampa Bay Buccaneers",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Shoulder",
         "returnDate": "2026-08-01"
       },
       {
