@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-21T15:53:16.278Z",
+  "generatedAt": "2026-07-21T23:38:29.011Z",
   "ready": true,
   "recordsIngested": 725,
   "recordsCompleted": 725,
@@ -264,7 +264,7 @@
           "games": 23,
           "rpg": 4.3,
           "oppRpg": 6.65,
-          "hitsPerGame": 8.39,
+          "hitsPerGame": 8.35,
           "errorsPerGame": 0.65,
           "sos": null
         },
@@ -783,6 +783,36 @@
     {
       "league": "MLB",
       "conference": null,
+      "gameDate": "2026-07-22T01:41:00.000Z",
+      "matchup": "Athletics at Arizona Diamondbacks",
+      "pickTeam": "Arizona Diamondbacks",
+      "opponent": "Athletics",
+      "spread": 0,
+      "modelSpread": 0,
+      "line": "Arizona Diamondbacks 0",
+      "score": 63,
+      "confidence": 59,
+      "rationaleSignals": [
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.400",
+        "History sample Arizona Diamondbacks: 23 games (mapped Diamondbacks) vs Athletics: 22 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Arizona Diamondbacks B2B vs Athletics B2B",
+        "4 books: avg 0, variance 2.25 (high disagreement)",
+        "Net Rating edge: +4.6",
+        "Home SP: Kohl Drake",
+        "Away SP: Jack Perkins",
+        "MLB model: 61.6% win prob (calibrated) | Edge vs market: +5.9%"
+      ],
+      "momentumEdge": 0.8,
+      "atsEdge": 0.4,
+      "mlbModelProb": 0.6161,
+      "mlbEdge": 0.0586,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
       "gameDate": "2026-07-21T22:41:00.000Z",
       "matchup": "Minnesota Twins at Cleveland Guardians",
       "pickTeam": "Cleveland Guardians",
@@ -790,151 +820,60 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Cleveland Guardians -1.5",
-      "score": 71,
-      "confidence": 67,
+      "score": 60,
+      "confidence": 56,
       "rationaleSignals": [
         "Momentum edge +0.20 (last-10 trend proxy)",
         "ATS edge +0.300",
         "History sample Cleveland Guardians: 23 games (mapped Guardians) vs Minnesota Twins: 22 games",
         "Home court (+1 pt adjustment)",
         "Rest: Cleveland Guardians 2d rest vs Minnesota Twins 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
         "Net Rating edge: +2.2",
-        "Home SP: Tanner Bibee",
-        "Away SP: Joe Ryan",
-        "MLB model: 76.7% win prob (calibrated) | Edge vs market: +17.1%"
+        "Home SP: Parker Messick",
+        "Away SP: Kendry Rojas",
+        "MLB model: 62.2% win prob (calibrated)"
       ],
       "momentumEdge": 0.2,
       "atsEdge": 0.3,
-      "mlbModelProb": 0.7674,
-      "mlbEdge": 0.1706,
+      "mlbModelProb": 0.6224,
+      "mlbEdge": 0.0012,
       "mlbCalibrated": true
     },
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-07-21T23:11:00.000Z",
-      "matchup": "Baltimore Orioles at Boston Red Sox",
-      "pickTeam": "Boston Red Sox",
-      "opponent": "Baltimore Orioles",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Boston Red Sox -1.5",
-      "score": 67,
-      "confidence": 63,
-      "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.100",
-        "History sample Boston Red Sox: 24 games (mapped Red Sox) vs Baltimore Orioles: 22 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Boston Red Sox 2d rest vs Baltimore Orioles 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +2.0",
-        "Home SP: Payton Tolle",
-        "Away SP: Shane Baz",
-        "MLB model: 65.9% win prob (calibrated) | Edge vs market: +7.6%"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.1,
-      "mlbModelProb": 0.659,
-      "mlbEdge": 0.0758,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-21T23:41:00.000Z",
-      "matchup": "New York Mets at Milwaukee Brewers",
-      "pickTeam": "Milwaukee Brewers",
-      "opponent": "New York Mets",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Milwaukee Brewers -1.5",
-      "score": 64,
-      "confidence": 60,
+      "gameDate": "2026-07-22T00:01:00.000Z",
+      "matchup": "Los Angeles Dodgers at Philadelphia Phillies",
+      "pickTeam": "Philadelphia Phillies",
+      "opponent": "Los Angeles Dodgers",
+      "spread": 0.5,
+      "modelSpread": 0.5,
+      "line": "Philadelphia Phillies +0.5",
+      "score": 60,
+      "confidence": 56,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge -0.100",
-        "History sample Milwaukee Brewers: 25 games (mapped Brewers) vs New York Mets: 24 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Milwaukee Brewers 2d rest vs New York Mets 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +0.7",
-        "Home SP: Jacob Misiorowski",
-        "Away SP: Freddy Peralta",
-        "MLB model: 67.9% win prob (calibrated) | Edge vs market: +10.4%"
-      ],
-      "momentumEdge": 0.4,
-      "atsEdge": -0.1,
-      "mlbModelProb": 0.6788,
-      "mlbEdge": 0.1043,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-22T01:41:00.000Z",
-      "matchup": "Athletics at Arizona Diamondbacks",
-      "pickTeam": "Arizona Diamondbacks",
-      "opponent": "Athletics",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Arizona Diamondbacks -1.5",
-      "score": 64,
-      "confidence": 60,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
         "ATS edge +0.400",
-        "History sample Arizona Diamondbacks: 23 games (mapped Diamondbacks) vs Athletics: 22 games",
+        "History sample Philadelphia Phillies: 24 games (mapped Phillies) vs Los Angeles Dodgers: 23 games",
         "Home court (+1 pt adjustment)",
-        "Rest: Arizona Diamondbacks B2B vs Athletics B2B",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.6",
-        "Home SP: Mitch Bratt",
-        "Away SP: Jeffrey Springs",
-        "MLB model: 63.0% win prob (calibrated) | Edge vs market: +5.7%"
-      ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.4,
-      "mlbModelProb": 0.6298,
-      "mlbEdge": 0.0572,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-22T00:41:00.000Z",
-      "matchup": "Washington Nationals at Colorado Rockies",
-      "pickTeam": "Washington Nationals",
-      "opponent": "Colorado Rockies",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Washington Nationals -1.5",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.100",
-        "History sample Washington Nationals: 23 games (mapped Nationals) vs Colorado Rockies: 24 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Washington Nationals B2B vs Colorado Rockies B2B",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +2.4",
-        "Home SP: Kyle Freeland",
-        "Away SP: Andrew Alvarez",
-        "MLB model: 59.0% win prob (calibrated) | Edge vs market: +6.7%"
+        "Rest: Philadelphia Phillies 2d rest vs Los Angeles Dodgers 2d rest",
+        "3 books: avg 0.5, variance 2 (high disagreement)",
+        "Net Rating edge: +0.8",
+        "Home SP: Zack Wheeler",
+        "Away SP: Justin Wrobleski",
+        "MLB model: 58.3% win prob (calibrated) | Edge vs market: +5.3%"
       ],
       "momentumEdge": 0.4,
-      "atsEdge": 0.1,
-      "mlbModelProb": 0.5898,
-      "mlbEdge": 0.0672,
+      "atsEdge": 0.4,
+      "mlbModelProb": 0.583,
+      "mlbEdge": 0.0528,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-21",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": null,
+  "bestBetsNote": "Only 3 eligible games found on 2026-07-21 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1909,8 +1848,8 @@
         "team": "Phoenix Suns",
         "position": "F",
         "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
+        "injuryType": "day-to-day",
+        "returnDate": ""
       },
       {
         "player": "Khaman Maluach",
@@ -2427,6 +2366,30 @@
         "returnDate": "2026-08-01"
       },
       {
+        "player": "Jaylon Guilbeau",
+        "team": "Carolina Panthers",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Jaycee Horn",
+        "team": "Carolina Panthers",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Foot",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Taylor Moton",
+        "team": "Carolina Panthers",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Illness",
+        "returnDate": "2026-09-13"
+      },
+      {
         "player": "Tetairoa McMillan",
         "team": "Carolina Panthers",
         "position": "WR",
@@ -2464,14 +2427,6 @@
         "position": "DT",
         "status": "Questionable",
         "injuryType": "Neck",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Roschon Johnson",
-        "team": "Chicago Bears",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Thumb",
         "returnDate": "2026-08-01"
       },
       {
@@ -2656,14 +2611,6 @@
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Lower Body",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Sam LaPorta",
-        "team": "Detroit Lions",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Back",
         "returnDate": "2026-08-01"
       },
       {
@@ -2939,6 +2886,14 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Chris Bell",
+        "team": "Miami Dolphins",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Knee - ACL",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Jamaree Salyer",
         "team": "Miami Dolphins",
         "position": "G",
@@ -2979,14 +2934,6 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Chris Bell",
-        "team": "Miami Dolphins",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Caleb Banks",
         "team": "Minnesota Vikings",
         "position": "DT",
@@ -3000,6 +2947,30 @@
         "position": "OT",
         "status": "Questionable",
         "injuryType": "Knee",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "CJ Dippre",
+        "team": "New England Patriots",
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Harold Landry III",
+        "team": "New England Patriots",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Terrell Jennings",
+        "team": "New England Patriots",
+        "position": "RB",
+        "status": "Out",
+        "injuryType": "Undisclosed",
         "returnDate": "2026-08-01"
       },
       {
