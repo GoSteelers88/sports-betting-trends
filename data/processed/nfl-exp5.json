@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-22T09:03:16.698Z",
+  "generatedAt": "2026-07-23T09:01:36.952Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,35 +95,13 @@
   ],
   "props": {
     "record": {
-      "wins": 107,
-      "losses": 63,
+      "wins": 113,
+      "losses": 65,
       "pushes": 3
     },
-    "settled": 173,
+    "settled": 181,
     "noData": 6,
     "examples": [
-      {
-        "player": "Julio Jones",
-        "team": "ATL",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "114.8 avg recYds, 12.8 tgts/g, dome game vs NO allowing 459 PA (31st). Elite volume + favorable pass defense = strong over.",
-        "season": 2015,
-        "week": 17
-      },
-      {
-        "player": "Antonio Brown",
-        "team": "PIT",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "109.8 avg recYds, 11.7 tgts/g vs CLE (404 PA allowed). Wind 18mph outdoor concern tempers but volume/matchup dominates.",
-        "season": 2015,
-        "week": 17
-      },
       {
         "player": "DeAndre Hopkins",
         "team": "HOU",
@@ -131,78 +109,100 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "95.5 avg recYds, 12 tgts/g in dome vs JAX (418 PA allowed, 30th). Closed roof eliminates weather risk, elite usage trend.",
+        "rationale": "95 recYds avg, league-high 12 targets/game, home dome vs KC secondary (PA 287 but pass-oriented). Elite volume makes 50 a low bar.",
         "season": 2015,
-        "week": 17
+        "week": 18
       },
       {
-        "player": "Rob Gronkowski",
-        "team": "NE",
+        "player": "Jeremy Maclin",
+        "team": "KC",
         "stat": "recYds",
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "82.7 avg recYds, 8.1 tgts/g vs MIA (379 PA allowed). Warm weather (80F), outdoor with light wind. Edelman out boosts target share.",
+        "rationale": "72.5 recYds avg, 8.3 targets/game, dome game vs HOU (PA 313, weaker secondary). Closed roof removes weather risk entirely.",
         "season": 2015,
-        "week": 17
+        "week": 18
       },
       {
-        "player": "Brandin Cooks",
-        "team": "NO",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "loss",
-        "rationale": "74.4 avg recYds, 8.2 tgts/g in dome vs ATL (325 PA). Colston out elevates target share. Brees avg 325 pass yds. Dome neutralizes weather.",
-        "season": 2015,
-        "week": 17
-      },
-      {
-        "player": "Larry Fitzgerald",
-        "team": "ARI",
+        "player": "Travis Kelce",
+        "team": "KC",
         "stat": "recYds",
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "77.3 avg recYds, 9.2 tgts/g in dome vs SEA. SEA allows 271 PA but Fitzgerald's 6.9 rec avg and elite target volume override.",
+        "rationale": "54.7 recYds avg, 6.4 targets, dome game vs HOU defense (PA 313). TE matchup favorable vs HOU LBs; no weather suppression.",
         "season": 2015,
-        "week": 17
+        "week": 18
       },
       {
-        "player": "Delanie Walker",
-        "team": "TEN",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "71.0 avg recYds, 8.5 tgts/g in dome vs IND (384 PA allowed). Mariota out but Walker dominates target share regardless of QB.",
-        "season": 2015,
-        "week": 17
-      },
-      {
-        "player": "Odell Beckham",
-        "team": "NYG",
+        "player": "Antonio Brown",
+        "team": "PIT",
         "stat": "recYds",
         "threshold": 50,
         "side": "under",
         "result": "loss",
-        "rationale": "99.7 avg but PHI game outdoors with 17mph wind and 45F. Wind >11mph doctrine favors under; high-variance weather suppresses big yardage games.",
+        "rationale": "CIN best record (PA 279, elite D) + AJ McCarron starting for Dalton (Out) = reduced PIT passing efficiency. Backup QB limits target conversion.",
         "season": 2015,
-        "week": 17
+        "week": 18
+      },
+      {
+        "player": "Doug Baldwin",
+        "team": "SEA",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "under",
+        "result": "win",
+        "rationale": "-6°F temp + 12mph wind in MIN severely suppresses passing. SEA avg 251 passYds; extreme cold historically collapses receiver floors.",
+        "season": 2015,
+        "week": 18
+      },
+      {
+        "player": "Russell Wilson",
+        "team": "SEA",
+        "stat": "passYds",
+        "threshold": 250,
+        "side": "under",
+        "result": "win",
+        "rationale": "-6°F and 12mph wind at MIN; Wilson averages 251 passYds but extreme cold/wind environment + MIN strong run defense forces conservative gameplan.",
+        "season": 2015,
+        "week": 18
+      },
+      {
+        "player": "Jordan Reed",
+        "team": "WAS",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "68 recYds avg, 8.1 targets/game, 0.79 recTDs avg. Doctrine favors TE/WR recYds overs. GB defense (PA 323) is weak; wind 14mph but Reed is short-route heavy.",
+        "season": 2015,
+        "week": 18
+      },
+      {
+        "player": "Adrian Peterson",
+        "team": "MIN",
+        "stat": "rushYds",
+        "threshold": 75,
+        "side": "under",
+        "result": "win",
+        "rationale": "Doctrine flags rushYds overs as model fade (37% win rate). Despite 92.8 avg, SEA has elite run D (PA 277) and doctrine says avoid RB rush overs vs top defenses.",
+        "season": 2015,
+        "week": 18
       }
     ]
   },
   "parlays": {
     "record": {
-      "wins": 26,
-      "losses": 53,
+      "wins": 29,
+      "losses": 55,
       "pushes": 0
     },
-    "settled": 79,
-    "roiPct": 140.13,
-    "winRatePct": 32.9,
+    "settled": 84,
+    "roiPct": 151.29,
+    "winRatePct": 34.5,
     "breakEvenPct": 13.7,
-    "avgLegsEdge": 0.1343,
-    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 32.9% win rate clears the 13.7% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
+    "avgLegsEdge": 0.1347,
+    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 34.5% win rate clears the 13.7% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
   }
 }
