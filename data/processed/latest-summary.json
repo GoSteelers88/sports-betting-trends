@@ -1,41 +1,89 @@
 {
-  "generatedAt": "2026-07-23T16:03:05.061Z",
+  "generatedAt": "2026-07-23T23:34:48.085Z",
   "ready": true,
-  "recordsIngested": 731,
-  "recordsCompleted": 731,
+  "recordsIngested": 737,
+  "recordsCompleted": 737,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 704,
+      "games": 710,
       "conferences": [
-        "NL Central",
-        "AL Central",
-        "AL West",
-        "Unknown",
         "NL East",
+        "NL West",
+        "AL Central",
         "AL East",
-        "NL West"
+        "NL Central",
+        "AL West",
+        "Unknown"
       ],
-      "avgPoints": 4.636363636363637,
+      "avgPoints": 4.623943661971831,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 3.6,
+      "recentAvgPoints": 3.1,
       "recentAvgYards": null,
-      "trendScore": 37,
-      "trendSignal": "down",
+      "trendScore": 64,
+      "trendSignal": "up",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 704,
-        "rpg": 4.64,
-        "oppRpg": 4.64,
-        "hitsPerGame": 8.28,
+        "games": 710,
+        "rpg": 4.62,
+        "oppRpg": 4.62,
+        "hitsPerGame": 8.26,
         "errorsPerGame": 0.56,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Braves": {
+          "games": 24,
+          "rpg": 5.21,
+          "oppRpg": 4.75,
+          "hitsPerGame": 8.33,
+          "errorsPerGame": 0.46,
+          "sos": null
+        },
+        "Padres": {
+          "games": 25,
+          "rpg": 4.88,
+          "oppRpg": 5.76,
+          "hitsPerGame": 8.76,
+          "errorsPerGame": 0.6,
+          "sos": null
+        },
+        "Guardians": {
+          "games": 24,
+          "rpg": 4.21,
+          "oppRpg": 4.08,
+          "hitsPerGame": 8.46,
+          "errorsPerGame": 0.75,
+          "sos": null
+        },
+        "Twins": {
+          "games": 23,
+          "rpg": 4.61,
+          "oppRpg": 4.7,
+          "hitsPerGame": 8.52,
+          "errorsPerGame": 0.26,
+          "sos": null
+        },
+        "Blue Jays": {
+          "games": 24,
+          "rpg": 3.25,
+          "oppRpg": 4.75,
+          "hitsPerGame": 6.75,
+          "errorsPerGame": 0.79,
+          "sos": null
+        },
+        "Rays": {
+          "games": 26,
+          "rpg": 4.85,
+          "oppRpg": 3.69,
+          "hitsPerGame": 8.96,
+          "errorsPerGame": 0.65,
+          "sos": null
+        },
         "Cubs": {
           "games": 24,
           "rpg": 6.04,
@@ -227,54 +275,6 @@
           "hitsPerGame": 8.65,
           "errorsPerGame": 0.48,
           "sos": 0.52
-        },
-        "Guardians": {
-          "games": 23,
-          "rpg": 4.35,
-          "oppRpg": 4.13,
-          "hitsPerGame": 8.7,
-          "errorsPerGame": 0.74,
-          "sos": null
-        },
-        "Twins": {
-          "games": 22,
-          "rpg": 4.68,
-          "oppRpg": 4.86,
-          "hitsPerGame": 8.64,
-          "errorsPerGame": 0.27,
-          "sos": null
-        },
-        "Blue Jays": {
-          "games": 23,
-          "rpg": 3.26,
-          "oppRpg": 4.91,
-          "hitsPerGame": 6.74,
-          "errorsPerGame": 0.83,
-          "sos": null
-        },
-        "Rays": {
-          "games": 25,
-          "rpg": 5,
-          "oppRpg": 3.72,
-          "hitsPerGame": 9.2,
-          "errorsPerGame": 0.68,
-          "sos": null
-        },
-        "Braves": {
-          "games": 23,
-          "rpg": 5.17,
-          "oppRpg": 4.74,
-          "hitsPerGame": 8.3,
-          "errorsPerGame": 0.48,
-          "sos": null
-        },
-        "Padres": {
-          "games": 24,
-          "rpg": 4.88,
-          "oppRpg": 5.75,
-          "hitsPerGame": 8.75,
-          "errorsPerGame": 0.58,
-          "sos": null
         },
         "National": {
           "games": 1,
@@ -571,18 +571,18 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "NL Central",
+      "conference": "NL East",
       "gameDate": "2026-07-23T00:00:00.000Z",
-      "team": "Cubs",
-      "opponent": "Tigers",
-      "points": 1,
+      "team": "Braves",
+      "opponent": "Padres",
+      "points": 6,
       "opponentPoints": 5,
       "rebounds": null,
       "assists": null,
       "yards": null,
       "spread": -1.5,
       "atsResult": "L",
-      "won": false,
+      "won": true,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -609,10 +609,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 4,
+      "hits": 9,
       "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401816223",
+      "sourceEventId": "401816233",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -783,64 +783,37 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-07-23T17:11:00.000Z",
-      "matchup": "Minnesota Twins at Cleveland Guardians",
-      "pickTeam": "Cleveland Guardians",
-      "opponent": "Minnesota Twins",
+      "gameDate": "2026-07-23T22:41:00.000Z",
+      "matchup": "Kansas City Royals at Detroit Tigers",
+      "pickTeam": "Detroit Tigers",
+      "opponent": "Kansas City Royals",
       "spread": -1.5,
       "modelSpread": -1.4,
-      "line": "Cleveland Guardians -1.5",
-      "score": 61,
-      "confidence": 57,
+      "line": "Detroit Tigers -1.5",
+      "score": 63,
+      "confidence": 59,
       "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample Cleveland Guardians: 23 games (mapped Guardians) vs Minnesota Twins: 22 games",
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample Detroit Tigers: 23 games (mapped Tigers) vs Kansas City Royals: 23 games",
         "Home court (+1 pt adjustment)",
-        "Rest: Cleveland Guardians 2d rest vs Minnesota Twins 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +2.6",
-        "Home SP: Slade Cecconi",
-        "Away SP: Bailey Ober",
-        "MLB model: 64.2% win prob (calibrated)"
+        "Rest: Detroit Tigers B2B vs Kansas City Royals 2d rest",
+        "Net Rating edge: +3.3",
+        "Home SP: Troy Melton",
+        "Away SP: Randy Dobnak",
+        "MLB model: 69.8% win prob (calibrated)"
       ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.3,
-      "mlbModelProb": 0.6422,
-      "mlbEdge": 0.0471,
+      "momentumEdge": 0.2,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.6985,
+      "mlbEdge": 0.0015,
       "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-23T21:16:00.000Z",
-      "matchup": "Arizona Diamondbacks at St. Louis Cardinals",
-      "pickTeam": "Arizona Diamondbacks",
-      "opponent": "St. Louis Cardinals",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Arizona Diamondbacks 0",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample Arizona Diamondbacks: 23 games (mapped Diamondbacks) vs St. Louis Cardinals: 24 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Arizona Diamondbacks 2d rest vs St. Louis Cardinals 2d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +3.4"
-      ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.3,
-      "mlbModelProb": null,
-      "mlbEdge": null
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-23",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 2 eligible games found on 2026-07-23 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 1 eligible game found on 2026-07-23 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -2053,20 +2026,44 @@
     ],
     "nfl": [
       {
-        "player": "Kaleb Proctor",
+        "player": "Garrett Williams",
         "team": "Arizona Cardinals",
-        "position": "DT",
-        "status": "Injured Reserve",
-        "injuryType": "Knee - Meniscus",
-        "returnDate": "2027-02-09"
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Achilles",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Paris Johnson Jr.",
+        "team": "Arizona Cardinals",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Josh Sweat",
+        "team": "Arizona Cardinals",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
       },
       {
         "player": "Tip Reiman",
         "team": "Arizona Cardinals",
         "position": "TE",
-        "status": "Questionable",
+        "status": "Out",
         "injuryType": "Ankle",
         "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Kaleb Proctor",
+        "team": "Arizona Cardinals",
+        "position": "DT",
+        "status": "Injured Reserve",
+        "injuryType": "Knee - Meniscus",
+        "returnDate": "2027-02-15"
       },
       {
         "player": "Karson Sharar",
@@ -2074,22 +2071,6 @@
         "position": "LB",
         "status": "Questionable",
         "injuryType": "Hamstring",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Walter Nolen III",
-        "team": "Arizona Cardinals",
-        "position": "DT",
-        "status": "Questionable",
-        "injuryType": "Knee - Meniscus",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Garrett Williams",
-        "team": "Arizona Cardinals",
-        "position": "CB",
-        "status": "Questionable",
-        "injuryType": "Achilles",
         "returnDate": "2026-08-01"
       },
       {
@@ -2224,9 +2205,9 @@
         "player": "Nic Scourton",
         "team": "Carolina Panthers",
         "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-08-06"
+        "status": "Out",
+        "injuryType": "Knee - ACL",
+        "returnDate": "2027-02-15"
       },
       {
         "player": "Ikem Ekwonu",
@@ -2325,6 +2306,14 @@
         "returnDate": "2026-08-01"
       },
       {
+        "player": "Maliek Collins",
+        "team": "Cleveland Browns",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Quadriceps",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Harold Fannin Jr.",
         "team": "Cleveland Browns",
         "position": "TE",
@@ -2338,14 +2327,6 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Hamstring",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Quinshon Judkins",
-        "team": "Cleveland Browns",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Ankle",
         "returnDate": "2026-08-01"
       },
       {
@@ -2581,6 +2562,14 @@
         "returnDate": "2026-09-13"
       },
       {
+        "player": "Alec Pierce",
+        "team": "Indianapolis Colts",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Ankle",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Daniel Jones",
         "team": "Indianapolis Colts",
         "position": "QB",
@@ -2594,14 +2583,6 @@
         "position": "PK",
         "status": "Questionable",
         "injuryType": "Knee - ACL + MCL",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Alec Pierce",
-        "team": "Indianapolis Colts",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Ankle",
         "returnDate": "2026-08-01"
       },
       {
@@ -2741,6 +2722,22 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Storm Duck",
+        "team": "Miami Dolphins",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Knee",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Darrell Baker Jr.",
+        "team": "Miami Dolphins",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
         "player": "Chris Bell",
         "team": "Miami Dolphins",
         "position": "WR",
@@ -2778,14 +2775,6 @@
         "position": "RB",
         "status": "Questionable",
         "injuryType": "Shoulder",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Storm Duck",
-        "team": "Miami Dolphins",
-        "position": "CB",
-        "status": "Questionable",
-        "injuryType": "Knee",
         "returnDate": "2026-08-01"
       },
       {
@@ -2885,19 +2874,43 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Cam Skattebo",
-        "team": "New York Giants",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Ankle",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Malik Nabers",
         "team": "New York Giants",
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Knee - ACL",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Roy Robertson-Harris",
+        "team": "New York Giants",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Achilles",
+        "returnDate": "2026-12-06"
+      },
+      {
+        "player": "Sam Roberts",
+        "team": "New York Giants",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Thomas Fidone II",
+        "team": "New York Giants",
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Foot",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Cam Skattebo",
+        "team": "New York Giants",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Ankle",
         "returnDate": "2026-08-01"
       },
       {
@@ -2917,14 +2930,6 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Thomas Fidone II",
-        "team": "New York Giants",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Foot",
-        "returnDate": "2026-08-01"
-      },
-      {
         "player": "Abdul Carter",
         "team": "New York Giants",
         "position": "LB",
@@ -2939,14 +2944,6 @@
         "status": "Questionable",
         "injuryType": "Concussion",
         "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Roy Robertson-Harris",
-        "team": "New York Giants",
-        "position": "DT",
-        "status": "Out",
-        "injuryType": "Achilles",
-        "returnDate": "2026-12-06"
       },
       {
         "player": "Gunner Olszewski",
@@ -3146,6 +3143,22 @@
         "position": "CB",
         "status": "Questionable",
         "injuryType": "Leg",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "JC Latham",
+        "team": "Tennessee Titans",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Amani Hooker",
+        "team": "Tennessee Titans",
+        "position": "S",
+        "status": "Out",
+        "injuryType": "Undisclosed",
         "returnDate": "2026-08-01"
       },
       {
