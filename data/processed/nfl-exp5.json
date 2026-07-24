@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-23T09:01:36.952Z",
+  "generatedAt": "2026-07-24T09:01:34.382Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,13 +95,90 @@
   ],
   "props": {
     "record": {
-      "wins": 113,
-      "losses": 65,
+      "wins": 117,
+      "losses": 68,
       "pushes": 3
     },
-    "settled": 181,
+    "settled": 188,
     "noData": 6,
     "examples": [
+      {
+        "player": "Larry Fitzgerald",
+        "team": "ARI",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "Dome game, 75.9 avg recYds, 9.1 targets/game, 6.8 rec/game. GB D allows 341 PA (weak). Adams OUT hurts GB WR depth, Fitzgerald dominant slot role.",
+        "season": 2015,
+        "week": 19
+      },
+      {
+        "player": "John Brown",
+        "team": "ARI",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "Dome game, 66.9 avg recYds, 6.7 targets/game. GB secondary allowing 341 PA. ARI's high-powered offense (489 PF) in a favorable indoor environment.",
+        "season": 2015,
+        "week": 19
+      },
+      {
+        "player": "Greg Olsen",
+        "team": "CAR",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "69 avg recYds, 7.75 targets/game, clear #1 target in CAR offense. SEA 11-6 but 433 PF suggests pass D exploitable. CAR home, 15-1, Olsen is Newton's safety valve.",
+        "season": 2015,
+        "week": 19
+      },
+      {
+        "player": "Martavis Bryant",
+        "team": "PIT",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "Antonio Brown OUT elevates Bryant to WR1 role. 66.2 avg recYds with Brown active; target share should spike. DEN D is tough but Bryant's size/speed creates matchup problems.",
+        "season": 2015,
+        "week": 19
+      },
+      {
+        "player": "Demaryius Thomas",
+        "team": "DEN",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "loss",
+        "rationale": "81.5 avg recYds, 11.1 targets/game. PIT D allows 335 PA (middle tier). Manning/Osweiler both capable of targeting DT. Outdoor 43°F mild enough, wind only 9 mph.",
+        "season": 2015,
+        "week": 19
+      },
+      {
+        "player": "Travis Kelce",
+        "team": "KC",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "loss",
+        "rationale": "59 avg recYds, clear KC #1 target (4.7 rec, 6.6 tgt/game). NE D allows 315 PA. With Maclin/Wilson Questionable, Kelce becomes even more critical. Mild wind 6 mph.",
+        "season": 2015,
+        "week": 19
+      },
+      {
+        "player": "Aaron Rodgers",
+        "team": "GB",
+        "stat": "passYds",
+        "threshold": 250,
+        "side": "under",
+        "result": "loss",
+        "rationale": "237 avg passYds season-long, 11-6 team suggests inconsistency. ARI elite D (313 PA). Adams OUT limits weapons. Dome negates weather edge but ARI D coverage is best in NFC.",
+        "season": 2015,
+        "week": 19
+      },
       {
         "player": "DeAndre Hopkins",
         "team": "HOU",
@@ -112,97 +189,20 @@
         "rationale": "95 recYds avg, league-high 12 targets/game, home dome vs KC secondary (PA 287 but pass-oriented). Elite volume makes 50 a low bar.",
         "season": 2015,
         "week": 18
-      },
-      {
-        "player": "Jeremy Maclin",
-        "team": "KC",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "loss",
-        "rationale": "72.5 recYds avg, 8.3 targets/game, dome game vs HOU (PA 313, weaker secondary). Closed roof removes weather risk entirely.",
-        "season": 2015,
-        "week": 18
-      },
-      {
-        "player": "Travis Kelce",
-        "team": "KC",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "54.7 recYds avg, 6.4 targets, dome game vs HOU defense (PA 313). TE matchup favorable vs HOU LBs; no weather suppression.",
-        "season": 2015,
-        "week": 18
-      },
-      {
-        "player": "Antonio Brown",
-        "team": "PIT",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "under",
-        "result": "loss",
-        "rationale": "CIN best record (PA 279, elite D) + AJ McCarron starting for Dalton (Out) = reduced PIT passing efficiency. Backup QB limits target conversion.",
-        "season": 2015,
-        "week": 18
-      },
-      {
-        "player": "Doug Baldwin",
-        "team": "SEA",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "under",
-        "result": "win",
-        "rationale": "-6°F temp + 12mph wind in MIN severely suppresses passing. SEA avg 251 passYds; extreme cold historically collapses receiver floors.",
-        "season": 2015,
-        "week": 18
-      },
-      {
-        "player": "Russell Wilson",
-        "team": "SEA",
-        "stat": "passYds",
-        "threshold": 250,
-        "side": "under",
-        "result": "win",
-        "rationale": "-6°F and 12mph wind at MIN; Wilson averages 251 passYds but extreme cold/wind environment + MIN strong run defense forces conservative gameplan.",
-        "season": 2015,
-        "week": 18
-      },
-      {
-        "player": "Jordan Reed",
-        "team": "WAS",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "68 recYds avg, 8.1 targets/game, 0.79 recTDs avg. Doctrine favors TE/WR recYds overs. GB defense (PA 323) is weak; wind 14mph but Reed is short-route heavy.",
-        "season": 2015,
-        "week": 18
-      },
-      {
-        "player": "Adrian Peterson",
-        "team": "MIN",
-        "stat": "rushYds",
-        "threshold": 75,
-        "side": "under",
-        "result": "win",
-        "rationale": "Doctrine flags rushYds overs as model fade (37% win rate). Despite 92.8 avg, SEA has elite run D (PA 277) and doctrine says avoid RB rush overs vs top defenses.",
-        "season": 2015,
-        "week": 18
       }
     ]
   },
   "parlays": {
     "record": {
-      "wins": 29,
-      "losses": 55,
+      "wins": 30,
+      "losses": 59,
       "pushes": 0
     },
-    "settled": 84,
-    "roiPct": 151.29,
-    "winRatePct": 34.5,
+    "settled": 89,
+    "roiPct": 145.36,
+    "winRatePct": 33.7,
     "breakEvenPct": 13.7,
-    "avgLegsEdge": 0.1347,
-    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 34.5% win rate clears the 13.7% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
+    "avgLegsEdge": 0.133,
+    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 33.7% win rate clears the 13.7% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
   }
 }
