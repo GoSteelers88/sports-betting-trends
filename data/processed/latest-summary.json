@@ -1,41 +1,57 @@
 {
-  "generatedAt": "2026-07-24T15:43:07.570Z",
+  "generatedAt": "2026-07-24T23:41:09.861Z",
   "ready": true,
-  "recordsIngested": 709,
-  "recordsCompleted": 709,
+  "recordsIngested": 711,
+  "recordsCompleted": 711,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 682,
+      "games": 684,
       "conferences": [
-        "NL East",
+        "NL Central",
         "NL West",
+        "NL East",
         "AL Central",
         "AL East",
-        "NL Central",
         "AL West",
         "Unknown"
       ],
-      "avgPoints": 4.6304985337243405,
+      "avgPoints": 4.62719298245614,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
       "recentAvgPoints": 4.2,
       "recentAvgYards": null,
-      "trendScore": 59,
+      "trendScore": 39,
       "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 682,
+        "games": 684,
         "rpg": 4.63,
         "oppRpg": 4.63,
-        "hitsPerGame": 8.28,
+        "hitsPerGame": 8.29,
         "errorsPerGame": 0.55,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Brewers": {
+          "games": 25,
+          "rpg": 4.36,
+          "oppRpg": 4.08,
+          "hitsPerGame": 8.48,
+          "errorsPerGame": 0.44,
+          "sos": null
+        },
+        "Rockies": {
+          "games": 24,
+          "rpg": 5.46,
+          "oppRpg": 5.79,
+          "hitsPerGame": 8.75,
+          "errorsPerGame": 0.75,
+          "sos": null
+        },
         "Braves": {
           "games": 23,
           "rpg": 5.35,
@@ -188,14 +204,6 @@
           "errorsPerGame": 0.86,
           "sos": null
         },
-        "Brewers": {
-          "games": 24,
-          "rpg": 4.46,
-          "oppRpg": 4.04,
-          "hitsPerGame": 8.46,
-          "errorsPerGame": 0.46,
-          "sos": null
-        },
         "Mets": {
           "games": 23,
           "rpg": 4.09,
@@ -211,14 +219,6 @@
           "hitsPerGame": 7.83,
           "errorsPerGame": 0.7,
           "sos": 0.52
-        },
-        "Rockies": {
-          "games": 23,
-          "rpg": 5.48,
-          "oppRpg": 5.96,
-          "hitsPerGame": 8.74,
-          "errorsPerGame": 0.78,
-          "sos": null
         },
         "Nationals": {
           "games": 22,
@@ -571,18 +571,18 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "NL East",
-      "gameDate": "2026-07-23T00:00:00.000Z",
-      "team": "Braves",
-      "opponent": "Padres",
-      "points": 6,
+      "conference": "NL Central",
+      "gameDate": "2026-07-24T00:00:00.000Z",
+      "team": "Brewers",
+      "opponent": "Rockies",
+      "points": 2,
       "opponentPoints": 5,
       "rebounds": null,
       "assists": null,
       "yards": null,
       "spread": -1.5,
       "atsResult": "L",
-      "won": true,
+      "won": false,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -612,7 +612,7 @@
       "hits": 9,
       "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401816233",
+      "sourceEventId": "401816246",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -783,84 +783,32 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-07-24T23:16:00.000Z",
-      "matchup": "Toronto Blue Jays at Boston Red Sox",
-      "pickTeam": "Boston Red Sox",
-      "opponent": "Toronto Blue Jays",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Boston Red Sox 0",
-      "score": 65,
-      "confidence": 61,
-      "rationaleSignals": [
-        "Momentum edge +1.20 (last-10 trend proxy)",
-        "ATS edge +0.400",
-        "History sample Boston Red Sox: 23 games (mapped Red Sox) vs Toronto Blue Jays: 23 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Boston Red Sox 3d rest vs Toronto Blue Jays 2d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +5.3"
-      ],
-      "momentumEdge": 1.2,
-      "atsEdge": 0.4,
-      "mlbModelProb": null,
-      "mlbEdge": null
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-24T22:41:00.000Z",
-      "matchup": "Kansas City Royals at Detroit Tigers",
-      "pickTeam": "Detroit Tigers",
-      "opponent": "Kansas City Royals",
+      "gameDate": "2026-07-25T02:16:00.000Z",
+      "matchup": "Los Angeles Angels at San Francisco Giants",
+      "pickTeam": "San Francisco Giants",
+      "opponent": "Los Angeles Angels",
       "spread": -1.5,
       "modelSpread": -1.4,
-      "line": "Detroit Tigers -1.5",
+      "line": "San Francisco Giants -1.5",
       "score": 64,
       "confidence": 60,
       "rationaleSignals": [
-        "Momentum edge +0.20 (last-10 trend proxy)",
-        "ATS edge -0.100",
-        "History sample Detroit Tigers: 23 games (mapped Tigers) vs Kansas City Royals: 23 games",
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge +0.000",
+        "History sample San Francisco Giants: 23 games (mapped Giants) vs Los Angeles Angels: 21 games",
         "Home court (+1 pt adjustment)",
-        "Rest: Detroit Tigers 2d rest vs Kansas City Royals 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +2.8",
-        "Home SP: Troy Melton",
-        "Away SP: Randy Dobnak",
-        "MLB model: 71.9% win prob (calibrated)"
+        "Rest: San Francisco Giants 3d rest vs Los Angeles Angels 3d rest",
+        "4 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +1.6",
+        "Home SP: Logan Webb",
+        "Away SP: Grayson Rodriguez",
+        "MLB model: 67.4% win prob (calibrated) | Edge vs market: +8.5%"
       ],
-      "momentumEdge": 0.2,
-      "atsEdge": -0.1,
-      "mlbModelProb": 0.7187,
-      "mlbEdge": -0.0092,
+      "momentumEdge": 0,
+      "atsEdge": 0,
+      "mlbModelProb": 0.6736,
+      "mlbEdge": 0.0854,
       "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-07-24T23:06:00.000Z",
-      "matchup": "Atlanta Braves at Baltimore Orioles",
-      "pickTeam": "Baltimore Orioles",
-      "opponent": "Atlanta Braves",
-      "spread": 0,
-      "modelSpread": 0,
-      "line": "Baltimore Orioles 0",
-      "score": 60,
-      "confidence": 56,
-      "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Baltimore Orioles: 21 games (mapped Orioles) vs Atlanta Braves: 23 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Baltimore Orioles 3d rest vs Atlanta Braves 2d rest",
-        "2 books: avg 0, variance 2.25 (high disagreement)",
-        "Net Rating edge: +0.9"
-      ],
-      "momentumEdge": 0.4,
-      "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
     },
     {
       "league": "MLB",
@@ -872,8 +820,8 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Chicago White Sox -1.5",
-      "score": 59,
-      "confidence": 54,
+      "score": 58,
+      "confidence": 53,
       "rationaleSignals": [
         "Momentum edge +0.60 (last-10 trend proxy)",
         "ATS edge +0.200",
@@ -881,12 +829,74 @@
         "Home court (+1 pt adjustment)",
         "Rest: Chicago White Sox 2d rest vs Houston Astros 2d rest",
         "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +3.3"
+        "Net Rating edge: +3.3",
+        "Home SP: Davis Martin",
+        "Away SP: Spencer Arrighetti",
+        "MLB model: 57.9% win prob (calibrated)"
       ],
       "momentumEdge": 0.6,
       "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.5794,
+      "mlbEdge": 0.0032,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-24T22:41:00.000Z",
+      "matchup": "Kansas City Royals at Detroit Tigers",
+      "pickTeam": "Detroit Tigers",
+      "opponent": "Kansas City Royals",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Detroit Tigers -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge -0.100",
+        "History sample Detroit Tigers: 23 games (mapped Tigers) vs Kansas City Royals: 23 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Detroit Tigers 2d rest vs Kansas City Royals 2d rest",
+        "Net Rating edge: +2.8",
+        "Home SP: Tarik Skubal",
+        "Away SP: Beck Way",
+        "MLB model: 68.4% win prob (calibrated) | Edge vs market: -13.1%"
+      ],
+      "momentumEdge": 0.2,
+      "atsEdge": -0.1,
+      "mlbModelProb": 0.6837,
+      "mlbEdge": -0.1311,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-24T23:16:00.000Z",
+      "matchup": "Toronto Blue Jays at Boston Red Sox",
+      "pickTeam": "Boston Red Sox",
+      "opponent": "Toronto Blue Jays",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Boston Red Sox -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +1.20 (last-10 trend proxy)",
+        "ATS edge +0.400",
+        "History sample Boston Red Sox: 23 games (mapped Red Sox) vs Toronto Blue Jays: 23 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Boston Red Sox 3d rest vs Toronto Blue Jays 2d rest",
+        "Net Rating edge: +5.3",
+        "Home SP: Patrick Sandoval",
+        "Away SP: Trey Yesavage",
+        "MLB model: 60.5% win prob (calibrated) | Edge vs market: -11.0%"
+      ],
+      "momentumEdge": 1.2,
+      "atsEdge": 0.4,
+      "mlbModelProb": 0.6047,
+      "mlbEdge": -0.1096,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
@@ -2105,6 +2115,14 @@
     ],
     "nfl": [
       {
+        "player": "Kaleb Proctor",
+        "team": "Arizona Cardinals",
+        "position": "DT",
+        "status": "Injured Reserve",
+        "injuryType": "Knee - Meniscus",
+        "returnDate": "2027-02-15"
+      },
+      {
         "player": "Paris Johnson Jr.",
         "team": "Arizona Cardinals",
         "position": "OT",
@@ -2135,14 +2153,6 @@
         "status": "Out",
         "injuryType": "Ankle",
         "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Kaleb Proctor",
-        "team": "Arizona Cardinals",
-        "position": "DT",
-        "status": "Injured Reserve",
-        "injuryType": "Knee - Meniscus",
-        "returnDate": "2027-02-15"
       },
       {
         "player": "Karson Sharar",
@@ -2689,19 +2699,19 @@
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Patrick Mahomes",
+        "player": "Omarr Norman-Lott",
         "team": "Kansas City Chiefs",
-        "position": "QB",
+        "position": "DT",
         "status": "Questionable",
         "injuryType": "Knee - ACL",
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Rashee Rice",
+        "player": "Patrick Mahomes",
         "team": "Kansas City Chiefs",
-        "position": "WR",
+        "position": "QB",
         "status": "Questionable",
-        "injuryType": "Knee",
+        "injuryType": "Knee - ACL",
         "returnDate": "2026-08-01"
       },
       {
@@ -2751,6 +2761,14 @@
         "status": "Injured Reserve",
         "injuryType": "Undisclosed",
         "returnDate": "2027-02-15"
+      },
+      {
+        "player": "Isaiah World",
+        "team": "Los Angeles Chargers",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
       },
       {
         "player": "Ladd McConkey",
@@ -2854,6 +2872,14 @@
         "position": "OT",
         "status": "Questionable",
         "injuryType": "Knee",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Brenden Schooler",
+        "team": "New England Patriots",
+        "position": "S",
+        "status": "Out",
+        "injuryType": "Undisclosed",
         "returnDate": "2026-08-01"
       },
       {
@@ -3158,14 +3184,6 @@
         "position": "RB",
         "status": "Out",
         "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Tyrone Broden",
-        "team": "Seattle Seahawks",
-        "position": "CB",
-        "status": "Out",
-        "injuryType": "Undisclosed",
         "returnDate": "2026-08-01"
       },
       {
