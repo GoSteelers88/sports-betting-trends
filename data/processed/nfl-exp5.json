@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T09:01:34.382Z",
+  "generatedAt": "2026-07-25T09:01:11.052Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,13 +95,46 @@
   ],
   "props": {
     "record": {
-      "wins": 117,
-      "losses": 68,
+      "wins": 118,
+      "losses": 70,
       "pushes": 3
     },
-    "settled": 188,
+    "settled": 191,
     "noData": 6,
     "examples": [
+      {
+        "player": "Greg Olsen",
+        "team": "CAR",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "69.5 avg recYds, 7.6 targets/game, home NFC title game. Cam's primary safety valve vs ARI; high-volume role sustains over even vs good D.",
+        "season": 2015,
+        "week": 20
+      },
+      {
+        "player": "Larry Fitzgerald",
+        "team": "ARI",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "loss",
+        "rationale": "81.8 avg recYds, 9.2 targets/game — elite volume. CAR D is strong but Fitz is Palmer's go-to; target rate sustains 50+ recYds threshold.",
+        "season": 2015,
+        "week": 20
+      },
+      {
+        "player": "Tom Brady",
+        "team": "NE",
+        "stat": "passYds",
+        "threshold": 250,
+        "side": "under",
+        "result": "loss",
+        "rationale": "Denver 2015 D historically elite (PA 312, best pass rush in NFL). Gronk questionable reduces targets. Brady avg 298 but matchup suppresses output.",
+        "season": 2015,
+        "week": 20
+      },
       {
         "player": "Larry Fitzgerald",
         "team": "ARI",
@@ -156,39 +189,6 @@
         "rationale": "81.5 avg recYds, 11.1 targets/game. PIT D allows 335 PA (middle tier). Manning/Osweiler both capable of targeting DT. Outdoor 43°F mild enough, wind only 9 mph.",
         "season": 2015,
         "week": 19
-      },
-      {
-        "player": "Travis Kelce",
-        "team": "KC",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "loss",
-        "rationale": "59 avg recYds, clear KC #1 target (4.7 rec, 6.6 tgt/game). NE D allows 315 PA. With Maclin/Wilson Questionable, Kelce becomes even more critical. Mild wind 6 mph.",
-        "season": 2015,
-        "week": 19
-      },
-      {
-        "player": "Aaron Rodgers",
-        "team": "GB",
-        "stat": "passYds",
-        "threshold": 250,
-        "side": "under",
-        "result": "loss",
-        "rationale": "237 avg passYds season-long, 11-6 team suggests inconsistency. ARI elite D (313 PA). Adams OUT limits weapons. Dome negates weather edge but ARI D coverage is best in NFC.",
-        "season": 2015,
-        "week": 19
-      },
-      {
-        "player": "DeAndre Hopkins",
-        "team": "HOU",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "95 recYds avg, league-high 12 targets/game, home dome vs KC secondary (PA 287 but pass-oriented). Elite volume makes 50 a low bar.",
-        "season": 2015,
-        "week": 18
       }
     ]
   },
