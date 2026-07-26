@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-25T09:01:11.052Z",
+  "generatedAt": "2026-07-26T17:16:09.656Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,13 +95,68 @@
   ],
   "props": {
     "record": {
-      "wins": 118,
-      "losses": 70,
+      "wins": 121,
+      "losses": 72,
       "pushes": 3
     },
-    "settled": 191,
+    "settled": 196,
     "noData": 6,
     "examples": [
+      {
+        "player": "Peyton Manning",
+        "team": "DEN",
+        "stat": "passYds",
+        "threshold": 250,
+        "side": "under",
+        "result": "win",
+        "rationale": "Manning avg only 220.6 pass yds/game; CAR elite defense (347 PA/18G); 16mph wind suppresses passing further outdoors.",
+        "season": 2015,
+        "week": 21
+      },
+      {
+        "player": "Cam Newton",
+        "team": "CAR",
+        "stat": "passYds",
+        "threshold": 250,
+        "side": "under",
+        "result": "loss",
+        "rationale": "Newton avg 240.7 pass yds vs DEN's elite D (330 PA/18G); 16mph wind; CAR likely runs heavily in this matchup.",
+        "season": 2015,
+        "week": 21
+      },
+      {
+        "player": "Demaryius Thomas",
+        "team": "DEN",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "under",
+        "result": "win",
+        "rationale": "Avg 75.3 rec yds but faces CAR elite secondary + 16mph outdoor wind suppressing deep shots; DEN passing game diminished.",
+        "season": 2015,
+        "week": 21
+      },
+      {
+        "player": "Emmanuel Sanders",
+        "team": "DEN",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "under",
+        "result": "loss",
+        "rationale": "Avg 75.4 rec yds but CAR elite D + 16mph wind limits passing volume; Manning era DEN offense heavily restricted this season.",
+        "season": 2015,
+        "week": 21
+      },
+      {
+        "player": "Greg Olsen",
+        "team": "CAR",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "under",
+        "result": "win",
+        "rationale": "Avg 71.9 rec yds but DEN elite defense historically shutdown TEs; 16mph wind; CAR run-first game plan likely limits targets.",
+        "season": 2015,
+        "week": 21
+      },
       {
         "player": "Greg Olsen",
         "team": "CAR",
@@ -134,61 +189,6 @@
         "rationale": "Denver 2015 D historically elite (PA 312, best pass rush in NFL). Gronk questionable reduces targets. Brady avg 298 but matchup suppresses output.",
         "season": 2015,
         "week": 20
-      },
-      {
-        "player": "Larry Fitzgerald",
-        "team": "ARI",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "Dome game, 75.9 avg recYds, 9.1 targets/game, 6.8 rec/game. GB D allows 341 PA (weak). Adams OUT hurts GB WR depth, Fitzgerald dominant slot role.",
-        "season": 2015,
-        "week": 19
-      },
-      {
-        "player": "John Brown",
-        "team": "ARI",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "Dome game, 66.9 avg recYds, 6.7 targets/game. GB secondary allowing 341 PA. ARI's high-powered offense (489 PF) in a favorable indoor environment.",
-        "season": 2015,
-        "week": 19
-      },
-      {
-        "player": "Greg Olsen",
-        "team": "CAR",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "69 avg recYds, 7.75 targets/game, clear #1 target in CAR offense. SEA 11-6 but 433 PF suggests pass D exploitable. CAR home, 15-1, Olsen is Newton's safety valve.",
-        "season": 2015,
-        "week": 19
-      },
-      {
-        "player": "Martavis Bryant",
-        "team": "PIT",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "Antonio Brown OUT elevates Bryant to WR1 role. 66.2 avg recYds with Brown active; target share should spike. DEN D is tough but Bryant's size/speed creates matchup problems.",
-        "season": 2015,
-        "week": 19
-      },
-      {
-        "player": "Demaryius Thomas",
-        "team": "DEN",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "loss",
-        "rationale": "81.5 avg recYds, 11.1 targets/game. PIT D allows 335 PA (middle tier). Manning/Osweiler both capable of targeting DT. Outdoor 43°F mild enough, wind only 9 mph.",
-        "season": 2015,
-        "week": 19
       }
     ]
   },
