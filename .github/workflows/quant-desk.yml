@@ -1,0 +1,110 @@
+name: Quant Desk — MLB paper book
+
+# One cycle of THE QUANT DESK · MLB (QUANT_DESK_SPEC.md):
+#   settle started games (realize P&L + lock CLV) → refresh closes on still-open
+#   pre-game bets → scan model-vs-sharp mispricings → open ¼-Kelly plays behind
+#   the drawdown rail → snapshot. Places NOTHING real — there is no broker client
+#   anywhere in this path. State lives in data/processed/quant-desk-mlb-book.json,
+#   committed back like the parlay book and the props board.
+#
+# WHY THIS FILE EXISTS: the desk shipped 2026-06-14 (engine, adapters, store,
+# tests, dashboard card, pre-registered spec) but was never wired to a
+# scheduler, so `quant:mlb` had NEVER run in CI. The book sat frozen at its
+# 2026-06-14 seed row — $10,000, zero bets — for six weeks while the spec's
+# CLV-first verdict criterion waited on a sample that was never accumulating.
+#
+# ODDS API COST: **ZERO credits.** Every metered feed this cycle needs is
+# already committed to the repo by the crons that pay for it:
+#   latest-sharp-props-mlb.json  + latest-soft-props-mlb.json  ← props-board.yml
+#   latest-odds-api-baseball_mlb.json                          ← agent-run/clv jobs
+#   mlb-model-output.json, player-gamelogs-mlb.json            ← tracked in git
+# The one transient input, latest-sharp-pinnacle-baseball_mlb.json, comes from
+# Pinnacle's FREE guest API (ingest:sharp) — not The Odds API. Do NOT add
+# ingest:softbooks or ingest:soft-props here: fair-value.ts merges soft feeds and
+# is satisfied by the committed latest-odds-api-* file alone, so paying for them
+# again would push the shared free tier over its cap and starve clv-proof and
+# the props board, which are the experiments actually producing signal.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily 21:55 UTC — after props-board commits fresh prop feeds (21:10) and
+    # the parlay book takes its cycle (21:40), so the checkout below already
+    # carries tonight's sharp/soft prop lines. Pre-first-pitch for the MLB
+    # evening slate, which is when the desk wants to be taking prices.
+    - cron: "55 21 * * *"
+
+permissions:
+  contents: write # push the quant book back
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # Both free. Pinnacle guest API supplies the de-vigged sharp moneyline
+      # fair value (a gitignored transient, so it MUST be pulled every run);
+      # scrape-odds refreshes FanDuel/Bovada soft prices from public JSON.
+      # Non-fatal: the desk degrades to the committed feeds and an honest
+      # smaller board rather than failing the cycle.
+      - name: Pull sharp (Pinnacle, free) + soft (FanDuel/Bovada, free)
+        run: |
+          npm run ingest:sharp || echo "pinnacle sharp failed (non-fatal)"
+          npm run ingest:odds  || echo "free odds scrape failed (non-fatal)"
+
+      - name: Run MLB quant cycle
+        run: npm run quant:mlb
+
+      - name: Commit quant book back (allowlisted file only)
+        if: success()
+        run: |
+          git config user.name "quant-desk-bot"
+          git config user.email "58962244+GoSteelers88@users.noreply.github.com"
+          ALLOWED=( "data/processed/quant-desk-mlb-book.json" )
+          SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|[Aa]uthorization":\s*"Bearer'
+          for f in "${ALLOWED[@]}"; do
+            [ -f "$f" ] || continue
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
+              exit 1
+            fi
+          done
+          # Stage individually — an atomic `git add A B C` stages NOTHING if any
+          # single pathspec is missing (the lesson from f9ba198).
+          for f in "${ALLOWED[@]}"; do [ -f "$f" ] && git add "$f"; done
+          if git diff --cached --quiet; then
+            echo "no quant-book changes to commit"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
+          git commit -m "quant-desk: cycle ${DATE_TAG}"
+          # --autostash: the free ingest steps above dirty tracked feed files we
+          # deliberately do NOT commit here; without it the rebase refuses.
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin master && git push origin master && break
+            echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            git stash drop 2>/dev/null || true
+            sleep 5
+          done
+
+      # Optional dead-man's switch: create a check at healthchecks.io and set
+      # the HC_PING_QUANT secret to its ping URL. Skips silently when unset.
+      - name: Heartbeat ping
+        if: success()
+        env:
+          PING: ${{ secrets.HC_PING_QUANT }}
+        run: '[ -z "$PING" ] || curl -fsS -m 10 --retry 3 "$PING" > /dev/null || true'
