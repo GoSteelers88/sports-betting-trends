@@ -6,7 +6,18 @@ const PAPER_TRIAL_START = new Date("2026-05-06T00:00:00Z");
 const CRITERIA = {
   minSampleSize: 200,
   minClvBeatRate: 0.55,
-  minAvgClvCents: 2,
+  // UNITS CORRECTION, not a rule change. The gate was pre-registered as
+  // "avg CLV ≥ +2¢" against a clvCents column that stored a raw subtraction of
+  // American odds — invalid across the ±100 boundary, where +100 and −100 are
+  // both 50% implied yet subtract to 200. Three sign-crossing picks ended up
+  // carrying 98% of the trial's entire CLV total and flipped this gate from
+  // FAIL to PASS on an artifact (it read +13.86¢ while the median was 0.0¢).
+  //
+  // +2¢ converts to ≈0.46pp at the typical −110 price (−110→−108 = 0.458pp;
+  // the range across realistic prices is 0.32–0.50pp). We use 0.45pp — the
+  // faithful conversion of the original intent. Deliberately NOT rounded up to
+  // 0.5, which would quietly make a pre-registered gate harder to pass.
+  minAvgClvProbPoints: 0.45,
   minRoi: 0.02,
   minCriticKillRate: 0.25,
 };
@@ -15,8 +26,8 @@ function pct(n: number): string {
   return `${(n * 100).toFixed(1)}%`;
 }
 
-function cents(n: number): string {
-  return `${n >= 0 ? "+" : ""}${n.toFixed(2)}¢`;
+function probPoints(n: number): string {
+  return `${n >= 0 ? "+" : ""}${n.toFixed(2)}pp`;
 }
 
 function check(passed: boolean): string {
@@ -34,12 +45,13 @@ async function main() {
   const graded = outcomes.filter((o) => o.result !== "pending" && o.result !== "void");
   const sampleSize = graded.length;
 
+  // clvProbPoints, NOT clvCents — see minAvgClvProbPoints above.
   const clvPicks = await prisma.agentPick.findMany({
-    where: { createdAt: since, clvCents: { not: null } },
-    select: { clvCents: true },
+    where: { createdAt: since, clvProbPoints: { not: null } },
+    select: { clvProbPoints: true },
   });
   const clvSamples = clvPicks
-    .map((p) => p.clvCents)
+    .map((p) => p.clvProbPoints)
     .filter((c): c is number => c !== null);
   const clvN = clvSamples.length;
   const clvBeats = clvSamples.filter((c) => c > 0).length;
@@ -70,9 +82,9 @@ async function main() {
       passed: clvN >= 50 && clvBeatRate >= CRITERIA.minClvBeatRate,
     },
     {
-      name: "Avg CLV ≥ +2¢ (n≥50)",
-      value: `${cents(avgClv)} (n=${clvN})`,
-      passed: clvN >= 50 && avgClv >= CRITERIA.minAvgClvCents,
+      name: "Avg CLV ≥ +0.45pp (n≥50)",
+      value: `${probPoints(avgClv)} (n=${clvN})`,
+      passed: clvN >= 50 && avgClv >= CRITERIA.minAvgClvProbPoints,
     },
     {
       name: "ROI ≥ +2%",

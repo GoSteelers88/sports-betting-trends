@@ -135,7 +135,16 @@ model AgentPick {
   // shortly before game time. Positive cents = we picked at better price than
   // closing line (good — true edge indicator). Negative = we paid worse.
   closingOddsAmerican Int?
-  clvCents            Int?     // pickedOdds - closingOdds, in cents
+  // DEPRECATED — retained for audit/history only. Naive `pickedOdds -
+  // closingOdds` subtraction, which is invalid across the ±100 boundary
+  // (+100 and −100 are both 50% but subtract to 200). Sign is trustworthy,
+  // magnitude is not. Nothing should make a decision on this column; read
+  // clvProbPoints instead.
+  clvCents            Int?
+  // CLV in PROBABILITY POINTS (positive = we took a longer price than the
+  // close). The metric of record. Float because real moves are fractional —
+  // the +102 → −104 case is 1.48pp, which an Int column would truncate to 1.
+  clvProbPoints       Float?
   clvCapturedAt       DateTime?
   // Minutes-before-tip at which the current clvCents reading was taken. A later
   // sweep only overwrites clvCents if it is CLOSER to tip than this (so the

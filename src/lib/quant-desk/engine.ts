@@ -18,6 +18,7 @@
 import {
   americanToDecimal,
   americanToImpliedProb,
+  clvProbPoints,
   kellyFraction,
   probToAmerican,
 } from "../devig";
@@ -150,7 +151,7 @@ export interface QuantStats {
   // CLV — the HEADLINE.
   clvSettledCount: number;       // settled bets with a computed CLV
   clvBeatRatePct: number | null; // % of settled bets that beat the close
-  avgClvCents: number | null;    // mean clvCents across settled bets
+  avgClvProbPoints: number | null;    // mean clvProbPoints across settled bets
   peakEquityUsd: number;
   drawdownPct: number;           // current drawdown from peak (0.05 = −5%)
 }
@@ -172,7 +173,7 @@ export function computeStats(book: QuantBook, cfg: QuantDeskConfig = QUANT_DESK_
   // CLV across settled bets that carry a finite clvCents / beatClose.
   const clvBets = settled.filter((b) => b.clvCents != null && b.beatClose != null);
   const clvBeats = clvBets.filter((b) => b.beatClose === true).length;
-  const clvSum = clvBets.reduce((s, b) => s + (b.clvCents ?? 0), 0);
+  const clvSum = clvBets.reduce((s, b) => s + (b.clvProbPoints ?? 0), 0);
 
   // Peak equity from the ledger (equity is monotone in realized P&L only at
   // settle ticks; peak over the ledger is the honest high-water mark).
@@ -201,7 +202,7 @@ export function computeStats(book: QuantBook, cfg: QuantDeskConfig = QUANT_DESK_
     avgEdge: edges.length ? +(edges.reduce((s, v) => s + v, 0) / edges.length).toFixed(4) : null,
     clvSettledCount: clvBets.length,
     clvBeatRatePct: clvBets.length ? +((clvBeats / clvBets.length) * 100).toFixed(1) : null,
-    avgClvCents: clvBets.length ? +(clvSum / clvBets.length).toFixed(2) : null,
+    avgClvProbPoints: clvBets.length ? +(clvSum / clvBets.length).toFixed(3) : null,
     peakEquityUsd: +peakEquityUsd.toFixed(2),
     drawdownPct: +drawdownPct.toFixed(4),
   };
@@ -310,6 +311,7 @@ export function openFromOpportunities(
       closeDevigMarketProb: +opp.line.devigMarketProb.toFixed(4),
       closeFairAmerican: Number.isFinite(closeFairAmerican) ? closeFairAmerican : NaN,
       clvCents: null,
+      clvProbPoints: null,
       beatClose: null,
       status: "open",
       finalScore: null,
@@ -362,6 +364,8 @@ export function finalizeClv(bet: QuantBet): void {
   bet.clvCents = Number.isFinite(closeFairAmerican)
     ? +(bet.priceAmerican - closeFairAmerican).toFixed(1)
     : null;
+  const pp = clvProbPoints(bet.priceAmerican, closeFairAmerican);
+  bet.clvProbPoints = Number.isFinite(pp) ? +pp.toFixed(4) : null;
   bet.beatClose = Number.isFinite(entryImplied)
     ? entryImplied < bet.closeDevigMarketProb
     : null;

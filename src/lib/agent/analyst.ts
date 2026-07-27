@@ -124,7 +124,7 @@ The quant desk is a separate, code-only Benter/Benham/Bloom engine: model fair v
 
 Reading the result:
 - openPlays: Live open bets the desk placed on today's slate. Each has matchup, selection, edge (modelFairProb − devigMarketProb), modelFairProb, and priceAmerican. These cleared 3% + sharp-direction agreement — the deterministic model sees mispricing here.
-- recentStats: The desk's CLV track record. If clvBeatRatePct ≥55% and avgClvCents ≥+2c at settledCount ≥50, the model is demonstrably getting edge vs the close; weight open plays more heavily.
+- recentStats: The desk's CLV track record. If clvBeatRatePct ≥55% and avgClvProbPoints ≥+0.45pp at settledCount ≥50, the model is demonstrably getting edge vs the close; weight open plays more heavily.
 
 How to use it:
 1. A quant desk open play on a game you were already leaning toward is STRONG corroborating evidence — mention the desk's edge in your thesis.

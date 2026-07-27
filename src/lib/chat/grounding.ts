@@ -174,8 +174,8 @@ const PRICE_KEYS: ReadonlySet<string> = new Set([
   "projected",
   "stddev",
   "rollingMean",
-  "clvCents",
-  "avgClvCents",
+  "clvProbPoints",
+  "avgClvProbPoints",
   "expectedMargin",
   "recentAvgPoints",
 ]);

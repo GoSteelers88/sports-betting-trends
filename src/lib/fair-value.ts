@@ -25,6 +25,7 @@ import {
   probToAmerican,
   type DevigMethod,
   DEFAULT_DEVIG_METHOD,
+  clvProbPoints,
 } from "./devig";
 import type { SharpEvent } from "../../scripts/scrape-pinnacle";
 
@@ -104,6 +105,10 @@ export type EvSide = {
    * you bought better than the sharp close.
    */
   clvCents: number | null;
+  /** The same edge in PROBABILITY POINTS — the trustworthy magnitude. American
+   *  odds are discontinuous at ±100, so clvCents above distorts any move that
+   *  crosses the boundary. */
+  clvProbPoints: number | null;
   /** Quarter-Kelly stake fraction of bankroll at the best soft price. */
   kelly: number;
   /**
@@ -306,6 +311,11 @@ export function computeEvGame(
       bestSoft && Number.isFinite(fairAmerican)
         ? bestSoft.american - fairAmerican
         : null;
+    const ppRaw =
+      bestSoft && Number.isFinite(fairAmerican)
+        ? clvProbPoints(bestSoft.american, fairAmerican)
+        : NaN;
+    const clvProbPointsValue = Number.isFinite(ppRaw) ? +ppRaw.toFixed(4) : null;
     const kelly = bestSoft ? kellyFraction(fairProb, bestSoft.american) : 0;
     const suspicious = evPct != null && evPct > SUSPICIOUS_EV_CEILING;
     return {
@@ -313,6 +323,7 @@ export function computeEvGame(
       team,
       fairProb,
       fairAmerican,
+      clvProbPoints: clvProbPointsValue,
       sharpAmerican,
       bestSoft,
       evPct,

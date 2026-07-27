@@ -12,8 +12,12 @@
 //     scan window (from maxBeforeStart pre-tip through a grace period post-tip)
 //   - Read pre-scraped FD+Bovada odds from data/processed/latest-odds-api-{sportKey}.json
 //     (refreshed by the CLV workflow immediately before each capture)
-//   - Compute clvCents = pickedOdds - bestClosingOdds (positive = we beat the close)
-//   - On every sweep, overwrite clvCents ONLY when this reading is strictly
+//   - Compute clvProbPoints in PROBABILITY space (positive = we took a longer
+//     price than the close). NOT `pickedOdds - closingOdds`: American odds are
+//     discontinuous at ±100, so raw subtraction turns a 1.5-point move into
+//     "206¢". clvCents is still written alongside, but only as a deprecated
+//     legacy reading — nothing decides on it.
+//   - On every sweep, overwrite the reading ONLY when it is strictly
 //     closer to tip than the stored one — the closeness gate lives in the WHERE
 //     clause so it is atomic against concurrent sweeps
 //   - Freeze the value (clvFinal = true) only once the game goes in-play; we
@@ -22,6 +26,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { prisma } from "./prisma";
+import { clvProbPoints } from "./devig";
 
 // Exported so the scope-invariant test can assert every IN_SCOPE_LEAGUES entry
 // is CLV-accountable (has a sport key → closing-odds file). A missing entry
@@ -141,7 +146,7 @@ export type ClvCaptureResult = {
   clvCaptured: number;
   unmatched: number;
   errors: string[];
-  averageClvCents: number | null;
+  averageClvProbPoints: number | null;
   // Window the run scanned, in minutes relative to now.
   windowMinBeforeStart: number;
   windowMaxBeforeStart: number;
@@ -156,8 +161,8 @@ export type ClvCaptureResult = {
 // scrape-then-capture schedule (every ~15-30 min during peak game hours).
 //
 // CONVERGENCE-TO-CLOSE semantics (fixed 2026-06-11): each sweep RE-READS every
-// non-finalized pick and overwrites clvCents only if this reading is closer to
-// tip than the stored one. clvCents is finalized (frozen) once the pick goes
+// non-finalized pick and overwrites the CLV reading only if it is closer to
+// tip than the stored one. The reading is finalized (frozen) once the pick goes
 // in-play (now >= gameDate): the last pre-tip reading IS the close, and we never
 // let an in-play price land. We deliberately do NOT freeze on a "tight closing
 // window" — that window can be narrower than the sweep interval, so a sweep
@@ -180,7 +185,7 @@ export async function captureClv(
     clvCaptured: 0,
     unmatched: 0,
     errors: [],
-    averageClvCents: null,
+    averageClvProbPoints: null,
     windowMinBeforeStart: minBeforeStart,
     windowMaxBeforeStart: maxBeforeStart,
     oddsFileAgeMinutes: {},
@@ -278,7 +283,13 @@ export async function captureClv(
         continue;
       }
 
+      // clvCents is the DEPRECATED legacy reading (raw American subtraction —
+      // sign is right, magnitude is meaningless across ±100). Kept so the
+      // historical column stays continuous and auditable. clvProbPoints is the
+      // metric of record; every consumer reads that.
       const clvCents = pick.oddsAmerican - closingOdds;
+      const pp = clvProbPoints(pick.oddsAmerican, closingOdds);
+      const clvPp = Number.isFinite(pp) ? +pp.toFixed(4) : null;
       try {
         // updateMany so the closeness gate lives in the WHERE clause and is
         // therefore ATOMIC against concurrent sweeps: the write lands only if no
@@ -297,6 +308,7 @@ export async function captureClv(
           data: {
             closingOddsAmerican: closingOdds,
             clvCents,
+            clvProbPoints: clvPp,
             clvCapturedAt: new Date(),
             clvReadingMinutesBeforeTip: minutesBeforeTip,
             // Never finalize pre-tip — a closer reading may still arrive. The
@@ -305,7 +317,7 @@ export async function captureClv(
         });
         if (res.count > 0) {
           result.clvCaptured++;
-          clvDeltas.push(clvCents);
+          if (clvPp != null) clvDeltas.push(clvPp);
         }
       } catch (err) {
         result.errors.push(`pick ${pick.id}: ${err instanceof Error ? err.message : err}`);
@@ -314,9 +326,9 @@ export async function captureClv(
   }
 
   if (clvDeltas.length > 0) {
-    result.averageClvCents = +(
+    result.averageClvProbPoints = +(
       clvDeltas.reduce((s, c) => s + c, 0) / clvDeltas.length
-    ).toFixed(2);
+    ).toFixed(3);
   }
 
   // CLV-health log line: a stranger should be able to answer "did we capture
@@ -328,7 +340,7 @@ export async function captureClv(
         pending: result.pendingChecked,
         captured: result.clvCaptured,
         unmatched: result.unmatched,
-        avgClvCents: result.averageClvCents,
+        avgClvProbPoints: result.averageClvProbPoints,
         oddsFileAgeMinutes: result.oddsFileAgeMinutes,
         errors: result.errors.length,
       }),

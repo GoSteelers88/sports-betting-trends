@@ -1,0 +1,20 @@
+-- AgentPick.clvProbPoints — closing line value measured in PROBABILITY POINTS.
+--
+-- Replaces `clvCents`, which stored a naive `pickedOdds - closingOdds`
+-- subtraction of American odds. That is invalid across the ±100 boundary:
+-- +100 and −100 are both 50% implied, yet they subtract to 200. The sign
+-- survives (raw American value is monotonically decreasing in probability),
+-- but the magnitude does not.
+--
+-- Impact that motivated this migration: three sign-crossing moneyline picks
+-- carried 98% of the paper trial's entire stored CLV total. One of them was a
+-- genuine 1.48-point move (took +102 = 49.5%, closed −104 = 51.0%) recorded as
+-- "206¢". Mean CLV read +15.8¢ while the median was 0.0¢ and the beat rate was
+-- 45.2%. That inflated mean flipped the pre-registered "avg CLV ≥ +2¢" funding
+-- gate from FAIL to PASS on an artifact.
+--
+-- Additive and safe: the column is nullable, deployed code that predates it
+-- simply leaves it null, and `clvCents` is retained unchanged so the historical
+-- readings stay auditable. A backfill script recomputes this column for every
+-- existing row from the stored oddsAmerican + closingOddsAmerican pair.
+ALTER TABLE "AgentPick" ADD COLUMN "clvProbPoints" REAL;

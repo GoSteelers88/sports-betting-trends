@@ -27,7 +27,7 @@ async function runOnce(): Promise<void> {
     // because games aren't starting in the next 12 min).
     if (result.pendingChecked > 0 || result.errors.length > 0) {
       console.log(
-        `[clv-ticker] checked=${result.pendingChecked} captured=${result.clvCaptured} unmatched=${result.unmatched} avg=${result.averageClvCents ?? "n/a"}¢${result.errors.length ? ` errs=${result.errors.length}` : ""}`
+        `[clv-ticker] checked=${result.pendingChecked} captured=${result.clvCaptured} unmatched=${result.unmatched} avg=${result.averageClvProbPoints ?? "n/a"}pp${result.errors.length ? ` errs=${result.errors.length}` : ""}`
       );
     }
   } catch (err) {

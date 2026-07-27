@@ -32,7 +32,7 @@ function printStats(stats: ReturnType<typeof reportMlbQuant>["stats"]): void {
   console.log(`  Equity        ${B}${usd(stats.equityUsd)}${R}   ${pnlC}${stats.realizedPnlUsd >= 0 ? "+" : ""}${usd(stats.realizedPnlUsd)}${R} realized  (${pnlC}${stats.roiPct >= 0 ? "+" : ""}${stats.roiPct}%${R} ROI)`);
   console.log(`  Record        ${B}${stats.wins}-${stats.losses}${stats.pushes ? `-${stats.pushes}` : ""}${R}   yield ${stats.yieldPct == null ? D + "—" + R : (stats.yieldPct >= 0 ? G : RED) + (stats.yieldPct >= 0 ? "+" : "") + stats.yieldPct + "%" + R}`);
   console.log(`  Open exposure ${usd(stats.exposureUsd)}  ${D}(${stats.openCount} open)${R}   avg edge ${pct(stats.avgEdge)}`);
-  console.log(`  ${C}CLV (HEADLINE)${R}  beat-rate ${B}${pct(stats.clvBeatRatePct == null ? null : stats.clvBeatRatePct / 100)}${R}  avg ${stats.avgClvCents == null ? D + "—" + R : (stats.avgClvCents >= 0 ? G : RED) + (stats.avgClvCents >= 0 ? "+" : "") + stats.avgClvCents + "¢" + R}  ${D}(n=${stats.clvSettledCount})${R}`);
+  console.log(`  ${C}CLV (HEADLINE)${R}  beat-rate ${B}${pct(stats.clvBeatRatePct == null ? null : stats.clvBeatRatePct / 100)}${R}  avg ${stats.avgClvProbPoints == null ? D + "—" + R : (stats.avgClvProbPoints >= 0 ? G : RED) + (stats.avgClvProbPoints >= 0 ? "+" : "") + stats.avgClvProbPoints + "pp" + R}  ${D}(n=${stats.clvSettledCount})${R}`);
   const dd = stats.drawdownPct;
   const ddTone = dd >= QUANT_DESK_CONFIG.maxDrawdown ? RED : dd > 0 ? Y : D;
   console.log(`  Drawdown      ${ddTone}${(dd * 100).toFixed(1)}%${R} from peak ${usd(stats.peakEquityUsd)}  ${dd >= QUANT_DESK_CONFIG.maxDrawdown ? RED + "[RAIL ACTIVE — opens paused]" + R : ""}`);

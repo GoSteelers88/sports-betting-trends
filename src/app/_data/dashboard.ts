@@ -56,7 +56,7 @@ export type SlatePick = {
   invalidation: string;
   outcome: { result: string; unitsPnl: number | null } | null;
   closingOddsAmerican: number | null;
-  clvCents: number | null;
+  clvProbPoints: number | null;
   createdAt: string;
   // Prop-only structured fields (null for moneyline picks). UI uses these
   // to render prop-shaped headlines (player name + line + over/under).
@@ -75,7 +75,7 @@ export type PipelineStatus = {
   finalShipped14d: number;
   parseFailedRuns14d: number;
   killRatePct: number | null;
-  avgClvCents: number | null;
+  avgClvProbPoints: number | null;
   clvSampleSize: number;
 };
 
@@ -279,8 +279,8 @@ export type PaperTrial = {
   // excluded from this sample. Beat rate >55% over 200+ bets is the
   // professional threshold for "actually has edge."
   clvSampleSize: number;          // ML picks with closingOddsAmerican set
-  clvBeatRate: number | null;     // 0–1; share of picks with clvCents > 0
-  clvAverageCents: number | null;
+  clvBeatRate: number | null;     // 0–1; share of picks with clvProbPoints > 0
+  clvAverageProbPoints: number | null;
   // Prop track — separate sample. CLV is unreliable here, so prop edge
   // is validated by win rate at the vig-cleared threshold (~55% at -110).
   propSampleSize: number;
@@ -378,7 +378,7 @@ export type NflExp5 = {
   record: { wins: number; losses: number; pushes: number };
   settled: number;
   clvBeatRatePct: number | null;
-  avgClvCents: number | null;
+  avgClvProbPoints: number | null;
   roiPct: number;
   note: string;
   // SETTLED-ONLY example rows — up to 8 most recent game picks, newest first.
@@ -691,7 +691,7 @@ function loadNflExp5(): NflExp5 | null {
     record: { wins: rec.wins, losses: rec.losses, pushes: rec.pushes },
     settled: raw.settled,
     clvBeatRatePct: typeof raw.clvBeatRatePct === "number" ? raw.clvBeatRatePct : null,
-    avgClvCents: typeof raw.avgClvCents === "number" ? raw.avgClvCents : null,
+    avgClvProbPoints: typeof raw.avgClvProbPoints === "number" ? raw.avgClvProbPoints : null,
     roiPct: raw.roiPct,
     note: raw.note ?? "",
     examplePicks: sanitizeNflExp5GamePicks(raw.examplePicks),
@@ -997,7 +997,7 @@ async function loadTodaysPicks(): Promise<{ games: SlatePick[]; props: SlatePick
       ? { result: p.outcome.result, unitsPnl: p.outcome.unitsPnl ?? null }
       : null,
     closingOddsAmerican: p.closingOddsAmerican ?? null,
-    clvCents: p.clvCents ?? null,
+    clvProbPoints: p.clvProbPoints ?? null,
     createdAt: p.createdAt.toISOString(),
     player: p.player ?? null,
     propType: p.propType ?? null,
@@ -1021,7 +1021,7 @@ async function loadPipelineStatus(): Promise<PipelineStatus> {
     finalShipped14d: 0,
     parseFailedRuns14d: 0,
     killRatePct: null,
-    avgClvCents: null,
+    avgClvProbPoints: null,
     clvSampleSize: 0,
   };
   try {
@@ -1041,12 +1041,12 @@ async function loadPipelineStatus(): Promise<PipelineStatus> {
       status.killRatePct = +((status.criticKilled14d / status.rawAnalystPicks14d) * 100).toFixed(1);
     }
     const clvPicks = await prisma.agentPick.findMany({
-      where: { createdAt: { gte: since }, clvCents: { not: null } },
-      select: { clvCents: true },
+      where: { createdAt: { gte: since }, clvProbPoints: { not: null } },
+      select: { clvProbPoints: true },
     });
     if (clvPicks.length > 0) {
-      const sum = clvPicks.reduce((s, p) => s + (p.clvCents ?? 0), 0);
-      status.avgClvCents = +(sum / clvPicks.length).toFixed(2);
+      const sum = clvPicks.reduce((s, p) => s + (p.clvProbPoints ?? 0), 0);
+      status.avgClvProbPoints = +(sum / clvPicks.length).toFixed(3);
       status.clvSampleSize = clvPicks.length;
     }
   } catch (err) {
@@ -1142,7 +1142,7 @@ async function loadPaperTrial(): Promise<PaperTrial> {
   let criticKillRate: number | null = null;
   let clvSampleSize = 0;
   let clvBeatRate: number | null = null;
-  let clvAverageCents: number | null = null;
+  let clvAverageProbPoints: number | null = null;
   let propSampleSize = 0;
   let propWinRate: number | null = null;
   let propRoi: number | null = null;
@@ -1208,18 +1208,18 @@ async function loadPaperTrial(): Promise<PaperTrial> {
     const clvPicks = await prisma.agentPick.findMany({
       where: {
         createdAt: { gte: PAPER_TRIAL_START },
-        clvCents: { not: null },
+        clvProbPoints: { not: null },
         clvReadingMinutesBeforeTip: { not: null },
         market: { not: "prop" },
       },
-      select: { clvCents: true },
+      select: { clvProbPoints: true },
     });
     clvSampleSize = clvPicks.length;
     if (clvSampleSize > 0) {
-      const positive = clvPicks.filter(p => (p.clvCents ?? 0) > 0).length;
+      const positive = clvPicks.filter(p => (p.clvProbPoints ?? 0) > 0).length;
       clvBeatRate = positive / clvSampleSize;
-      const sum = clvPicks.reduce((s, p) => s + (p.clvCents ?? 0), 0);
-      clvAverageCents = sum / clvSampleSize;
+      const sum = clvPicks.reduce((s, p) => s + (p.clvProbPoints ?? 0), 0);
+      clvAverageProbPoints = sum / clvSampleSize;
     }
 
     // Prop-only outcomes — counted separately so the prop track doesn't
@@ -1252,7 +1252,10 @@ async function loadPaperTrial(): Promise<PaperTrial> {
   // that have actual statistical power at small sample sizes:
   //   1. CLV sample ≥ 200 — professional minimum for separating skill from variance
   //   2. CLV beat rate ≥ 55% — sharp threshold; >50% is the bare minimum
-  //   3. Avg CLV ≥ +2¢ — must beat the closing line by enough to clear vig
+  //   3. Avg CLV ≥ +0.45pp — must beat the closing line by enough to clear vig.
+  //      (Units correction of the pre-registered "+2¢": the old clvCents column
+  //      subtracted American odds, which is invalid across ±100. +2¢ ≈ 0.46pp at
+  //      the typical -110 price. Mirrors scripts/trial-status.ts.)
   //   4. ROI ≥ +2% — was +3% (still useful but secondary to CLV)
   //   5. Critic kill rate ≥ 25% — kept; signals the critic is doing real work
   // Two-track structure:
@@ -1276,10 +1279,10 @@ async function loadPaperTrial(): Promise<PaperTrial> {
       track: "ml" as const,
     },
     {
-      label: "ML avg CLV ≥ +2¢",
-      met: clvSampleSize >= 50 && clvAverageCents !== null && clvAverageCents >= 2,
-      current: clvAverageCents !== null ? `${clvAverageCents >= 0 ? "+" : ""}${clvAverageCents.toFixed(1)}¢` : "—",
-      target: "+2¢",
+      label: "ML avg CLV ≥ +0.45pp",
+      met: clvSampleSize >= 50 && clvAverageProbPoints !== null && clvAverageProbPoints >= 0.45,
+      current: clvAverageProbPoints !== null ? `${clvAverageProbPoints >= 0 ? "+" : ""}${clvAverageProbPoints.toFixed(2)}pp` : "—",
+      target: "+0.45pp",
       track: "ml" as const,
     },
     {
@@ -1343,7 +1346,7 @@ async function loadPaperTrial(): Promise<PaperTrial> {
     criticKillRate,
     clvSampleSize,
     clvBeatRate,
-    clvAverageCents,
+    clvAverageProbPoints,
     propSampleSize,
     propWinRate,
     propRoi,
@@ -1561,7 +1564,7 @@ async function loadLastNightLedger(): Promise<{ games: LastNightLedger; props: L
       ? { result: p.outcome.result, unitsPnl: p.outcome.unitsPnl ?? null }
       : null,
     closingOddsAmerican: p.closingOddsAmerican ?? null,
-    clvCents: p.clvCents ?? null,
+    clvProbPoints: p.clvProbPoints ?? null,
     createdAt: p.createdAt.toISOString(),
     player: p.player ?? null,
     propType: p.propType ?? null,

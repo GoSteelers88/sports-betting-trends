@@ -126,16 +126,16 @@ export function TonightsPlay({ picks }: { picks: SlatePick[] }) {
             value={
               headline.market === "prop"
                 ? "n/a"
-                : headline.clvCents !== null
-                ? `${headline.clvCents > 0 ? "+" : ""}${headline.clvCents}¢`
+                : headline.clvProbPoints !== null
+                ? `${headline.clvProbPoints > 0 ? "+" : ""}${headline.clvProbPoints.toFixed(2)}pp`
                 : "pending"
             }
             tone={
               headline.market === "prop"
                 ? "var(--ink-3)"
-                : headline.clvCents !== null && headline.clvCents > 0
+                : headline.clvProbPoints !== null && headline.clvProbPoints > 0
                 ? "var(--win)"
-                : headline.clvCents !== null && headline.clvCents < 0
+                : headline.clvProbPoints !== null && headline.clvProbPoints < 0
                 ? "var(--loss)"
                 : "var(--hold)"
             }

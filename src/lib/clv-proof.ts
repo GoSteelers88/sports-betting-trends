@@ -23,6 +23,7 @@ import {
   americanToImpliedProb,
   expectedValue,
   probToAmerican,
+  clvProbPoints,
 } from "./devig";
 import {
   buildFairValueBoard,
@@ -69,7 +70,13 @@ export type ClvProofEntry = {
 
   // SETTLE — computed once the game has started.
   settled: boolean;
-  clvCents: number | null; // entrySoftPrice − closeSharpFairAmerican (>0 = beat close)
+  /** DEPRECATED — raw American subtraction (entrySoftPrice − closeSharpFairAmerican).
+   *  Sign is right, magnitude is not: American odds are discontinuous at ±100,
+   *  so a 1.5-point move that crosses the boundary reads as "206¢". Retained for
+   *  log continuity. Read clvProbPoints. */
+  clvCents: number | null;
+  /** CLV in PROBABILITY POINTS (>0 = we took a longer price than the close). */
+  clvProbPoints: number | null;
   beatClose: boolean | null; // impliedProb(entry) < closeSharpFairProb
   evVsClose: number | null; // closeSharpFairProb · dec(entry) − 1
 };
@@ -183,6 +190,7 @@ export function tick(
             closeSharpFairAmerican: s.fairAmerican,
             settled: false,
             clvCents: null,
+            clvProbPoints: null,
             beatClose: null,
             evVsClose: null,
           };
@@ -222,6 +230,8 @@ export function settleEntry(e: ClvProofEntry): void {
   e.clvCents = Number.isFinite(closeFairAmerican)
     ? e.entrySoftPrice - closeFairAmerican
     : null;
+  const pp = clvProbPoints(e.entrySoftPrice, closeFairAmerican);
+  e.clvProbPoints = Number.isFinite(pp) ? +pp.toFixed(4) : null;
   // Beat the close = the price you took implies a LOWER probability than the
   // sharp closing fair → you bought a better number than the market settled on.
   e.beatClose = Number.isFinite(entryImplied)
@@ -240,7 +250,7 @@ export type ClvReport = {
     {
       n: number;
       beatCloseRate: number; // fraction with beatClose=true
-      avgClvCents: number;
+      avgClvProbPoints: number;
       avgEvVsClose: number; // mean EV% vs the sharp close
     }
   >;
@@ -248,14 +258,14 @@ export type ClvReport = {
 
 function summarize(entries: ClvProofEntry[]): ClvReport["byScope"][string] {
   const n = entries.length;
-  if (n === 0) return { n: 0, beatCloseRate: 0, avgClvCents: 0, avgEvVsClose: 0 };
+  if (n === 0) return { n: 0, beatCloseRate: 0, avgClvProbPoints: 0, avgEvVsClose: 0 };
   const beats = entries.filter((e) => e.beatClose).length;
-  const clv = entries.reduce((s, e) => s + (e.clvCents ?? 0), 0) / n;
+  const clv = entries.reduce((s, e) => s + (e.clvProbPoints ?? 0), 0) / n;
   const ev = entries.reduce((s, e) => s + (e.evVsClose ?? 0), 0) / n;
   return {
     n,
     beatCloseRate: +(beats / n).toFixed(4),
-    avgClvCents: +clv.toFixed(2),
+    avgClvProbPoints: +clv.toFixed(3),
     avgEvVsClose: +ev.toFixed(4),
   };
 }

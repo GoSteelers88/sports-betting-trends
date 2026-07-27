@@ -41,9 +41,9 @@ export function QuantDesk() {
   const hasSettles = settled.length > 0;
   const railActive = stats.equityUsd < stats.startingBankrollUsd * (1 - config.maxDrawdown);
   const clvTone =
-    stats.avgClvCents == null
+    stats.avgClvProbPoints == null
       ? "var(--ink-3)"
-      : stats.avgClvCents >= 0
+      : stats.avgClvProbPoints >= 0
         ? "var(--win)"
         : "var(--loss)";
 
@@ -74,9 +74,9 @@ export function QuantDesk() {
           value={stats.clvBeatRatePct == null ? "—" : `${stats.clvBeatRatePct}%`}
           tone={clvTone}
           sub={
-            stats.avgClvCents == null
+            stats.avgClvProbPoints == null
               ? `awaiting settles`
-              : `avg ${stats.avgClvCents >= 0 ? "+" : ""}${stats.avgClvCents}¢ · n=${stats.clvSettledCount}`
+              : `avg ${stats.avgClvProbPoints >= 0 ? "+" : ""}${stats.avgClvProbPoints}pp · n=${stats.clvSettledCount}`
           }
         />
         <Tile
@@ -143,9 +143,9 @@ export function QuantDesk() {
                       </td>
                       <td
                         className="num text-xs text-right hidden sm:table-cell"
-                        style={{ color: (b.clvCents ?? 0) >= 0 ? "var(--win)" : "var(--loss)" }}
+                        style={{ color: (b.clvProbPoints ?? 0) >= 0 ? "var(--win)" : "var(--loss)" }}
                       >
-                        {b.clvCents == null ? "—" : `${b.clvCents >= 0 ? "+" : ""}${b.clvCents}¢`}
+                        {b.clvProbPoints == null ? "—" : `${b.clvProbPoints >= 0 ? "+" : ""}${b.clvProbPoints.toFixed(2)}pp`}
                       </td>
                       <td className="text-right">
                         <span className="tag" style={{ color: tone }}>{b.status}</span>

@@ -85,7 +85,11 @@ export interface QuantBet {
   closeAt: string;
   closeDevigMarketProb: number;     // latest sharp de-vigged fair (the "close")
   closeFairAmerican: number;        // American line implied by the close fair prob
-  clvCents: number | null;          // priceAmerican − closeFairAmerican (>0 beat close)
+  /** DEPRECATED — raw American subtraction; magnitude is invalid across ±100.
+   *  Retained for book continuity. Read clvProbPoints. */
+  clvCents: number | null;
+  /** CLV in PROBABILITY POINTS (>0 = we took a longer price than the close). */
+  clvProbPoints: number | null;
   beatClose: boolean | null;        // impliedProb(entry) < closeDevigMarketProb
   // settlement
   status: "open" | "won" | "lost" | "void";

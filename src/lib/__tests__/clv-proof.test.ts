@@ -38,6 +38,7 @@ function board(opts: {
         bestSoft: { book: "fanduel", american: -120, impliedProb: americanToImpliedProb(-120) },
         evPct: -0.05,
         clvCents: -5,
+        clvProbPoints: -1.1,
         kelly: 0,
         suspicious: false,
       },
@@ -50,6 +51,7 @@ function board(opts: {
         bestSoft: { book: "betus", american: opts.awaySoft, impliedProb: americanToImpliedProb(opts.awaySoft) },
         evPct: opts.awayFairProb * (1 + (opts.awaySoft > 0 ? opts.awaySoft / 100 : 100 / -opts.awaySoft)) - 1,
         clvCents: 0,
+        clvProbPoints: 0,
         kelly: 0,
         suspicious: opts.suspicious ?? false,
       },
@@ -157,6 +159,7 @@ describe("report — aggregation", () => {
         wouldBet: would,
         beatClose: beat,
         clvCents: beat ? 5 : -5,
+        clvProbPoints: beat ? 1.1 : -1.1,
         evVsClose: beat ? 0.03 : -0.03,
       }) as ClvProofEntry;
     const store = {

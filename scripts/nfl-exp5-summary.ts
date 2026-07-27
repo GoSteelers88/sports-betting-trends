@@ -102,7 +102,7 @@ export interface NflExp5Summary {
   record: { wins: number; losses: number; pushes: number };
   settled: number;
   clvBeatRatePct: number | null;
-  avgClvCents: number | null;
+  avgClvProbPoints: number | null;
   roiPct: number;
   note: string;
   examplePicks: NflExp5GamePickExample[]; // up to 8 most recent settled, newest first
@@ -310,7 +310,7 @@ function buildSummary(): NflExp5Summary {
     record: { wins: s.wins, losses: s.losses, pushes: s.pushes },
     settled: s.settledCount,
     clvBeatRatePct: s.clvBeatRatePct,
-    avgClvCents: s.avgClvCents,
+    avgClvProbPoints: s.avgClvProbPoints,
     roiPct: s.roiPct,
     note:
       "Leak-free Elo fair value vs nflverse ~closing lines. CLV ≈ 0 by " +

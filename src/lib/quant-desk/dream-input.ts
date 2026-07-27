@@ -28,7 +28,7 @@ export interface QuantDeskDreamBlock {
     openCount: number;
     avgEdge: number | null;
     clvBeatRatePct: number | null;
-    avgClvCents: number | null;
+    avgClvProbPoints: number | null;
     clvSettledCount: number;
     drawdownPct: number;
     railActive: boolean;
@@ -38,7 +38,7 @@ export interface QuantDeskDreamBlock {
     roiPct: number;
     avgEdge: number | null;
     clvBeatRatePct: number | null;
-    avgClvCents: number | null;
+    avgClvProbPoints: number | null;
     note: string;
   } | null;
   coverageBacklog: Array<{
@@ -78,7 +78,7 @@ export function readQuantDeskForDream(): QuantDeskDreamBlock {
       openCount: s.openCount,
       avgEdge: s.avgEdge,
       clvBeatRatePct: s.clvBeatRatePct,
-      avgClvCents: s.avgClvCents,
+      avgClvProbPoints: s.avgClvProbPoints,
       clvSettledCount: s.clvSettledCount,
       drawdownPct: s.drawdownPct,
       railActive: s.equityUsd < s.startingBankrollUsd * (1 - QUANT_DESK_CONFIG.maxDrawdown),
@@ -97,7 +97,7 @@ export function readQuantDeskForDream(): QuantDeskDreamBlock {
         roiPct: s.roiPct,
         avgEdge: s.avgEdge,
         clvBeatRatePct: s.clvBeatRatePct,
-        avgClvCents: s.avgClvCents,
+        avgClvProbPoints: s.avgClvProbPoints,
         note: "DRY-RUN vs ~closing nflverse lines — ROI is an optimistic upper bound, CLV is ~0 by construction. Edge distribution is the signal, not P&L.",
       };
     }

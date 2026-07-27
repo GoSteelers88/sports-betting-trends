@@ -837,7 +837,7 @@ type QuantDeskBetStub = {
   devigMarketProb?: number;
   edge?: number;
   status?: "open" | "won" | "lost" | "void";
-  clvCents?: number | null;
+  clvProbPoints?: number | null;
   beatClose?: boolean | null;
 };
 
@@ -865,7 +865,7 @@ export function getQuantDeskAnalysis(league: AgentLeague): {
     wins: number;
     losses: number;
     clvBeatRatePct: number | null;
-    avgClvCents: number | null;
+    avgClvProbPoints: number | null;
   } | null;
   note: string;
   dataWarning?: string;
@@ -902,11 +902,11 @@ export function getQuantDeskAnalysis(league: AgentLeague): {
 
   const settled = bets.filter(b => b.status === "won" || b.status === "lost");
   const wins = settled.filter(b => b.status === "won").length;
-  const withClv = settled.filter(b => b.clvCents != null && b.beatClose != null);
+  const withClv = settled.filter(b => b.clvProbPoints != null && b.beatClose != null);
   const beatClvCount = withClv.filter(b => b.beatClose === true).length;
-  const avgClvCents =
+  const avgClvProbPoints =
     withClv.length > 0
-      ? withClv.reduce((s, b) => s + (b.clvCents ?? 0), 0) / withClv.length
+      ? withClv.reduce((s, b) => s + (b.clvProbPoints ?? 0), 0) / withClv.length
       : null;
 
   const recentStats =
@@ -917,7 +917,7 @@ export function getQuantDeskAnalysis(league: AgentLeague): {
           losses: settled.length - wins,
           clvBeatRatePct:
             withClv.length > 0 ? (beatClvCount / withClv.length) * 100 : null,
-          avgClvCents,
+          avgClvProbPoints,
         }
       : null;
 

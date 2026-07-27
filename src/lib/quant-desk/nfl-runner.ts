@@ -20,6 +20,7 @@ import {
 import {
   americanToDecimal,
   americanToImpliedProb,
+  clvProbPoints,
   probToAmerican,
 } from "../devig";
 import {
@@ -115,6 +116,7 @@ export function runNflDryRun(opts: { stateDir?: string; outDir?: string } = {}):
         closeDevigMarketProb: +opp.line.devigMarketProb.toFixed(4),
         closeFairAmerican: Number.isFinite(closeFairAmerican) ? closeFairAmerican : NaN,
         clvCents: null,
+        clvProbPoints: null,
         beatClose: null,
         status: "open",
         finalScore: null,
@@ -147,6 +149,8 @@ export function runNflDryRun(opts: { stateDir?: string; outDir?: string } = {}):
           bet.clvCents = Number.isFinite(bet.closeFairAmerican)
             ? +(bet.priceAmerican - bet.closeFairAmerican).toFixed(1)
             : null;
+          const ppNfl = clvProbPoints(bet.priceAmerican, bet.closeFairAmerican);
+          bet.clvProbPoints = Number.isFinite(ppNfl) ? +ppNfl.toFixed(4) : null;
           bet.beatClose = Number.isFinite(entryImplied)
             ? entryImplied < bet.closeDevigMarketProb
             : null;

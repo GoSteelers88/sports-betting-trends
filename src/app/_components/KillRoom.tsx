@@ -196,12 +196,12 @@ export function KillRoom({
       <div className="grid grid-cols-2 sm:grid-cols-4 border border-rule divide-x divide-y sm:divide-y-0 divide-rule bg-paper-2">
         <Cell
           label="Avg CLV · 14d"
-          value={pipeline.avgClvCents !== null ? `${pipeline.avgClvCents > 0 ? "+" : ""}${pipeline.avgClvCents}¢` : "—"}
+          value={pipeline.avgClvProbPoints !== null ? `${pipeline.avgClvProbPoints > 0 ? "+" : ""}${pipeline.avgClvProbPoints}pp` : "—"}
           sub={`n=${pipeline.clvSampleSize} · trial figure in Fol. 03`}
           tone={
-            pipeline.avgClvCents !== null && pipeline.avgClvCents > 0
+            pipeline.avgClvProbPoints !== null && pipeline.avgClvProbPoints > 0
               ? "var(--win)"
-              : pipeline.avgClvCents !== null
+              : pipeline.avgClvProbPoints !== null
               ? "var(--loss)"
               : "var(--ink-3)"
           }

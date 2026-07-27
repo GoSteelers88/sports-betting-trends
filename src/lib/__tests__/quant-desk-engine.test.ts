@@ -231,6 +231,7 @@ function baseBet(over: Partial<QuantBet>): QuantBet {
     closeDevigMarketProb: 0.52,
     closeFairAmerican: -108,
     clvCents: null,
+    clvProbPoints: null,
     beatClose: null,
     status: "open",
     finalScore: null,

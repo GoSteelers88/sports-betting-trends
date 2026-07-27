@@ -50,6 +50,32 @@ export function americanToImpliedProb(american: number): number {
   return Number.isFinite(dec) ? 1 / dec : NaN;
 }
 
+/**
+ * Closing line value, in PROBABILITY POINTS.
+ *
+ * Positive = the price we took implies a LOWER probability than the close, i.e.
+ * we bought a longer number than the market settled on.
+ *
+ * Use this instead of subtracting American odds. American odds are not a linear
+ * scale and they are DISCONTINUOUS at ±100: +100 and −100 are both 50%, yet
+ * they subtract to 200. Raw subtraction therefore preserves the SIGN (the raw
+ * value is monotonically decreasing in probability) but wildly distorts the
+ * MAGNITUDE of any move that crosses the boundary.
+ *
+ * That distortion is not hypothetical. It put three sign-crossing picks —
+ * one of them a genuine 1.48pp move recorded as "206¢" — in charge of 98% of
+ * the paper trial's entire CLV total, which flipped the pre-registered
+ * "avg CLV ≥ +2¢" funding gate from FAIL to PASS on an artifact.
+ *
+ * Returns NaN when either price is unusable.
+ */
+export function clvProbPoints(takenAmerican: number, closeAmerican: number): number {
+  const taken = americanToImpliedProb(takenAmerican);
+  const close = americanToImpliedProb(closeAmerican);
+  if (!Number.isFinite(taken) || !Number.isFinite(close)) return NaN;
+  return (close - taken) * 100;
+}
+
 /** Probability (0,1) → American odds (the fair line at that probability). */
 export function probToAmerican(p: number): number {
   if (!Number.isFinite(p) || p <= 0 || p >= 1) return NaN;

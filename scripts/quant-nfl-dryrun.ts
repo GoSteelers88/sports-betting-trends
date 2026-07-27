@@ -39,7 +39,7 @@ function printStats(stats: QuantStats): void {
   console.log(`  Record   ${B}${stats.wins}-${stats.losses}${stats.pushes ? `-${stats.pushes}` : ""}${R}  win ${pct(stats.winRatePct == null ? null : stats.winRatePct / 100)}`);
   console.log(`  P&L      ${pnlC}${stats.realizedPnlUsd >= 0 ? "+" : ""}${usd(stats.realizedPnlUsd)}${R}  ROI ${pnlC}${stats.roiPct >= 0 ? "+" : ""}${stats.roiPct}%${R}  yield ${stats.yieldPct == null ? D + "—" + R : stats.yieldPct + "%"}`);
   console.log(`  Avg edge ${pct(stats.avgEdge)}  ${D}(model-vs-market; the distribution is the point)${R}`);
-  console.log(`  ${C}CLV${R}      beat-rate ${pct(stats.clvBeatRatePct == null ? null : stats.clvBeatRatePct / 100)}  avg ${stats.avgClvCents == null ? "—" : stats.avgClvCents + "¢"}  ${D}(≈0 by construction — entry==close)${R}`);
+  console.log(`  ${C}CLV${R}      beat-rate ${pct(stats.clvBeatRatePct == null ? null : stats.clvBeatRatePct / 100)}  avg ${stats.avgClvProbPoints == null ? "—" : stats.avgClvProbPoints + "pp"}  ${D}(≈0 by construction — entry==close)${R}`);
   console.log(`  Peak ${usd(stats.peakEquityUsd)}  max drawdown seen ${(stats.drawdownPct * 100).toFixed(1)}%`);
 }
 

@@ -32,7 +32,7 @@ type Stage = {
 function buildLifecycle(pick: SlatePick): Stage[] {
   const shipped = true; // it's in AgentPick so it was shipped
   const isProp = pick.market === "prop";
-  const clvDone = pick.clvCents !== null;
+  const clvDone = pick.clvProbPoints !== null;
   const resultDone = pick.outcome !== null;
   return [
     {
@@ -78,7 +78,7 @@ function buildLifecycle(pick: SlatePick): Stage[] {
       detail: isProp
         ? "CLV not tracked for props — prop markets lack the market-making liquidity for closing line to be a reliable edge signal."
         : clvDone
-        ? `Closed at ${fmtAmerican(pick.closingOddsAmerican)} → CLV ${pick.clvCents! > 0 ? "+" : ""}${pick.clvCents}¢.`
+        ? `Closed at ${fmtAmerican(pick.closingOddsAmerican)} → CLV ${pick.clvProbPoints! > 0 ? "+" : ""}${pick.clvProbPoints!.toFixed(2)}pp.`
         : "Awaiting closing line capture (12h pre-game to 30min post-start window).",
     },
     {
@@ -213,16 +213,16 @@ export function PickAutopsy({
               value={
                 pick.market === "prop"
                   ? "n/a"
-                  : pick.clvCents !== null
-                  ? `${pick.clvCents > 0 ? "+" : ""}${pick.clvCents}¢`
+                  : pick.clvProbPoints !== null
+                  ? `${pick.clvProbPoints > 0 ? "+" : ""}${pick.clvProbPoints.toFixed(2)}pp`
                   : "pend"
               }
               tone={
                 pick.market === "prop"
                   ? "var(--ink-3)"
-                  : pick.clvCents !== null && pick.clvCents > 0
+                  : pick.clvProbPoints !== null && pick.clvProbPoints > 0
                   ? "var(--win)"
-                  : pick.clvCents !== null && pick.clvCents < 0
+                  : pick.clvProbPoints !== null && pick.clvProbPoints < 0
                   ? "var(--loss)"
                   : "var(--hold)"
               }

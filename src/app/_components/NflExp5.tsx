@@ -12,8 +12,8 @@
 
 import type { NflExp5 } from "../_data/dashboard";
 
-const fmtCents = (n: number | null): string =>
-  n == null ? "—" : `${n >= 0 ? "+" : ""}${n.toFixed(1)}¢`;
+const fmtPp = (n: number | null): string =>
+  n == null ? "—" : `${n >= 0 ? "+" : ""}${n.toFixed(2)}pp`;
 const fmtPct = (n: number | null): string =>
   n == null ? "—" : `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
 const fmtRatePct = (n: number | null): string =>
@@ -54,7 +54,7 @@ export function NflExp5({ data }: { data: NflExp5 | null }) {
     record,
     settled,
     clvBeatRatePct,
-    avgClvCents,
+    avgClvProbPoints,
     roiPct,
     examplePicks,
     props,
@@ -65,9 +65,9 @@ export function NflExp5({ data }: { data: NflExp5 | null }) {
   // CLV is the headline (Benter): a research dry-run is expected near zero, so
   // it reads as neutral ink unless it genuinely clears the close.
   const clvTone =
-    avgClvCents != null && avgClvCents > 0
+    avgClvProbPoints != null && avgClvProbPoints > 0
       ? "var(--win)"
-      : avgClvCents != null && avgClvCents < 0
+      : avgClvProbPoints != null && avgClvProbPoints < 0
         ? "var(--loss)"
         : "var(--ink-3)";
 
@@ -104,7 +104,7 @@ export function NflExp5({ data }: { data: NflExp5 | null }) {
         <Tile
           label="CLV beat rate"
           value={fmtRatePct(clvBeatRatePct)}
-          sub={`avg ${fmtCents(avgClvCents)} vs close`}
+          sub={`avg ${fmtPp(avgClvProbPoints)} vs close`}
           tone={clvTone}
         />
         <Tile

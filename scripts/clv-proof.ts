@@ -52,7 +52,7 @@ function printReport(r: ReturnType<typeof report>) {
     console.log(
       `  ${k.padEnd(18)} ${String(s.n).padStart(4)}  ` +
         `${beatColor}${pct(s.beatCloseRate).padStart(10)}${RESET}  ` +
-        `${(s.avgClvCents > 0 ? "+" : "") + s.avgClvCents}¢`.padStart(8) +
+        `${(s.avgClvProbPoints > 0 ? "+" : "") + s.avgClvProbPoints}pp`.padStart(8) +
         `  ${evColor}${(s.avgEvVsClose > 0 ? "+" : "") + pct(s.avgEvVsClose)}${RESET}`.padStart(24),
     );
   }

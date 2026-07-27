@@ -70,8 +70,8 @@ export const picksTodayCommand: Command = {
           : ` · ${p.outcome.result.toUpperCase()}`
         : "";
       const clvTag =
-        p.clvCents !== null
-          ? ` · CLV ${p.clvCents > 0 ? "+" : ""}${p.clvCents}¢`
+        p.clvProbPoints !== null
+          ? ` · CLV ${p.clvProbPoints > 0 ? "+" : ""}${p.clvProbPoints.toFixed(2)}pp`
           : "";
       embed.addFields({
         name: `#${p.id} ${p.matchup}${outcomeTag}`,
