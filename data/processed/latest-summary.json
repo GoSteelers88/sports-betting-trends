@@ -1,41 +1,57 @@
 {
-  "generatedAt": "2026-07-27T16:33:42.397Z",
+  "generatedAt": "2026-07-27T23:42:55.080Z",
   "ready": true,
-  "recordsIngested": 723,
-  "recordsCompleted": 723,
+  "recordsIngested": 725,
+  "recordsCompleted": 725,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 696,
+      "games": 698,
       "conferences": [
+        "AL West",
         "AL East",
         "AL Central",
         "NL East",
         "NL West",
         "NL Central",
-        "Unknown",
-        "AL West"
+        "Unknown"
       ],
-      "avgPoints": 4.584770114942529,
+      "avgPoints": 4.58595988538682,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 4.5,
+      "recentAvgPoints": 4.8,
       "recentAvgYards": null,
-      "trendScore": 33,
-      "trendSignal": "down",
+      "trendScore": 61,
+      "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 696,
-        "rpg": 4.58,
-        "oppRpg": 4.58,
-        "hitsPerGame": 8.26,
+        "games": 698,
+        "rpg": 4.59,
+        "oppRpg": 4.59,
+        "hitsPerGame": 8.27,
         "errorsPerGame": 0.55,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Rangers": {
+          "games": 23,
+          "rpg": 4.91,
+          "oppRpg": 5.43,
+          "hitsPerGame": 8.96,
+          "errorsPerGame": 0.3,
+          "sos": null
+        },
+        "Mariners": {
+          "games": 23,
+          "rpg": 4,
+          "oppRpg": 3.87,
+          "hitsPerGame": 7.57,
+          "errorsPerGame": 0.57,
+          "sos": null
+        },
         "Rays": {
           "games": 25,
           "rpg": 4.52,
@@ -226,22 +242,6 @@
           "oppRpg": 4.61,
           "hitsPerGame": 8,
           "errorsPerGame": 0.57,
-          "sos": null
-        },
-        "Rangers": {
-          "games": 22,
-          "rpg": 4.82,
-          "oppRpg": 5.55,
-          "hitsPerGame": 8.86,
-          "errorsPerGame": 0.32,
-          "sos": null
-        },
-        "Mariners": {
-          "games": 22,
-          "rpg": 4.05,
-          "oppRpg": 3.73,
-          "hitsPerGame": 7.59,
-          "errorsPerGame": 0.59,
           "sos": null
         },
         "Giants": {
@@ -571,17 +571,17 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "AL East",
-      "gameDate": "2026-07-26T00:00:00.000Z",
-      "team": "Rays",
-      "opponent": "Guardians",
-      "points": 1,
-      "opponentPoints": 0,
+      "conference": "AL West",
+      "gameDate": "2026-07-27T00:00:00.000Z",
+      "team": "Rangers",
+      "opponent": "Mariners",
+      "points": 7,
+      "opponentPoints": 3,
       "rebounds": null,
       "assists": null,
       "yards": null,
-      "spread": -1.5,
-      "atsResult": "L",
+      "spread": 1.5,
+      "atsResult": "W",
       "won": true,
       "teamRank": null,
       "opponentRank": null,
@@ -609,10 +609,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 6,
+      "hits": 11,
       "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401816268",
+      "sourceEventId": "401816288",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -787,24 +787,86 @@
       "matchup": "Toronto Blue Jays at Washington Nationals",
       "pickTeam": "Washington Nationals",
       "opponent": "Toronto Blue Jays",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Washington Nationals -1.5",
-      "score": 58,
-      "confidence": 53,
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Washington Nationals +1.5",
+      "score": 66,
+      "confidence": 62,
       "rationaleSignals": [
         "Momentum edge +0.60 (last-10 trend proxy)",
         "ATS edge +0.400",
         "History sample Washington Nationals: 22 games (mapped Nationals) vs Toronto Blue Jays: 23 games",
         "Home court (+1 pt adjustment)",
         "Rest: Washington Nationals 2d rest vs Toronto Blue Jays 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.8"
+        "Net Rating edge: +4.8",
+        "Home SP: Eddy Yean",
+        "Away SP: Max Scherzer",
+        "MLB model: 66.4% win prob (calibrated) | Edge vs market: +15.4%"
       ],
       "momentumEdge": 0.6,
       "atsEdge": 0.4,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.664,
+      "mlbEdge": 0.1542,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-27T22:41:00.000Z",
+      "matchup": "Philadelphia Phillies at Miami Marlins",
+      "pickTeam": "Philadelphia Phillies",
+      "opponent": "Miami Marlins",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Philadelphia Phillies +1.5",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.400",
+        "History sample Philadelphia Phillies: 23 games (mapped Phillies) vs Miami Marlins: 23 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Philadelphia Phillies 2d rest vs Miami Marlins 2d rest",
+        "Net Rating edge: +2.9",
+        "Home SP: Tyler Phillips",
+        "Away SP: Zack Wheeler",
+        "MLB model: 67.9% win prob (calibrated) | Edge vs market: +33.4%"
+      ],
+      "momentumEdge": 0.8,
+      "atsEdge": 0.4,
+      "mlbModelProb": 0.679,
+      "mlbEdge": 0.3342,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-07-28T00:00:00.000Z",
+      "matchup": "Cleveland Guardians at Cincinnati Reds",
+      "pickTeam": "Cincinnati Reds",
+      "opponent": "Cleveland Guardians",
+      "spread": -0.5,
+      "modelSpread": -0.5,
+      "line": "Cincinnati Reds -0.5",
+      "score": 63,
+      "confidence": 59,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Cincinnati Reds: 23 games (mapped Reds) vs Cleveland Guardians: 24 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Cincinnati Reds 2d rest vs Cleveland Guardians 2d rest",
+        "3 books: avg -0.5, variance 2 (high disagreement)",
+        "Net Rating edge: +0.6",
+        "Home SP: Chase Burns",
+        "Away SP: Slade Cecconi",
+        "MLB model: 63.4% win prob (calibrated) | Edge vs market: +5.9%"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.634,
+      "mlbEdge": 0.0591,
+      "mlbCalibrated": true
     },
     {
       "league": "MLB",
@@ -816,8 +878,8 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Boston Red Sox -1.5",
-      "score": 58,
-      "confidence": 53,
+      "score": 61,
+      "confidence": 57,
       "rationaleSignals": [
         "Momentum edge +1.00 (last-10 trend proxy)",
         "ATS edge +0.300",
@@ -825,18 +887,22 @@
         "Away (+-1 pt adjustment)",
         "Rest: Boston Red Sox 2d rest vs Athletics 2d rest",
         "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.6"
+        "Net Rating edge: +4.6",
+        "Home SP: Jack Perkins",
+        "Away SP: Payton Tolle",
+        "MLB model: 63.4% win prob (calibrated)"
       ],
       "momentumEdge": 1,
       "atsEdge": 0.3,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6342,
+      "mlbEdge": -0.0203,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-07-27",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 2 eligible games found on 2026-07-27 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 4 eligible games found on 2026-07-27 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1111,6 +1177,14 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Kyrie Irving",
+        "team": "Dallas Mavericks",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Morez Johnson Jr.",
         "team": "Dallas Mavericks",
         "position": "F",
@@ -1164,14 +1238,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Heel",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Kyrie Irving",
-        "team": "Dallas Mavericks",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
         "returnDate": "2026-10-01"
       },
       {
@@ -1335,6 +1401,30 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Cam Spencer",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Scotty Pippen Jr.",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Toe",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Ty Jerome",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Walter Clayton Jr.",
         "team": "Memphis Grizzlies",
         "position": "G",
@@ -1378,30 +1468,6 @@
         "player": "Zach Edey",
         "team": "Memphis Grizzlies",
         "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Cam Spencer",
-        "team": "Memphis Grizzlies",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Back",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Scotty Pippen Jr.",
-        "team": "Memphis Grizzlies",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Toe",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Ty Jerome",
-        "team": "Memphis Grizzlies",
-        "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
         "returnDate": "2026-10-01"
@@ -2601,26 +2667,18 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Tucker Kraft",
-        "team": "Green Bay Packers",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-01"
-      },
-      {
-        "player": "Devonte Wyatt",
+        "player": "Javon Hargrave",
         "team": "Green Bay Packers",
         "position": "DT",
-        "status": "Questionable",
-        "injuryType": "Ankle",
+        "status": "Out",
+        "injuryType": "Undisclosed",
         "returnDate": "2026-08-01"
       },
       {
         "player": "Luke Musgrave",
         "team": "Green Bay Packers",
         "position": "TE",
-        "status": "Questionable",
+        "status": "Out",
         "injuryType": "Undisclosed",
         "returnDate": "2026-08-01"
       },
@@ -2628,16 +2686,40 @@
         "player": "Micah Parsons",
         "team": "Green Bay Packers",
         "position": "DE",
-        "status": "Questionable",
+        "status": "Doubtful",
         "injuryType": "Knee - ACL",
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Zach Tom",
+        "player": "Chris Brooks",
         "team": "Green Bay Packers",
-        "position": "OT",
-        "status": "Questionable",
-        "injuryType": "Knee",
+        "position": "RB",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Kamal Hadden",
+        "team": "Green Bay Packers",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Lower Leg",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Aaron Banks",
+        "team": "Green Bay Packers",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Tucker Kraft",
+        "team": "Green Bay Packers",
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Knee - ACL",
         "returnDate": "2026-08-01"
       },
       {
@@ -2689,19 +2771,19 @@
         "returnDate": "2026-09-13"
       },
       {
-        "player": "Alec Pierce",
+        "player": "CJ Allen",
         "team": "Indianapolis Colts",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Ankle",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Calf",
         "returnDate": "2026-08-01"
       },
       {
-        "player": "Daniel Jones",
+        "player": "Alec Pierce",
         "team": "Indianapolis Colts",
-        "position": "QB",
-        "status": "Questionable",
-        "injuryType": "Achilles",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Ankle",
         "returnDate": "2026-08-01"
       },
       {
@@ -2950,6 +3032,14 @@
         "position": "RB",
         "status": "Questionable",
         "injuryType": "Shoulder",
+        "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Kejon Owens",
+        "team": "Minnesota Vikings",
+        "position": "RB",
+        "status": "Out",
+        "injuryType": "Illness",
         "returnDate": "2026-08-01"
       },
       {
@@ -3229,8 +3319,24 @@
         "team": "San Francisco 49ers",
         "position": "WR",
         "status": "Questionable",
-        "injuryType": "Undisclosed",
+        "injuryType": "Calf",
         "returnDate": "2026-08-01"
+      },
+      {
+        "player": "Gracen Halton",
+        "team": "San Francisco 49ers",
+        "position": "DT",
+        "status": "Questionable",
+        "injuryType": "Knee",
+        "returnDate": "2026-08-13"
+      },
+      {
+        "player": "Andrew Farmer II",
+        "team": "San Francisco 49ers",
+        "position": "DE",
+        "status": "Questionable",
+        "injuryType": "Back",
+        "returnDate": "2026-08-13"
       },
       {
         "player": "Vederian Lowe",
