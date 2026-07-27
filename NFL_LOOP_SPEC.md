@@ -49,6 +49,58 @@ Grading happens AFTER the picks are committed, against the real result:
 - **Moneyline**: winner by score. (Ties → push/void; rare but real in the NFL.)
 - **Total**: actual `total` vs `total_line`. Push when exactly on the number.
 
+## Spread sign convention (load-bearing invariant)
+
+**Inside this module, `spreadLine` / `spreadLineHome` / `atsSpreadHome` are the
+HOME spread, where NEGATIVE means the home team is favored.** `gradeAts`
+computes `homeMargin + spreadHome`, the pick prompt says "negative = home
+favored", and `favoredFor` reads `spreadHome < 0` as a home favorite.
+
+**nflverse `spread_line` uses the OPPOSITE convention: POSITIVE = home
+favored.** Verified empirically over 7,276 rows: `corr(spread_line,
+home_margin) = +0.426`, and games with `spread_line ≥ +13` have a mean home
+margin of `+15.1`. The conversion happens in exactly one place — `parseGames()`
+negates at the CSV boundary. Do not remove it, and do not negate a second time
+downstream.
+
+### The incident this invariant exists because of (2026-07-27)
+
+The negation was missing, so every ATS line was inverted for 18 weeks of
+walk-forward. The damage was not limited to scoring: the inverted spread went
+into the **blind input**, so the model reasoned about every matchup with
+favorites and underdogs swapped, and `gradeAts` then scored the pick against a
+phantom line. Measured over the 222 contaminated ATS picks:
+
+| | |
+|---|---|
+| Graded against a number ≠ the market line | 217 / 222 (97.7%) |
+| Flip landed in the pick's favour | 169 (76.1%) |
+| Win rate where it favoured the pick | 84.1% |
+| Win rate where it went against | 45.5% |
+
+This produced a reported **75.9% ATS / +45.0% ROI** (underdogs 84.2% / +60.8%)
+— entirely an artifact. Moneyline (64.9%, +4.7%) and totals (53.4%, +4.3%) were
+graded correctly, but were still *generated* from the corrupted blind input, so
+the whole run was archived to `_archive-2026-07-27-spread-sign-inversion/` and
+the walk restarted from 2015 REG wk1.
+
+**Why every defense missed it.** `no-leakage.test.ts` structurally cannot catch
+this — it is a units error, not a leak. Every unit test constructed `GameRow`
+literals by hand with the correct sign, so the suite stayed green while the
+CSV→`GameRow` seam was inverted; nothing tested the parse boundary. And the one
+statistic that should have caught it, `favoriteCoverRate`, was computed over
+*the model's own favorite picks* rather than over all games — a restatement of
+the result wearing the label of a base rate, so it read a healthy-looking 46.8%
+throughout.
+
+Three guards now exist: `parseGames()` negates at the boundary;
+`assertSpreadConvention()` runs on real parsed data at the top of every
+`nfl:week` and throws if `corr(spreadLine, homeMargin) > -0.15`; and
+`nfl-loop-spread-sign.test.ts` covers the parse seam from raw CSV text.
+`favoriteCoverRate` is now a true base rate reconstructed from `favored+result`
+over all ATS games, so it sits near 50% in a healthy sample and drifting away
+from 50% is the alarm.
+
 ## The markets (every game, every market)
 
 Per game the model returns, as validated JSON:

@@ -15,6 +15,7 @@
 import {
   defaultStateDir,
   loadGames,
+  assertSpreadConvention,
   loadInjuries,
   loadPlayerStats,
   loadCursor,
@@ -132,6 +133,9 @@ async function runWeek(
 ): Promise<boolean> {
   const dir = defaultStateDir();
   const games = loadGames(dir);
+  // Fail fast rather than silently manufacture a phantom edge (see the
+  // function's comment for the incident this guard exists because of).
+  assertSpreadConvention(games);
   let cursor = loadCursor(dir);
 
   // Snap a fresh/stale cursor onto the first real scheduled week.

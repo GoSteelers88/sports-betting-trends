@@ -75,8 +75,21 @@ describe("computeStatRecord", () => {
     expect(rec.overall.total.losses).toBe(1);
   });
 
-  it("favorite-cover rate: among ATS favorites (1 win, 1 loss) = 0.5", () => {
-    expect(rec.baseRates.favoriteCoverRate).toBeCloseTo(0.5, 3);
+  it("favorite-cover rate is a TRUE base rate over all ATS games, not our win rate on favorites", () => {
+    // Reconstructed from favored+result the same way overRate is reconstructed
+    // from side+result, so it is independent of which side we took:
+    //   row 1  took favorite, WIN   ⇒ favorite covered
+    //   row 2  took underdog, WIN   ⇒ favorite did NOT cover
+    //   row 3  took favorite, LOSS  ⇒ favorite did NOT cover
+    //   row 4  push                 ⇒ excluded
+    // ⇒ 1 of 3 decisive games.
+    //
+    // This previously asserted 0.5 — "1 win among our 2 favorite picks" — which
+    // is just a restatement of our own result. That made it useless as the
+    // sanity check it was labeled as: it read a healthy 46.8% all through the
+    // spread-sign inversion that was voiding every ATS number. A real base rate
+    // sits near 50% in a healthy sample, so drift away from 50% is the alarm.
+    expect(rec.baseRates.favoriteCoverRate).toBeCloseTo(0.3333, 3);
   });
 
   it("over rate: total rows decisive = 3; over went over=1, under-loss=0 → 1/3", () => {

@@ -155,6 +155,15 @@ function str(v: string | undefined): string {
   return (v ?? "").trim();
 }
 
+/** Null-safe sign flip. Used only at the nflverse boundary to convert
+ *  `spread_line` (positive = home favored) into this module's convention
+ *  (negative = home favored). `-0` is normalized to `0` so pick'em games
+ *  compare equal to zero in `favoredFor`. */
+function negate(n: number | null): number | null {
+  if (n == null) return null;
+  return n === 0 ? 0 : -n;
+}
+
 // nflverse labels postseason rounds individually (WC=wildcard, DIV=divisional,
 // CON=conference, SB=Super Bowl), not as a single "POST". We fold all four into
 // the POST phase; the source week numbers (19→22) preserve chronological order.
@@ -197,7 +206,19 @@ export function parseGames(csvText: string): GameRow[] {
       gametime: str(col(row, "gametime")),
       awayTeam: str(col(row, "away_team")),
       homeTeam: str(col(row, "home_team")),
-      spreadLine: num(col(row, "spread_line")),
+      // SIGN CONVERSION — do not remove. nflverse `spread_line` is POSITIVE
+      // when the HOME team is favored (verified empirically over 7,276 rows:
+      // corr(spread_line, home_margin) = +0.426; games with spread_line ≥ +13
+      // have a mean home margin of +15.1). Every consumer in this file uses the
+      // OPPOSITE convention — `GameRow.spreadLine` is documented "negative =
+      // home favored", `gradeAts` computes `homeMargin + spreadHome`, and the
+      // pick prompt tells the model "negative = home favored". Passing the raw
+      // nflverse value through inverted every ATS line: it corrupted the blind
+      // input the model reasoned from AND the number it was graded against,
+      // manufacturing a 75.9% / +45% ROI phantom edge (84.1% on the 76% of
+      // picks where the flip happened to favour the pick). Negate HERE, at the
+      // boundary, so there is exactly one place where the two conventions meet.
+      spreadLine: negate(num(col(row, "spread_line"))),
       totalLine: num(col(row, "total_line")),
       awayMoneyline: num(col(row, "away_moneyline")),
       homeMoneyline: num(col(row, "home_moneyline")),
@@ -223,6 +244,61 @@ export function parseGames(csvText: string): GameRow[] {
     });
   }
   return out;
+}
+
+/**
+ * Correlation between the home spread and the realized home margin, over every
+ * game that has both. Under this module's convention (negative = home favored)
+ * this MUST be strongly negative: the more negative the home line, the bigger
+ * the home team is expected to — and on average does — win by.
+ *
+ * Exported so both the runtime guard and the parse-boundary test measure the
+ * same thing. Returns null when there is nothing to measure.
+ */
+export function spreadMarginCorrelation(games: GameRow[]): number | null {
+  let n = 0, sx = 0, sy = 0, sxy = 0, sxx = 0, syy = 0;
+  for (const g of games) {
+    const x = g.spreadLine;
+    const y = g.result;
+    if (x == null || y == null || !Number.isFinite(x) || !Number.isFinite(y)) continue;
+    n++; sx += x; sy += y; sxy += x * y; sxx += x * x; syy += y * y;
+  }
+  if (n < 2) return null;
+  const denom = Math.sqrt((n * sxx - sx * sx) * (n * syy - sy * sy));
+  if (denom === 0) return null;
+  return (n * sxy - sx * sy) / denom;
+}
+
+/** Loose enough never to trip on a small or odd slate, tight enough that a
+ *  full sign inversion (which lands near +0.43) can never slip past. */
+const SPREAD_CORR_CEILING = -0.15;
+
+/**
+ * Fail fast if the spread sign convention is inverted.
+ *
+ * This guard exists because the inversion actually happened and ran undetected
+ * for 18 weeks of walk-forward: nflverse's `spread_line` (positive = home
+ * favored) was passed straight into `GameRow.spreadLine` (negative = home
+ * favored). Every unit test constructed `GameRow` literals directly with the
+ * correct sign, so the whole suite stayed green while production graded picks
+ * against a phantom line and reported a 75.9% ATS win rate.
+ *
+ * `no-leakage.test.ts` structurally cannot catch this — it is a units error,
+ * not a leak. So the check lives at runtime, on real parsed data, where the
+ * two conventions actually meet.
+ */
+export function assertSpreadConvention(games: GameRow[]): void {
+  const corr = spreadMarginCorrelation(games);
+  if (corr == null) return; // nothing graded yet — nothing to verify
+  if (corr > SPREAD_CORR_CEILING) {
+    throw new Error(
+      `NFL loop: spread sign convention looks INVERTED. ` +
+        `corr(spreadLine, homeMargin) = ${corr.toFixed(3)}, expected <= ${SPREAD_CORR_CEILING} ` +
+        `(negative = home favored). A positive correlation means favorites and underdogs ` +
+        `are swapped in both the blind input and the grader — every ATS number is void. ` +
+        `Check the sign conversion in parseGames() against nflverse's spread_line.`,
+    );
+  }
 }
 
 export function loadGames(dir: string): GameRow[] {
@@ -1184,14 +1260,28 @@ export function computeStatRecord(rows: GradedRow[]): StatRecord {
     total: toSplit("Total", tallyMarket(rows, "total")),
   };
 
-  // Favorite-cover rate: among ATS picks placed on a side that was the favorite.
+  // Favorite-cover rate — a TRUE base rate over every ATS game in the log,
+  // independent of which side the model took, reconstructed from favored+result
+  // exactly the way overRate is reconstructed from side+result below:
+  //   the favorite covered  ⟺  (we took the favorite AND won)
+  //                          OR (we took the underdog AND lost)
+  //
+  // This previously measured `favRows.filter(win) / favRows` — the model's win
+  // rate on its own favorite picks — which is a restatement of the result, not
+  // a base rate. Labeled as a sanity check, it could never reveal a broken
+  // universe: when the spread sign was inverted it printed 46.8%, identical to
+  // the favorite-pick win rate, and nothing looked wrong. A real base rate sits
+  // near 50% in any healthy sample, so a drift away from 50% is the signal.
+  // 'pickem' rows are excluded — neither side is the favorite.
   const atsRows = rows.filter((r) => r.market === "ats");
-  const favRows = atsRows.filter((r) => r.favored === "favorite");
-  const favDecisive = favRows.filter((r) => r.result !== "push");
+  const atsDecisive = atsRows.filter((r) => r.result !== "push" && r.favored !== "pickem");
+  const favoriteCovered = atsDecisive.filter(
+    (r) =>
+      (r.favored === "favorite" && r.result === "win") ||
+      (r.favored === "underdog" && r.result === "loss"),
+  ).length;
   const favoriteCoverRate =
-    favDecisive.length > 0
-      ? +(favDecisive.filter((r) => r.result === "win").length / favDecisive.length).toFixed(4)
-      : null;
+    atsDecisive.length > 0 ? +(favoriteCovered / atsDecisive.length).toFixed(4) : null;
 
   // Over rate: among total picks, the realized share of games that went over,
   // reconstructed from result+side (over-win or under-loss ⇒ went over).
