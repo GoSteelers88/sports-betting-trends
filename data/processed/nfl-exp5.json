@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T09:03:15.981Z",
+  "generatedAt": "2026-07-28T09:02:34.575Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -8,7 +8,7 @@
   },
   "settled": 310,
   "clvBeatRatePct": 0,
-  "avgClvCents": -11.2,
+  "avgClvProbPoints": 0,
   "roiPct": 8.21,
   "note": "Leak-free Elo fair value vs nflverse ~closing lines. CLV ≈ 0 by construction for a dry-run (entry == close); research backtest, not live betting. Example picks are SETTLED historical blind picks only. Goes live for the 2026 season.",
   "examplePicks": [
@@ -93,116 +93,18 @@
       "week": 15
     }
   ],
-  "props": {
-    "record": {
-      "wins": 128,
-      "losses": 73,
-      "pushes": 3
-    },
-    "settled": 204,
-    "noData": 8,
-    "examples": [
-      {
-        "player": "Antonio Brown",
-        "team": "PIT",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "Brown avg 114.9 rec yds/g on 12.1 tgts. WAS allows big plays outdoors, calm wind 4mph, 79F. Markus Wheaton OUT increases AB target share further.",
-        "season": 2016,
-        "week": 1
-      },
-      {
-        "player": "Julio Jones",
-        "team": "ATL",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "Jones avg 116.9 rec yds/g on 12.7 tgts in dome vs TB. TB pass defense was middle-tier in 2015. Indoor dome game removes all weather risk.",
-        "season": 2016,
-        "week": 1
-      },
-      {
-        "player": "DeAndre Hopkins",
-        "team": "HOU",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "Hopkins avg 93.5 rec yds/g on 11.9 tgts. CHI travels to closed dome in HOU. CHI pass D was average; Hopkins is elite usage WR1 in favorable indoor conditions.",
-        "season": 2016,
-        "week": 1
-      },
-      {
-        "player": "Odell Beckham",
-        "team": "NYG",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "OBJ avg 96.7 rec yds/g on 10.5 tgts in closed dome DAL. DAL was vulnerable secondary in 2015; indoor neutral site removes wind risk.",
-        "season": 2016,
-        "week": 1
-      },
-      {
-        "player": "Delanie Walker",
-        "team": "TEN",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "loss",
-        "rationale": "Walker avg 72.5 rec yds/g on 8.9 tgts — top TE usage. MIN defense was stout but Walker's volume is elite. Kendall Wright OUT elevates Walker target share further.",
-        "season": 2016,
-        "week": 1
-      },
-      {
-        "player": "Greg Olsen",
-        "team": "CAR",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "Olsen avg 70.3 rec yds/g on 7.7 tgts — elite TE. DEN pass D was elite but CAR vs DEN outdoor game, Olsen is Cam Newton's safety valve. Volume supports over.",
-        "season": 2016,
-        "week": 1
-      },
-      {
-        "player": "Jordan Reed",
-        "team": "WAS",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "Reed avg 71.5 rec yds/g on 8.7 tgts — elite usage. PIT at WAS outdoors 4mph wind, 79F. PIT pass rush focus may leave Reed open; Cousins-Reed connection is elite.",
-        "season": 2016,
-        "week": 1
-      },
-      {
-        "player": "Brandin Cooks",
-        "team": "NO",
-        "stat": "recYds",
-        "threshold": 50,
-        "side": "over",
-        "result": "win",
-        "rationale": "Cooks avg 71.1 rec yds/g on 8.1 tgts in dome vs OAK. Indoor dome in NO removes weather. Brees-Cooks is high-volume connection; OAK pass D was average in 2015.",
-        "season": 2016,
-        "week": 1
-      }
-    ]
-  },
+  "props": null,
   "parlays": {
     "record": {
-      "wins": 34,
-      "losses": 60,
+      "wins": 1,
+      "losses": 4,
       "pushes": 0
     },
-    "settled": 94,
-    "roiPct": 165.19,
-    "winRatePct": 36.2,
-    "breakEvenPct": 13.7,
-    "avgLegsEdge": 0.1335,
-    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 36.2% win rate clears the 13.7% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
+    "settled": 5,
+    "roiPct": 44.87,
+    "winRatePct": 20,
+    "breakEvenPct": 13.8,
+    "avgLegsEdge": 0.084,
+    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 20% win rate clears the 13.8% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
   }
 }
