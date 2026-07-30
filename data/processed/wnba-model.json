@@ -1,44 +1,20 @@
 {
-  "generatedAt": "2026-07-29T23:40:41.126Z",
+  "generatedAt": "2026-07-30T16:01:58.712Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 5,
+  "recordCount": 6,
   "errors": [],
   "data": {
-    "generatedAt": "2026-07-29T23:40:41.126Z",
+    "generatedAt": "2026-07-30T16:01:58.712Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 5,
+    "gameCount": 6,
     "results": [
-      {
-        "eventId": "fd_35854850",
-        "homeTeam": "Dallas Wings",
-        "awayTeam": "Atlanta Dream",
-        "homeWinProb": 0.6285,
-        "awayWinProb": 0.3715,
-        "expectedMargin": 5.01,
-        "homeNetRtg": 9.125,
-        "awayNetRtg": 1.3333333333333333,
-        "calibrated": false,
-        "startTime": "2026-07-30T00:00:00.000Z"
-      },
-      {
-        "eventId": "fd_35854868",
-        "homeTeam": "Phoenix Mercury",
-        "awayTeam": "Golden State Valkyries",
-        "homeWinProb": 0.462,
-        "awayWinProb": 0.538,
-        "expectedMargin": -1.45,
-        "homeNetRtg": -3.111111111111111,
-        "awayNetRtg": 3.4444444444444446,
-        "calibrated": false,
-        "startTime": "2026-07-30T02:00:00.000Z"
-      },
       {
         "eventId": "fd_35855631",
         "homeTeam": "Chicago Sky",
@@ -55,10 +31,10 @@
         "eventId": "fd_35855636",
         "homeTeam": "Toronto Tempo",
         "awayTeam": "Minnesota Lynx",
-        "homeWinProb": 0.4063,
-        "awayWinProb": 0.5937,
-        "expectedMargin": -3.61,
-        "homeNetRtg": -4.461538461538462,
+        "homeWinProb": 0.3823,
+        "awayWinProb": 0.6177,
+        "expectedMargin": -4.57,
+        "homeNetRtg": -6.583333333333333,
         "awayNetRtg": 6.9,
         "calibrated": false,
         "startTime": "2026-07-31T00:00:00.000Z"
@@ -74,6 +50,42 @@
         "awayNetRtg": -0.6666666666666666,
         "calibrated": false,
         "startTime": "2026-07-31T02:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35879422",
+        "homeTeam": "Atlanta Dream",
+        "awayTeam": "Seattle Storm",
+        "homeWinProb": 0.7159,
+        "awayWinProb": 0.2841,
+        "expectedMargin": 8.8,
+        "homeNetRtg": 6.5,
+        "awayNetRtg": -9.727272727272727,
+        "calibrated": false,
+        "startTime": "2026-07-31T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35879425",
+        "homeTeam": "Washington Mystics",
+        "awayTeam": "Dallas Wings",
+        "homeWinProb": 0.5393,
+        "awayWinProb": 0.4607,
+        "expectedMargin": 1.5,
+        "homeNetRtg": 0.2727272727272727,
+        "awayNetRtg": 0.2727272727272727,
+        "calibrated": false,
+        "startTime": "2026-07-31T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35879421",
+        "homeTeam": "Portland Fire",
+        "awayTeam": "Indiana Fever",
+        "homeWinProb": 0.4373,
+        "awayWinProb": 0.5627,
+        "expectedMargin": -2.4,
+        "homeNetRtg": -4.666666666666667,
+        "awayNetRtg": 4,
+        "calibrated": false,
+        "startTime": "2026-08-01T02:00:00.000Z"
       }
     ]
   }
