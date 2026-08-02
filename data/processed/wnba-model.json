@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-08-01T23:38:25.500Z",
+  "generatedAt": "2026-08-02T15:16:46.750Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 6,
+  "recordCount": 7,
   "errors": [],
   "data": {
-    "generatedAt": "2026-08-01T23:38:25.500Z",
+    "generatedAt": "2026-08-02T15:16:46.750Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 6,
+    "gameCount": 7,
     "results": [
       {
         "eventId": "fd_35887063",
@@ -43,11 +43,11 @@
         "eventId": "fd_35887066",
         "homeTeam": "Dallas Wings",
         "awayTeam": "Connecticut Sun",
-        "homeWinProb": 0.6919,
-        "awayWinProb": 0.3081,
-        "expectedMargin": 7.71,
+        "homeWinProb": 0.6813,
+        "awayWinProb": 0.3187,
+        "expectedMargin": 7.24,
         "homeNetRtg": 6.125,
-        "awayNetRtg": -7.666666666666667,
+        "awayNetRtg": -6.625,
         "calibrated": false,
         "startTime": "2026-08-02T23:00:00.000Z"
       },
@@ -55,10 +55,10 @@
         "eventId": "fd_35887065",
         "homeTeam": "Golden State Valkyries",
         "awayTeam": "Toronto Tempo",
-        "homeWinProb": 0.703,
-        "awayWinProb": 0.297,
-        "expectedMargin": 8.21,
-        "homeNetRtg": 6.9,
+        "homeWinProb": 0.6907,
+        "awayWinProb": 0.3093,
+        "expectedMargin": 7.65,
+        "homeNetRtg": 5.666666666666667,
         "awayNetRtg": -8,
         "calibrated": false,
         "startTime": "2026-08-03T00:30:00.000Z"
@@ -79,13 +79,25 @@
         "eventId": "fd_35890380",
         "homeTeam": "Atlanta Dream",
         "awayTeam": "Las Vegas Aces",
-        "homeWinProb": 0.5672,
-        "awayWinProb": 0.4328,
-        "expectedMargin": 2.58,
-        "homeNetRtg": 6.7272727272727275,
-        "awayNetRtg": 4.333333333333333,
+        "homeWinProb": 0.5707,
+        "awayWinProb": 0.4293,
+        "expectedMargin": 2.71,
+        "homeNetRtg": 5.8,
+        "awayNetRtg": 3.111111111111111,
         "calibrated": false,
         "startTime": "2026-08-03T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35890379",
+        "homeTeam": "Chicago Sky",
+        "awayTeam": "Phoenix Mercury",
+        "homeWinProb": 0.6788,
+        "awayWinProb": 0.3212,
+        "expectedMargin": 7.13,
+        "homeNetRtg": 6.8,
+        "awayNetRtg": -5.7,
+        "calibrated": false,
+        "startTime": "2026-08-04T01:00:00.000Z"
       }
     ]
   }
