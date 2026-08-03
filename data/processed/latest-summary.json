@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T16:38:50.785Z",
+  "generatedAt": "2026-08-03T23:45:15.905Z",
   "ready": true,
   "recordsIngested": 729,
   "recordsCompleted": 729,
@@ -783,6 +783,35 @@
     {
       "league": "MLB",
       "conference": null,
+      "gameDate": "2026-08-03T23:06:00.000Z",
+      "matchup": "St. Louis Cardinals at New York Yankees",
+      "pickTeam": "New York Yankees",
+      "opponent": "St. Louis Cardinals",
+      "spread": 2.5,
+      "modelSpread": 2.3,
+      "line": "New York Yankees +2.5",
+      "score": 67,
+      "confidence": 63,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample New York Yankees: 24 games (mapped Yankees) vs St. Louis Cardinals: 26 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: New York Yankees 2d rest vs St. Louis Cardinals 2d rest",
+        "Net Rating edge: +1.1",
+        "Home SP: Cam Schlittler",
+        "Away SP: Michael McGreevy",
+        "MLB model: 69.4% win prob (calibrated) | Edge vs market: +37.1%"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.694,
+      "mlbEdge": 0.3714,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
       "gameDate": "2026-08-04T00:11:00.000Z",
       "matchup": "Toronto Blue Jays at Houston Astros",
       "pickTeam": "Houston Astros",
@@ -790,8 +819,8 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Houston Astros -1.5",
-      "score": 60,
-      "confidence": 56,
+      "score": 62,
+      "confidence": 58,
       "rationaleSignals": [
         "Momentum edge +0.60 (last-10 trend proxy)",
         "ATS edge +0.200",
@@ -799,18 +828,51 @@
         "Home court (+1 pt adjustment)",
         "Rest: Houston Astros 2d rest vs Toronto Blue Jays 2d rest",
         "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +1.6"
+        "Net Rating edge: +1.6",
+        "Home SP: Cristian Javier",
+        "Away SP: Shane Bieber",
+        "MLB model: 63.2% win prob (calibrated)"
       ],
       "momentumEdge": 0.6,
       "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6324,
+      "mlbEdge": 0.0319,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-08-03T22:41:00.000Z",
+      "matchup": "Washington Nationals at Philadelphia Phillies",
+      "pickTeam": "Philadelphia Phillies",
+      "opponent": "Washington Nationals",
+      "spread": 2.5,
+      "modelSpread": 2.3,
+      "line": "Philadelphia Phillies +2.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.00 (last-10 trend proxy)",
+        "ATS edge -0.100",
+        "History sample Philadelphia Phillies: 23 games (mapped Phillies) vs Washington Nationals: 23 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Philadelphia Phillies 2d rest vs Washington Nationals 2d rest",
+        "Net Rating edge: +1.7",
+        "Home SP: Aaron Nola",
+        "Away SP: Andrew Alvarez",
+        "MLB model: 57.2% win prob (calibrated) | Edge vs market: +29.4%"
+      ],
+      "momentumEdge": 0,
+      "atsEdge": -0.1,
+      "mlbModelProb": 0.572,
+      "mlbEdge": 0.2942,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-08-03",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-08-03 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 3 eligible games found on 2026-08-03 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -2183,14 +2245,6 @@
         "returnDate": "2026-08-15"
       },
       {
-        "player": "C.J. Gardner-Johnson",
-        "team": "Buffalo Bills",
-        "position": "S",
-        "status": "Questionable",
-        "injuryType": "Calf",
-        "returnDate": "2026-08-15"
-      },
-      {
         "player": "Tyrell Shavers",
         "team": "Buffalo Bills",
         "position": "WR",
@@ -2271,20 +2325,12 @@
         "returnDate": "2026-08-06"
       },
       {
-        "player": "Taylor Moton",
-        "team": "Carolina Panthers",
-        "position": "OT",
-        "status": "Out",
-        "injuryType": "Illness",
-        "returnDate": "2026-09-27"
-      },
-      {
         "player": "Coby Bryant",
         "team": "Chicago Bears",
         "position": "S",
         "status": "Questionable",
         "injuryType": "Knee",
-        "returnDate": "2026-08-15"
+        "returnDate": "2026-09-28"
       },
       {
         "player": "Elijah Hicks",
@@ -2375,11 +2421,35 @@
         "returnDate": "2026-08-13"
       },
       {
+        "player": "KC Concepcion",
+        "team": "Cleveland Browns",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Shoulder",
+        "returnDate": "2026-08-15"
+      },
+      {
         "player": "Maliek Collins",
         "team": "Cleveland Browns",
         "position": "DT",
         "status": "Out",
         "injuryType": "Quadriceps",
+        "returnDate": "2026-08-15"
+      },
+      {
+        "player": "Princeton Fant",
+        "team": "Dallas Cowboys",
+        "position": "TE",
+        "status": "Questionable",
+        "injuryType": "Knee",
+        "returnDate": "2026-08-15"
+      },
+      {
+        "player": "P.J. Locke",
+        "team": "Dallas Cowboys",
+        "position": "S",
+        "status": "Questionable",
+        "injuryType": "Knee",
         "returnDate": "2026-08-15"
       },
       {
@@ -2399,14 +2469,6 @@
         "returnDate": "2026-08-15"
       },
       {
-        "player": "P.J. Locke",
-        "team": "Dallas Cowboys",
-        "position": "S",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-08-15"
-      },
-      {
         "player": "James Houston",
         "team": "Dallas Cowboys",
         "position": "LB",
@@ -2423,11 +2485,11 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Joseph Manjack IV",
+        "player": "Caleb Lohner",
         "team": "Denver Broncos",
-        "position": "WR",
+        "position": "TE",
         "status": "Questionable",
-        "injuryType": "Back",
+        "injuryType": "Lower Body",
         "returnDate": "2026-08-14"
       },
       {
@@ -2445,22 +2507,6 @@
         "status": "Out",
         "injuryType": "Undisclosed",
         "returnDate": "2026-08-14"
-      },
-      {
-        "player": "Caleb Lohner",
-        "team": "Denver Broncos",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Lower Body",
-        "returnDate": "2026-08-14"
-      },
-      {
-        "player": "Jahmyr Gibbs",
-        "team": "Detroit Lions",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Back",
-        "returnDate": "2026-08-13"
       },
       {
         "player": "Sione Vaki",
@@ -2487,19 +2533,27 @@
         "returnDate": "2026-08-13"
       },
       {
-        "player": "Derrick Moore",
-        "team": "Detroit Lions",
-        "position": "DE",
-        "status": "Questionable",
-        "injuryType": "Groin",
-        "returnDate": "2026-08-13"
-      },
-      {
         "player": "Miles Kitselman",
         "team": "Detroit Lions",
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Leg",
+        "returnDate": "2026-08-13"
+      },
+      {
+        "player": "Jahmyr Gibbs",
+        "team": "Detroit Lions",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Back",
+        "returnDate": "2026-08-13"
+      },
+      {
+        "player": "Derrick Moore",
+        "team": "Detroit Lions",
+        "position": "DE",
+        "status": "Questionable",
+        "injuryType": "Groin",
         "returnDate": "2026-08-13"
       },
       {
@@ -3079,6 +3133,14 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Makai Lemon",
+        "team": "Philadelphia Eagles",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-15"
+      },
+      {
         "player": "Micah Morris",
         "team": "Philadelphia Eagles",
         "position": "G",
@@ -3143,6 +3205,38 @@
         "returnDate": "2026-08-13"
       },
       {
+        "player": "Christian Kirk",
+        "team": "San Francisco 49ers",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Calf",
+        "returnDate": "2026-08-13"
+      },
+      {
+        "player": "De'Zhaun Stribling",
+        "team": "San Francisco 49ers",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-08-13"
+      },
+      {
+        "player": "Kaelon Black",
+        "team": "San Francisco 49ers",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Thigh",
+        "returnDate": "2026-08-13"
+      },
+      {
+        "player": "Mike Evans",
+        "team": "San Francisco 49ers",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Quadriceps",
+        "returnDate": "2026-08-13"
+      },
+      {
         "player": "Tanner McLachlan",
         "team": "San Francisco 49ers",
         "position": "TE",
@@ -3172,14 +3266,6 @@
         "position": "DE",
         "status": "Questionable",
         "injuryType": "Knee",
-        "returnDate": "2026-08-13"
-      },
-      {
-        "player": "De'Zhaun Stribling",
-        "team": "San Francisco 49ers",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
         "returnDate": "2026-08-13"
       },
       {
@@ -3244,14 +3330,6 @@
         "position": "OT",
         "status": "Questionable",
         "injuryType": "Ankle",
-        "returnDate": "2026-08-13"
-      },
-      {
-        "player": "Christian Kirk",
-        "team": "San Francisco 49ers",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Calf",
         "returnDate": "2026-08-13"
       },
       {
@@ -3335,6 +3413,14 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Treylon Burks",
+        "team": "Washington Commanders",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Foot",
+        "returnDate": "2026-08-14"
+      },
+      {
         "player": "Nick Allegretti",
         "team": "Washington Commanders",
         "position": "G",
@@ -3348,14 +3434,6 @@
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Hamstring",
-        "returnDate": "2026-08-14"
-      },
-      {
-        "player": "Treylon Burks",
-        "team": "Washington Commanders",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Foot",
         "returnDate": "2026-08-14"
       },
       {
