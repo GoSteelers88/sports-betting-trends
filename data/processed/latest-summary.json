@@ -1,41 +1,57 @@
 {
-  "generatedAt": "2026-08-07T01:39:24.311Z",
+  "generatedAt": "2026-08-07T15:18:05.368Z",
   "ready": true,
-  "recordsIngested": 711,
-  "recordsCompleted": 711,
+  "recordsIngested": 718,
+  "recordsCompleted": 718,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 684,
+      "games": 692,
       "conferences": [
+        "NL West",
         "AL East",
         "AL West",
         "NL Central",
         "Unknown",
         "AL Central",
-        "NL East",
-        "NL West"
+        "NL East"
       ],
-      "avgPoints": 4.302631578947368,
+      "avgPoints": 4.32514450867052,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 4.7,
+      "recentAvgPoints": 4.8,
       "recentAvgYards": null,
-      "trendScore": 32,
+      "trendScore": 31,
       "trendSignal": "down",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 684,
-        "rpg": 4.3,
-        "oppRpg": 4.3,
-        "hitsPerGame": 8.12,
+        "games": 692,
+        "rpg": 4.33,
+        "oppRpg": 4.33,
+        "hitsPerGame": 8.15,
         "errorsPerGame": 0.54,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Diamondbacks": {
+          "games": 24,
+          "rpg": 5.75,
+          "oppRpg": 4.38,
+          "hitsPerGame": 9.21,
+          "errorsPerGame": 0.38,
+          "sos": 0.52
+        },
+        "Padres": {
+          "games": 24,
+          "rpg": 5.38,
+          "oppRpg": 4.21,
+          "hitsPerGame": 9.25,
+          "errorsPerGame": 0.5,
+          "sos": null
+        },
         "Orioles": {
           "games": 22,
           "rpg": 4.14,
@@ -148,21 +164,53 @@
           "errorsPerGame": 0.65,
           "sos": 0.52
         },
-        "Diamondbacks": {
-          "games": 23,
-          "rpg": 5.96,
-          "oppRpg": 4.35,
-          "hitsPerGame": 9.26,
-          "errorsPerGame": 0.39,
+        "Red Sox": {
+          "games": 24,
+          "rpg": 5.58,
+          "oppRpg": 3.08,
+          "hitsPerGame": 8.42,
+          "errorsPerGame": 0.63,
           "sos": 0.52
         },
-        "Padres": {
+        "White Sox": {
           "games": 23,
-          "rpg": 5.39,
-          "oppRpg": 4.35,
-          "hitsPerGame": 9.13,
-          "errorsPerGame": 0.52,
+          "rpg": 5,
+          "oppRpg": 3.96,
+          "hitsPerGame": 7.87,
+          "errorsPerGame": 0.83,
+          "sos": 0.52
+        },
+        "Braves": {
+          "games": 24,
+          "rpg": 5.17,
+          "oppRpg": 3.88,
+          "hitsPerGame": 8.71,
+          "errorsPerGame": 0.58,
           "sos": null
+        },
+        "Marlins": {
+          "games": 23,
+          "rpg": 3.3,
+          "oppRpg": 4.48,
+          "hitsPerGame": 7.43,
+          "errorsPerGame": 0.87,
+          "sos": null
+        },
+        "Royals": {
+          "games": 23,
+          "rpg": 3.39,
+          "oppRpg": 4.78,
+          "hitsPerGame": 7.74,
+          "errorsPerGame": 0.48,
+          "sos": null
+        },
+        "Twins": {
+          "games": 23,
+          "rpg": 3.57,
+          "oppRpg": 4.48,
+          "hitsPerGame": 7.13,
+          "errorsPerGame": 0.26,
+          "sos": 0.52
         },
         "Astros": {
           "games": 21,
@@ -227,54 +275,6 @@
           "hitsPerGame": 7.33,
           "errorsPerGame": 0.29,
           "sos": null
-        },
-        "Red Sox": {
-          "games": 23,
-          "rpg": 5.3,
-          "oppRpg": 2.74,
-          "hitsPerGame": 8.09,
-          "errorsPerGame": 0.57,
-          "sos": 0.52
-        },
-        "White Sox": {
-          "games": 22,
-          "rpg": 4.73,
-          "oppRpg": 3.59,
-          "hitsPerGame": 7.64,
-          "errorsPerGame": 0.82,
-          "sos": 0.52
-        },
-        "Braves": {
-          "games": 23,
-          "rpg": 4.91,
-          "oppRpg": 3.91,
-          "hitsPerGame": 8.48,
-          "errorsPerGame": 0.61,
-          "sos": null
-        },
-        "Marlins": {
-          "games": 22,
-          "rpg": 3.32,
-          "oppRpg": 4.18,
-          "hitsPerGame": 7.41,
-          "errorsPerGame": 0.77,
-          "sos": null
-        },
-        "Royals": {
-          "games": 22,
-          "rpg": 3.41,
-          "oppRpg": 4.82,
-          "hitsPerGame": 7.77,
-          "errorsPerGame": 0.5,
-          "sos": null
-        },
-        "Twins": {
-          "games": 22,
-          "rpg": 3.55,
-          "oppRpg": 4.55,
-          "hitsPerGame": 7.14,
-          "errorsPerGame": 0.27,
-          "sos": 0.52
         },
         "National": {
           "games": 1,
@@ -500,87 +500,121 @@
     },
     {
       "league": "NFL",
-      "games": 3,
+      "games": 2,
       "conferences": [
-        "AFC West",
-        "AFC East",
-        "AFC North"
+        "NFC West",
+        "NFC South"
       ],
-      "avgPoints": 27.333333333333332,
+      "avgPoints": 31.5,
       "avgRebounds": null,
       "avgAssists": null,
-      "avgYards": 382.3333333333333,
-      "recentAvgPoints": 27.333333333333332,
-      "recentAvgYards": 382.3333333333333,
-      "trendScore": 50,
+      "avgYards": null,
+      "recentAvgPoints": 31.5,
+      "recentAvgYards": null,
+      "trendScore": 47,
       "trendSignal": "flat",
       "confidence": 0.35,
       "ncaab": null,
       "advanced": {
-        "games": 3,
-        "ppg": 27.33,
-        "oppPpg": 0,
-        "ypg": null,
-        "oppYpg": 0,
-        "turnoverMargin": null,
-        "thirdDownPct": null,
-        "redZonePct": null,
-        "avgTop": null,
-        "sos": 0.41
+        "games": 2,
+        "ppg": 31.5,
+        "oppPpg": 31.5,
+        "ypg": 401.5,
+        "oppYpg": 401.5,
+        "turnoverMargin": 0,
+        "thirdDownPct": 0.62,
+        "redZonePct": 0.58,
+        "avgTop": 30,
+        "sos": 0.32
       },
       "teamAdvanced": {
-        "KC": {
+        "ARI": {
           "games": 1,
-          "ppg": 27,
-          "oppPpg": 0,
-          "ypg": null,
-          "oppYpg": 0,
-          "turnoverMargin": null,
-          "thirdDownPct": null,
-          "redZonePct": null,
-          "avgTop": null,
-          "sos": 0.35
-        },
-        "BUF": {
-          "games": 1,
-          "ppg": 31,
-          "oppPpg": 0,
-          "ypg": null,
-          "oppYpg": 0,
-          "turnoverMargin": null,
-          "thirdDownPct": null,
-          "redZonePct": null,
-          "avgTop": null,
-          "sos": 0.41
-        },
-        "PIT": {
-          "games": 1,
-          "ppg": 24,
-          "oppPpg": 0,
-          "ypg": null,
-          "oppYpg": 0,
-          "turnoverMargin": null,
-          "thirdDownPct": null,
-          "redZonePct": null,
-          "avgTop": null,
+          "ppg": 30,
+          "oppPpg": 33,
+          "ypg": 378,
+          "oppYpg": 425,
+          "turnoverMargin": -1,
+          "thirdDownPct": 0.64,
+          "redZonePct": 0.67,
+          "avgTop": 25.65,
           "sos": 0.47
+        },
+        "CAR": {
+          "games": 1,
+          "ppg": 33,
+          "oppPpg": 30,
+          "ypg": 425,
+          "oppYpg": 378,
+          "turnoverMargin": 1,
+          "thirdDownPct": 0.58,
+          "redZonePct": 0.5,
+          "avgTop": 34.35,
+          "sos": 0.18
         }
       }
     }
   ],
   "latestByLeague": [
     {
-      "league": "MLB",
-      "conference": "AL East",
-      "gameDate": "2026-08-06T00:00:00.000Z",
-      "team": "Orioles",
-      "opponent": "Angels",
-      "points": 1,
-      "opponentPoints": 4,
+      "league": "NFL",
+      "conference": "NFC West",
+      "gameDate": "2026-08-07T00:00:00.000Z",
+      "team": "ARI",
+      "opponent": "CAR",
+      "points": 30,
+      "opponentPoints": 33,
       "rebounds": null,
       "assists": null,
       "yards": null,
-      "spread": -1.5,
+      "spread": 1.5,
+      "atsResult": "L",
+      "won": false,
+      "teamRank": null,
+      "opponentRank": null,
+      "bubbleStatus": null,
+      "autoBidStatus": null,
+      "fgm": null,
+      "fga": null,
+      "threepm": null,
+      "threepa": null,
+      "ftm": null,
+      "fta": null,
+      "offRebounds": null,
+      "defRebounds": null,
+      "steals": null,
+      "blocks": null,
+      "turnovers": null,
+      "passingYards": 237,
+      "rushingYards": 141,
+      "opponentYards": 425,
+      "turnoversFor": 0,
+      "turnoversAgainst": 1,
+      "thirdDownConv": 9,
+      "thirdDownAtt": 14,
+      "redZoneConv": 4,
+      "redZoneAtt": 6,
+      "timeOfPossession": 25.65,
+      "homeAway": "home",
+      "hits": null,
+      "errors": null,
+      "source": "espn-public-api",
+      "sourceEventId": "401873271",
+      "gameStatus": "Final",
+      "completionEvidence": "espn-status-completed"
+    },
+    {
+      "league": "MLB",
+      "conference": "NL West",
+      "gameDate": "2026-08-07T00:00:00.000Z",
+      "team": "Diamondbacks",
+      "opponent": "Padres",
+      "points": 1,
+      "opponentPoints": 5,
+      "rebounds": null,
+      "assists": null,
+      "yards": null,
+      "spread": 1.5,
       "atsResult": "L",
       "won": false,
       "teamRank": null,
@@ -609,10 +643,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 4,
-      "errors": 1,
+      "hits": 8,
+      "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401816414",
+      "sourceEventId": "401816423",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -709,61 +743,11 @@
       "sourceEventId": null,
       "gameStatus": "MANUAL_FINAL_UNVERIFIED",
       "completionEvidence": "manual-boxscore-export"
-    },
-    {
-      "league": "NFL",
-      "conference": "AFC West",
-      "gameDate": "2026-01-13T00:00:00.000Z",
-      "team": "KC",
-      "opponent": "CIN",
-      "points": 27,
-      "opponentPoints": null,
-      "rebounds": null,
-      "assists": null,
-      "yards": 389,
-      "spread": null,
-      "atsResult": null,
-      "won": null,
-      "teamRank": null,
-      "opponentRank": null,
-      "bubbleStatus": null,
-      "autoBidStatus": null,
-      "fgm": null,
-      "fga": null,
-      "threepm": null,
-      "threepa": null,
-      "ftm": null,
-      "fta": null,
-      "offRebounds": null,
-      "defRebounds": null,
-      "steals": null,
-      "blocks": null,
-      "turnovers": null,
-      "passingYards": null,
-      "rushingYards": null,
-      "opponentYards": null,
-      "turnoversFor": null,
-      "turnoversAgainst": null,
-      "thirdDownConv": null,
-      "thirdDownAtt": null,
-      "redZoneConv": null,
-      "redZoneAtt": null,
-      "timeOfPossession": null,
-      "homeAway": null,
-      "hits": null,
-      "errors": null,
-      "source": "Manual export from Pro-Football-Reference game finder",
-      "sourceEventId": null,
-      "gameStatus": "MANUAL_FINAL_UNVERIFIED",
-      "completionEvidence": "manual-game-finder-export"
     }
   ],
   "conferences": [
     "AAC",
     "ACC",
-    "AFC East",
-    "AFC North",
-    "AFC West",
     "AL Central",
     "AL East",
     "AL West",
@@ -772,6 +756,8 @@
     "Big Ten",
     "Eastern",
     "Mountain West",
+    "NFC South",
+    "NFC West",
     "NL Central",
     "NL East",
     "NL West",
@@ -783,37 +769,93 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-08-06T23:11:00.000Z",
-      "matchup": "Chicago White Sox at Boston Red Sox",
+      "gameDate": "2026-08-07T23:11:00.000Z",
+      "matchup": "Athletics at Boston Red Sox",
       "pickTeam": "Boston Red Sox",
-      "opponent": "Chicago White Sox",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "Boston Red Sox +1.5",
-      "score": 67,
-      "confidence": 63,
+      "opponent": "Athletics",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Boston Red Sox -1.5",
+      "score": 70,
+      "confidence": 66,
       "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.100",
-        "History sample Boston Red Sox: 23 games (mapped Red Sox) vs Chicago White Sox: 22 games",
+        "Momentum edge +1.60 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Boston Red Sox: 24 games (mapped Red Sox) vs Athletics: 23 games",
         "Home court (+1 pt adjustment)",
-        "Rest: Boston Red Sox 2d rest vs Chicago White Sox 2d rest",
-        "Net Rating edge: +3.3",
-        "Home SP: Sonny Gray",
-        "Away SP: Sean Burke",
-        "MLB model: 66.8% win prob (calibrated) | Edge vs market: +25.1%"
+        "Rest: Boston Red Sox 2d rest vs Athletics 2d rest",
+        "Net Rating edge: +6.3",
+        "Home SP: Payton Tolle",
+        "Away SP: Jack Perkins",
+        "MLB model: 74.8% win prob (calibrated)"
       ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.1,
-      "mlbModelProb": 0.668,
-      "mlbEdge": 0.2513,
+      "momentumEdge": 1.6,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.7476,
+      "mlbEdge": 0.0254,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-08-07T23:11:00.000Z",
+      "matchup": "Los Angeles Angels at Miami Marlins",
+      "pickTeam": "Miami Marlins",
+      "opponent": "Los Angeles Angels",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Miami Marlins -1.5",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Miami Marlins: 23 games (mapped Marlins) vs Los Angeles Angels: 22 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Miami Marlins 2d rest vs Los Angeles Angels 2d rest",
+        "Net Rating edge: +0.8",
+        "Home SP: Tyler Phillips",
+        "Away SP: George Klassen",
+        "MLB model: 66.8% win prob (calibrated) | Edge vs market: +8.1%"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.6677,
+      "mlbEdge": 0.0809,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-08-08T00:11:00.000Z",
+      "matchup": "Chicago Cubs at Kansas City Royals",
+      "pickTeam": "Chicago Cubs",
+      "opponent": "Kansas City Royals",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Chicago Cubs -1.5",
+      "score": 57,
+      "confidence": 52,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Chicago Cubs: 24 games (mapped Cubs) vs Kansas City Royals: 23 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Chicago Cubs 2d rest vs Kansas City Royals 2d rest",
+        "Net Rating edge: +2.6",
+        "MLB model: 56.9% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.569,
+      "mlbEdge": -0.0464,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
-  "topBestBetsDateEt": "2026-08-06",
+  "topBestBetsDateEt": "2026-08-07",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-08-06 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 3 eligible games found on 2026-08-07 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -861,22 +903,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Kingston Flemings",
-        "team": "Atlanta Hawks",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Jock Landale",
-        "team": "Atlanta Hawks",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
         "returnDate": "2026-10-01"
       },
       {
@@ -952,27 +978,11 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Jalen Smith",
-        "team": "Chicago Bulls",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Calf",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Josh Giddey",
         "team": "Chicago Bulls",
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Nic Claxton",
-        "team": "Chicago Bulls",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Finger",
         "returnDate": "2026-10-01"
       },
       {
@@ -1674,14 +1684,6 @@
         "returnDate": "2026-08-06"
       },
       {
-        "player": "Karson Sharar",
-        "team": "Arizona Cardinals",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-08-06"
-      },
-      {
         "player": "DeAngelo Malone",
         "team": "Atlanta Falcons",
         "position": "LB",
@@ -1706,14 +1708,6 @@
         "returnDate": "2026-08-28"
       },
       {
-        "player": "Troy Andersen",
-        "team": "Atlanta Falcons",
-        "position": "LB",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-08-14"
-      },
-      {
         "player": "Billy Bowman Jr.",
         "team": "Atlanta Falcons",
         "position": "CB",
@@ -1734,6 +1728,14 @@
         "team": "Atlanta Falcons",
         "position": "DT",
         "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-14"
+      },
+      {
+        "player": "Xavier Watts",
+        "team": "Atlanta Falcons",
+        "position": "S",
+        "status": "Questionable",
         "injuryType": "Undisclosed",
         "returnDate": "2026-08-14"
       },
@@ -1824,14 +1826,6 @@
         "status": "Questionable",
         "injuryType": "Calf",
         "returnDate": "2026-08-06"
-      },
-      {
-        "player": "Nic Scourton",
-        "team": "Carolina Panthers",
-        "position": "LB",
-        "status": "Injured Reserve",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2027-02-15"
       },
       {
         "player": "Kyler Gordon",
@@ -2154,6 +2148,14 @@
         "returnDate": "2026-08-13"
       },
       {
+        "player": "Jaylin Noel",
+        "team": "Houston Texans",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Finger",
+        "returnDate": "2026-08-13"
+      },
+      {
         "player": "Tank Dell",
         "team": "Houston Texans",
         "position": "WR",
@@ -2184,14 +2186,6 @@
         "status": "Out",
         "injuryType": "Quadriceps",
         "returnDate": "2026-09-13"
-      },
-      {
-        "player": "Jaylin Noel",
-        "team": "Houston Texans",
-        "position": "WR",
-        "status": "Out",
-        "injuryType": "Finger",
-        "returnDate": "2026-08-13"
       },
       {
         "player": "Jamal Hill",
@@ -2279,14 +2273,6 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Shoulder",
-        "returnDate": "2026-08-15"
-      },
-      {
-        "player": "Cyrus Allen",
-        "team": "Kansas City Chiefs",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Lower Leg",
         "returnDate": "2026-08-15"
       },
       {
@@ -2464,6 +2450,14 @@
         "status": "Out",
         "injuryType": "Undisclosed",
         "returnDate": "2026-08-13"
+      },
+      {
+        "player": "Christen Miller",
+        "team": "New Orleans Saints",
+        "position": "DT",
+        "status": "Questionable",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-08-15"
       },
       {
         "player": "Keeshawn Silver",
@@ -2850,27 +2844,11 @@
         "returnDate": "2026-08-14"
       },
       {
-        "player": "Trey Amos",
-        "team": "Washington Commanders",
-        "position": "CB",
-        "status": "Out",
-        "injuryType": "Lower Leg",
-        "returnDate": "2026-08-14"
-      },
-      {
         "player": "Deatrich Wise Jr.",
         "team": "Washington Commanders",
         "position": "DE",
         "status": "Out",
         "injuryType": "Quadriceps",
-        "returnDate": "2026-08-14"
-      },
-      {
-        "player": "Dorance Armstrong",
-        "team": "Washington Commanders",
-        "position": "DE",
-        "status": "Out",
-        "injuryType": "Knee - ACL",
         "returnDate": "2026-08-14"
       }
     ]

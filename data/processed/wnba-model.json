@@ -1,44 +1,20 @@
 {
-  "generatedAt": "2026-08-07T01:39:48.927Z",
+  "generatedAt": "2026-08-07T15:18:27.499Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 5,
+  "recordCount": 6,
   "errors": [],
   "data": {
-    "generatedAt": "2026-08-07T01:39:48.927Z",
+    "generatedAt": "2026-08-07T15:18:27.499Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 5,
+    "gameCount": 6,
     "results": [
-      {
-        "eventId": "fd_35902002",
-        "homeTeam": "Minnesota Lynx",
-        "awayTeam": "Los Angeles Sparks",
-        "homeWinProb": 0.7353,
-        "awayWinProb": 0.2647,
-        "expectedMargin": 9.73,
-        "homeNetRtg": 9.2,
-        "awayNetRtg": -9.090909090909092,
-        "calibrated": false,
-        "startTime": "2026-08-07T01:05:00.000Z"
-      },
-      {
-        "eventId": "fd_35902001",
-        "homeTeam": "Portland Fire",
-        "awayTeam": "Toronto Tempo",
-        "homeWinProb": 0.5726,
-        "awayWinProb": 0.4274,
-        "expectedMargin": 2.79,
-        "homeNetRtg": -5.857142857142857,
-        "awayNetRtg": -8.714285714285714,
-        "calibrated": false,
-        "startTime": "2026-08-07T02:00:00.000Z"
-      },
       {
         "eventId": "fd_35905473",
         "homeTeam": "Connecticut Sun",
@@ -74,6 +50,42 @@
         "awayNetRtg": 4.625,
         "calibrated": false,
         "startTime": "2026-08-08T01:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35909479",
+        "homeTeam": "Minnesota Lynx",
+        "awayTeam": "Las Vegas Aces",
+        "homeWinProb": 0.5743,
+        "awayWinProb": 0.4257,
+        "expectedMargin": 2.85,
+        "homeNetRtg": 7.7272727272727275,
+        "awayNetRtg": 4.7272727272727275,
+        "calibrated": false,
+        "startTime": "2026-08-08T17:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35909477",
+        "homeTeam": "Chicago Sky",
+        "awayTeam": "Indiana Fever",
+        "homeWinProb": 0.5499,
+        "awayWinProb": 0.4501,
+        "expectedMargin": 1.91,
+        "homeNetRtg": 5.909090909090909,
+        "awayNetRtg": 5,
+        "calibrated": false,
+        "startTime": "2026-08-08T19:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35909481",
+        "homeTeam": "Portland Fire",
+        "awayTeam": "Seattle Storm",
+        "homeWinProb": 0.5882,
+        "awayWinProb": 0.4118,
+        "expectedMargin": 3.39,
+        "homeNetRtg": -3.375,
+        "awayNetRtg": -7.583333333333333,
+        "calibrated": false,
+        "startTime": "2026-08-09T00:30:00.000Z"
       }
     ]
   }
