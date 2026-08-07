@@ -1,76 +1,17 @@
 {
-  "fetchedAt": "2026-08-07T00:49:11.107Z",
+  "fetchedAt": "2026-08-07T01:42:20.331Z",
   "leagues": "basketball_nba,basketball_wnba,baseball_mlb,icehockey_nhl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 26,
+  "eventCount": 25,
   "sampleEvent": {
-    "id": "fd_35901772",
+    "id": "fd_35902002",
     "sport_key": "basketball_wnba",
-    "commence_time": "2026-08-06T23:06:00.000Z",
-    "home_team": "Indiana Fever",
-    "away_team": "Las Vegas Aces"
+    "commence_time": "2026-08-07T01:05:00.000Z",
+    "home_team": "Minnesota Lynx",
+    "away_team": "Los Angeles Sparks"
   },
   "events": [
-    {
-      "id": "fd_35901772",
-      "sport_key": "basketball_wnba",
-      "sport_title": "WNBA",
-      "commence_time": "2026-08-06T23:06:00.000Z",
-      "home_team": "Indiana Fever",
-      "away_team": "Las Vegas Aces",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -138
-                },
-                {
-                  "name": "Indiana Fever",
-                  "price": 108
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -118,
-                  "point": -1.5
-                },
-                {
-                  "name": "Indiana Fever",
-                  "price": -112,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -122,
-                  "point": 149.5
-                },
-                {
-                  "name": "Under",
-                  "price": -108,
-                  "point": 149.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_35902002",
       "sport_key": "basketball_wnba",
@@ -88,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Sparks",
-                  "price": 880
+                  "price": 390
                 },
                 {
                   "name": "Minnesota Lynx",
-                  "price": -1800
+                  "price": -590
                 }
               ]
             },
@@ -101,62 +42,13 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Sparks",
-                  "price": -112,
-                  "point": 16.5
+                  "price": -125,
+                  "point": 9.5
                 },
                 {
                   "name": "Minnesota Lynx",
-                  "price": -108,
-                  "point": -16.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
                   "price": -106,
-                  "point": 187.5
-                },
-                {
-                  "name": "Under",
-                  "price": -114,
-                  "point": 187.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Los Angeles Sparks",
-                  "price": -105,
-                  "point": 16.5
-                },
-                {
-                  "name": "Minnesota Lynx",
-                  "price": -115,
-                  "point": -16.5
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Los Angeles Sparks",
-                  "price": 850
-                },
-                {
-                  "name": "Minnesota Lynx",
-                  "price": -1800
+                  "point": -9.5
                 }
               ]
             },
@@ -165,13 +57,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
-                  "point": 187
+                  "price": -128,
+                  "point": 185.5
                 },
                 {
                   "name": "Under",
-                  "price": -105,
-                  "point": 187
+                  "price": -104,
+                  "point": 185.5
                 }
               ]
             }
@@ -354,12 +246,25 @@
                 {
                   "name": "Phoenix Mercury",
                   "price": -110,
-                  "point": -5
+                  "point": -6
                 },
                 {
                   "name": "Connecticut Sun",
                   "price": -110,
-                  "point": 5
+                  "point": 6
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Phoenix Mercury",
+                  "price": -235
+                },
+                {
+                  "name": "Connecticut Sun",
+                  "price": 195
                 }
               ]
             },
@@ -368,13 +273,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
-                  "point": 171.5
+                  "price": -105,
+                  "point": 172
                 },
                 {
                   "name": "Under",
-                  "price": -105,
-                  "point": 171.5
+                  "price": -115,
+                  "point": 172
                 }
               ]
             }
@@ -448,13 +353,26 @@
               "outcomes": [
                 {
                   "name": "Atlanta Dream",
-                  "price": -110,
+                  "price": -105,
                   "point": -4
                 },
                 {
                   "name": "Washington Mystics",
-                  "price": -110,
+                  "price": -115,
                   "point": 4
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Atlanta Dream",
+                  "price": -175
+                },
+                {
+                  "name": "Washington Mystics",
+                  "price": 150
                 }
               ]
             },
@@ -464,12 +382,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 171
+                  "point": 170.5
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 171
+                  "point": 170.5
                 }
               ]
             }
@@ -494,11 +412,11 @@
               "outcomes": [
                 {
                   "name": "Golden State Valkyries",
-                  "price": -105
+                  "price": -106
                 },
                 {
                   "name": "Dallas Wings",
-                  "price": -115
+                  "price": -114
                 }
               ]
             },
@@ -543,72 +461,26 @@
               "outcomes": [
                 {
                   "name": "Golden State Valkyries",
-                  "price": -105,
-                  "point": 0
+                  "price": -115,
+                  "point": 1.5
                 },
                 {
                   "name": "Dallas Wings",
-                  "price": -115,
-                  "point": 0
+                  "price": -105,
+                  "point": -1.5
                 }
               ]
             },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 164
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 164
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_35905479",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-08-06T22:06:00.000Z",
-      "home_team": "Philadelphia Phillies",
-      "away_team": "Washington Nationals",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
             {
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Washington Nationals",
-                  "price": 10000
+                  "name": "Golden State Valkyries",
+                  "price": 105
                 },
                 {
-                  "name": "Philadelphia Phillies",
-                  "price": -100000
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Washington Nationals",
-                  "price": 1400,
-                  "point": 3.5
-                },
-                {
-                  "name": "Philadelphia Phillies",
-                  "price": -8000,
-                  "point": -3.5
+                  "name": "Dallas Wings",
+                  "price": -125
                 }
               ]
             },
@@ -617,13 +489,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 1400,
-                  "point": 10.5
+                  "price": -105,
+                  "point": 164
                 },
                 {
                   "name": "Under",
-                  "price": -8000,
-                  "point": 10.5
+                  "price": -115,
+                  "point": 164
                 }
               ]
             }
@@ -648,11 +520,11 @@
               "outcomes": [
                 {
                   "name": "Chicago White Sox",
-                  "price": -135
+                  "price": -250
                 },
                 {
                   "name": "Boston Red Sox",
-                  "price": 120
+                  "price": 220
                 }
               ]
             },
@@ -661,12 +533,12 @@
               "outcomes": [
                 {
                   "name": "Chicago White Sox",
-                  "price": 142,
+                  "price": 220,
                   "point": -1.5
                 },
                 {
                   "name": "Boston Red Sox",
-                  "price": -192,
+                  "price": -310,
                   "point": 1.5
                 }
               ]
@@ -676,13 +548,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 100,
-                  "point": 15.5
+                  "price": -172,
+                  "point": 14.5
                 },
                 {
                   "name": "Under",
-                  "price": -132,
-                  "point": 15.5
+                  "price": 128,
+                  "point": 14.5
                 }
               ]
             }
@@ -707,11 +579,11 @@
               "outcomes": [
                 {
                   "name": "Miami Marlins",
-                  "price": 390
+                  "price": 490
                 },
                 {
                   "name": "Atlanta Braves",
-                  "price": -480
+                  "price": -600
                 }
               ]
             },
@@ -720,12 +592,12 @@
               "outcomes": [
                 {
                   "name": "Miami Marlins",
-                  "price": -138,
+                  "price": -144,
                   "point": 2.5
                 },
                 {
                   "name": "Atlanta Braves",
-                  "price": 104,
+                  "price": 108,
                   "point": -2.5
                 }
               ]
@@ -735,13 +607,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 108,
-                  "point": 7.5
+                  "price": -136,
+                  "point": 5.5
                 },
                 {
                   "name": "Under",
-                  "price": -144,
-                  "point": 7.5
+                  "price": 102,
+                  "point": 5.5
                 }
               ]
             }
@@ -766,11 +638,11 @@
               "outcomes": [
                 {
                   "name": "Minnesota Twins",
-                  "price": 220
+                  "price": 600
                 },
                 {
                   "name": "Kansas City Royals",
-                  "price": -250
+                  "price": -800
                 }
               ]
             },
@@ -779,12 +651,12 @@
               "outcomes": [
                 {
                   "name": "Minnesota Twins",
-                  "price": -154,
+                  "price": 182,
                   "point": 1.5
                 },
                 {
                   "name": "Kansas City Royals",
-                  "price": 116,
+                  "price": -250,
                   "point": -1.5
                 }
               ]
@@ -794,13 +666,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 124,
-                  "point": 7.5
+                  "price": -158,
+                  "point": 4.5
                 },
                 {
                   "name": "Under",
-                  "price": -166,
-                  "point": 7.5
+                  "price": 118,
+                  "point": 4.5
                 }
               ]
             }
@@ -825,11 +697,11 @@
               "outcomes": [
                 {
                   "name": "San Diego Padres",
-                  "price": -104
+                  "price": -140
                 },
                 {
                   "name": "Arizona Diamondbacks",
-                  "price": -104
+                  "price": 125
                 }
               ]
             },
@@ -838,12 +710,12 @@
               "outcomes": [
                 {
                   "name": "San Diego Padres",
-                  "price": 152,
+                  "price": 110,
                   "point": -1.5
                 },
                 {
                   "name": "Arizona Diamondbacks",
-                  "price": -184,
+                  "price": -146,
                   "point": 1.5
                 }
               ]
@@ -853,13 +725,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -114,
-                  "point": 9
+                  "price": -125,
+                  "point": 9.5
                 },
                 {
                   "name": "Under",
                   "price": -106,
-                  "point": 9
+                  "point": 9.5
                 }
               ]
             }
@@ -1074,12 +946,12 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Angels",
-                  "price": -156,
+                  "price": -152,
                   "point": 1.5
                 },
                 {
                   "name": "Miami Marlins",
-                  "price": 130,
+                  "price": 126,
                   "point": -1.5
                 }
               ]
@@ -1266,12 +1138,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -106,
+                  "price": -102,
                   "point": 8.5
                 },
                 {
                   "name": "Under",
-                  "price": -114,
+                  "price": -120,
                   "point": 8.5
                 }
               ]
@@ -1391,6 +1263,65 @@
                   "name": "Under",
                   "price": -128,
                   "point": 8.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_35909492",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-08-08T01:41:00.000Z",
+      "home_team": "Arizona Diamondbacks",
+      "away_team": "Los Angeles Dodgers",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": -166
+                },
+                {
+                  "name": "Arizona Diamondbacks",
+                  "price": 140
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Dodgers",
+                  "price": 100,
+                  "point": -1.5
+                },
+                {
+                  "name": "Arizona Diamondbacks",
+                  "price": -120,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 104,
+                  "point": 9.5
+                },
+                {
+                  "name": "Under",
+                  "price": -128,
+                  "point": 9.5
                 }
               ]
             }
