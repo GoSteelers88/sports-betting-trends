@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T15:18:05.368Z",
+  "generatedAt": "2026-08-07T23:17:24.971Z",
   "ready": true,
   "recordsIngested": 718,
   "recordsCompleted": 718,
@@ -57,14 +57,14 @@
           "rpg": 4.14,
           "oppRpg": 4.14,
           "hitsPerGame": 6.82,
-          "errorsPerGame": 0.86,
+          "errorsPerGame": 0.91,
           "sos": null
         },
         "Angels": {
           "games": 22,
           "rpg": 2.82,
           "oppRpg": 3.95,
-          "hitsPerGame": 7.5,
+          "hitsPerGame": 7.45,
           "errorsPerGame": 0.45,
           "sos": null
         },
@@ -773,26 +773,27 @@
       "matchup": "Athletics at Boston Red Sox",
       "pickTeam": "Boston Red Sox",
       "opponent": "Athletics",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Boston Red Sox -1.5",
-      "score": 70,
-      "confidence": 66,
+      "spread": -2,
+      "modelSpread": -1.8,
+      "line": "Boston Red Sox -2",
+      "score": 72,
+      "confidence": 68,
       "rationaleSignals": [
         "Momentum edge +1.60 (last-10 trend proxy)",
         "ATS edge +0.200",
         "History sample Boston Red Sox: 24 games (mapped Red Sox) vs Athletics: 23 games",
         "Home court (+1 pt adjustment)",
         "Rest: Boston Red Sox 2d rest vs Athletics 2d rest",
+        "2 books: avg -2, variance 0.25 (tight consensus)",
         "Net Rating edge: +6.3",
         "Home SP: Payton Tolle",
         "Away SP: Jack Perkins",
-        "MLB model: 74.8% win prob (calibrated)"
+        "MLB model: 76.3% win prob (calibrated)"
       ],
       "momentumEdge": 1.6,
       "atsEdge": 0.2,
-      "mlbModelProb": 0.7476,
-      "mlbEdge": 0.0254,
+      "mlbModelProb": 0.7626,
+      "mlbEdge": -0.0047,
       "mlbCalibrated": true
     },
     {
@@ -805,23 +806,83 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Miami Marlins -1.5",
-      "score": 64,
-      "confidence": 60,
+      "score": 63,
+      "confidence": 59,
       "rationaleSignals": [
         "Momentum edge +0.60 (last-10 trend proxy)",
         "ATS edge +0.200",
         "History sample Miami Marlins: 23 games (mapped Marlins) vs Los Angeles Angels: 22 games",
         "Home court (+1 pt adjustment)",
         "Rest: Miami Marlins 2d rest vs Los Angeles Angels 2d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
         "Net Rating edge: +0.8",
         "Home SP: Tyler Phillips",
         "Away SP: George Klassen",
-        "MLB model: 66.8% win prob (calibrated) | Edge vs market: +8.1%"
+        "MLB model: 65.2% win prob (calibrated) | Edge vs market: +7.7%"
       ],
       "momentumEdge": 0.6,
       "atsEdge": 0.2,
-      "mlbModelProb": 0.6677,
-      "mlbEdge": 0.0809,
+      "mlbModelProb": 0.6522,
+      "mlbEdge": 0.0771,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-08-08T02:16:00.000Z",
+      "matchup": "Detroit Tigers at San Francisco Giants",
+      "pickTeam": "Detroit Tigers",
+      "opponent": "San Francisco Giants",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Detroit Tigers -1.5",
+      "score": 61,
+      "confidence": 57,
+      "rationaleSignals": [
+        "Momentum edge +0.40 (last-10 trend proxy)",
+        "ATS edge -0.100",
+        "History sample Detroit Tigers: 23 games (mapped Tigers) vs San Francisco Giants: 23 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Detroit Tigers 2d rest vs San Francisco Giants 3d rest",
+        "4 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +5.0",
+        "Away SP: Keider Montero",
+        "MLB model: 61.1% win prob (calibrated) | Edge vs market: +5.7%"
+      ],
+      "momentumEdge": 0.4,
+      "atsEdge": -0.1,
+      "mlbModelProb": 0.6105,
+      "mlbEdge": 0.0567,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-08-07T23:41:00.000Z",
+      "matchup": "Minnesota Twins at Milwaukee Brewers",
+      "pickTeam": "Milwaukee Brewers",
+      "opponent": "Minnesota Twins",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Milwaukee Brewers -1.5",
+      "score": 60,
+      "confidence": 56,
+      "rationaleSignals": [
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample Milwaukee Brewers: 23 games (mapped Brewers) vs Minnesota Twins: 23 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Milwaukee Brewers 2d rest vs Minnesota Twins 2d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +0.4",
+        "Home SP: Shane Drohan",
+        "Away SP: Zebby Matthews",
+        "MLB model: 65.5% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.2,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.6549,
+      "mlbEdge": 0.0181,
       "mlbCalibrated": true
     },
     {
@@ -834,28 +895,30 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Chicago Cubs -1.5",
-      "score": 57,
-      "confidence": 52,
+      "score": 60,
+      "confidence": 56,
       "rationaleSignals": [
         "Momentum edge +0.60 (last-10 trend proxy)",
         "ATS edge +0.200",
         "History sample Chicago Cubs: 24 games (mapped Cubs) vs Kansas City Royals: 23 games",
         "Away (+-1 pt adjustment)",
         "Rest: Chicago Cubs 2d rest vs Kansas City Royals 2d rest",
+        "4 books: avg -1.5, variance 0 (tight consensus)",
         "Net Rating edge: +2.6",
-        "MLB model: 56.9% win prob (calibrated)"
+        "Home SP: Daniel Lynch IV",
+        "MLB model: 62.6% win prob (calibrated)"
       ],
       "momentumEdge": 0.6,
       "atsEdge": 0.2,
-      "mlbModelProb": 0.569,
-      "mlbEdge": -0.0464,
+      "mlbModelProb": 0.6265,
+      "mlbEdge": 0.0021,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-08-07",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 3 eligible games found on 2026-08-07 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": null,
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -890,43 +953,11 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Asa Newell",
-        "team": "Atlanta Hawks",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Zuby Ejiofor",
-        "team": "Atlanta Hawks",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Jayson Tatum",
         "team": "Boston Celtics",
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Knee",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Chris Cenac Jr.",
-        "team": "Boston Celtics",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Hugo Gonzalez",
-        "team": "Boston Celtics",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
         "returnDate": "2026-10-01"
       },
       {
@@ -954,14 +985,6 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Noa Essengue",
-        "team": "Chicago Bulls",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Thumb",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Dailyn Swain",
         "team": "Chicago Bulls",
         "position": "G",
@@ -986,14 +1009,6 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Isaac Okoro",
-        "team": "Chicago Bulls",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Quadriceps",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Rob Dillingham",
         "team": "Chicago Bulls",
         "position": "G",
@@ -1002,35 +1017,11 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Tristan Enaruna",
-        "team": "Cleveland Cavaliers",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Illness",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Nae'Qwan Tomlin",
-        "team": "Cleveland Cavaliers",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Kyrie Irving",
         "team": "Dallas Mavericks",
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Knee",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Morez Johnson Jr.",
-        "team": "Dallas Mavericks",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Illness",
         "returnDate": "2026-10-01"
       },
       {
@@ -1047,14 +1038,6 @@
         "position": "C",
         "status": "Day-To-Day",
         "injuryType": "Foot",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Caleb Martin",
-        "team": "Dallas Mavericks",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Heel",
         "returnDate": "2026-10-01"
       },
       {
@@ -1258,14 +1241,6 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Joan Beringer",
-        "team": "Minnesota Timberwolves",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Back",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Donte DiVincenzo",
         "team": "Minnesota Timberwolves",
         "position": "G",
@@ -1322,14 +1297,6 @@
         "returnDate": "2026-10-01"
       },
       {
-        "player": "Aday Mara",
-        "team": "Oklahoma City Thunder",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Thomas Sorber",
         "team": "Oklahoma City Thunder",
         "position": "C",
@@ -1351,22 +1318,6 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Back",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Noah Penda",
-        "team": "Orlando Magic",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Jase Richardson",
-        "team": "Orlando Magic",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
         "returnDate": "2026-10-01"
       },
       {
@@ -1407,22 +1358,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Hamstring",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Rasheer Fleming",
-        "team": "Phoenix Suns",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Not Injury Related",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Khaman Maluach",
-        "team": "Phoenix Suns",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
         "returnDate": "2026-10-01"
       },
       {
@@ -1498,14 +1433,6 @@
         "returnDate": "2026-12-01"
       },
       {
-        "player": "Tarris Reed Jr.",
-        "team": "San Antonio Spurs",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
         "player": "Nate Bittle",
         "team": "Toronto Raptors",
         "position": "C",
@@ -1519,14 +1446,6 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Knee",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Allen Graves",
-        "team": "Toronto Raptors",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
         "returnDate": "2026-10-01"
       },
       {
@@ -1673,14 +1592,6 @@
         "position": "CB",
         "status": "Out",
         "injuryType": "Achilles",
-        "returnDate": "2026-08-06"
-      },
-      {
-        "player": "Tip Reiman",
-        "team": "Arizona Cardinals",
-        "position": "TE",
-        "status": "Out",
-        "injuryType": "Ankle",
         "returnDate": "2026-08-06"
       },
       {
@@ -1908,19 +1819,19 @@
         "returnDate": "2026-08-13"
       },
       {
-        "player": "Nathaniel Watson",
-        "team": "Cleveland Browns",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Biceps",
-        "returnDate": "2026-08-15"
-      },
-      {
         "player": "KC Concepcion",
         "team": "Cleveland Browns",
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Shoulder",
+        "returnDate": "2026-08-15"
+      },
+      {
+        "player": "Nathaniel Watson",
+        "team": "Cleveland Browns",
+        "position": "LB",
+        "status": "Questionable",
+        "injuryType": "Biceps",
         "returnDate": "2026-08-15"
       },
       {
@@ -2084,6 +1995,14 @@
         "returnDate": "2026-08-13"
       },
       {
+        "player": "Brian Branch",
+        "team": "Detroit Lions",
+        "position": "S",
+        "status": "Out",
+        "injuryType": "Achilles",
+        "returnDate": "2026-08-13"
+      },
+      {
         "player": "Carrington Valentine",
         "team": "Green Bay Packers",
         "position": "CB",
@@ -2196,6 +2115,14 @@
         "returnDate": "2026-08-13"
       },
       {
+        "player": "Alec Pierce",
+        "team": "Indianapolis Colts",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Ankle",
+        "returnDate": "2026-08-13"
+      },
+      {
         "player": "Blake Freeland",
         "team": "Indianapolis Colts",
         "position": "OT",
@@ -2217,14 +2144,6 @@
         "position": "CB",
         "status": "Questionable",
         "injuryType": "Calf",
-        "returnDate": "2026-08-13"
-      },
-      {
-        "player": "Alec Pierce",
-        "team": "Indianapolis Colts",
-        "position": "WR",
-        "status": "Out",
-        "injuryType": "Ankle",
         "returnDate": "2026-08-13"
       },
       {
@@ -2260,11 +2179,11 @@
         "returnDate": "2026-08-15"
       },
       {
-        "player": "Mansoor Delane",
+        "player": "Patrick Mahomes",
         "team": "Kansas City Chiefs",
-        "position": "CB",
+        "position": "QB",
         "status": "Questionable",
-        "injuryType": "Shoulder",
+        "injuryType": "Knee - ACL",
         "returnDate": "2026-08-15"
       },
       {
@@ -2276,19 +2195,19 @@
         "returnDate": "2026-08-15"
       },
       {
+        "player": "Mansoor Delane",
+        "team": "Kansas City Chiefs",
+        "position": "CB",
+        "status": "Questionable",
+        "injuryType": "Shoulder",
+        "returnDate": "2026-08-15"
+      },
+      {
         "player": "Ashton Gillotte",
         "team": "Kansas City Chiefs",
         "position": "DE",
         "status": "Questionable",
         "injuryType": "Hamstring",
-        "returnDate": "2026-08-15"
-      },
-      {
-        "player": "Patrick Mahomes",
-        "team": "Kansas City Chiefs",
-        "position": "QB",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL",
         "returnDate": "2026-08-15"
       },
       {
