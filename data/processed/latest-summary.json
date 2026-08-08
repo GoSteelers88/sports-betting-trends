@@ -1,34 +1,34 @@
 {
-  "generatedAt": "2026-08-08T14:47:00.823Z",
+  "generatedAt": "2026-08-08T23:03:06.512Z",
   "ready": true,
-  "recordsIngested": 722,
-  "recordsCompleted": 722,
+  "recordsIngested": 728,
+  "recordsCompleted": 728,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 696,
+      "games": 702,
       "conferences": [
+        "AL East",
+        "NL East",
+        "AL West",
+        "Unknown",
         "AL Central",
         "NL Central",
-        "AL West",
-        "AL East",
-        "NL West",
-        "NL East",
-        "Unknown"
+        "NL West"
       ],
-      "avgPoints": 4.311781609195402,
+      "avgPoints": 4.311965811965812,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 3.4,
+      "recentAvgPoints": 3.9,
       "recentAvgYards": null,
-      "trendScore": 53,
+      "trendScore": 55,
       "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 696,
+        "games": 702,
         "rpg": 4.31,
         "oppRpg": 4.31,
         "hitsPerGame": 8.16,
@@ -36,6 +36,54 @@
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Yankees": {
+          "games": 24,
+          "rpg": 3.42,
+          "oppRpg": 3.5,
+          "hitsPerGame": 7.13,
+          "errorsPerGame": 0.38,
+          "sos": null
+        },
+        "Braves": {
+          "games": 25,
+          "rpg": 4.8,
+          "oppRpg": 3.84,
+          "hitsPerGame": 8.56,
+          "errorsPerGame": 0.56,
+          "sos": null
+        },
+        "Marlins": {
+          "games": 24,
+          "rpg": 3.25,
+          "oppRpg": 4.29,
+          "hitsPerGame": 7.54,
+          "errorsPerGame": 0.79,
+          "sos": null
+        },
+        "Angels": {
+          "games": 23,
+          "rpg": 2.61,
+          "oppRpg": 3.91,
+          "hitsPerGame": 7.17,
+          "errorsPerGame": 0.43,
+          "sos": null
+        },
+        "Red Sox": {
+          "games": 25,
+          "rpg": 5.92,
+          "oppRpg": 3.24,
+          "hitsPerGame": 8.92,
+          "errorsPerGame": 0.6,
+          "sos": 0.52
+        },
+        "Athletics": {
+          "games": 24,
+          "rpg": 3.58,
+          "oppRpg": 6.96,
+          "hitsPerGame": 7.71,
+          "errorsPerGame": 0.58,
+          "sos": null
+        },
         "Royals": {
           "games": 23,
           "rpg": 3.43,
@@ -195,54 +243,6 @@
           "hitsPerGame": 7.96,
           "errorsPerGame": 0.52,
           "sos": 0.52
-        },
-        "Yankees": {
-          "games": 23,
-          "rpg": 3.35,
-          "oppRpg": 3.48,
-          "hitsPerGame": 7.09,
-          "errorsPerGame": 0.39,
-          "sos": null
-        },
-        "Braves": {
-          "games": 24,
-          "rpg": 4.83,
-          "oppRpg": 3.79,
-          "hitsPerGame": 8.54,
-          "errorsPerGame": 0.58,
-          "sos": null
-        },
-        "Marlins": {
-          "games": 23,
-          "rpg": 3.09,
-          "oppRpg": 4.48,
-          "hitsPerGame": 7.43,
-          "errorsPerGame": 0.83,
-          "sos": null
-        },
-        "Angels": {
-          "games": 22,
-          "rpg": 2.73,
-          "oppRpg": 3.77,
-          "hitsPerGame": 7.27,
-          "errorsPerGame": 0.45,
-          "sos": null
-        },
-        "Red Sox": {
-          "games": 24,
-          "rpg": 6.04,
-          "oppRpg": 3.08,
-          "hitsPerGame": 8.88,
-          "errorsPerGame": 0.63,
-          "sos": 0.52
-        },
-        "Athletics": {
-          "games": 23,
-          "rpg": 3.43,
-          "oppRpg": 7.13,
-          "hitsPerGame": 7.7,
-          "errorsPerGame": 0.57,
-          "sos": null
         },
         "White Sox": {
           "games": 23,
@@ -558,18 +558,18 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "AL Central",
+      "conference": "AL East",
       "gameDate": "2026-08-08T00:00:00.000Z",
-      "team": "Royals",
-      "opponent": "Cubs",
-      "points": 4,
-      "opponentPoints": 6,
+      "team": "Yankees",
+      "opponent": "Braves",
+      "points": 5,
+      "opponentPoints": 4,
       "rebounds": null,
       "assists": null,
       "yards": null,
       "spread": 1.5,
-      "atsResult": "L",
-      "won": false,
+      "atsResult": "W",
+      "won": true,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -596,10 +596,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 7,
-      "errors": 1,
+      "hits": 8,
+      "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401816431",
+      "sourceEventId": "401816441",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -769,59 +769,31 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-08-08T20:11:00.000Z",
-      "matchup": "Athletics at Boston Red Sox",
-      "pickTeam": "Boston Red Sox",
-      "opponent": "Athletics",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Boston Red Sox -1.5",
-      "score": 75,
-      "confidence": 71,
-      "rationaleSignals": [
-        "Momentum edge +1.60 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Boston Red Sox: 24 games (mapped Red Sox) vs Athletics: 23 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Boston Red Sox 2d rest vs Athletics 2d rest",
-        "Net Rating edge: +8.3",
-        "Home SP: Payton Tolle",
-        "Away SP: Jack Perkins",
-        "MLB model: 76.2% win prob (calibrated) | Edge vs market: +5.6%"
-      ],
-      "momentumEdge": 1.6,
-      "atsEdge": 0.2,
-      "mlbModelProb": 0.7619,
-      "mlbEdge": 0.056,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
       "gameDate": "2026-08-08T23:11:00.000Z",
-      "matchup": "Minnesota Twins at Milwaukee Brewers",
-      "pickTeam": "Milwaukee Brewers",
-      "opponent": "Minnesota Twins",
+      "matchup": "Chicago Cubs at Kansas City Royals",
+      "pickTeam": "Chicago Cubs",
+      "opponent": "Kansas City Royals",
       "spread": -1.5,
       "modelSpread": -1.4,
-      "line": "Milwaukee Brewers -1.5",
-      "score": 64,
-      "confidence": 60,
+      "line": "Chicago Cubs -1.5",
+      "score": 61,
+      "confidence": 57,
       "rationaleSignals": [
-        "Momentum edge +0.20 (last-10 trend proxy)",
-        "ATS edge +0.100",
-        "History sample Milwaukee Brewers: 23 games (mapped Brewers) vs Minnesota Twins: 23 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Milwaukee Brewers 2d rest vs Minnesota Twins 2d rest",
-        "Net Rating edge: +0.6",
-        "Home SP: Shane Drohan",
-        "Away SP: Zebby Matthews",
-        "MLB model: 66.0% win prob (calibrated) | Edge vs market: +9.1%"
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample Chicago Cubs: 24 games (mapped Cubs) vs Kansas City Royals: 23 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Chicago Cubs B2B vs Kansas City Royals B2B",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +2.3",
+        "Home SP: Seth Lugo",
+        "Away SP: Clay Holmes",
+        "MLB model: 64.7% win prob (calibrated)"
       ],
-      "momentumEdge": 0.2,
-      "atsEdge": 0.1,
-      "mlbModelProb": 0.6604,
-      "mlbEdge": 0.0914,
+      "momentumEdge": 0.8,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.6471,
+      "mlbEdge": 0.0417,
       "mlbCalibrated": true
     },
     {
@@ -831,11 +803,11 @@
       "matchup": "New York Mets at Pittsburgh Pirates",
       "pickTeam": "New York Mets",
       "opponent": "Pittsburgh Pirates",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "New York Mets +1.5",
-      "score": 62,
-      "confidence": 58,
+      "spread": 3.5,
+      "modelSpread": 3.2,
+      "line": "New York Mets +3.5",
+      "score": 59,
+      "confidence": 54,
       "rationaleSignals": [
         "Momentum edge +0.80 (last-10 trend proxy)",
         "ATS edge +0.400",
@@ -843,108 +815,21 @@
         "Away (+-1 pt adjustment)",
         "Rest: New York Mets 2d rest vs Pittsburgh Pirates 2d rest",
         "Net Rating edge: +2.5",
-        "Home SP: Carmen Mlodzinski",
-        "Away SP: Zac Thornton",
-        "MLB model: 63.6% win prob (calibrated) | Edge vs market: +16.9%"
+        "Home SP: Bubba Chandler",
+        "Away SP: Robert Stock",
+        "MLB model: 55.3% win prob (calibrated) | Edge vs market: +34.9%"
       ],
       "momentumEdge": 0.8,
       "atsEdge": 0.4,
-      "mlbModelProb": 0.636,
-      "mlbEdge": 0.1687,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-08-08T23:16:00.000Z",
-      "matchup": "Detroit Tigers at San Francisco Giants",
-      "pickTeam": "Detroit Tigers",
-      "opponent": "San Francisco Giants",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Detroit Tigers -1.5",
-      "score": 62,
-      "confidence": 58,
-      "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge -0.100",
-        "History sample Detroit Tigers: 23 games (mapped Tigers) vs San Francisco Giants: 23 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Detroit Tigers B2B vs San Francisco Giants B2B",
-        "Net Rating edge: +4.8",
-        "Home SP: JT Brubaker",
-        "Away SP: Keider Montero",
-        "MLB model: 62.6% win prob (calibrated) | Edge vs market: +9.8%"
-      ],
-      "momentumEdge": 0.4,
-      "atsEdge": -0.1,
-      "mlbModelProb": 0.6258,
-      "mlbEdge": 0.0975,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-08-08T23:11:00.000Z",
-      "matchup": "Chicago Cubs at Kansas City Royals",
-      "pickTeam": "Chicago Cubs",
-      "opponent": "Kansas City Royals",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Chicago Cubs -1.5",
-      "score": 60,
-      "confidence": 56,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample Chicago Cubs: 24 games (mapped Cubs) vs Kansas City Royals: 23 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: Chicago Cubs B2B vs Kansas City Royals B2B",
-        "Net Rating edge: +2.3",
-        "Home SP: Daniel Lynch IV",
-        "Away SP: Kevin Gausman",
-        "MLB model: 62.7% win prob (calibrated)"
-      ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.3,
-      "mlbModelProb": 0.6274,
-      "mlbEdge": 0.015,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-08-08T20:11:00.000Z",
-      "matchup": "Los Angeles Angels at Miami Marlins",
-      "pickTeam": "Miami Marlins",
-      "opponent": "Los Angeles Angels",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Miami Marlins -1.5",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.000",
-        "History sample Miami Marlins: 23 games (mapped Marlins) vs Los Angeles Angels: 22 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Miami Marlins 2d rest vs Los Angeles Angels 2d rest",
-        "Net Rating edge: +0.6",
-        "Home SP: Tyler Phillips",
-        "Away SP: George Klassen",
-        "MLB model: 62.6% win prob (calibrated)"
-      ],
-      "momentumEdge": 0.4,
-      "atsEdge": 0,
-      "mlbModelProb": 0.6256,
-      "mlbEdge": 0.0193,
+      "mlbModelProb": 0.553,
+      "mlbEdge": 0.3489,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-08-08",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": null,
+  "bestBetsNote": "Only 2 eligible games found on 2026-08-08 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1573,6 +1458,14 @@
     ],
     "nfl": [
       {
+        "player": "Valentin Senn",
+        "team": "Arizona Cardinals",
+        "position": "OT",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-06"
+      },
+      {
         "player": "Joey Blount",
         "team": "Arizona Cardinals",
         "position": "S",
@@ -1845,6 +1738,14 @@
         "returnDate": "2026-08-15"
       },
       {
+        "player": "Jalen Thompson",
+        "team": "Dallas Cowboys",
+        "position": "S",
+        "status": "Questionable",
+        "injuryType": "Hip",
+        "returnDate": "2026-08-15"
+      },
+      {
         "player": "Princeton Fant",
         "team": "Dallas Cowboys",
         "position": "TE",
@@ -1882,14 +1783,6 @@
         "position": "S",
         "status": "Questionable",
         "injuryType": "Knee",
-        "returnDate": "2026-08-15"
-      },
-      {
-        "player": "Jalen Thompson",
-        "team": "Dallas Cowboys",
-        "position": "S",
-        "status": "Questionable",
-        "injuryType": "Hip",
         "returnDate": "2026-08-15"
       },
       {
@@ -2149,6 +2042,14 @@
         "returnDate": "2026-08-13"
       },
       {
+        "player": "Garrett DiGiorgio",
+        "team": "Jacksonville Jaguars",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-15"
+      },
+      {
         "player": "Chris Rodriguez Jr.",
         "team": "Jacksonville Jaguars",
         "position": "RB",
@@ -2162,14 +2063,6 @@
         "position": "LB",
         "status": "Questionable",
         "injuryType": "Knee",
-        "returnDate": "2026-08-15"
-      },
-      {
-        "player": "Garrett DiGiorgio",
-        "team": "Jacksonville Jaguars",
-        "position": "OT",
-        "status": "Out",
-        "injuryType": "Undisclosed",
         "returnDate": "2026-08-15"
       },
       {
@@ -2397,14 +2290,6 @@
         "returnDate": "2026-08-15"
       },
       {
-        "player": "Zxavian Harris",
-        "team": "New Orleans Saints",
-        "position": "DT",
-        "status": "Out",
-        "injuryType": "Foot",
-        "returnDate": "2026-08-15"
-      },
-      {
         "player": "Beaux Collins",
         "team": "New York Giants",
         "position": "WR",
@@ -2435,14 +2320,6 @@
         "status": "Out",
         "injuryType": "Achilles",
         "returnDate": "2026-12-06"
-      },
-      {
-        "player": "Rico Payton",
-        "team": "New York Giants",
-        "position": "CB",
-        "status": "Injured Reserve",
-        "injuryType": "Undisclosed",
-        "returnDate": "2027-02-15"
       },
       {
         "player": "D'Angelo Ponds",
@@ -2541,11 +2418,19 @@
         "returnDate": "2026-08-13"
       },
       {
-        "player": "Osa Odighizuwa",
+        "player": "Christian Kirk",
         "team": "San Francisco 49ers",
-        "position": "DT",
+        "position": "WR",
         "status": "Questionable",
-        "injuryType": "Elbow",
+        "injuryType": "Calf",
+        "returnDate": "2026-08-13"
+      },
+      {
+        "player": "Mike Evans",
+        "team": "San Francisco 49ers",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Quadriceps",
         "returnDate": "2026-08-13"
       },
       {
@@ -2557,11 +2442,11 @@
         "returnDate": "2026-08-13"
       },
       {
-        "player": "Mike Evans",
+        "player": "Osa Odighizuwa",
         "team": "San Francisco 49ers",
-        "position": "WR",
+        "position": "DT",
         "status": "Questionable",
-        "injuryType": "Quadriceps",
+        "injuryType": "Elbow",
         "returnDate": "2026-08-13"
       },
       {
@@ -2579,14 +2464,6 @@
         "status": "Injured Reserve",
         "injuryType": "Knee",
         "returnDate": "2027-02-15"
-      },
-      {
-        "player": "Christian Kirk",
-        "team": "San Francisco 49ers",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Calf",
-        "returnDate": "2026-08-13"
       },
       {
         "player": "Kaelon Black",
