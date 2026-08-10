@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-10T15:14:41.612Z",
+  "generatedAt": "2026-08-10T23:17:55.348Z",
   "ready": true,
   "recordsIngested": 722,
   "recordsCompleted": 722,
@@ -31,7 +31,7 @@
         "games": 696,
         "rpg": 4.34,
         "oppRpg": 4.34,
-        "hitsPerGame": 8.18,
+        "hitsPerGame": 8.17,
         "errorsPerGame": 0.55,
         "sos": 0.52
       },
@@ -232,7 +232,7 @@
           "games": 23,
           "rpg": 4.04,
           "oppRpg": 3.91,
-          "hitsPerGame": 7.35,
+          "hitsPerGame": 7.3,
           "errorsPerGame": 0.43,
           "sos": null
         },
@@ -769,6 +769,35 @@
     {
       "league": "MLB",
       "conference": null,
+      "gameDate": "2026-08-10T23:08:00.000Z",
+      "matchup": "Boston Red Sox at Toronto Blue Jays",
+      "pickTeam": "Boston Red Sox",
+      "opponent": "Toronto Blue Jays",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Boston Red Sox -1.5",
+      "score": 64,
+      "confidence": 60,
+      "rationaleSignals": [
+        "Momentum edge +0.40 (last-10 trend proxy)",
+        "ATS edge -0.100",
+        "History sample Boston Red Sox: 24 games (mapped Red Sox) vs Toronto Blue Jays: 24 games",
+        "Away (+-1 pt adjustment)",
+        "Rest: Boston Red Sox 2d rest vs Toronto Blue Jays 2d rest",
+        "Net Rating edge: +3.4",
+        "Home SP: Jameson Taillon",
+        "Away SP: Sonny Gray",
+        "MLB model: 65.0% win prob (calibrated) | Edge vs market: +9.5%"
+      ],
+      "momentumEdge": 0.4,
+      "atsEdge": -0.1,
+      "mlbModelProb": 0.6503,
+      "mlbEdge": 0.0947,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
       "gameDate": "2026-08-10T23:16:00.000Z",
       "matchup": "New York Mets at Atlanta Braves",
       "pickTeam": "Atlanta Braves",
@@ -776,8 +805,8 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Atlanta Braves -1.5",
-      "score": 59,
-      "confidence": 54,
+      "score": 58,
+      "confidence": 53,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
         "ATS edge +0.300",
@@ -785,18 +814,22 @@
         "Home court (+1 pt adjustment)",
         "Rest: Atlanta Braves 2d rest vs New York Mets 2d rest",
         "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +1.6"
+        "Net Rating edge: +1.6",
+        "Home SP: Bryce Elder",
+        "Away SP: Christian Scott",
+        "MLB model: 57.1% win prob (calibrated)"
       ],
       "momentumEdge": 0.4,
       "atsEdge": 0.3,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.5714,
+      "mlbEdge": -0.0204,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-08-10",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-08-10 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 2 eligible games found on 2026-08-10 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1457,14 +1490,6 @@
         "returnDate": "2026-08-06"
       },
       {
-        "player": "Jawaan Taylor",
-        "team": "Atlanta Falcons",
-        "position": "OT",
-        "status": "Out",
-        "injuryType": "Elbow",
-        "returnDate": "2026-08-14"
-      },
-      {
         "player": "Zach Harrison",
         "team": "Atlanta Falcons",
         "position": "DE",
@@ -1534,14 +1559,6 @@
         "position": "FB",
         "status": "Questionable",
         "injuryType": "Knee",
-        "returnDate": "2026-08-15"
-      },
-      {
-        "player": "Dorian Williams",
-        "team": "Buffalo Bills",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Lower Body",
         "returnDate": "2026-08-15"
       },
       {
@@ -1777,14 +1794,6 @@
         "returnDate": "2026-08-14"
       },
       {
-        "player": "Tyler Conklin",
-        "team": "Detroit Lions",
-        "position": "TE",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-08-13"
-      },
-      {
         "player": "Miles Kitselman",
         "team": "Detroit Lions",
         "position": "TE",
@@ -1833,6 +1842,14 @@
         "returnDate": "2026-08-13"
       },
       {
+        "player": "Tucker Kraft",
+        "team": "Green Bay Packers",
+        "position": "TE",
+        "status": "Questionable",
+        "injuryType": "Knee - ACL",
+        "returnDate": "2026-08-13"
+      },
+      {
         "player": "Javon Hargrave",
         "team": "Green Bay Packers",
         "position": "DT",
@@ -1857,35 +1874,11 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Brant Banks",
-        "team": "Green Bay Packers",
-        "position": "OT",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-08-13"
-      },
-      {
-        "player": "Tucker Kraft",
-        "team": "Green Bay Packers",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-13"
-      },
-      {
         "player": "Tank Dell",
         "team": "Houston Texans",
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Knee - ACL + MCL",
-        "returnDate": "2026-08-13"
-      },
-      {
-        "player": "Jaylin Noel",
-        "team": "Houston Texans",
-        "position": "WR",
-        "status": "Out",
-        "injuryType": "Finger",
         "returnDate": "2026-08-13"
       },
       {
@@ -1929,14 +1922,6 @@
         "returnDate": "2026-08-13"
       },
       {
-        "player": "Blake Freeland",
-        "team": "Indianapolis Colts",
-        "position": "OT",
-        "status": "Questionable",
-        "injuryType": "Leg",
-        "returnDate": "2026-08-13"
-      },
-      {
         "player": "Cameron Mitchell",
         "team": "Indianapolis Colts",
         "position": "CB",
@@ -1958,14 +1943,6 @@
         "position": "OT",
         "status": "Out",
         "injuryType": "Undisclosed",
-        "returnDate": "2026-08-15"
-      },
-      {
-        "player": "Chris Rodriguez Jr.",
-        "team": "Jacksonville Jaguars",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Foot",
         "returnDate": "2026-08-15"
       },
       {
@@ -2329,6 +2306,14 @@
         "returnDate": "2026-08-13"
       },
       {
+        "player": "George Kittle",
+        "team": "San Francisco 49ers",
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Achilles",
+        "returnDate": "2026-09-10"
+      },
+      {
         "player": "Christian Kirk",
         "team": "San Francisco 49ers",
         "position": "WR",
@@ -2409,22 +2394,6 @@
         "returnDate": "2026-08-13"
       },
       {
-        "player": "Nick Bosa",
-        "team": "San Francisco 49ers",
-        "position": "DE",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-13"
-      },
-      {
-        "player": "AJ Finley",
-        "team": "Seattle Seahawks",
-        "position": "S",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-08-15"
-      },
-      {
         "player": "Jake Bobo",
         "team": "Seattle Seahawks",
         "position": "WR",
@@ -2502,14 +2471,6 @@
         "position": "P",
         "status": "Out",
         "injuryType": "Pectoral",
-        "returnDate": "2026-08-14"
-      },
-      {
-        "player": "Treylon Burks",
-        "team": "Washington Commanders",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Foot",
         "returnDate": "2026-08-14"
       },
       {
