@@ -1,31 +1,39 @@
 {
-  "generatedAt": "2026-08-10T23:18:05.077Z",
+  "generatedAt": "2026-08-11T15:16:45.026Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
   "recordCount": 1,
-  "errors": [],
+  "errors": [
+    "unmodeled: Boston Celtics @ Detroit Pistons (fd_35928218)",
+    "unmodeled: Philadelphia 76ers @ New York Knicks (fd_35928228)",
+    "unmodeled: Oklahoma City Thunder @ San Antonio Spurs (fd_35928229)",
+    "unmodeled: Miami Heat @ Boston Celtics (fd_35928397)",
+    "unmodeled: Philadelphia 76ers @ Los Angeles Lakers (fd_35928398)",
+    "unmodeled: Oklahoma City Thunder @ Minnesota Timberwolves (fd_35928399)",
+    "unmodeled: Denver Nuggets @ Golden State Warriors (fd_35928400)"
+  ],
   "data": {
-    "generatedAt": "2026-08-10T23:18:05.077Z",
+    "generatedAt": "2026-08-11T15:16:45.026Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 2,
-    "gameCount": 1,
+    "gameCount": 8,
     "results": [
       {
-        "eventId": "fd_35676895",
-        "homeTeam": "San Antonio Spurs",
-        "awayTeam": "New York Knicks",
-        "homeWinProb": 0.4451,
-        "awayWinProb": 0.5549,
-        "expectedMargin": -2.1,
-        "homeNetRtg": -4,
-        "awayNetRtg": 4,
+        "eventId": "fd_35928396",
+        "homeTeam": "New York Knicks",
+        "awayTeam": "San Antonio Spurs",
+        "homeWinProb": 0.6308,
+        "awayWinProb": 0.3692,
+        "expectedMargin": 5.1,
+        "homeNetRtg": 4,
+        "awayNetRtg": -4,
         "calibrated": false,
-        "startTime": "2026-06-14T00:40:00.000Z"
+        "startTime": "2026-12-25T17:00:00.000Z"
       }
     ]
   }
