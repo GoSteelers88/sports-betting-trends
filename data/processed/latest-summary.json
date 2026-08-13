@@ -1,41 +1,137 @@
 {
-  "generatedAt": "2026-08-13T15:12:39.717Z",
+  "generatedAt": "2026-08-13T23:23:41.621Z",
   "ready": true,
-  "recordsIngested": 770,
-  "recordsCompleted": 770,
+  "recordsIngested": 782,
+  "recordsCompleted": 782,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 744,
+      "games": 756,
       "conferences": [
-        "AL West",
-        "NL West",
         "AL Central",
-        "AL East",
-        "NL Central",
         "NL East",
-        "Unknown"
+        "NL Central",
+        "Unknown",
+        "AL East",
+        "AL West",
+        "NL West"
       ],
-      "avgPoints": 4.356182795698925,
+      "avgPoints": 4.351851851851852,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 4.5,
+      "recentAvgPoints": 4.2,
       "recentAvgYards": null,
-      "trendScore": 52,
+      "trendScore": 44,
       "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 744,
-        "rpg": 4.36,
-        "oppRpg": 4.36,
-        "hitsPerGame": 8.19,
+        "games": 756,
+        "rpg": 4.35,
+        "oppRpg": 4.35,
+        "hitsPerGame": 8.17,
         "errorsPerGame": 0.53,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Tigers": {
+          "games": 25,
+          "rpg": 5.8,
+          "oppRpg": 3.16,
+          "hitsPerGame": 9.64,
+          "errorsPerGame": 0.4,
+          "sos": 0.52
+        },
+        "Guardians": {
+          "games": 25,
+          "rpg": 3.92,
+          "oppRpg": 5.04,
+          "hitsPerGame": 8.32,
+          "errorsPerGame": 0.84,
+          "sos": null
+        },
+        "Marlins": {
+          "games": 25,
+          "rpg": 3.84,
+          "oppRpg": 4.36,
+          "hitsPerGame": 7.72,
+          "errorsPerGame": 0.8,
+          "sos": null
+        },
+        "Pirates": {
+          "games": 26,
+          "rpg": 3.88,
+          "oppRpg": 4.62,
+          "hitsPerGame": 7.85,
+          "errorsPerGame": 0.65,
+          "sos": null
+        },
+        "White Sox": {
+          "games": 25,
+          "rpg": 4.8,
+          "oppRpg": 4.6,
+          "hitsPerGame": 7.8,
+          "errorsPerGame": 0.72,
+          "sos": null
+        },
+        "Reds": {
+          "games": 25,
+          "rpg": 4.04,
+          "oppRpg": 4.72,
+          "hitsPerGame": 7.04,
+          "errorsPerGame": 0.52,
+          "sos": 0.52
+        },
+        "Yankees": {
+          "games": 25,
+          "rpg": 3.32,
+          "oppRpg": 3.4,
+          "hitsPerGame": 6.8,
+          "errorsPerGame": 0.28,
+          "sos": null
+        },
+        "Mariners": {
+          "games": 25,
+          "rpg": 3.08,
+          "oppRpg": 4.76,
+          "hitsPerGame": 7.2,
+          "errorsPerGame": 0.44,
+          "sos": null
+        },
+        "Blue Jays": {
+          "games": 27,
+          "rpg": 3.33,
+          "oppRpg": 4.3,
+          "hitsPerGame": 7.89,
+          "errorsPerGame": 0.63,
+          "sos": null
+        },
+        "Red Sox": {
+          "games": 27,
+          "rpg": 5.67,
+          "oppRpg": 3.48,
+          "hitsPerGame": 8.85,
+          "errorsPerGame": 0.67,
+          "sos": 0.52
+        },
+        "Nationals": {
+          "games": 26,
+          "rpg": 5.62,
+          "oppRpg": 5,
+          "hitsPerGame": 9.08,
+          "errorsPerGame": 0.58,
+          "sos": 0.52
+        },
+        "Cubs": {
+          "games": 26,
+          "rpg": 5.77,
+          "oppRpg": 3.62,
+          "hitsPerGame": 9.5,
+          "errorsPerGame": 0.35,
+          "sos": null
+        },
         "Angels": {
           "games": 24,
           "rpg": 2.63,
@@ -164,86 +260,6 @@
           "errorsPerGame": 0.52,
           "sos": null
         },
-        "Tigers": {
-          "games": 24,
-          "rpg": 5.92,
-          "oppRpg": 3.29,
-          "hitsPerGame": 9.79,
-          "errorsPerGame": 0.38,
-          "sos": 0.52
-        },
-        "Guardians": {
-          "games": 24,
-          "rpg": 4.08,
-          "oppRpg": 5.13,
-          "hitsPerGame": 8.5,
-          "errorsPerGame": 0.83,
-          "sos": null
-        },
-        "Marlins": {
-          "games": 24,
-          "rpg": 3.96,
-          "oppRpg": 4,
-          "hitsPerGame": 7.92,
-          "errorsPerGame": 0.83,
-          "sos": null
-        },
-        "Pirates": {
-          "games": 25,
-          "rpg": 3.52,
-          "oppRpg": 4.76,
-          "hitsPerGame": 7.52,
-          "errorsPerGame": 0.64,
-          "sos": null
-        },
-        "Nationals": {
-          "games": 25,
-          "rpg": 5.56,
-          "oppRpg": 5.2,
-          "hitsPerGame": 9.04,
-          "errorsPerGame": 0.6,
-          "sos": 0.52
-        },
-        "Cubs": {
-          "games": 25,
-          "rpg": 6,
-          "oppRpg": 3.48,
-          "hitsPerGame": 9.84,
-          "errorsPerGame": 0.36,
-          "sos": null
-        },
-        "Yankees": {
-          "games": 24,
-          "rpg": 3.46,
-          "oppRpg": 3.5,
-          "hitsPerGame": 6.92,
-          "errorsPerGame": 0.29,
-          "sos": null
-        },
-        "Mariners": {
-          "games": 24,
-          "rpg": 3.17,
-          "oppRpg": 4.96,
-          "hitsPerGame": 7.29,
-          "errorsPerGame": 0.42,
-          "sos": null
-        },
-        "Blue Jays": {
-          "games": 26,
-          "rpg": 3.46,
-          "oppRpg": 4.19,
-          "hitsPerGame": 8.12,
-          "errorsPerGame": 0.62,
-          "sos": null
-        },
-        "Red Sox": {
-          "games": 26,
-          "rpg": 5.62,
-          "oppRpg": 3.62,
-          "hitsPerGame": 8.81,
-          "errorsPerGame": 0.69,
-          "sos": 0.52
-        },
         "Braves": {
           "games": 26,
           "rpg": 5.04,
@@ -259,22 +275,6 @@
           "hitsPerGame": 8.2,
           "errorsPerGame": 0.56,
           "sos": null
-        },
-        "White Sox": {
-          "games": 24,
-          "rpg": 4.67,
-          "oppRpg": 4.42,
-          "hitsPerGame": 7.63,
-          "errorsPerGame": 0.71,
-          "sos": null
-        },
-        "Reds": {
-          "games": 24,
-          "rpg": 3.83,
-          "oppRpg": 4.58,
-          "hitsPerGame": 7,
-          "errorsPerGame": 0.54,
-          "sos": 0.52
         }
       }
     },
@@ -542,12 +542,12 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "AL West",
+      "conference": "AL Central",
       "gameDate": "2026-08-13T00:00:00.000Z",
-      "team": "Angels",
-      "opponent": "Rangers",
-      "points": 5,
-      "opponentPoints": 2,
+      "team": "Tigers",
+      "opponent": "Guardians",
+      "points": 3,
+      "opponentPoints": 0,
       "rebounds": null,
       "assists": null,
       "yards": null,
@@ -580,10 +580,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 8,
-      "errors": 0,
+      "hits": 6,
+      "errors": 1,
       "source": "espn-public-api",
-      "sourceEventId": "401816508",
+      "sourceEventId": "401816511",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -749,72 +749,11 @@
     "Unknown",
     "Western"
   ],
-  "bestBets": [
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-08-13T17:11:00.000Z",
-      "matchup": "Pittsburgh Pirates at Miami Marlins",
-      "pickTeam": "Miami Marlins",
-      "opponent": "Pittsburgh Pirates",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "Miami Marlins +1.5",
-      "score": 64,
-      "confidence": 60,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.400",
-        "History sample Miami Marlins: 24 games (mapped Marlins) vs Pittsburgh Pirates: 25 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Miami Marlins 2d rest vs Pittsburgh Pirates 2d rest",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.1",
-        "Home SP: Janson Junk",
-        "Away SP: Carmen Mlodzinski",
-        "MLB model: 64.4% win prob (calibrated) | Edge vs market: +16.5%"
-      ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.4,
-      "mlbModelProb": 0.6436,
-      "mlbEdge": 0.165,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-08-13T17:11:00.000Z",
-      "matchup": "Cleveland Guardians at Detroit Tigers",
-      "pickTeam": "Detroit Tigers",
-      "opponent": "Cleveland Guardians",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "Detroit Tigers +1.5",
-      "score": 63,
-      "confidence": 59,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample Detroit Tigers: 24 games (mapped Tigers) vs Cleveland Guardians: 24 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Detroit Tigers 2d rest vs Cleveland Guardians 2d rest",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.7",
-        "Home SP: Framber Valdez",
-        "Away SP: Foster Griffin",
-        "MLB model: 60.9% win prob (calibrated) | Edge vs market: +11.1%"
-      ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.3,
-      "mlbModelProb": 0.6094,
-      "mlbEdge": 0.1106,
-      "mlbCalibrated": true
-    }
-  ],
+  "bestBets": [],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-08-13",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 2 eligible games found on 2026-08-13 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 0 eligible games found on 2026-08-13 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1803,20 +1742,20 @@
         "returnDate": "2026-08-13"
       },
       {
-        "player": "Carrington Valentine",
-        "team": "Green Bay Packers",
-        "position": "CB",
-        "status": "Questionable",
-        "injuryType": "Leg",
-        "returnDate": "2026-08-09"
-      },
-      {
         "player": "Tucker Kraft",
         "team": "Green Bay Packers",
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Knee - ACL",
         "returnDate": "2026-08-13"
+      },
+      {
+        "player": "Carrington Valentine",
+        "team": "Green Bay Packers",
+        "position": "CB",
+        "status": "Questionable",
+        "injuryType": "Leg",
+        "returnDate": "2026-08-09"
       },
       {
         "player": "Javon Hargrave",
@@ -1923,19 +1862,19 @@
         "returnDate": "2026-08-15"
       },
       {
-        "player": "Xavier Worthy",
-        "team": "Kansas City Chiefs",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Shoulder",
-        "returnDate": "2026-08-15"
-      },
-      {
         "player": "Patrick Mahomes",
         "team": "Kansas City Chiefs",
         "position": "QB",
         "status": "Questionable",
         "injuryType": "Knee - ACL",
+        "returnDate": "2026-08-15"
+      },
+      {
+        "player": "Xavier Worthy",
+        "team": "Kansas City Chiefs",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Shoulder",
         "returnDate": "2026-08-15"
       },
       {
@@ -2259,6 +2198,14 @@
         "returnDate": "2026-08-13"
       },
       {
+        "player": "Ricky Pearsall",
+        "team": "San Francisco 49ers",
+        "position": "WR",
+        "status": "Injured Reserve",
+        "injuryType": "Knee - PCL",
+        "returnDate": "2027-02-15"
+      },
+      {
         "player": "Nick Bosa",
         "team": "San Francisco 49ers",
         "position": "DE",
@@ -2305,14 +2252,6 @@
         "status": "Questionable",
         "injuryType": "Elbow",
         "returnDate": "2026-08-13"
-      },
-      {
-        "player": "Ricky Pearsall",
-        "team": "San Francisco 49ers",
-        "position": "WR",
-        "status": "Injured Reserve",
-        "injuryType": "Knee - PCL",
-        "returnDate": "2027-02-15"
       },
       {
         "player": "Mikail Kamara",
