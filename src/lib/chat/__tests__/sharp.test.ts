@@ -5,17 +5,24 @@
 
 import { describe, it, expect, vi } from "vitest";
 
-// prisma is imported transitively by guards (recordSpend). Mock it to no-ops.
+// prisma is imported transitively by guards (spend governor + durable caps).
+// Mock it to no-ops that return realistic row shapes — reserveSpend reads
+// `tokensUsed` off the returned row, so `{}` would silently produce NaN.
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     chatSpendCounter: {
       findUnique: vi.fn().mockResolvedValue(null),
-      upsert: vi.fn().mockResolvedValue({}),
+      upsert: vi.fn().mockResolvedValue({ utcDate: "2026-08-13", tokensUsed: 0, modelCalls: 0 }),
+      update: vi.fn().mockResolvedValue({}),
+    },
+    chatRateLimit: {
+      upsert: vi.fn().mockResolvedValue({ count: 1 }),
+      deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
     },
   },
 }));
 
-import { answer, estimateTokens } from "../sharp";
+import { answer } from "../sharp";
 import { runLaneB, regroundLaneB } from "../laneB";
 import { buildLaneBSystemPrompt, DISCIPLINE_BLOCK, PERSONA_RULES } from "../persona";
 import type { SlateEntities } from "../router";
@@ -622,8 +629,78 @@ describe("persona never disowns props (DISCIPLINE_BLOCK + empty-board behavior)"
   });
 });
 
-describe("token estimate", () => {
-  it("is a positive coarse estimate", () => {
-    expect(estimateTokens("hello", "world", [])).toBeGreaterThan(0);
+// ─── Spend accounting ────────────────────────────────────────────────────────
+//
+// Replaces the old "token estimate" test. estimateTokens() is gone: it counted
+// the message, reply, and tool results once each, which ignored the Lane B loop
+// re-sending system + tools + conversation on every iteration and so undercounted
+// the most expensive turns by roughly an order of magnitude. Every lane now
+// settles against the API's own usage, bracketed by a reservation.
+describe("reserve-before-spend", () => {
+  it("reserves BEFORE the model call and settles to the real usage Lane B reports", async () => {
+    const { client } = fakeClient("unused");
+    const spendReserve = vi.fn().mockResolvedValue({ open: true, tokensUsed: 0, ceiling: 1e9 });
+    const spendReconcile = vi.fn().mockResolvedValue(undefined);
+    const laneBRunner = vi.fn().mockResolvedValue({
+      reply: "Lakers -3 is the number; model has it at 58%.",
+      toolsUsed: ["get_odds"],
+      toolResultTexts: [JSON.stringify({ line: -3, prob: 0.58 })],
+      iterations: 3,
+      usageTokens: 87_654,
+    });
+
+    await answer("what do you think of the Lakers game tonight?", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+      spendReserve,
+      spendReconcile,
+      laneBRunner: laneBRunner as never,
+    });
+
+    expect(spendReserve).toHaveBeenCalled();
+    // The reservation is taken before the runner is invoked.
+    expect(spendReserve.mock.invocationCallOrder[0]).toBeLessThan(
+      laneBRunner.mock.invocationCallOrder[0]
+    );
+    // ...and settled against what the API actually reported, not an estimate.
+    const [reserved, actual] = spendReconcile.mock.calls[0];
+    expect(actual).toBe(87_654);
+    expect(reserved).toBeGreaterThan(0);
+  });
+
+  it("closes the desk when the reservation is refused, without calling the model", async () => {
+    const { client, create } = fakeClient("should not be used");
+    const spendReserve = vi.fn().mockResolvedValue({ open: false, tokensUsed: 1e9, ceiling: 1e9 });
+    const res = await answer("talk to me about discipline", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+      spendReserve,
+      spendReconcile: vi.fn(),
+    });
+    expect(res.closed).toBe(true);
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it("refunds the reservation in full when the model call throws", async () => {
+    const create = vi.fn().mockRejectedValue(new Error("upstream 529"));
+    const client = { messages: { create } } as never;
+    const spendReserve = vi.fn().mockResolvedValue({ open: true, tokensUsed: 0, ceiling: 1e9 });
+    const spendReconcile = vi.fn().mockResolvedValue(undefined);
+
+    await expect(
+      answer("talk to me about discipline", NO_TURNS, {
+        client,
+        slate: slate(),
+        spendCheck: openSpend,
+        spendReserve,
+        spendReconcile,
+      })
+    ).rejects.toThrow();
+
+    // Settled to zero actual — a failed request must not hold budget it never spent.
+    const [, actual] = spendReconcile.mock.calls[0];
+    expect(actual).toBe(0);
   });
 });

@@ -10,7 +10,12 @@ import {
   isDistress,
   isInjection,
   checkDailySpend,
-  recordSpend,
+  reserveSpend,
+  reconcileSpend,
+  RESERVE_LANE_A,
+  RESERVE_LANE_B,
+  RESERVE_REGROUND,
+  RESERVE_TIEBREAK,
   RESPONSIBLE_GAMBLING_MESSAGE,
 } from "./guards";
 import {
@@ -19,7 +24,7 @@ import {
   classifyAmbiguousWithModel,
   type SlateEntities,
 } from "./router";
-import { runLaneB, regroundLaneB, type LaneBToolName } from "./laneB";
+import { runLaneB, regroundLaneB, sumUsage, type LaneBToolName } from "./laneB";
 import {
   checkGrounding,
   checkLeak,
@@ -66,6 +71,9 @@ export type SharpDeps = {
   slate?: SlateEntities;
   // Override the daily-spend check (tests force "closed").
   spendCheck?: typeof checkDailySpend;
+  // Override the reserve/reconcile pair that brackets every model call.
+  spendReserve?: typeof reserveSpend;
+  spendReconcile?: typeof reconcileSpend;
   // Override the Lane B runner (tests stub the grounded turn).
   laneBRunner?: typeof runLaneB;
   // Override the ambiguity tiebreaker.
@@ -183,6 +191,38 @@ export async function answer(
   return result;
 }
 
+// Bracket a model call with a budget reservation.
+//
+// Reserve pessimistically BEFORE the call, run it, then settle to what the API
+// actually reported. The reservation is what makes concurrency safe: previously
+// every in-flight request read the same pre-ceiling counter and all of them
+// passed, so N simultaneous callers could overshoot by N turns of Sonnet spend.
+// Here the budget is committed before the spend happens, so the (N+1)th caller
+// sees it.
+//
+// A thrown model call refunds in full — the request failed, and holding budget
+// for tokens the API never billed would let a flaky upstream close the desk.
+async function withReservation<T>(
+  reserve: number,
+  deps: SharpDeps,
+  now: Date,
+  run: () => Promise<T>,
+  actualTokens: (result: T) => number
+): Promise<{ closed: true } | { closed: false; value: T }> {
+  const status = await (deps.spendReserve ?? reserveSpend)(reserve, now);
+  if (!status.open) return { closed: true };
+  const settle = deps.spendReconcile ?? reconcileSpend;
+  let value: T;
+  try {
+    value = await run();
+  } catch (err) {
+    await settle(reserve, 0, now);
+    throw err;
+  }
+  await settle(reserve, actualTokens(value), now);
+  return { closed: false, value };
+}
+
 async function answerCore(
   message: string,
   recentTurns: Array<{ role: "user" | "assistant"; content: string }>,
@@ -260,10 +300,23 @@ async function answerCore(
       scopeForB = decision.matchedEntities.length > 0 ? "matchup" : "slate";
     } else if ("ambiguous" in decision && decision.ambiguous) {
       const tiebreak = (deps.ambiguityClassifier ?? classifyAmbiguousWithModel);
-      const r = await tiebreak(message, slate, client);
-      // The tiebreaker makes a (tiny Haiku) model call — count it against the
-      // daily ceiling for completeness, even though it's cheap.
-      await recordSpend(estimateTokens(message, "", []), now);
+      // The tiebreaker is a single fixed-size Haiku call. It's the one call whose
+      // usage we don't thread back (the classifier returns a routing decision, not
+      // a response object), so it settles to a flat estimate rather than real
+      // counts. Bounded and small — unlike the Lane B loop, there is no
+      // re-sent-prefix multiplier here for an estimate to miss.
+      const tb = await withReservation(
+        RESERVE_TIEBREAK,
+        deps,
+        now,
+        () => tiebreak(message, slate, client),
+        () => TIEBREAK_SETTLE_TOKENS
+      );
+      if (tb.closed) {
+        meta.outcome = "desk_closed";
+        return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true };
+      }
+      const r = tb.value;
       if (r.lane === "B") {
         lane = "B";
         leagueForB = r.league;
@@ -280,16 +333,31 @@ async function answerCore(
     meta.league = laneBLeague;
     meta.mode = laneBMode;
     const runner = deps.laneBRunner ?? runLaneB;
-    const first = await runner(
-      laneBLeague,
-      message,
-      recentTurns,
-      client,
-      undefined,
-      scopeForB,
-      laneBMode
+    const firstRes = await withReservation(
+      RESERVE_LANE_B,
+      deps,
+      now,
+      () =>
+        runner(
+          laneBLeague,
+          message,
+          recentTurns,
+          client,
+          undefined,
+          scopeForB,
+          laneBMode
+        ),
+      // REAL summed usage across every iteration of the tool loop. The old
+      // chars/4 estimate counted the message and tool results exactly once and
+      // so missed the loop re-sending system + tools + conversation each pass —
+      // an ~order-of-magnitude undercount on precisely the most expensive turns.
+      (r) => r.usageTokens
     );
-    await recordSpend(estimateTokens(message, first.reply, first.toolResultTexts), now);
+    if (firstRes.closed) {
+      meta.outcome = "desk_closed";
+      return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true };
+    }
+    const first = firstRes.value;
     // Prompt-cache telemetry from the Lane B loop → structured turn log (cost
     // visibility + how we confirm cache_read_input_tokens > 0 in prod).
     meta.cacheReadTokens = first.cacheReadTokens;
@@ -326,20 +394,30 @@ async function answerCore(
     console.warn(
       `[chat/sharp] grounding violation (regenerating). requestId=${meta.requestId}. Ungrounded: ${verdict.ungrounded.join(", ")}`
     );
-    const rewrite = await regroundLaneB(
-      laneBLeague,
-      message,
-      first.toolResultTexts,
-      laneBMode,
-      scopeForB,
-      client
+    // The rewrite is expensive — the inlined prior results ARE its input — so it
+    // gets its own reservation, settled to the real usage the call reports.
+    const rewriteRes = await withReservation(
+      RESERVE_REGROUND,
+      deps,
+      now,
+      () =>
+        regroundLaneB(
+          laneBLeague,
+          message,
+          first.toolResultTexts,
+          laneBMode,
+          scopeForB,
+          client
+        ),
+      (r) => r.usageTokens
     );
-    // The rewrite is expensive — the inlined prior results ARE its input — so
-    // count them against the daily ceiling (mirror the old second-loop spend).
-    await recordSpend(
-      estimateTokens(message, rewrite.reply, first.toolResultTexts),
-      now
-    );
+    if (rewriteRes.closed) {
+      // Out of budget mid-turn: ship the mode-appropriate fallback rather than
+      // the ungrounded first draft. Never trade a closed desk for a bad number.
+      meta.outcome = "desk_closed";
+      return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true };
+    }
+    const rewrite = rewriteRes.value;
 
     // Re-check on the SAME haystack as the first pass (first.toolResultTexts):
     // the rewrite fetched nothing, so the grounding data is unchanged. A blank
@@ -388,8 +466,18 @@ async function answerCore(
   }
 
   // ─── Lane A — persona-only (cheap, no tools, no DB reads) ───────────────────
-  const reply = await runPersona(message, recentTurns, client, injectionAttempt);
-  await recordSpend(estimateTokens(message, reply, []), now);
+  const personaRes = await withReservation(
+    RESERVE_LANE_A,
+    deps,
+    now,
+    () => runPersona(message, recentTurns, client, injectionAttempt),
+    (r) => r.usageTokens
+  );
+  if (personaRes.closed) {
+    meta.outcome = "desk_closed";
+    return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true };
+  }
+  const reply = personaRes.value.reply;
 
   // Leak guard on the Lane A output (belt-and-suspenders, additive). Same
   // policy as Lane B: on a plumbing leak we DO NOT ship it and DO NOT regen —
@@ -455,7 +543,7 @@ async function runPersona(
   recentTurns: Array<{ role: "user" | "assistant"; content: string }>,
   client: ReturnType<typeof getAnthropic>,
   injectionAttempt: boolean
-): Promise<string> {
+): Promise<{ reply: string; usageTokens: number }> {
   let system = buildPersonaSystemPrompt();
   if (injectionAttempt) {
     system +=
@@ -477,20 +565,30 @@ async function runPersona(
     messages,
   });
 
-  return resp.content
-    .map((b) => (b.type === "text" ? b.text : ""))
-    .join("")
-    .trim();
+  return {
+    reply: resp.content
+      .map((b) => (b.type === "text" ? b.text : ""))
+      .join("")
+      .trim(),
+    usageTokens: sumUsage(resp.usage),
+  };
 }
 
-// Coarse token estimate for the spend counter (~4 chars/token). The counter is
-// a budget guard, not a billing ledger — an approximation is the right tool.
-export function estimateTokens(
-  input: string,
-  output: string,
-  toolResults: string[]
-): number {
-  const chars =
-    input.length + output.length + toolResults.reduce((s, t) => s + t.length, 0);
-  return Math.ceil(chars / 4) + 600; // +600 floor for system prompt + overhead
-}
+// Flat settlement for the router tiebreaker — the one model call whose real
+// usage we don't get back (the classifier returns a routing decision, not a
+// response object). It is a single Haiku call with a fixed-size prompt and a
+// handful of output tokens, so a constant is honest here in a way the old
+// chars/4 estimate was not for the Lane B loop. Sized on the high side.
+export const TIEBREAK_SETTLE_TOKENS = 1_500;
+
+// DELIBERATELY REMOVED: estimateTokens().
+//
+// It computed `chars/4 + 600` over the user message, the reply, and the tool
+// results — each counted exactly once. That is roughly right for a single
+// stateless call and badly wrong for the Lane B tool loop, which re-sends the
+// system prompt, the tool schemas, and the whole accumulated conversation on
+// every one of up to 4 iterations plus a regen. The daily ceiling was fed those
+// numbers, so "2,000,000 tokens" was never 2,000,000 tokens.
+//
+// Every lane now settles against the API's own `usage` (see sumUsage in
+// laneB.ts). Do not reintroduce a character-count estimator for the ceiling.

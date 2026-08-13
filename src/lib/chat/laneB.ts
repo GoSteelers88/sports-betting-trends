@@ -153,7 +153,35 @@ export type LaneBResult = {
   // Both are cost/latency-only signals; they do NOT change model-visible content.
   cacheReadTokens: number;
   cacheCreationTokens: number;
+  // REAL total tokens reported by the API across every model call this turn
+  // (input + output + cache create + cache read), summed. This is what the daily
+  // spend ceiling is charged. It replaces a chars/4 estimate that counted the
+  // user message and tool results exactly once and so ignored the single most
+  // expensive property of this loop: the system prompt, tool schemas, and full
+  // accumulated conversation are re-sent on EVERY iteration.
+  usageTokens: number;
 };
+
+// Sum one API response's usage into a single "tokens moved" number.
+//
+// All four fields are counted at face value: this is a volume ceiling, not a
+// billing ledger, and weighting cache reads at their 0.1x price would make the
+// counter track money on one model while silently misreporting another. Cache
+// hits still show up separately in cacheReadTokens for cost telemetry.
+export function sumUsage(usage: {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_creation_input_tokens?: number | null;
+  cache_read_input_tokens?: number | null;
+} | null | undefined): number {
+  if (!usage) return 0;
+  return (
+    (usage.input_tokens ?? 0) +
+    (usage.output_tokens ?? 0) +
+    (usage.cache_creation_input_tokens ?? 0) +
+    (usage.cache_read_input_tokens ?? 0)
+  );
+}
 
 // ─── Prompt-cache breakpoint helper (rolling conversation breakpoint) ─────────
 //
@@ -293,6 +321,10 @@ export async function runLaneB(
   // Prompt-cache telemetry, summed across the loop (undefined usage fields → 0).
   let cacheReadTokens = 0;
   let cacheCreationTokens = 0;
+  // Real billable volume, summed across every iteration — the figure the daily
+  // ceiling is charged. Accumulated INSIDE the loop precisely because each
+  // iteration re-sends the whole prefix.
+  let usageTokens = 0;
 
   while (iterations < MAX_ITERATIONS) {
     iterations++;
@@ -313,6 +345,7 @@ export async function runLaneB(
     });
     cacheReadTokens += response.usage?.cache_read_input_tokens ?? 0;
     cacheCreationTokens += response.usage?.cache_creation_input_tokens ?? 0;
+    usageTokens += sumUsage(response.usage);
 
     messages.push({ role: "assistant", content: response.content });
 
@@ -370,12 +403,16 @@ export async function runLaneB(
   // falls back (belt-and-suspenders) rather than shipping blank.
   let reply = finalText.trim();
   if (!reply) {
-    reply = await noToolsAnswer(
+    const finalize = await noToolsAnswer(
       client,
       buildLaneBSystemPrompt(league, scope, mode),
       userMessage,
       toolResultTexts
     );
+    reply = finalize.reply;
+    // The forced finalize is a real model call — charge it, or a loop that
+    // exhausts MAX_ITERATIONS bills one call the ceiling never sees.
+    usageTokens += finalize.usageTokens;
   }
 
   return {
@@ -385,6 +422,7 @@ export async function runLaneB(
     iterations,
     cacheReadTokens,
     cacheCreationTokens,
+    usageTokens,
   };
 }
 
@@ -403,7 +441,7 @@ async function noToolsAnswer(
   userMessage: string,
   priorToolResultTexts: string[],
   extraSystem?: string
-): Promise<string> {
+): Promise<{ reply: string; usageTokens: number }> {
   const fullSystem = extraSystem ? `${system}\n\n${extraSystem}` : system;
   const inlined =
     "TOOL RESULTS FROM THIS TURN (use ONLY numbers present here; if a number " +
@@ -428,10 +466,13 @@ async function noToolsAnswer(
     ],
   });
 
-  return resp.content
-    .map((b) => (b.type === "text" ? b.text : ""))
-    .join("")
-    .trim();
+  return {
+    reply: resp.content
+      .map((b) => (b.type === "text" ? b.text : ""))
+      .join("")
+      .trim(),
+    usageTokens: sumUsage(resp.usage),
+  };
 }
 
 // Grounding-enforcement instruction appended to the FULL Lane B system prompt on
@@ -456,14 +497,13 @@ export async function regroundLaneB(
   mode: "bets" | "stats" = "bets",
   scope: "matchup" | "slate" = "matchup",
   client = getAnthropic()
-): Promise<{ reply: string }> {
+): Promise<{ reply: string; usageTokens: number }> {
   const system = buildLaneBSystemPrompt(league, scope, mode);
-  const reply = await noToolsAnswer(
+  return noToolsAnswer(
     client,
     system,
     userMessage,
     priorToolResultTexts,
     REGROUND_ENFORCEMENT
   );
-  return { reply };
 }

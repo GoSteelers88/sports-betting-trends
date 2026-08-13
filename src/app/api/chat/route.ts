@@ -23,18 +23,19 @@ import {
   isDistress,
   allowSession,
   allowIp,
+  allowCookieless,
   MAX_BODY_BYTES,
   RESPONSIBLE_GAMBLING_MESSAGE,
 } from "@/lib/chat/guards";
-import { resolveSession, SESSION_COOKIE } from "@/lib/chat/session";
+import {
+  mintSession,
+  verifySession,
+  SESSION_COOKIE,
+  SESSION_COOKIE_OPTIONS,
+} from "@/lib/chat/session";
+import { clientIp } from "@/lib/chat/client-ip";
 
 type IncomingTurn = { role: unknown; content: unknown };
-
-function clientIp(req: NextRequest): string {
-  const fwd = req.headers.get("x-forwarded-for") ?? "";
-  const first = fwd.split(",")[0]?.trim();
-  return first || req.headers.get("x-real-ip") || "unknown";
-}
 
 // Sanitize the client-supplied recent turns: single-session, in-memory only —
 // the client echoes back the conversation, we never durably store it. We accept
@@ -103,9 +104,38 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── Session identity (signed cookie) + per-session cap ──
-  const { id: sessionId, setCookie } = resolveSession(req.cookies.get(SESSION_COOKIE)?.value);
-  if (!allowSession(sessionId)) {
+  const ip = clientIp(req);
+
+  // ── Session identity: VERIFY ONLY. Never mint here. ──
+  //
+  // The old code called resolveSession(), which minted a fresh signed id inline
+  // when the cookie was missing. Since the rate limiter admits any first-seen
+  // key, dropping the cookie made every request a new session and the cap below
+  // was unreachable dead code. A request without a valid cookie is now charged
+  // against a small per-IP cookieless budget instead of being handed a free
+  // identity — see COOKIELESS_DAY_CAP in guards.ts.
+  const sessionId = verifySession(req.cookies.get(SESSION_COOKIE)?.value);
+
+  // Cookies are issued by GET /api/chat/session, which the client calls before
+  // its first send. A cookieless POST is therefore either a first-timer whose
+  // issuance call failed, or a bot. We serve a few of them (so a real visitor is
+  // never hard-broken by a blocked cookie) and attach a cookie to the response so
+  // an honest client converges onto session tracking from its second turn on.
+  let issueCookie = false;
+  if (!sessionId) {
+    if (!(await allowCookieless(ip))) {
+      return NextResponse.json(
+        {
+          reply:
+            "I don't take questions from behind a curtain. Reload the page and ask me again — the desk needs to know it's the same person it's already talking to.",
+          lane: "A",
+          closed: true,
+        },
+        { status: 429 }
+      );
+    }
+    issueCookie = true;
+  } else if (!(await allowSession(sessionId))) {
     return NextResponse.json(
       {
         reply:
@@ -117,8 +147,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── Per-IP/day cap ──
-  if (!allowIp(clientIp(req))) {
+  // ── Per-IP/day cap — applies to cookied and cookieless callers alike ──
+  if (!(await allowIp(ip))) {
     return NextResponse.json(
       {
         reply:
@@ -133,14 +163,8 @@ export async function POST(req: NextRequest) {
   try {
     const result = await answer(message, recentTurns);
     const res = NextResponse.json(result);
-    if (setCookie) {
-      res.cookies.set(SESSION_COOKIE, setCookie, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        path: "/",
-        maxAge: 60 * 60 * 24, // 1 day — matches the per-session abuse window
-      });
+    if (issueCookie) {
+      res.cookies.set(SESSION_COOKIE, mintSession(), SESSION_COOKIE_OPTIONS);
     }
     return res;
   } catch (err) {

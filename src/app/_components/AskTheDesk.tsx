@@ -80,6 +80,24 @@ export function AskTheDesk() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  // Guards against re-requesting a session cookie on every open/close cycle.
+  const sessionRequested = useRef(false);
+
+  // Ask the server for a session cookie the first time the desk is opened.
+  //
+  // The backend no longer mints an identity inline on POST /api/chat — a
+  // cookieless POST is charged against a small per-IP budget instead. Requesting
+  // the cookie here, on open rather than on send, means a real visitor always
+  // has one by the time they ask their first question. If this call fails we do
+  // nothing: the first few POSTs still work under the cookieless budget and the
+  // route attaches a cookie to its response, so the user never sees a difference.
+  useEffect(() => {
+    if (!open || sessionRequested.current) return;
+    sessionRequested.current = true;
+    void fetch("/api/chat/session", { credentials: "same-origin" }).catch(() => {
+      /* non-fatal — see above */
+    });
+  }, [open]);
 
   // Keep the transcript pinned to the latest line.
   useEffect(() => {

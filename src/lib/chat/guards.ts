@@ -6,8 +6,9 @@
 //   1. Body-size cap            — reject oversized payloads before any work.
 //   2. Distress interceptor     — bypass the model entirely on at-risk phrasing.
 //   3. Injection pre-filter     — flag known prompt-injection patterns.
-//   4. Spend governor           — GLOBAL daily token ceiling (DB-backed) +
-//                                 per-session + per-IP/day caps (in-memory).
+//   4. Spend governor           — GLOBAL daily token ceiling (DB-backed,
+//                                 reserved-before-spend) + per-session,
+//                                 per-IP and cookieless caps (DB-backed).
 
 import { prisma } from "@/lib/prisma";
 
@@ -27,7 +28,24 @@ export const MAX_BODY_BYTES = intFromEnv("CHAT_MAX_BODY_BYTES", 4096);
 // GLOBAL daily token ceiling across ALL sessions/users. Sized for Haiku-heavy
 // traffic with occasional Sonnet Lane-B turns. When the day's recorded usage
 // meets/exceeds this, the desk is closed for the night.
-export const DAILY_TOKEN_CEILING = intFromEnv("CHAT_DAILY_TOKEN_CEILING", 2_000_000);
+//
+// NOTE ON THE 20x RAISE (2M → 40M): this counter used to be fed a chars/4
+// estimate that ignored the Lane B tool loop re-sending the system prompt, tool
+// schemas, and the accumulated conversation on each of up to 4 iterations — it
+// undercounted a real Lane B turn by roughly an order of magnitude, so the
+// "2,000,000" was never 2M actual tokens. The counter is now fed REAL
+// `response.usage` totals, so the ceiling was raised proportionally to keep the
+// effective daily allowance where it already was in practice. Lower it if you
+// want a genuinely tighter budget — the number finally means what it says.
+export const DAILY_TOKEN_CEILING = intFromEnv("CHAT_DAILY_TOKEN_CEILING", 40_000_000);
+
+// Pessimistic per-turn reservations, taken against the ceiling BEFORE the model
+// call and reconciled to real usage after. Sized to the worst case each lane can
+// actually reach so a burst of concurrent callers can't collectively overshoot.
+export const RESERVE_LANE_A = intFromEnv("CHAT_RESERVE_LANE_A", 4_000);
+export const RESERVE_LANE_B = intFromEnv("CHAT_RESERVE_LANE_B", 120_000);
+export const RESERVE_REGROUND = intFromEnv("CHAT_RESERVE_REGROUND", 30_000);
+export const RESERVE_TIEBREAK = intFromEnv("CHAT_RESERVE_TIEBREAK", 2_000);
 
 // Per-session message cap (signed session cookie). 15 turns is plenty for a
 // real question; beyond it is almost always abuse or a loop.
@@ -35,6 +53,26 @@ export const SESSION_MSG_CAP = intFromEnv("CHAT_SESSION_MSG_CAP", 15);
 
 // Per-IP/day message cap. Coarse abuse mitigation keyed on x-forwarded-for.
 export const IP_DAY_CAP = intFromEnv("CHAT_IP_DAY_CAP", 40);
+
+// Per-IP/day cap on requests that arrive with NO valid session cookie.
+//
+// This is the cap that closes the actual hole. The route used to call
+// resolveSession(), which minted a brand-new signed id inline whenever the
+// cookie was absent — so a client that simply never sent a cookie got a fresh
+// identity on every request and SESSION_MSG_CAP could never fire. Cookieless
+// requests are now their own small, IP-keyed budget: enough that a first-time
+// visitor whose cookie fetch failed still gets served, nowhere near enough to
+// be a free lane around the session cap.
+export const COOKIELESS_DAY_CAP = intFromEnv("CHAT_COOKIELESS_DAY_CAP", 3);
+
+// Per-IP/day cap on session-cookie ISSUANCE (GET /api/chat/session). Without
+// this, minting is a free endpoint an attacker can loop to farm fresh session
+// ids and reset the per-session cap at will.
+export const MINT_DAY_CAP = intFromEnv("CHAT_MINT_DAY_CAP", 10);
+
+// How many days of ChatRateLimit rows to keep. They are pure abuse counters with
+// no analytical value past their window.
+export const RATE_LIMIT_RETENTION_DAYS = intFromEnv("CHAT_RATE_LIMIT_RETENTION_DAYS", 3);
 
 // ─── 1. Body-size cap ────────────────────────────────────────────────────────
 
@@ -145,9 +183,15 @@ export type SpendStatus = {
 };
 
 // Read today's usage and decide whether the desk is open. Called BEFORE every
-// model call. Fails OPEN on a DB error (a transient DB blip shouldn't take the
-// whole feature down) but logs loudly — the daily ceiling is a cost guard, not
-// a security boundary, and the per-IP/session caps still apply.
+// model call.
+//
+// FAILS CLOSED on a DB error. This used to fail open, on the reasoning that the
+// ceiling is a cost guard rather than a security boundary and the per-IP/session
+// caps still applied. Both halves of that were wrong: those caps lived in
+// per-lambda memory (so they were not a backstop at all), and "cost guard"
+// understates it — this counter is the only thing bounding what an anonymous
+// caller can spend against ANTHROPIC_API_KEY. A Turso blip closing the desk for
+// a few minutes is strictly cheaper than a Turso blip removing the budget.
 export async function checkDailySpend(now: Date = new Date()): Promise<SpendStatus> {
   const utcDate = utcDateKey(now);
   try {
@@ -159,8 +203,67 @@ export async function checkDailySpend(now: Date = new Date()): Promise<SpendStat
       ceiling: DAILY_TOKEN_CEILING,
     };
   } catch (err) {
-    console.error("[chat/guards] checkDailySpend DB error (failing open):", err);
-    return { open: true, tokensUsed: 0, ceiling: DAILY_TOKEN_CEILING };
+    console.error("[chat/guards] checkDailySpend DB error (failing CLOSED):", err);
+    return { open: false, tokensUsed: DAILY_TOKEN_CEILING, ceiling: DAILY_TOKEN_CEILING };
+  }
+}
+
+// Reserve tokens against today's ceiling BEFORE making a model call.
+//
+// The old shape was check-then-act: read the counter, decide, call the model,
+// increment afterwards. Every request in flight at the same moment read the same
+// pre-ceiling value and every one of them passed, so N concurrent callers could
+// overshoot by N turns' worth of Sonnet spend. Here the increment IS the check —
+// one atomic upsert whose returned count decides — and an over-ceiling reservation
+// is refunded immediately, so a rejected caller doesn't hold budget it never spent.
+//
+// Fails CLOSED, same reasoning as checkDailySpend.
+export async function reserveSpend(
+  tokens: number,
+  now: Date = new Date()
+): Promise<SpendStatus> {
+  const utcDate = utcDateKey(now);
+  const amount = Math.max(0, Math.ceil(tokens));
+  try {
+    const row = await prisma.chatSpendCounter.upsert({
+      where: { utcDate },
+      create: { utcDate, tokensUsed: amount, modelCalls: 1 },
+      update: { tokensUsed: { increment: amount }, modelCalls: { increment: 1 } },
+    });
+    // The reservation itself may be what crosses the line. Compare the balance
+    // BEFORE this reservation so a single expensive turn can still run when the
+    // day is otherwise untouched — the ceiling bounds the day, not the turn.
+    const priorTokens = row.tokensUsed - amount;
+    if (priorTokens >= DAILY_TOKEN_CEILING) {
+      await reconcileSpend(amount, 0, now); // refund — we are not calling the model
+      return { open: false, tokensUsed: priorTokens, ceiling: DAILY_TOKEN_CEILING };
+    }
+    return { open: true, tokensUsed: row.tokensUsed, ceiling: DAILY_TOKEN_CEILING };
+  } catch (err) {
+    console.error("[chat/guards] reserveSpend DB error (failing CLOSED):", err);
+    return { open: false, tokensUsed: DAILY_TOKEN_CEILING, ceiling: DAILY_TOKEN_CEILING };
+  }
+}
+
+// Settle a reservation against what the model actually reported. The delta may be
+// negative (the common case — reservations are deliberately pessimistic), which
+// hands the unused budget back to the rest of the day. modelCalls was already
+// counted by reserveSpend, so it is NOT incremented again here.
+export async function reconcileSpend(
+  reservedTokens: number,
+  actualTokens: number,
+  now: Date = new Date()
+): Promise<void> {
+  const delta = Math.ceil(actualTokens) - Math.ceil(reservedTokens);
+  if (delta === 0) return;
+  const utcDate = utcDateKey(now);
+  try {
+    await prisma.chatSpendCounter.update({
+      where: { utcDate },
+      data: { tokensUsed: { increment: delta } },
+    });
+  } catch (err) {
+    console.error("[chat/guards] reconcileSpend DB error (budget left reserved):", err);
   }
 }
 
@@ -188,43 +291,87 @@ export async function recordSpend(
   }
 }
 
-// ─── 4b. Per-session + per-IP caps (in-memory, best-effort abuse mitigation) ──
+// ─── 4b. Per-session / per-IP / cookieless caps (DB-backed, durable) ─────────
 //
-// These are NOT the money ceiling — that's the DB counter above. These are
-// cheap abuse brakes. In-memory is acceptable: on a cold start the worst case
-// is a fresh window, and the global token ceiling is the real backstop. We say
-// so explicitly rather than pretending these are durable.
+// These are NOT the money ceiling — that's the counter above. These are the
+// abuse brakes, and they are now durable.
+//
+// They used to be in-process Maps with a comment conceding that "on a cold start
+// the worst case is a fresh window". In serverless that isn't a worst case, it's
+// the normal case: every concurrent lambda holds its own window and every cold
+// start hands out a clean one, so neither cap meaningfully bound anything. They
+// are keyed in Turso now, shared across instances and surviving cold starts.
+//
+// The counter is incremented and read in ONE atomic upsert, and the returned
+// count is what we compare — so two requests racing for the last slot cannot
+// both win it.
 
-type Window = { count: number; resetAt: number };
-const sessionWindows = new Map<string, Window>();
-const ipWindows = new Map<string, Window>();
+export type CapScope = "session" | "ip" | "cookieless" | "mint";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function hit(store: Map<string, Window>, key: string, limit: number, windowMs: number, now: number): boolean {
-  const entry = store.get(key);
-  if (!entry || now > entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
+// Atomic increment-then-compare. Returns true if this hit is within the cap.
+//
+// Fails CLOSED on a DB error, matching the spend governor: an unavailable
+// counter must not become an unlimited one.
+async function hitDurable(
+  scope: CapScope,
+  key: string,
+  limit: number,
+  now: Date
+): Promise<boolean> {
+  const utcDate = utcDateKey(now);
+  try {
+    const row = await prisma.chatRateLimit.upsert({
+      where: { scope_key_utcDate: { scope, key, utcDate } },
+      create: { scope, key, utcDate, count: 1 },
+      update: { count: { increment: 1 } },
+    });
+    return row.count <= limit;
+  } catch (err) {
+    console.error(`[chat/guards] ${scope} cap DB error (failing CLOSED):`, err);
+    return false;
   }
-  if (entry.count >= limit) return false;
-  entry.count++;
-  return true;
 }
 
-// Per-session cap. windowMs is long (a session cookie's life); the count is the
-// real gate. Returns true if the message is allowed.
-export function allowSession(sessionId: string, now: number = Date.now()): boolean {
-  return hit(sessionWindows, sessionId, SESSION_MSG_CAP, DAY_MS, now);
+// Per-session message cap, keyed on the verified signed session id.
+export async function allowSession(
+  sessionId: string,
+  now: Date = new Date()
+): Promise<boolean> {
+  return hitDurable("session", sessionId, SESSION_MSG_CAP, now);
 }
 
-// Per-IP/day cap.
-export function allowIp(ip: string, now: number = Date.now()): boolean {
-  return hit(ipWindows, ip, IP_DAY_CAP, DAY_MS, now);
+// Per-IP/day message cap.
+export async function allowIp(ip: string, now: Date = new Date()): Promise<boolean> {
+  return hitDurable("ip", ip, IP_DAY_CAP, now);
 }
 
-// Test seam — clear the in-memory windows between tests.
-export function _resetCaps(): void {
-  sessionWindows.clear();
-  ipWindows.clear();
+// Per-IP/day cap on requests arriving WITHOUT a valid session cookie. This is
+// the brake that makes the session cap reachable at all — see COOKIELESS_DAY_CAP.
+export async function allowCookieless(
+  ip: string,
+  now: Date = new Date()
+): Promise<boolean> {
+  return hitDurable("cookieless", ip, COOKIELESS_DAY_CAP, now);
+}
+
+// Per-IP/day cap on session-cookie issuance, so minting fresh identities is not
+// itself a free lane around the per-session cap.
+export async function allowMint(ip: string, now: Date = new Date()): Promise<boolean> {
+  return hitDurable("mint", ip, MINT_DAY_CAP, now);
+}
+
+// Drop rate-limit rows older than the retention window. Best-effort housekeeping
+// called from the daily cron — these are abuse counters, not analytics, and an
+// unbounded table of per-IP keys is its own slow-motion problem.
+export async function pruneRateLimits(now: Date = new Date()): Promise<number> {
+  const cutoff = new Date(now.getTime() - RATE_LIMIT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+  try {
+    const { count } = await prisma.chatRateLimit.deleteMany({
+      where: { utcDate: { lt: utcDateKey(cutoff) } },
+    });
+    return count;
+  } catch (err) {
+    console.error("[chat/guards] pruneRateLimits DB error (rows retained):", err);
+    return 0;
+  }
 }

@@ -375,16 +375,51 @@ model KalshiPaperLedgerSnapshot {
 // This is the source of truth for the day's model token budget — it MUST be
 // global (one row per UTC date, shared across every serverless instance and
 // the Discord/Actions runners), not per-process, because /api/chat is a public
-// endpoint spending real Anthropic tokens. Per-IP and per-session caps are
-// best-effort in-memory abuse mitigation; THIS row is the hard money ceiling.
+// endpoint spending real Anthropic tokens. THIS row is the hard money ceiling;
+// the per-IP/session caps live in ChatRateLimit below (also DB-backed).
 // Increments are single atomic UPDATE statements (no read-modify-write in app
-// code) so concurrent requests can't lose a write.
+// code) so concurrent requests can't lose a write. Tokens are RESERVED before a
+// model call and reconciled against real usage after — never counted post-hoc
+// only, which let N concurrent callers all pass the same pre-ceiling read.
 model ChatSpendCounter {
   // UTC date, YYYY-MM-DD. One row per day; the natural primary key.
   utcDate    String   @id
-  // Approximate tokens (input + output) charged against the day's ceiling.
+  // REAL tokens (input + output + cache create + cache read) reported by the
+  // Anthropic API, charged against the day's ceiling. Was a chars/4 estimate
+  // that undercounted multi-iteration Lane B loops by ~20x.
   tokensUsed Int      @default(0)
   // Number of model calls made today — a coarse secondary guard.
   modelCalls Int      @default(0)
   updatedAt  DateTime @updatedAt
+}
+
+// Durable per-caller abuse counters for the public chat endpoint.
+//
+// These were in-process Maps, which made them decorative in serverless: each
+// concurrent lambda held its own window and a cold start handed out a fresh
+// one. Keyed here so the count is shared across every instance and survives a
+// cold start. One row per (scope, key, UTC day).
+//
+// The increment is an atomic upsert whose UPDATE branch is a single SQL
+// statement, and we compare the RETURNED count against the cap — check and
+// increment are one operation, so concurrent requests cannot both pass the
+// last slot.
+//
+// scope values:
+//   "session"    — per signed-session-cookie message cap
+//   "ip"         — per-IP daily message cap
+//   "cookieless" — per-IP daily cap on requests arriving with NO valid session
+//                  cookie (the hole: the server used to mint a fresh identity
+//                  inline on every such request, so the session cap could never
+//                  fire against a client that simply omitted the cookie)
+//   "mint"       — per-IP daily cap on session-cookie issuance
+model ChatRateLimit {
+  scope     String
+  key       String
+  utcDate   String
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@id([scope, key, utcDate])
+  @@index([utcDate])
 }

@@ -53,16 +53,26 @@ export function verifySession(token: string | undefined | null): string | null {
   return id;
 }
 
-// Resolve the session id from an incoming cookie, minting a new signed token
-// when absent/invalid. Returns both the bare id (for rate-limiting) and the
-// token to set back on the response (null when the existing one was valid).
-export function resolveSession(cookieValue: string | undefined | null): {
-  id: string;
-  setCookie: string | null;
-} {
-  const existing = verifySession(cookieValue);
-  if (existing) return { id: existing, setCookie: null };
-  const token = mintSession();
-  const id = token.slice(0, token.lastIndexOf("."));
-  return { id, setCookie: token };
-}
+// Cookie attributes, shared by every issuer so the mint endpoint and the chat
+// route can never drift apart on scope or lifetime.
+export const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
+  path: "/",
+  maxAge: 60 * 60 * 24, // 1 day — matches the per-session abuse window
+} as const;
+
+// DELIBERATELY REMOVED: resolveSession().
+//
+// It took an incoming cookie and, when the cookie was absent or invalid, minted
+// a brand-new signed id INLINE and returned it as though it were an established
+// identity. Because the per-session rate limiter admits any first-seen key, a
+// client that simply never sent a cookie got a fresh identity on every request
+// and the session cap could never fire — the HMAC stopped cookie *tampering*
+// while cookie *omission* walked straight past it.
+//
+// Identity is now issued in one place only (GET /api/chat/session, itself
+// per-IP capped) and the chat route VERIFIES rather than resolves. A request
+// with no valid cookie is not given a free identity; it is charged against the
+// cookieless per-IP budget. Do not reintroduce a mint-on-read helper.
