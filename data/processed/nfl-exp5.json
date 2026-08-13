@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T09:02:34.575Z",
+  "generatedAt": "2026-08-13T09:04:05.202Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -93,18 +93,116 @@
       "week": 15
     }
   ],
-  "props": null,
+  "props": {
+    "record": {
+      "wins": 101,
+      "losses": 36,
+      "pushes": 2
+    },
+    "settled": 139,
+    "noData": 7,
+    "examples": [
+      {
+        "player": "Todd Gurley",
+        "team": "LA",
+        "stat": "rushYds",
+        "threshold": 75,
+        "side": "over",
+        "result": "win",
+        "rationale": "85.3 rush yds/gm avg. SEA strong run D but Gurley elite. Doctrine says fade rush yds props — low confidence, borderline skip.",
+        "season": 2015,
+        "week": 16
+      },
+      {
+        "player": "Antonio Brown",
+        "team": "PIT",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "113 rec yds/gm avg, 11.8 tgts/gm. BAL gives up 360 PA, PIT road but strong offense. Doctrine favors volume-WR overs.",
+        "season": 2015,
+        "week": 16
+      },
+      {
+        "player": "Julio Jones",
+        "team": "ATL",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "110 rec yds/gm avg, 12.9 tgts/gm. Home dome vs CAR who allows 278 PA. Elite volume with top target share.",
+        "season": 2015,
+        "week": 16
+      },
+      {
+        "player": "DeAndre Hopkins",
+        "team": "HOU",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "93.9 rec yds/gm, 12.1 tgts/gm. TEN allows 359 PA, warm 73F outdoor. Cecil Shorts out adds volume.",
+        "season": 2015,
+        "week": 16
+      },
+      {
+        "player": "Tom Brady",
+        "team": "NE",
+        "stat": "passYds",
+        "threshold": 250,
+        "side": "over",
+        "result": "loss",
+        "rationale": "314.6 pass yds/gm avg. NYJ allows 272 PA but Brady volume consistent; Edelman doubtful is risk but LaFell/Marshall back.",
+        "season": 2015,
+        "week": 16
+      },
+      {
+        "player": "Ben Roethlisberger",
+        "team": "PIT",
+        "stat": "passYds",
+        "threshold": 250,
+        "side": "over",
+        "result": "loss",
+        "rationale": "336.9 pass yds/gm avg. BAL defense allows 360 PA this season. Big Ben consistently high volume; mild wind 9mph.",
+        "season": 2015,
+        "week": 16
+      },
+      {
+        "player": "Brandin Cooks",
+        "team": "NO",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "70.9 rec yds/gm, 8.3 tgts/gm. Home dome vs JAX who allows 380 PA. Brees questionable is risk but Cooks usage high.",
+        "season": 2015,
+        "week": 16
+      },
+      {
+        "player": "Jordan Reed",
+        "team": "WAS",
+        "stat": "recYds",
+        "threshold": 50,
+        "side": "over",
+        "result": "win",
+        "rationale": "64.8 rec yds/gm, 8.25 tgts/gm. PHI allows 362 PA. Divisional game, elite TE usage. Doctrine favors recYds overs.",
+        "season": 2015,
+        "week": 16
+      }
+    ]
+  },
   "parlays": {
     "record": {
-      "wins": 1,
-      "losses": 4,
+      "wins": 18,
+      "losses": 48,
       "pushes": 0
     },
-    "settled": 5,
-    "roiPct": 44.87,
-    "winRatePct": 20,
-    "breakEvenPct": 13.8,
-    "avgLegsEdge": 0.084,
-    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 20% win rate clears the 13.8% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
+    "settled": 66,
+    "roiPct": 101.28,
+    "winRatePct": 27.3,
+    "breakEvenPct": 13.7,
+    "avgLegsEdge": 0.1402,
+    "note": "Retrospective 3-leg parlays under the durable doctrine (distinct games, +EV floor, favorites, −4pt haircut). Flat-stake yield (1u per parlay) — the 27.3% win rate clears the 13.7% the odds require, so the edge is real in-sample. BUT graded vs nflverse ~closing lines (CLV ≈ 0), so treat the yield as an OPTIMISTIC UPPER BOUND for live betting, not a forecast. Aggregates only; per-parlay rows stay private."
   }
 }
