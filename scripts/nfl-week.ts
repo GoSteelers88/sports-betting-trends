@@ -309,6 +309,91 @@ async function runSeed(
   console.log(`${Y}seed hit maxWeeks=${maxWeeks} guard — re-run to continue if not yet caught up.${R}`);
 }
 
+// Burst mode — the budget-capped nightly variant of seed. Processes weeks
+// back-to-back until ONE of:
+//   1. today's REAL logged spend (spend-log.jsonl, actual response.usage priced
+//      at list rates) reaches the daily cap (NFL_BURST_DAILY_USD, default $20),
+//   2. the walk is caught up to the end of the loaded seasons, or
+//   3. three CONSECUTIVE weeks error (unlike seed's retry-forever: an
+//      unattended 1 AM run with a dead API key must fail loudly in the cron
+//      log, not spin all night).
+// After any week that crosses a season boundary, the Opus dream re-distills the
+// doctrine so the next season's picks carry the accumulated learning. The
+// budget check runs BEFORE each week, so one week can overshoot the cap by at
+// most its own cost (~$0.45) — same shape as every other spend gate in this repo.
+async function runBurst(
+  pickFn: PickFn,
+  propPickFn: PropPickFn,
+  reflectFn: ReflectFn,
+): Promise<void> {
+  const { spendTodayUsd } = await import("../src/lib/nfl-spend");
+  const { spawnSync } = await import("node:child_process");
+  const dir = defaultStateDir();
+  const capRaw = Number.parseFloat(process.env.NFL_BURST_DAILY_USD ?? "");
+  const cap = Number.isFinite(capRaw) && capRaw > 0 ? capRaw : 20;
+  // Runaway guard well above what $20 of Sonnet weeks can reach (~45).
+  const maxWeeks = 80;
+
+  const runDream = (why: string) => {
+    console.log(`\n${C}burst: running dream (${why})...${R}`);
+    // Same spawn pattern as runners.ts. npx.cmd via shell for Windows; the
+    // dream logs its own spend row. A dream failure must not stop the walk —
+    // doctrine just refreshes on the next boundary.
+    const r = spawnSync("npx", ["tsx", "scripts/nfl-dream.ts"], {
+      stdio: "inherit",
+      shell: true,
+      timeout: 10 * 60 * 1000,
+    });
+    if (r.status !== 0) console.error(`${RED}burst: dream exited ${r.status} — continuing the walk.${R}`);
+  };
+
+  let consecutiveErrors = 0;
+  for (let i = 0; i < maxWeeks; i++) {
+    const spent = spendTodayUsd();
+    if (spent >= cap) {
+      console.log(
+        `\n${G}burst done for today${R} — $${spent.toFixed(2)} of $${cap.toFixed(2)} daily budget spent ` +
+          `after ${i} week(s). ${D}(cursor ${cursorLabel(loadCursor(dir))})${R}`,
+      );
+      return;
+    }
+    console.log(
+      `\n${B}━━━ burst week ${i + 1} ━━━${R} ${D}$${spent.toFixed(2)} / $${cap.toFixed(2)} spent today${R}`,
+    );
+
+    const before = loadCursor(dir);
+    let advanced = false;
+    try {
+      advanced = await runWeek(pickFn, propPickFn, reflectFn);
+      consecutiveErrors = 0;
+    } catch (err) {
+      consecutiveErrors++;
+      console.error(
+        `${RED}burst week errored (${consecutiveErrors}/3 consecutive):${R}`,
+        err,
+      );
+      if (consecutiveErrors >= 3) {
+        console.error(`${RED}burst aborting — 3 consecutive failures. Fix and re-run; the cursor is unchanged for the failed week.${R}`);
+        process.exitCode = 1;
+        return;
+      }
+      continue;
+    }
+
+    if (!advanced) {
+      console.log(`\n${G}burst complete — walk caught up to the end of the loaded seasons.${R}`);
+      runDream("walk complete");
+      return;
+    }
+
+    const after = loadCursor(dir);
+    if (after.season !== before.season) {
+      runDream(`season boundary ${before.season} -> ${after.season}`);
+    }
+  }
+  console.log(`${Y}burst hit maxWeeks=${maxWeeks} guard — cap logic suspect, investigate before re-running.${R}`);
+}
+
 async function main() {
   const mode = (process.argv[2] ?? "run").toLowerCase();
   const dir = defaultStateDir();
@@ -321,6 +406,11 @@ async function main() {
   // Real Claude functions — constructed lazily so `report`/tests never need a key.
   if (mode === "seed") {
     await runSeed(makeClaudePickFn(), makeClaudePropsPickFn(), makeClaudeReflectFn());
+    return;
+  }
+
+  if (mode === "burst") {
+    await runBurst(makeClaudePickFn(), makeClaudePropsPickFn(), makeClaudeReflectFn());
     return;
   }
 

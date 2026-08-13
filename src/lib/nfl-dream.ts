@@ -534,6 +534,8 @@ export function makeClaudeNflDreamFn(): DreamFn {
       system: dreamSystemPrompt(),
       messages: [{ role: "user", content: dreamUserPrompt(payload) }],
     });
+    const { logSpend } = await import("./nfl-spend");
+    logSpend(MODELS.dream, res.usage, "dream", "doctrine");
     let text = "";
     for (const block of res.content) {
       if (block.type === "text") text += block.text;

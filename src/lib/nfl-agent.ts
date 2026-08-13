@@ -13,6 +13,7 @@
 
 import { getAnthropic, MODELS } from "./agent/client";
 import { defaultStateDir } from "./nfl-loop";
+import { logSpend } from "./nfl-spend";
 import {
   cursorAfterCoverage,
   loadNflDoctrine,
@@ -553,10 +554,13 @@ export function makeClaudePropsPickFn(): PropPickFn {
     const client = getAnthropic();
     const res = await client.messages.create({
       model: MODELS.nflLoop,
-      max_tokens: 4096,
+      // Sized up from 4096 with the Sonnet 5 swap: the new tokenizer packs
+      // ~30% less text per token, and a truncated JSON array = dropped picks.
+      max_tokens: 6000,
       system: propsSystemPrompt(),
       messages: [{ role: "user", content: propsUserPrompt(week, doctrine) }],
     });
+    logSpend(MODELS.nflLoop, res.usage, "props", `${week.season} ${week.phase} wk${week.week}`);
     let text = "";
     for (const block of res.content) {
       if (block.type === "text") text += block.text;
@@ -578,10 +582,13 @@ export function makeClaudePickFn(): PickFn {
     const client = getAnthropic();
     const res = await client.messages.create({
       model: MODELS.nflLoop,
-      max_tokens: 8192,
+      // Sized up from 8192 with the Sonnet 5 swap (~30% denser tokenizer): a
+      // 16-game slate's JSON must never truncate mid-array.
+      max_tokens: 12000,
       system: pickSystemPrompt(),
       messages: [{ role: "user", content: pickUserPrompt(week, doctrine) }],
     });
+    logSpend(MODELS.nflLoop, res.usage, "pick", `${week.season} ${week.phase} wk${week.week}`);
     let text = "";
     for (const block of res.content) {
       if (block.type === "text") text += block.text;
@@ -600,10 +607,13 @@ export function makeClaudeReflectFn(): ReflectFn {
     const client = getAnthropic();
     const res = await client.messages.create({
       model: MODELS.nflLoop,
-      max_tokens: 1500,
+      // 1500 → 2000: headroom for the Sonnet 5 tokenizer; the lessons memo is
+      // prose, so truncation here loses learning rather than breaking parsing.
+      max_tokens: 2000,
       system: reflectSystemPrompt(),
       messages: [{ role: "user", content: reflectUserPrompt(week, graded, gradedProps) }],
     });
+    logSpend(MODELS.nflLoop, res.usage, "reflect", `${week.season} ${week.phase} wk${week.week}`);
     let text = "";
     for (const block of res.content) {
       if (block.type === "text") text += block.text;

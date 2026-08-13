@@ -87,6 +87,7 @@
     "nfl:ingest-injuries": "tsx scripts/ingest-nfl-injuries.ts",
     "nfl:ingest-props-stats": "tsx scripts/ingest-nfl-props-stats.ts",
     "nfl:week": "tsx scripts/nfl-week.ts",
+    "nfl:burst": "tsx --env-file=.env scripts/nfl-week.ts burst",
     "nfl:seed": "tsx --env-file=.env scripts/nfl-week.ts seed",
     "quant:mlb": "tsx scripts/quant-mlb.ts",
     "quant:nfl:dryrun": "tsx scripts/quant-nfl-dryrun.ts",

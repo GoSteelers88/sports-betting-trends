@@ -18,7 +18,16 @@ export const MODELS = {
   annotator: "claude-haiku-4-5",
   // Private NFL Backtest Learning Loop (offline offseason study, not on any
   // live path). Sonnet balances slate-sized reasoning against per-week cost.
-  nflLoop: "claude-sonnet-4-6",
+  //
+  // Sonnet 5 since the 2026-08-13 walk restart at 2019 REG wk1: cheaper than
+  // Sonnet 4.6 ($2/$10 vs $3/$15 — the intro price was made permanent), more
+  // capable, and FROZEN for the whole walk + the live 2026 season so the
+  // doctrine is calibrated to the exact model that picks live. The pre-restart
+  // Sonnet 4.6 record (2015 era) is archived under
+  // data/private/nfl-loop/_archive-2026-08-13-pre-2019-restart/.
+  // NOTE: Sonnet 5's tokenizer is ~30% denser — the loop's max_tokens caps in
+  // nfl-agent.ts were sized up accordingly. Do not mix models mid-walk.
+  nflLoop: "claude-sonnet-5",
   // The Sharp — public chatbot Lane A (persona-only) + the router's cheap
   // ambiguity classifier. Haiku because ~90% of chat traffic is general
   // persona Q&A with no tools and no DB reads; the cheapest tier fits.
