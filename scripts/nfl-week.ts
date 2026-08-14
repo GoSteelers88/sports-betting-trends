@@ -193,6 +193,16 @@ async function runWeek(
 
   const picks = await pickFn(blind);
   console.log(`  picks returned: ${picks.length}/${realSlate.length} games`);
+  // A real slate that yields zero parseable picks is a failed call (truncated
+  // or malformed model output), not a quiet week. Throwing here keeps the
+  // cursor un-advanced so seed/burst retry the SAME week — five weeks were
+  // silently skipped this way on the 2026-08-14 walk before this guard.
+  if (picks.length === 0) {
+    throw new Error(
+      `0 picks parsed for ${cursorLabel(cursor)} (${realSlate.length} games on the slate) — ` +
+        `refusing to advance the cursor past an unpicked week`,
+    );
+  }
 
   // 2) grade against real results (separate path — never fed to the model)
   const byId = new Map(realSlate.map((g) => [g.gameId, g]));

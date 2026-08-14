@@ -552,15 +552,28 @@ export function makeClaudePropsPickFn(): PropPickFn {
     if (week.playerContexts.length === 0) return [];
     const doctrine = gateDoctrineForWeek(loaded, week);
     const client = getAnthropic();
-    const res = await client.messages.create({
-      model: MODELS.nflLoop,
-      // Sized up from 4096 with the Sonnet 5 swap: the new tokenizer packs
-      // ~30% less text per token, and a truncated JSON array = dropped picks.
-      max_tokens: 6000,
-      system: propsSystemPrompt(),
-      messages: [{ role: "user", content: propsUserPrompt(week, doctrine) }],
-    });
+    // Streamed for the same reason as the pick call: the SDK's non-streaming
+    // timeout guard rejects large max_tokens.
+    const res = await client.messages
+      .stream({
+        model: MODELS.nflLoop,
+        // Sonnet 5 runs adaptive thinking by default and thinking tokens count
+        // against max_tokens. At the old 6000 cap, 47 of the first 54 walk calls
+        // hit stop_reason max_tokens — thinking ate the budget, the JSON
+        // truncated, and the props layer silently returned 0 picks all night
+        // (found 2026-08-14). 16000 leaves room for thinking + the full array.
+        max_tokens: 16000,
+        system: propsSystemPrompt(),
+        messages: [{ role: "user", content: propsUserPrompt(week, doctrine) }],
+      })
+      .finalMessage();
     logSpend(MODELS.nflLoop, res.usage, "props", `${week.season} ${week.phase} wk${week.week}`);
+    if (res.stop_reason === "max_tokens") {
+      throw new Error(
+        `props call truncated at max_tokens for ${week.season} ${week.phase} wk${week.week} — ` +
+          `output would silently drop picks; failing the week so the runner retries it`,
+      );
+    }
     let text = "";
     for (const block of res.content) {
       if (block.type === "text") text += block.text;
@@ -580,15 +593,29 @@ export function makeClaudePickFn(): PickFn {
     if (week.games.length === 0) return [];
     const doctrine = gateDoctrineForWeek(loaded, week);
     const client = getAnthropic();
-    const res = await client.messages.create({
-      model: MODELS.nflLoop,
-      // Sized up from 8192 with the Sonnet 5 swap (~30% denser tokenizer): a
-      // 16-game slate's JSON must never truncate mid-array.
-      max_tokens: 12000,
-      system: pickSystemPrompt(),
-      messages: [{ role: "user", content: pickUserPrompt(week, doctrine) }],
-    });
+    // Streamed because the SDK rejects non-streaming create above ~16K
+    // max_tokens (10-minute timeout guard); finalMessage() gives the same
+    // Message shape back.
+    const res = await client.messages
+      .stream({
+        model: MODELS.nflLoop,
+        // Sonnet 5 runs adaptive thinking by default and thinking tokens count
+        // against max_tokens — at the old 12000 cap, thinking-heavy weeks
+        // truncated the JSON mid-array and the loop advanced past them with 0
+        // picks (2020 wk10/12/17 + 2021 wk11, found 2026-08-14). 24000 leaves
+        // headroom for thinking + a 16-game slate's JSON.
+        max_tokens: 24000,
+        system: pickSystemPrompt(),
+        messages: [{ role: "user", content: pickUserPrompt(week, doctrine) }],
+      })
+      .finalMessage();
     logSpend(MODELS.nflLoop, res.usage, "pick", `${week.season} ${week.phase} wk${week.week}`);
+    if (res.stop_reason === "max_tokens") {
+      throw new Error(
+        `pick call truncated at max_tokens for ${week.season} ${week.phase} wk${week.week} — ` +
+          `failing the week so the runner retries it instead of advancing with 0 picks`,
+      );
+    }
     let text = "";
     for (const block of res.content) {
       if (block.type === "text") text += block.text;
@@ -607,9 +634,11 @@ export function makeClaudeReflectFn(): ReflectFn {
     const client = getAnthropic();
     const res = await client.messages.create({
       model: MODELS.nflLoop,
-      // 1500 → 2000: headroom for the Sonnet 5 tokenizer; the lessons memo is
-      // prose, so truncation here loses learning rather than breaking parsing.
-      max_tokens: 2000,
+      // Sonnet 5's adaptive thinking counts against max_tokens; at 2000 one
+      // walk memo came back as 220 bytes of text after thinking ate the rest
+      // (2021 wk1). The memo is prose, so truncation loses learning rather
+      // than breaking parsing — no throw, just headroom.
+      max_tokens: 6000,
       system: reflectSystemPrompt(),
       messages: [{ role: "user", content: reflectUserPrompt(week, graded, gradedProps) }],
     });
