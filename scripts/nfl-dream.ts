@@ -4,6 +4,10 @@
  *
  *   npm run nfl:dream          # read the full record → Opus → write the doctrine
  *   npm run nfl:dream summary  # also print the machine summary (keyMetrics)
+ *   npm run nfl:dream final    # WALK-COMPLETION dream on MODELS.nflDreamFinal
+ *                              # (Fable 5) — the burst passes this automatically
+ *                              # when the walk catches up; args compose
+ *                              # ("final summary" works)
  *
  * Reads the PRIVATE, gitignored NFL loop logs:
  *   data/private/nfl-loop/picks-log.jsonl        (GradedRow[]     — game picks)
@@ -32,6 +36,7 @@ import {
   makeClaudeNflDreamFn,
   nflDoctrinePath,
 } from "../src/lib/nfl-dream";
+import { MODELS } from "../src/lib/agent/client";
 import path from "node:path";
 
 const B = "\x1b[1m";
@@ -46,7 +51,10 @@ function pct(n: number | null): string {
 }
 
 async function main(): Promise<void> {
-  const asSummary = (process.argv[2] ?? "").toLowerCase() === "summary";
+  const args = process.argv.slice(2).map((a) => a.toLowerCase());
+  const asSummary = args.includes("summary");
+  const isFinal = args.includes("final");
+  const model = isFinal ? MODELS.nflDreamFinal : MODELS.dream;
   const dir = defaultStateDir();
 
   const gameRows = loadGradedRows(dir);
@@ -62,7 +70,8 @@ async function main(): Promise<void> {
 
   console.log(
     `${C}NFL dream${R} — consolidating ${B}${gameRows.length}${R} graded game rows + ` +
-      `${B}${propRows.length}${R} prop rows into durable cross-season doctrine…`,
+      `${B}${propRows.length}${R} prop rows into durable cross-season doctrine…` +
+      (isFinal ? ` ${Y}[FINAL walk-completion pass on ${model}]${R}` : ""),
   );
   console.log(
     `${D}(graded vs ~closing lines → optimistic upper bound; doctrine is directional, validate live)${R}`,
@@ -72,7 +81,7 @@ async function main(): Promise<void> {
     dir,
     gameRows,
     propRows,
-    dreamFn: makeClaudeNflDreamFn(),
+    dreamFn: makeClaudeNflDreamFn(model),
   });
 
   if (!result) {

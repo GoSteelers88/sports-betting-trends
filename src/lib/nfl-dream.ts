@@ -521,21 +521,43 @@ export function dreamUserPrompt(payload: NflDreamPayload): string {
   ].join("\n");
 }
 
-/** The real Opus dream seam. Constructed lazily by the script so report/test
- *  paths never need an API key. Uses MODELS.dream — never a hardcoded string. */
-export function makeClaudeNflDreamFn(): DreamFn {
+/** The real dream seam. Constructed lazily by the script so report/test paths
+ *  never need an API key. Defaults to MODELS.dream (Opus, season-boundary
+ *  dreams); the walk-completion dream passes MODELS.nflDreamFinal (Fable 5).
+ *  Never a hardcoded string. */
+export function makeClaudeNflDreamFn(model: string = MODELS.dream): DreamFn {
   return async (payload: NflDreamPayload): Promise<string> => {
     // Lazy import keeps the client (and its env-var requirement) off the pure path.
     const { getAnthropic } = await import("./agent/client");
     const client = getAnthropic();
-    const res = await client.messages.create({
-      model: MODELS.dream,
-      max_tokens: 4096,
-      system: dreamSystemPrompt(),
-      messages: [{ role: "user", content: dreamUserPrompt(payload) }],
-    });
+    // Fable 5's thinking is always on and counts against max_tokens, so the
+    // final dream needs headroom well past the doctrine's own length (the same
+    // trap that truncated the loop's picks on Sonnet 5, 2026-08-14). Opus 4.7
+    // runs thinking-off when the param is omitted, so 4096 stays right there.
+    // Streaming for both keeps one code path and rides out Fable's long turns.
+    const maxTokens = model === MODELS.nflDreamFinal ? 24000 : 4096;
+    const res = await client.messages
+      .stream({
+        model,
+        max_tokens: maxTokens,
+        system: dreamSystemPrompt(),
+        messages: [{ role: "user", content: dreamUserPrompt(payload) }],
+      })
+      .finalMessage();
     const { logSpend } = await import("./nfl-spend");
-    logSpend(MODELS.dream, res.usage, "dream", "doctrine");
+    logSpend(model, res.usage, "dream", "doctrine");
+    if (res.stop_reason === "refusal") {
+      throw new Error(
+        `dream call refused by ${model} safety classifiers — doctrine unchanged; ` +
+          `re-run on MODELS.dream (Opus) if it recurs`,
+      );
+    }
+    if (res.stop_reason === "max_tokens") {
+      throw new Error(
+        `dream call truncated at max_tokens (${maxTokens}) on ${model} — ` +
+          `a cut-off doctrine must never be written; doctrine unchanged`,
+      );
+    }
     let text = "";
     for (const block of res.content) {
       if (block.type === "text") text += block.text;

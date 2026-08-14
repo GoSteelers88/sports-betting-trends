@@ -28,6 +28,14 @@ export const MODELS = {
   // NOTE: Sonnet 5's tokenizer is ~30% denser — the loop's max_tokens caps in
   // nfl-agent.ts were sized up accordingly. Do not mix models mid-walk.
   nflLoop: "claude-sonnet-5",
+  // The one-shot WALK-COMPLETION dream only (nfl-dream.ts `final` mode) — the
+  // deepest synthesis pass over the full 2019-2024 record, whose doctrine feeds
+  // the 2025 holdout and the live 2026 season. Season-boundary dreams during
+  // the walk stay on MODELS.dream (Opus); the pick loop stays FROZEN on
+  // nflLoop. Fable 5: thinking is always on (never send a `thinking` param),
+  // thinking tokens count against max_tokens, and stop_reason can be
+  // "refusal" — the dream fn handles all three.
+  nflDreamFinal: "claude-fable-5",
   // The Sharp — public chatbot Lane A (persona-only) + the router's cheap
   // ambiguity classifier. Haiku because ~90% of chat traffic is general
   // persona Q&A with no tools and no DB reads; the cheapest tier fits.

@@ -344,17 +344,23 @@ async function runBurst(
   // Runaway guard well above what $20 of Sonnet weeks can reach (~45).
   const maxWeeks = 80;
 
-  const runDream = (why: string) => {
+  const runDream = (why: string, final = false) => {
     console.log(`\n${C}burst: running dream (${why})...${R}`);
     // Same spawn pattern as runners.ts. npx.cmd via shell for Windows; the
     // dream logs its own spend row. A dream failure must not stop the walk —
-    // doctrine just refreshes on the next boundary.
-    const r = spawnSync("npx", ["tsx", "scripts/nfl-dream.ts"], {
+    // doctrine just refreshes on the next boundary. `final` routes the
+    // walk-completion pass to MODELS.nflDreamFinal (Fable 5); its long
+    // always-on-thinking turns get a wider timeout.
+    const args = ["tsx", "scripts/nfl-dream.ts", ...(final ? ["final"] : [])];
+    const r = spawnSync("npx", args, {
       stdio: "inherit",
       shell: true,
-      timeout: 10 * 60 * 1000,
+      timeout: (final ? 30 : 10) * 60 * 1000,
     });
-    if (r.status !== 0) console.error(`${RED}burst: dream exited ${r.status} — continuing the walk.${R}`);
+    if (r.status !== 0)
+      console.error(
+        `${RED}burst: dream exited ${r.status} — ${final ? "doctrine unchanged; re-run with `npm run nfl:dream final` (or plain nfl:dream for Opus)" : "continuing the walk"}.${R}`,
+      );
   };
 
   let consecutiveErrors = 0;
@@ -392,7 +398,27 @@ async function runBurst(
 
     if (!advanced) {
       console.log(`\n${G}burst complete — walk caught up to the end of the loaded seasons.${R}`);
-      runDream("walk complete");
+      // The final (Fable 5) dream runs exactly once: only while the graded
+      // record extends past the doctrine's coverage bound. That makes this
+      // idempotent — a caught-up burst whose doctrine already covers the full
+      // record is the $0 no-op it was designed to be (no nightly Fable
+      // re-dreams), while a cap-tripped burst that finished the walk but died
+      // before dreaming picks the debt up the next night.
+      const { loadNflDoctrine, cursorAfterCoverage, maxCoverage } = await import(
+        "../src/lib/nfl-dream"
+      );
+      const doctrine = loadNflDoctrine(dir);
+      const recordMax = maxCoverage(loadGradedRows(dir));
+      const dreamOwed =
+        recordMax != null &&
+        (doctrine.coverage == null || cursorAfterCoverage(recordMax, doctrine.coverage));
+      if (dreamOwed) {
+        runDream("walk complete — final Fable 5 doctrine pass", true);
+      } else {
+        console.log(
+          `${D}doctrine already covers the full record — no dream owed. (delete NFL-Exp5-Burst, re-enable NFL-Exp5-DailyLoop)${R}`,
+        );
+      }
       return;
     }
 
