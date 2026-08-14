@@ -1,41 +1,57 @@
 {
-  "generatedAt": "2026-08-14T15:06:03.776Z",
+  "generatedAt": "2026-08-14T22:57:54.952Z",
   "ready": true,
-  "recordsIngested": 800,
-  "recordsCompleted": 800,
+  "recordsIngested": 802,
+  "recordsCompleted": 802,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 762,
+      "games": 764,
       "conferences": [
+        "NL Central",
         "AL West",
         "NL West",
-        "NL Central",
         "AL Central",
         "NL East",
         "Unknown",
         "AL East"
       ],
-      "avgPoints": 4.349081364829396,
+      "avgPoints": 4.341623036649215,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 5,
+      "recentAvgPoints": 3.6,
       "recentAvgYards": null,
-      "trendScore": 60,
+      "trendScore": 47,
       "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 762,
-        "rpg": 4.35,
-        "oppRpg": 4.35,
-        "hitsPerGame": 8.17,
+        "games": 764,
+        "rpg": 4.34,
+        "oppRpg": 4.34,
+        "hitsPerGame": 8.16,
         "errorsPerGame": 0.53,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Cubs": {
+          "games": 27,
+          "rpg": 5.67,
+          "oppRpg": 3.48,
+          "hitsPerGame": 9.37,
+          "errorsPerGame": 0.33,
+          "sos": null
+        },
+        "Cardinals": {
+          "games": 27,
+          "rpg": 3.7,
+          "oppRpg": 4.07,
+          "hitsPerGame": 7.78,
+          "errorsPerGame": 0.26,
+          "sos": null
+        },
         "Angels": {
           "games": 25,
           "rpg": 2.8,
@@ -156,14 +172,6 @@
           "errorsPerGame": 0.58,
           "sos": 0.52
         },
-        "Cubs": {
-          "games": 26,
-          "rpg": 5.77,
-          "oppRpg": 3.62,
-          "hitsPerGame": 9.5,
-          "errorsPerGame": 0.35,
-          "sos": null
-        },
         "Twins": {
           "games": 26,
           "rpg": 3.88,
@@ -194,14 +202,6 @@
           "oppRpg": 4.71,
           "hitsPerGame": 7.21,
           "errorsPerGame": 0.83,
-          "sos": null
-        },
-        "Cardinals": {
-          "games": 26,
-          "rpg": 3.85,
-          "oppRpg": 4.12,
-          "hitsPerGame": 7.96,
-          "errorsPerGame": 0.27,
           "sos": null
         },
         "Athletics": {
@@ -726,16 +726,16 @@
     },
     {
       "league": "MLB",
-      "conference": "AL West",
+      "conference": "NL Central",
       "gameDate": "2026-08-14T00:00:00.000Z",
-      "team": "Angels",
-      "opponent": "Rangers",
-      "points": 7,
+      "team": "Cubs",
+      "opponent": "Cardinals",
+      "points": 3,
       "opponentPoints": 0,
       "rebounds": null,
       "assists": null,
       "yards": null,
-      "spread": 1.5,
+      "spread": -1.5,
       "atsResult": "W",
       "won": true,
       "teamRank": null,
@@ -764,10 +764,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 15,
-      "errors": 2,
+      "hits": 6,
+      "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401816516",
+      "sourceEventId": "401816527",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -895,6 +895,36 @@
     {
       "league": "MLB",
       "conference": null,
+      "gameDate": "2026-08-14T22:41:00.000Z",
+      "matchup": "Chicago White Sox at Detroit Tigers",
+      "pickTeam": "Detroit Tigers",
+      "opponent": "Chicago White Sox",
+      "spread": 0,
+      "modelSpread": 0,
+      "line": "Detroit Tigers 0",
+      "score": 67,
+      "confidence": 63,
+      "rationaleSignals": [
+        "Momentum edge +0.60 (last-10 trend proxy)",
+        "ATS edge +0.200",
+        "History sample Detroit Tigers: 25 games (mapped Tigers) vs Chicago White Sox: 25 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Detroit Tigers 2d rest vs Chicago White Sox 2d rest",
+        "2 books: avg 0, variance 2.25 (high disagreement)",
+        "Net Rating edge: +4.5",
+        "Home SP: Jackson Jobe",
+        "Away SP: Sean Newcomb",
+        "MLB model: 67.1% win prob (calibrated) | Edge vs market: +13.5%"
+      ],
+      "momentumEdge": 0.6,
+      "atsEdge": 0.2,
+      "mlbModelProb": 0.6711,
+      "mlbEdge": 0.1348,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
       "gameDate": "2026-08-14T23:11:00.000Z",
       "matchup": "Baltimore Orioles at Tampa Bay Rays",
       "pickTeam": "Tampa Bay Rays",
@@ -902,8 +932,8 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Tampa Bay Rays -1.5",
-      "score": 62,
-      "confidence": 58,
+      "score": 63,
+      "confidence": 59,
       "rationaleSignals": [
         "Momentum edge +1.00 (last-10 trend proxy)",
         "ATS edge +0.300",
@@ -911,64 +941,75 @@
         "Home court (+1 pt adjustment)",
         "Rest: Tampa Bay Rays 3d rest vs Baltimore Orioles 3d rest",
         "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +3.2"
+        "Net Rating edge: +3.2",
+        "Home SP: Steven Matz",
+        "MLB model: 64.0% win prob (calibrated)"
       ],
       "momentumEdge": 1,
       "atsEdge": 0.3,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6404,
+      "mlbEdge": 0.0259,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-08-15T00:11:00.000Z",
+      "matchup": "Seattle Mariners at Houston Astros",
+      "pickTeam": "Houston Astros",
+      "opponent": "Seattle Mariners",
+      "spread": 0,
+      "modelSpread": 0,
+      "line": "Houston Astros 0",
+      "score": 63,
+      "confidence": 59,
+      "rationaleSignals": [
+        "Momentum edge +0.40 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample Houston Astros: 24 games (mapped Astros) vs Seattle Mariners: 25 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Houston Astros 3d rest vs Seattle Mariners 2d rest",
+        "4 books: avg 0, variance 2.25 (high disagreement)",
+        "Net Rating edge: +3.2",
+        "Home SP: Peter Lambert",
+        "Away SP: George Kirby",
+        "MLB model: 62.9% win prob (calibrated) | Edge vs market: +8.3%"
+      ],
+      "momentumEdge": 0.4,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.6295,
+      "mlbEdge": 0.0826,
+      "mlbCalibrated": true
     },
     {
       "league": "MLB",
       "conference": null,
       "gameDate": "2026-08-14T22:41:00.000Z",
-      "matchup": "Chicago White Sox at Detroit Tigers",
-      "pickTeam": "Detroit Tigers",
-      "opponent": "Chicago White Sox",
+      "matchup": "Boston Red Sox at Pittsburgh Pirates",
+      "pickTeam": "Boston Red Sox",
+      "opponent": "Pittsburgh Pirates",
       "spread": -1.5,
       "modelSpread": -1.4,
-      "line": "Detroit Tigers -1.5",
-      "score": 59,
-      "confidence": 54,
+      "line": "Boston Red Sox -1.5",
+      "score": 60,
+      "confidence": 56,
       "rationaleSignals": [
-        "Momentum edge +0.60 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Detroit Tigers: 25 games (mapped Tigers) vs Chicago White Sox: 25 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Detroit Tigers 2d rest vs Chicago White Sox 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.5"
-      ],
-      "momentumEdge": 0.6,
-      "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-08-14T23:11:00.000Z",
-      "matchup": "San Diego Padres at Cleveland Guardians",
-      "pickTeam": "San Diego Padres",
-      "opponent": "Cleveland Guardians",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "San Diego Padres +1.5",
-      "score": 57,
-      "confidence": 52,
-      "rationaleSignals": [
-        "Momentum edge +0.80 (last-10 trend proxy)",
-        "ATS edge +0.300",
-        "History sample San Diego Padres: 26 games (mapped Padres) vs Cleveland Guardians: 25 games",
+        "Momentum edge +0.40 (last-10 trend proxy)",
+        "ATS edge +0.100",
+        "History sample Boston Red Sox: 27 games (mapped Red Sox) vs Pittsburgh Pirates: 26 games",
         "Away (+-1 pt adjustment)",
-        "Rest: San Diego Padres 3d rest vs Cleveland Guardians 2d rest",
-        "2 books: avg 1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +2.2"
+        "Rest: Boston Red Sox 2d rest vs Pittsburgh Pirates 2d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +3.1",
+        "Home SP: Bubba Chandler",
+        "Away SP: Jake Bennett",
+        "MLB model: 61.5% win prob (calibrated) | Edge vs market: +8.0%"
       ],
-      "momentumEdge": 0.8,
-      "atsEdge": 0.3,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "momentumEdge": 0.4,
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.6146,
+      "mlbEdge": 0.08,
+      "mlbCalibrated": true
     },
     {
       "league": "MLB",
@@ -980,8 +1021,8 @@
       "spread": -1.5,
       "modelSpread": -1.4,
       "line": "Atlanta Braves -1.5",
-      "score": 57,
-      "confidence": 52,
+      "score": 60,
+      "confidence": 56,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
         "ATS edge +0.200",
@@ -989,18 +1030,21 @@
         "Home court (+1 pt adjustment)",
         "Rest: Atlanta Braves 3d rest vs Arizona Diamondbacks 3d rest",
         "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +0.9"
+        "Net Rating edge: +0.9",
+        "Away SP: Brandon Pfaadt",
+        "MLB model: 62.0% win prob (calibrated)"
       ],
       "momentumEdge": 0.4,
       "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "mlbModelProb": 0.6199,
+      "mlbEdge": -0.0477,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-08-14",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 4 eligible games found on 2026-08-14 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": null,
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1965,22 +2009,6 @@
         "returnDate": "2026-08-13"
       },
       {
-        "player": "Derrick Moore",
-        "team": "Detroit Lions",
-        "position": "DE",
-        "status": "Questionable",
-        "injuryType": "Groin",
-        "returnDate": "2026-08-13"
-      },
-      {
-        "player": "Christian Izien",
-        "team": "Detroit Lions",
-        "position": "S",
-        "status": "Out",
-        "injuryType": "Illness",
-        "returnDate": "2026-08-13"
-      },
-      {
         "player": "Tucker Kraft",
         "team": "Green Bay Packers",
         "position": "TE",
@@ -2290,14 +2318,6 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-15"
-      },
-      {
-        "player": "Beaux Collins",
-        "team": "New York Giants",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Concussion",
         "returnDate": "2026-08-15"
       },
       {
