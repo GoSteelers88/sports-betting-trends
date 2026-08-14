@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { getDashboardData } from "./_data/dashboard";
 import { CommandHeader } from "./_components/CommandHeader";
 import { VerdictTape } from "./_components/VerdictTape";
+import { buildTapeItems } from "./_components/verdict-tape-items";
 import { Hero } from "./_components/Hero";
 import { TabShell, type Tab } from "./_components/TabShell";
 
@@ -27,8 +28,12 @@ import { SectionHeader } from "./_components/SectionHeader";
 import { Footer } from "./_components/Footer";
 import { AskTheDesk } from "./_components/AskTheDesk";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// ISR, not force-dynamic: the data behind this page changes on a cron cadence
+// (agent runs 14:00/22:30 UTC + daily grading), but the old force-dynamic +
+// revalidate=0 made EVERY visitor pay ~25 Turso round-trips and a 1.7MB JSON
+// parse before first byte. 300s staleness is invisible against a twice-daily
+// data cycle; nothing in the render path reads cookies/headers (verified).
+export const revalidate = 300;
 
 export default async function Home() {
   const data = await getDashboardData();
@@ -131,7 +136,7 @@ export default async function Home() {
       <CommandHeader data={data} />
 
       {/* Verdict tape — settled picks travel with their results */}
-      <VerdictTape data={data} />
+      <VerdictTape items={buildTapeItems(data)} />
 
       {/* Hero — permanent masthead above the tab rail; visible on every tab */}
       <div className="px-5 sm:px-10 max-w-[1280px] mx-auto">

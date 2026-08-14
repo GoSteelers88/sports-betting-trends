@@ -131,19 +131,47 @@ export function PickAutopsy({
   // scrollable; body carries no base inline overflow), so it can never leak.
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!pick) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onCloseRef.current();
+      // Focus trap: aria-modal promises the background is inert — keep Tab
+      // inside the sheet so that's true for keyboard users.
+      if (e.key === "Tab" && sheetRef.current) {
+        const focusables = sheetRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || !sheetRef.current.contains(active))) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+    // Move focus INTO the dialog on open — without this a screen-reader user
+    // who activates "Open autopsy" hears nothing at all: focus stays on the
+    // trigger behind the scrim and the dialog announcement never fires. The
+    // trigger element is captured first so close can restore focus to it.
+    const trigger = document.activeElement as HTMLElement | null;
+    requestAnimationFrame(() => closeBtnRef.current?.focus());
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      trigger?.focus?.();
     };
   }, [pick]);
+
 
   if (!pick) return null;
   const stages = buildLifecycle(pick);
@@ -165,6 +193,7 @@ export function PickAutopsy({
       />
 
       <div
+        ref={sheetRef}
         className="relative w-full sm:max-w-2xl h-full sm:h-auto sm:max-h-[92vh] overflow-y-auto bg-paper border border-rule-strong"
         style={{ animation: "sheet-rise 0.25s ease-out", boxShadow: "8px 8px 0 rgba(31,27,22,0.25)" }}
       >
@@ -193,6 +222,7 @@ export function PickAutopsy({
             </p>
           </div>
           <button
+            ref={closeBtnRef}
             type="button"
             aria-label="Close autopsy"
             onClick={onClose}

@@ -41,6 +41,9 @@ export type ChatResponse = {
   reply: string;
   lane: "A" | "B";
   closed?: boolean;
+  // Why the desk closed — lets the client distinguish recoverable states
+  // (cookieless: reload fixes it) from real caps. Additive; absent on old turns.
+  closedReason?: "cookieless" | "session" | "ip" | "budget";
   intercepted?: "distress" | "injection" | "out_of_scope";
   toolsUsed?: string[];
 };
@@ -249,7 +252,7 @@ async function answerCore(
   const spend = await spendCheck(now);
   if (!spend.open) {
     meta.outcome = "desk_closed";
-    return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true };
+    return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true, closedReason: "budget" };
   }
 
   // ROUTER — out-of-scope and entity match are deterministic (no model). An
@@ -314,7 +317,7 @@ async function answerCore(
       );
       if (tb.closed) {
         meta.outcome = "desk_closed";
-        return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true };
+        return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true, closedReason: "budget" };
       }
       const r = tb.value;
       if (r.lane === "B") {
@@ -355,7 +358,7 @@ async function answerCore(
     );
     if (firstRes.closed) {
       meta.outcome = "desk_closed";
-      return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true };
+      return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true, closedReason: "budget" };
     }
     const first = firstRes.value;
     // Prompt-cache telemetry from the Lane B loop → structured turn log (cost
@@ -415,7 +418,7 @@ async function answerCore(
       // Out of budget mid-turn: ship the mode-appropriate fallback rather than
       // the ungrounded first draft. Never trade a closed desk for a bad number.
       meta.outcome = "desk_closed";
-      return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true };
+      return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true, closedReason: "budget" };
     }
     const rewrite = rewriteRes.value;
 
@@ -475,7 +478,7 @@ async function answerCore(
   );
   if (personaRes.closed) {
     meta.outcome = "desk_closed";
-    return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true };
+    return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true, closedReason: "budget" };
   }
   const reply = personaRes.value.reply;
 

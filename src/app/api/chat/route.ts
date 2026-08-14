@@ -130,6 +130,7 @@ export async function POST(req: NextRequest) {
             "I don't take questions from behind a curtain. Reload the page and ask me again — the desk needs to know it's the same person it's already talking to.",
           lane: "A",
           closed: true,
+          closedReason: "cookieless",
         },
         { status: 429 }
       );
@@ -142,6 +143,7 @@ export async function POST(req: NextRequest) {
           "That's enough for one session. I don't run a hotline — take what we covered, sleep on it, and come back fresh.",
         lane: "A",
         closed: true,
+        closedReason: "session",
       },
       { status: 429 }
     );
@@ -155,6 +157,7 @@ export async function POST(req: NextRequest) {
           "You've hit the daily limit from this connection. The discipline keeps — value over action — and it'll still be here tomorrow.",
         lane: "A",
         closed: true,
+        closedReason: "ip",
       },
       { status: 429 }
     );

@@ -34,12 +34,14 @@ const LEAGUE_EMOJI: Record<string, string> = {
   MLB: "⚾",
   NFL: "🏈",
   NHL: "🏒",
+  WNBA: "🏀",
 };
 
 type CardPick = {
   league: string;
   matchup: string;
   selection: string;
+  market: string;
   oddsAmerican: number;
   edge: number;
   kellyStakeUnits: number;
@@ -95,6 +97,7 @@ async function loadPicks(req: NextRequest): Promise<CardPick[]> {
     league: r.league,
     matchup: r.matchup,
     selection: r.selection,
+    market: r.market,
     oddsAmerican: r.oddsAmerican,
     edge: r.edge,
     kellyStakeUnits: r.kellyStakeUnits,
@@ -102,12 +105,14 @@ async function loadPicks(req: NextRequest): Promise<CardPick[]> {
   }));
 }
 
-function paperTrialDay(): { day: number; total: number } {
-  // Trial started 2026-05-06 UTC. 30 days.
+function paperTrialDay(): { day: number } {
+  // Trial started 2026-05-06 UTC. CLV-gated, not calendar-gated: it runs until
+  // the sample-size criteria pass, so there is no "/30" — the old clamp
+  // rendered a false "Day 30/30" on the public card for months.
   const start = Date.UTC(2026, 4, 6);
   const now = Date.now();
-  const day = Math.max(1, Math.min(30, Math.floor((now - start) / 86_400_000) + 1));
-  return { day, total: 30 };
+  const day = Math.max(1, Math.floor((now - start) / 86_400_000) + 1);
+  return { day };
 }
 
 export async function GET(req: NextRequest) {
@@ -118,7 +123,7 @@ export async function GET(req: NextRequest) {
     console.warn("og/picks: failed to load picks:", e);
   }
 
-  const { day, total } = paperTrialDay();
+  const { day } = paperTrialDay();
   const totalUnits = picks.reduce((s, p) => s + p.kellyStakeUnits, 0);
   const dateLabel = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -214,7 +219,7 @@ export async function GET(req: NextRequest) {
             }}
           >
             <span>
-              Day <span style={{ color: COLORS.fg, fontWeight: 600 }}>{day}/{total}</span> · paper trial
+              Day <span style={{ color: COLORS.fg, fontWeight: 600 }}>{day}</span> · CLV-gated paper trial
             </span>
             <span style={{ color: COLORS.muted }}>·</span>
             <span>
@@ -279,7 +284,8 @@ export async function GET(req: NextRequest) {
                     }}
                   >
                     <div style={{ fontSize: 26, fontWeight: 600 }}>
-                      {p.selection} ML{" "}
+                      {p.selection}
+                      {p.market === "moneyline" ? " ML" : ""}{" "}
                       <span style={{ color: COLORS.muted, fontFamily: "Geist Mono", fontSize: 22 }}>
                         {fmtAmerican(p.oddsAmerican)}
                       </span>

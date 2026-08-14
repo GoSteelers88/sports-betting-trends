@@ -4,8 +4,19 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+// Own identity: without this the page inherits the root title verbatim and the
+// site's two indexable pages are duplicates. The description matches what the
+// page SAYS it is (the heuristic screen), not the agent's book.
+export const metadata: Metadata = {
+  title: "The Screen — daily market scan",
+  description:
+    "Heuristic MLB + NBA moneyline scan ranked by edge over the de-vigged market. Not the agent's book — that lives on the front page.",
+  alternates: { canonical: "/picks" },
+};
 
 type Pick = {
   rank: number;

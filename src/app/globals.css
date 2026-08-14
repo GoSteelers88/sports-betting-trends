@@ -15,12 +15,12 @@
   --paper-3: #e8e1d1;      /* recessed band / table head */
   --ink: #1f1b16;          /* warm near-black ink */
   --ink-2: #5c5547;        /* muted annotation ink */
-  --ink-3: #9c9181;        /* faint metadata ink */
+  --ink-3: #6b6154;        /* faint metadata ink (darkened 2026-08-13: #9c9181 ran 2.4-2.9:1 on the papers; this clears 4.5:1 on all three) */
   --rule: rgba(31, 27, 22, 0.16);
   --rule-strong: rgba(31, 27, 22, 0.55);
   --win: #1d6a45;          /* green ink — profit, passed, survived */
   --loss: #b42d1c;         /* red ink — losses, kills, locked. THE accent. */
-  --hold: #8a6614;         /* ochre ink — pending, caution */
+  --hold: #75560f;         /* ochre ink — pending, caution (darkened for 4.5:1 on paper-3) */
   --blue: #2c4e9e;         /* ledger-blue ink — model / signal / info */
   --win-wash: rgba(29, 106, 69, 0.07);
   --loss-wash: rgba(180, 45, 28, 0.06);
@@ -406,6 +406,22 @@ body::after {
 }
 @media (prefers-reduced-motion: reduce) {
   .tape-track {
+    animation: none;
+  }
+  /* With the marquee stopped, content past the first viewport-width must
+     still be reachable — scroll instead of clipping. */
+  .tape-wrap {
+    overflow-x: auto;
+  }
+}
+
+/* Chat consulting meter — same scroll figure as the tape, guarded. */
+.consulting-meter {
+  animation: tape-scroll 1.1s linear infinite;
+  background: var(--loss);
+}
+@media (prefers-reduced-motion: reduce) {
+  .consulting-meter {
     animation: none;
   }
 }
