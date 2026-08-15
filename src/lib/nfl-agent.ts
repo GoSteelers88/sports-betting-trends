@@ -160,6 +160,25 @@ export function extractJson(text: string): unknown {
   try {
     return JSON.parse(cleaned);
   } catch {
+    // Sonnet 5 quirk (every dumped pick failure on 2026-08-15 walk): one key
+    // emitted without its colon — `"rationale "text..."` — and the single
+    // missing colon fails the whole parse, so the week returns 0 picks.
+    // Repair exactly that shape — a key-position `"word "` immediately
+    // followed by a quote (key position = preceded by `{` or `,`, so string
+    // VALUES ending in a space are never touched) — and reparse. Per-pick
+    // validation still gates whatever comes out.
+    const repaired = cleaned.replace(
+      /(?<=[{,][\s]*)"([A-Za-z_][A-Za-z0-9_]*) +(?=")/g,
+      '"$1": ',
+    );
+    if (repaired !== cleaned) {
+      try {
+        console.warn("[nfl-agent] repaired missing-colon key(s) in model JSON");
+        return JSON.parse(repaired);
+      } catch {
+        return null;
+      }
+    }
     return null;
   }
 }
