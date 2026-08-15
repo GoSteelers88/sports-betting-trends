@@ -11,6 +11,9 @@
 // never a new SDK client, never a hardcoded model string. Output is forced to
 // JSON and validated; malformed games are dropped (logged), not guessed.
 
+import * as fs from "node:fs";
+import * as path from "node:path";
+
 import { getAnthropic, MODELS } from "./agent/client";
 import { defaultStateDir } from "./nfl-loop";
 import { logSpend } from "./nfl-spend";
@@ -568,6 +571,12 @@ export function makeClaudePropsPickFn(): PropPickFn {
       })
       .finalMessage();
     logSpend(MODELS.nflLoop, res.usage, "props", `${week.season} ${week.phase} wk${week.week}`);
+    if (res.stop_reason === "refusal") {
+      throw new Error(
+        `props call refused by safety classifiers for ${week.season} ${week.phase} wk${week.week} — ` +
+          `failing the week so the runner retries it`,
+      );
+    }
     if (res.stop_reason === "max_tokens") {
       throw new Error(
         `props call truncated at max_tokens for ${week.season} ${week.phase} wk${week.week} — ` +
@@ -582,6 +591,53 @@ export function makeClaudePropsPickFn(): PropPickFn {
   };
 }
 
+/** Max attempts inside one pick call. A throw from the pick fn costs the burst
+ *  runner one of its three strikes, so cheap retryable failures (thinking-only
+ *  output with no JSON, refusal, max_tokens) retry here first. 2026-08-15:
+ *  ~1/3 of Sonnet 5 pick calls came back with zero parseable JSON at natural
+ *  stop; three coin-flip losses in a row aborted the night at 2021 POST wk19. */
+const PICK_CALL_ATTEMPTS = 3;
+
+/** Dump the complete raw response of a failed pick call under the private state
+ *  dir so the morning after shows WHAT came back (thinking-only? refusal
+ *  prose?), not just that parsing found nothing. Never throws — diagnostics
+ *  must not mask the real failure. */
+function dumpFailedPickResponse(
+  week: BlindWeek,
+  attempt: number,
+  reason: string,
+  res: { stop_reason: string | null; usage: unknown; content: unknown },
+): string | null {
+  try {
+    const dir = path.join(defaultStateDir(), "debug");
+    fs.mkdirSync(dir, { recursive: true });
+    const at = new Date().toISOString();
+    const file = path.join(
+      dir,
+      `pick-fail-${week.season}-${week.phase}-wk${week.week}-a${attempt}-${at.replace(/[:.]/g, "-")}.json`,
+    );
+    fs.writeFileSync(
+      file,
+      JSON.stringify(
+        {
+          at,
+          weekKey: `${week.season} ${week.phase} wk${week.week}`,
+          attempt,
+          reason,
+          stop_reason: res.stop_reason,
+          usage: res.usage,
+          content: res.content,
+        },
+        null,
+        2,
+      ),
+    );
+    return file;
+  } catch {
+    return null;
+  }
+}
+
 export function makeClaudePickFn(): PickFn {
   // Load the durable cross-season doctrine + its coverage bound ONCE (empty until
   // the first dream writes it). The bound is checked PER-WEEK by
@@ -593,34 +649,53 @@ export function makeClaudePickFn(): PickFn {
     if (week.games.length === 0) return [];
     const doctrine = gateDoctrineForWeek(loaded, week);
     const client = getAnthropic();
-    // Streamed because the SDK rejects non-streaming create above ~16K
-    // max_tokens (10-minute timeout guard); finalMessage() gives the same
-    // Message shape back.
-    const res = await client.messages
-      .stream({
-        model: MODELS.nflLoop,
-        // Sonnet 5 runs adaptive thinking by default and thinking tokens count
-        // against max_tokens — at the old 12000 cap, thinking-heavy weeks
-        // truncated the JSON mid-array and the loop advanced past them with 0
-        // picks (2020 wk10/12/17 + 2021 wk11, found 2026-08-14). 24000 leaves
-        // headroom for thinking + a 16-game slate's JSON.
-        max_tokens: 24000,
-        system: pickSystemPrompt(),
-        messages: [{ role: "user", content: pickUserPrompt(week, doctrine) }],
-      })
-      .finalMessage();
-    logSpend(MODELS.nflLoop, res.usage, "pick", `${week.season} ${week.phase} wk${week.week}`);
-    if (res.stop_reason === "max_tokens") {
-      throw new Error(
-        `pick call truncated at max_tokens for ${week.season} ${week.phase} wk${week.week} — ` +
-          `failing the week so the runner retries it instead of advancing with 0 picks`,
+    const weekKey = `${week.season} ${week.phase} wk${week.week}`;
+    let lastFailure = "";
+    for (let attempt = 1; attempt <= PICK_CALL_ATTEMPTS; attempt++) {
+      // Streamed because the SDK rejects non-streaming create above ~16K
+      // max_tokens (10-minute timeout guard); finalMessage() gives the same
+      // Message shape back.
+      const res = await client.messages
+        .stream({
+          model: MODELS.nflLoop,
+          // Sonnet 5 runs adaptive thinking by default and thinking tokens count
+          // against max_tokens — at the old 12000 cap, thinking-heavy weeks
+          // truncated the JSON mid-array and the loop advanced past them with 0
+          // picks (2020 wk10/12/17 + 2021 wk11, found 2026-08-14). 24000 leaves
+          // headroom for thinking + a 16-game slate's JSON.
+          max_tokens: 24000,
+          system: pickSystemPrompt(),
+          messages: [{ role: "user", content: pickUserPrompt(week, doctrine) }],
+        })
+        .finalMessage();
+      logSpend(MODELS.nflLoop, res.usage, "pick", weekKey);
+
+      let failure: string;
+      if (res.stop_reason === "max_tokens") {
+        failure = "truncated at max_tokens — a cut-off JSON array must not be graded";
+      } else if (res.stop_reason === "refusal") {
+        failure = "refused by safety classifiers";
+      } else {
+        let text = "";
+        for (const block of res.content) {
+          if (block.type === "text") text += block.text;
+        }
+        const picks = parsePickResponse(text, week);
+        if (picks.length > 0) return picks;
+        failure = `0 picks parsed from ${text.length} chars of text (stop_reason=${res.stop_reason})`;
+      }
+
+      const dump = dumpFailedPickResponse(week, attempt, failure, res);
+      console.warn(
+        `[nfl-agent] pick call failed for ${weekKey} (attempt ${attempt}/${PICK_CALL_ATTEMPTS}): ${failure}` +
+          (dump ? ` — raw response dumped to ${dump}` : ""),
       );
+      lastFailure = failure;
     }
-    let text = "";
-    for (const block of res.content) {
-      if (block.type === "text") text += block.text;
-    }
-    return parsePickResponse(text, week);
+    throw new Error(
+      `pick call failed ${PICK_CALL_ATTEMPTS}/${PICK_CALL_ATTEMPTS} attempts for ${weekKey} (last: ${lastFailure}) — ` +
+        `failing the week so the runner retries it instead of advancing with 0 picks`,
+    );
   };
 }
 
