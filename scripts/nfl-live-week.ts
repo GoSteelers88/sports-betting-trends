@@ -31,12 +31,18 @@ import {
   assertSpreadConvention,
   loadInjuries,
   loadPlayerStats,
+  loadGradedRows,
   buildBlindWeek,
   type Cursor,
   type BlindGame,
   type GamePick,
 } from "../src/lib/nfl-loop";
 import { makeClaudePickFn } from "../src/lib/nfl-agent";
+import {
+  calibrate,
+  fitBetaCalibration,
+  kellyStakeFraction,
+} from "../src/lib/nfl-calibration";
 import {
   noVigFairProbTwoWay,
   americanToDecimal,
@@ -82,6 +88,12 @@ type BoardLeg = {
   doctrineNotes: string[];
   verdict: "PLAY" | "PASS";
   passReason?: string;
+  /** rawConfidence through the beta-calibration map fitted on the walk's
+   *  graded record (research rec 3) — the probability the stake is sized on. */
+  calibratedConfidence?: number;
+  /** Quarter-Kelly fraction of bankroll, computed IN CODE from the calibrated
+   *  probability at the actual price. 0 for PASS legs. The model never sizes. */
+  stakeFraction?: number;
 };
 
 function haircut(conf: number): number {
@@ -257,6 +269,42 @@ async function main(): Promise<void> {
     pickMeta.push({ gameId: p.gameId, rationale: p.rationale, keyFactors: p.keyFactors });
   }
 
+  // Calibrated staking (research rec 3): fit beta-calibration maps on the
+  // walk's graded record, then size every PLAY leg at quarter-Kelly IN CODE.
+  // Does not touch PLAY/PASS decisions — sizing only. Maps are PER MARKET
+  // (pooled fallback under 20 samples): confidence is one game-level number
+  // copied to all three rows, but realized rates differ by market — ML
+  // favorites won ~66% while ATS ran ~55%, so a pooled map would overstake
+  // ATS legs (review finding 2).
+  const gradedForCal = loadGradedRows(dir).filter((r) => r.result !== "push");
+  const toSamples = (rows: typeof gradedForCal) =>
+    rows.map((r) => ({ score: r.confidence, won: r.result === "win" }));
+  const pooledCal = fitBetaCalibration(toSamples(gradedForCal));
+  const calFor = (market: BoardLeg["market"]) => {
+    const rows = gradedForCal.filter((r) => r.market === market);
+    return rows.length >= 20 ? fitBetaCalibration(toSamples(rows)) : pooledCal;
+  };
+  const calMaps = {
+    ats: calFor("ats"),
+    moneyline: calFor("moneyline"),
+    total: calFor("total"),
+  };
+  for (const [mkt, m] of Object.entries(calMaps)) {
+    console.log(
+      `  ${D}calibration[${mkt}]: n=${m.n} a=${m.a.toFixed(2)} b=${m.b.toFixed(2)} c=${m.c.toFixed(2)}${R}`,
+    );
+  }
+  console.log("");
+  for (const leg of board) {
+    leg.calibratedConfidence = calibrate(calMaps[leg.market], leg.rawConfidence);
+    leg.stakeFraction =
+      leg.verdict === "PLAY"
+        ? kellyStakeFraction(leg.calibratedConfidence, leg.priceAmerican)
+        : 0;
+    // A PLAY leg can legitimately carry stake 0.00% — doctrine says play,
+    // Kelly says the calibrated probability has no edge at this price.
+  }
+
   // ── Full slate table ───────────────────────────────────────────────────────
   console.log(`${B}Full slate — model reads${R} ${D}(conf = raw → after doctrine haircut)${R}`);
   for (const p of picks) {
@@ -287,7 +335,8 @@ async function main(): Promise<void> {
     console.log(
       `  ${G}PLAY${R} ${B}${l.selection.padEnd(14)}${R} ${ml(l.priceAmerican).padStart(5)}  [${l.market}] ${l.matchup.padEnd(12)}` +
         `  conf ${pct(l.haircutConfidence)}${l.edge != null ? `  edge ${G}+${(l.edge * 100).toFixed(1)}pp${R}` : ""}` +
-        `${l.evPct != null ? `  EV ${l.evPct >= 0 ? G : RED}${(l.evPct * 100).toFixed(1)}%${R}` : ""}`,
+        `${l.evPct != null ? `  EV ${l.evPct >= 0 ? G : RED}${(l.evPct * 100).toFixed(1)}%${R}` : ""}` +
+        `  stake ${B}${((l.stakeFraction ?? 0) * 100).toFixed(2)}%${R} ${D}(cal ${pct(l.calibratedConfidence ?? l.rawConfidence)})${R}`,
     );
     for (const n of l.doctrineNotes) console.log(`       ${D}· ${n}${R}`);
   }
@@ -327,6 +376,16 @@ async function main(): Promise<void> {
   const outDir = path.join(dir, "live-boards");
   fs.mkdirSync(outDir, { recursive: true });
   const outPath = path.join(outDir, `${season}-REG-wk${week}.json`);
+  // Boards are IMMUTABLE once written (season-plan ruling): a rerun would
+  // silently replace the original entry prices with later lines and destroy
+  // the receipt. Refuse unless the operator explicitly forces it.
+  if (fs.existsSync(outPath) && !process.argv.includes("--force")) {
+    console.error(
+      `${RED}Refusing to overwrite ${outPath} — boards are immutable receipts. ` +
+        `Re-run with --force only if you intend to replace the original entry prices.${R}`,
+    );
+    process.exit(1);
+  }
   fs.writeFileSync(
     outPath,
     JSON.stringify(
@@ -336,6 +395,9 @@ async function main(): Promise<void> {
         note:
           "Live-week doctrine board. Entry prices are look-ahead nflverse lines at generation time. " +
           "Grade + CLV vs close manually or via a future harness. NOT written to picks-log.jsonl.",
+        // The maps stakes were sized with — refit from picks-log.jsonl every
+        // run, so the receipt records WHICH map produced these fractions.
+        calibration: calMaps,
         board,
         rationales: pickMeta,
       },

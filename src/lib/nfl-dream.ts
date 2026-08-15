@@ -31,10 +31,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { MODELS } from "./agent/client";
+import { evaluateBucketAt, type BucketEligibility } from "./nfl-calibration";
 import {
   computeStatRecord,
   lessonsDir,
   loadLessonsCurrent,
+  restBucket,
+  windBucket,
+  tempBucket,
   type Cursor,
   type GameType,
   type GradedRow,
@@ -218,6 +222,12 @@ export type NflDreamPayload = {
   propRecord: PropStatRecord[];
   parlayStats: NflParlayStats;
   currentWeeklyMemo: string; // the rolling lessons-current.md (the per-week layer)
+  /** Deterministic shrinkage gate (2026-08-15 research, rec 3): every
+   *  situational bucket scored by its Beta(50,50) posterior mean win rate
+   *  against the mean break-even implied by that bucket's OWN prices.
+   *  Computed in code — the dream may only promote a bucket as an EDGE if
+   *  eligible=true here. The model cannot tune this. */
+  doctrineEligibility: BucketEligibility[];
 };
 
 /** Tally the prop log into a per-stat record. Pure. `no-data` rows count toward
@@ -337,7 +347,56 @@ export function assembleNflDreamPayload(
     propRecord,
     parlayStats,
     currentWeeklyMemo: weeklyMemo,
+    doctrineEligibility: computeDoctrineEligibility(gameRows),
   };
+}
+
+/** Run every situational bucket through the Beta(50,50) posterior gate,
+ *  each against the mean break-even implied by ITS OWN prices. Buckets mix
+ *  markets — ML rows carry real prices (favorites average ~-300) — so a fixed
+ *  -110 threshold certified win-rate-high/ROI-negative favorite buckets and
+ *  could never pass a profitable plus-money dog bucket (review 2026-08-15).
+ *  Bucket membership mirrors computeStatRecord exactly. Pure. */
+export function computeDoctrineEligibility(
+  gameRows: GradedRow[],
+): BucketEligibility[] {
+  type Acc = { wins: number; losses: number; pushes: number; beSum: number };
+  const acc = new Map<string, Acc>();
+  const add = (bucket: string, row: GradedRow): void => {
+    const a = acc.get(bucket) ?? { wins: 0, losses: 0, pushes: 0, beSum: 0 };
+    if (row.result === "win") a.wins++;
+    else if (row.result === "loss") a.losses++;
+    else a.pushes++;
+    if (row.result !== "push") {
+      a.beSum += 1 / americanToDecimalOdds(row.oddsAmerican);
+    }
+    acc.set(bucket, a);
+  };
+  for (const r of gameRows) {
+    if (r.market === "ats") add(`favoriteVsDog: ${r.favored}`, r);
+    if (r.market !== "total") {
+      add(`homeVsAway: ${r.homeAway}`, r);
+      add(`byRestAdvantage: ${restBucket(r.restAdvantage)}`, r);
+    }
+    add(`divisional: ${r.divGame ? "divisional" : "non-divisional"}`, r);
+    add(`domeVsOutdoor: ${r.dome ? "dome" : "outdoor"}`, r);
+    const wb = windBucket(r.wind);
+    if (wb) add(`byWind: ${wb}`, r);
+    const tb = tempBucket(r.temp);
+    if (tb) add(`byTemp: ${tb}`, r);
+  }
+  return [...acc.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([bucket, a]) => {
+      const n = a.wins + a.losses;
+      const breakeven = n > 0 ? a.beSum / n : 0.5238;
+      return evaluateBucketAt(bucket, a.wins, a.losses, a.pushes, breakeven);
+    });
+}
+
+function americanToDecimalOdds(american: number): number {
+  if (!Number.isFinite(american) || american === 0) return 1 + 100 / 110;
+  return american > 0 ? 1 + american / 100 : 1 + 100 / -american;
 }
 
 function marketSummary(s: SplitStat): { record: string; winRate: number | null; roiPct: number | null; n: number } {
@@ -458,6 +517,16 @@ export function dreamSystemPrompt(): string {
     "      a single named instance invalidates the leak-free record. It also makes",
     "      the doctrine more DURABLE — a rule about a situation generalizes; a note",
     "      about one game does not.",
+    "  (g) THE ELIGIBILITY GATE IS BINDING. The record includes doctrineEligibility:",
+    "      every situational bucket scored IN CODE by its Beta(50,50) posterior mean",
+    "      win rate against the mean BREAK-EVEN implied by that bucket's own prices",
+    "      (a bucket heavy with -300 favorites must clear ~75%; a +150-dog bucket",
+    "      only ~40% — win rate without price is not edge). You may promote a bucket",
+    "      as an EDGE or LEAN only if its eligible flag is true. An ineligible bucket",
+    "      may appear in doctrine ONLY as a de-emphasis, a caution, or 'insufficient",
+    "      evidence' — never as a positive rule, no matter how good its raw win rate",
+    "      looks. This gate exists because raw small-n win rates overstate and juice",
+    "      hides losses; you cannot override or re-derive it.",
     "",
     "Cover, in order:",
     "  1. CALIBRATION — is predicted ≈ realized? Where is the model over/under-",
@@ -488,6 +557,7 @@ export function dreamUserPrompt(payload: NflDreamPayload): string {
     {
       recordSummary: payload.recordSummary,
       situationalSplits: payload.statRecord.splits,
+      doctrineEligibility: payload.doctrineEligibility,
       baseRates: payload.statRecord.baseRates,
       calibration: payload.statRecord.calibration,
       propRecordByStat: payload.propRecord,

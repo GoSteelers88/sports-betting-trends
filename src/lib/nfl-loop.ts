@@ -1218,7 +1218,7 @@ function groupBy(
   return keys.map((k) => toSplit(k, tallies.get(k)!));
 }
 
-function restBucket(adv: number): string {
+export function restBucket(adv: number): string {
   if (adv >= 4) return "+4 or more";
   if (adv >= 1) return "+1 to +3";
   if (adv === 0) return "even";
@@ -1227,7 +1227,7 @@ function restBucket(adv: number): string {
 }
 const REST_ORDER = ["+4 or more", "+1 to +3", "even", "-1 to -3", "-4 or less"];
 
-function windBucket(w: number | null): string | null {
+export function windBucket(w: number | null): string | null {
   if (w == null) return null;
   if (w <= 5) return "calm (0-5)";
   if (w <= 12) return "breezy (6-12)";
@@ -1236,7 +1236,7 @@ function windBucket(w: number | null): string | null {
 }
 const WIND_ORDER = ["calm (0-5)", "breezy (6-12)", "windy (13-20)", "gale (20+)"];
 
-function tempBucket(t: number | null): string | null {
+export function tempBucket(t: number | null): string | null {
   if (t == null) return null;
   if (t <= 32) return "freezing (<=32)";
   if (t <= 50) return "cold (33-50)";
