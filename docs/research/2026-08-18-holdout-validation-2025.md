@@ -1,6 +1,6 @@
 # 2025 Holdout Validation — Result: NEGATIVE
 
-**Run date:** 2026-08-18 · **Harness:** `npm run nfl:validate` (`255f9b4`) · **Cost:** $3.03
+**Run date:** 2026-08-18 · **Harness:** `npm run nfl:validate` (`255f9b4`) · **Cost:** $2.53
 
 This was the pre-registered out-of-sample gate from the Aug–Sept 2026 season plan.
 2025 was held out of `LOOP_SEASONS` from the start for exactly this run. Publishing
