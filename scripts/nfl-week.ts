@@ -286,7 +286,12 @@ async function runWeek(
 
   // cumulative snapshot
   printReport(computeStatRecord(loadGradedRows(dir)));
-  return true;
+  // Report whether the CURSOR ADVANCED, not merely that a week was processed.
+  // Conflating the two parked the walk on the final week: the last week still
+  // has games, so runWeek kept succeeding, burst read "progress", and re-picked
+  // the same Super Bowl 50-78x/night ($33 across 2026-08-17/18) while the
+  // walk-completion branch (and its Fable dream) stayed unreachable.
+  return next != null;
 }
 
 // Seed mode — process every remaining week of the loaded seasons back-to-back
