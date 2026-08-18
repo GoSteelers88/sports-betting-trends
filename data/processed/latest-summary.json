@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T14:49:33.444Z",
+  "generatedAt": "2026-08-18T22:58:53.973Z",
   "ready": true,
   "recordsIngested": 838,
   "recordsCompleted": 838,
@@ -1125,68 +1125,37 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-08-18T22:41:00.000Z",
-      "matchup": "St. Louis Cardinals at Cincinnati Reds",
-      "pickTeam": "St. Louis Cardinals",
-      "opponent": "Cincinnati Reds",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "St. Louis Cardinals -1.5",
-      "score": 60,
-      "confidence": 56,
-      "rationaleSignals": [
-        "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.100",
-        "History sample St. Louis Cardinals: 28 games (mapped Cardinals) vs Cincinnati Reds: 27 games",
-        "Away (+-1 pt adjustment)",
-        "Rest: St. Louis Cardinals 2d rest vs Cincinnati Reds 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.0",
-        "Home SP: Kent Emanuel",
-        "Away SP: Quinn Mathews",
-        "MLB model: 58.9% win prob (calibrated) | Edge vs market: +5.2%"
-      ],
-      "momentumEdge": 0.4,
-      "atsEdge": 0.1,
-      "mlbModelProb": 0.589,
-      "mlbEdge": 0.0521,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-08-18T23:41:00.000Z",
-      "matchup": "Athletics at Kansas City Royals",
-      "pickTeam": "Kansas City Royals",
-      "opponent": "Athletics",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Kansas City Royals -1.5",
+      "gameDate": "2026-08-18T22:36:00.000Z",
+      "matchup": "New York Yankees at Baltimore Orioles",
+      "pickTeam": "Baltimore Orioles",
+      "opponent": "New York Yankees",
+      "spread": 1.5,
+      "modelSpread": 1.4,
+      "line": "Baltimore Orioles +1.5",
       "score": 57,
       "confidence": 52,
       "rationaleSignals": [
         "Momentum edge +0.00 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample Kansas City Royals: 26 games (mapped Royals) vs Athletics: 26 games",
+        "ATS edge +0.300",
+        "History sample Baltimore Orioles: 25 games (mapped Orioles) vs New York Yankees: 25 games",
         "Home court (+1 pt adjustment)",
-        "Rest: Kansas City Royals 2d rest vs Athletics 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +1.7",
-        "Home SP: Michael Wacha",
-        "Away SP: Mason Barnett",
-        "MLB model: 60.5% win prob (calibrated)"
+        "Rest: Baltimore Orioles 2d rest vs New York Yankees 3d rest",
+        "Net Rating edge: +0.4",
+        "Home SP: Shane Baz",
+        "Away SP: Carlos Rodón",
+        "MLB model: 55.6% win prob (calibrated) | Edge vs market: +5.6%"
       ],
       "momentumEdge": 0,
-      "atsEdge": 0.2,
-      "mlbModelProb": 0.6051,
-      "mlbEdge": -0.005,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.5559,
+      "mlbEdge": 0.0559,
       "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-08-18",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 2 eligible games found on 2026-08-18 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 1 eligible game found on 2026-08-18 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1554,6 +1523,14 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Wrist",
+        "returnDate": "2026-10-01"
+      },
+      {
+        "player": "Isaiah Hartenstein",
+        "team": "Oklahoma City Thunder",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
         "returnDate": "2026-10-01"
       },
       {
@@ -2471,6 +2448,14 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Najee Harris",
+        "team": "New York Giants",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Achilles",
+        "returnDate": "2026-09-13"
+      },
+      {
         "player": "Malik Nabers",
         "team": "New York Giants",
         "position": "WR",
@@ -2485,6 +2470,14 @@
         "status": "Questionable",
         "injuryType": "Knee",
         "returnDate": "2026-08-15"
+      },
+      {
+        "player": "D'Angelo Ponds",
+        "team": "New York Jets",
+        "position": "CB",
+        "status": "Questionable",
+        "injuryType": "Calf",
+        "returnDate": "2026-08-14"
       },
       {
         "player": "T'Vondre Sweat",
@@ -2543,6 +2536,14 @@
         "returnDate": "2026-08-15"
       },
       {
+        "player": "Kaelon Black",
+        "team": "San Francisco 49ers",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Thigh",
+        "returnDate": "2026-08-13"
+      },
+      {
         "player": "George Kittle",
         "team": "San Francisco 49ers",
         "position": "TE",
@@ -2564,14 +2565,6 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Hamstring",
-        "returnDate": "2026-08-13"
-      },
-      {
-        "player": "Kaelon Black",
-        "team": "San Francisco 49ers",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Thigh",
         "returnDate": "2026-08-13"
       },
       {
@@ -2687,6 +2680,14 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Craig Reynolds",
+        "team": "Washington Commanders",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-09-13"
+      },
+      {
         "player": "Nick Allegretti",
         "team": "Washington Commanders",
         "position": "G",
@@ -2700,30 +2701,6 @@
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Hamstring",
-        "returnDate": "2026-08-14"
-      },
-      {
-        "player": "Byron Cowart",
-        "team": "Washington Commanders",
-        "position": "DT",
-        "status": "Questionable",
-        "injuryType": "Ankle",
-        "returnDate": "2026-07-01"
-      },
-      {
-        "player": "Max Scharping",
-        "team": "Washington Commanders",
-        "position": "G",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-09-13"
-      },
-      {
-        "player": "Tress Way",
-        "team": "Washington Commanders",
-        "position": "P",
-        "status": "Out",
-        "injuryType": "Pectoral",
         "returnDate": "2026-08-14"
       }
     ]
