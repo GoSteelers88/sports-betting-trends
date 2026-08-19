@@ -47,6 +47,15 @@ npm run dev                          # http://localhost:3000
 ```
 
 ### Required env (.env / .env.local)
+
+> **The two files are NOT interchangeable.** Next.js loads both automatically,
+> but `tsx` scripts load only what you pass via `--env-file`. `THE_ODDS_API_KEY`
+> (and the other `THE_ODDS_*` vars) live in **`.env.local`**; everything else
+> lives in `.env`. Any script needing odds must therefore run with BOTH:
+> `tsx --env-file-if-exists=.env.local --env-file=.env …` — `.env.local` first
+> so `.env` still wins on keys defined in both (e.g. `DATABASE_URL`). Passing
+> only `--env-file=.env` yields a silently missing Odds API key at runtime.
+
 ```
 TURSO_DATABASE_URL=libsql://sports-betting-bot-gosteelers88.aws-us-east-1.turso.io
 TURSO_AUTH_TOKEN=…

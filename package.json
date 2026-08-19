@@ -87,15 +87,15 @@
     "nfl:ingest-injuries": "tsx scripts/ingest-nfl-injuries.ts",
     "nfl:ingest-props-stats": "tsx scripts/ingest-nfl-props-stats.ts",
     "nfl:week": "tsx scripts/nfl-week.ts",
-    "nfl:burst": "tsx --env-file=.env scripts/nfl-week.ts burst",
-    "nfl:seed": "tsx --env-file=.env scripts/nfl-week.ts seed",
+    "nfl:burst": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-week.ts burst",
+    "nfl:seed": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-week.ts seed",
     "quant:mlb": "tsx scripts/quant-mlb.ts",
     "quant:nfl:dryrun": "tsx scripts/quant-nfl-dryrun.ts",
     "nfl:exp5-summary": "tsx scripts/nfl-exp5-summary.ts",
     "nfl:regrade": "tsx scripts/nfl-regrade.ts",
-    "nfl:validate": "tsx --env-file=.env scripts/nfl-validate.ts",
+    "nfl:validate": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-validate.ts",
     "nfl:parlay-backtest": "tsx scripts/nfl-parlay-backtest.ts",
-    "nfl:dream": "tsx --env-file=.env scripts/nfl-dream.ts"
+    "nfl:dream": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-dream.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",
