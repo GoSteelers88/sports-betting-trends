@@ -1,41 +1,137 @@
 {
-  "generatedAt": "2026-08-20T14:52:37.191Z",
+  "generatedAt": "2026-08-20T23:01:32.261Z",
   "ready": true,
-  "recordsIngested": 842,
-  "recordsCompleted": 842,
+  "recordsIngested": 854,
+  "recordsCompleted": 854,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 784,
+      "games": 796,
       "conferences": [
-        "AL West",
-        "NL East",
-        "NL West",
         "NL Central",
         "AL Central",
+        "NL West",
+        "AL East",
         "Unknown",
-        "AL East"
+        "AL West",
+        "NL East"
       ],
-      "avgPoints": 4.293367346938775,
+      "avgPoints": 4.295226130653266,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 3.4,
+      "recentAvgPoints": 5.1,
       "recentAvgYards": null,
-      "trendScore": 33,
-      "trendSignal": "down",
+      "trendScore": 69,
+      "trendSignal": "up",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 784,
-        "rpg": 4.29,
-        "oppRpg": 4.29,
-        "hitsPerGame": 8.13,
+        "games": 796,
+        "rpg": 4.3,
+        "oppRpg": 4.3,
+        "hitsPerGame": 8.12,
         "errorsPerGame": 0.52,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Reds": {
+          "games": 28,
+          "rpg": 3.75,
+          "oppRpg": 4.61,
+          "hitsPerGame": 6.75,
+          "errorsPerGame": 0.64,
+          "sos": 0.52
+        },
+        "Cardinals": {
+          "games": 29,
+          "rpg": 4.31,
+          "oppRpg": 3.93,
+          "hitsPerGame": 8.03,
+          "errorsPerGame": 0.31,
+          "sos": null
+        },
+        "Guardians": {
+          "games": 26,
+          "rpg": 3.73,
+          "oppRpg": 4.62,
+          "hitsPerGame": 7.96,
+          "errorsPerGame": 0.65,
+          "sos": null
+        },
+        "Giants": {
+          "games": 26,
+          "rpg": 3.85,
+          "oppRpg": 4.35,
+          "hitsPerGame": 7.38,
+          "errorsPerGame": 0.62,
+          "sos": null
+        },
+        "Rays": {
+          "games": 27,
+          "rpg": 4.63,
+          "oppRpg": 4.07,
+          "hitsPerGame": 9,
+          "errorsPerGame": 0.56,
+          "sos": 0.52
+        },
+        "Blue Jays": {
+          "games": 28,
+          "rpg": 4.04,
+          "oppRpg": 3.61,
+          "hitsPerGame": 8.75,
+          "errorsPerGame": 0.43,
+          "sos": null
+        },
+        "Royals": {
+          "games": 27,
+          "rpg": 4,
+          "oppRpg": 4.11,
+          "hitsPerGame": 7.74,
+          "errorsPerGame": 0.26,
+          "sos": 0.52
+        },
+        "Athletics": {
+          "games": 27,
+          "rpg": 3.85,
+          "oppRpg": 6.56,
+          "hitsPerGame": 7.78,
+          "errorsPerGame": 0.74,
+          "sos": null
+        },
+        "Brewers": {
+          "games": 27,
+          "rpg": 4.89,
+          "oppRpg": 3.89,
+          "hitsPerGame": 8.48,
+          "errorsPerGame": 0.56,
+          "sos": null
+        },
+        "Mariners": {
+          "games": 26,
+          "rpg": 3.38,
+          "oppRpg": 5.88,
+          "hitsPerGame": 7.69,
+          "errorsPerGame": 0.5,
+          "sos": null
+        },
+        "White Sox": {
+          "games": 27,
+          "rpg": 4.67,
+          "oppRpg": 4.56,
+          "hitsPerGame": 7.96,
+          "errorsPerGame": 0.78,
+          "sos": null
+        },
+        "Braves": {
+          "games": 28,
+          "rpg": 4.04,
+          "oppRpg": 3.75,
+          "hitsPerGame": 7.89,
+          "errorsPerGame": 0.46,
+          "sos": null
+        },
         "Rangers": {
           "games": 26,
           "rpg": 3.35,
@@ -124,28 +220,12 @@
           "errorsPerGame": 0.23,
           "sos": 0.52
         },
-        "Braves": {
-          "games": 27,
-          "rpg": 4.11,
-          "oppRpg": 3.89,
-          "hitsPerGame": 7.89,
-          "errorsPerGame": 0.48,
-          "sos": null
-        },
         "Cubs": {
           "games": 27,
           "rpg": 5.07,
           "oppRpg": 3.93,
           "hitsPerGame": 8.89,
           "errorsPerGame": 0.26,
-          "sos": null
-        },
-        "White Sox": {
-          "games": 26,
-          "rpg": 4.85,
-          "oppRpg": 4.65,
-          "hitsPerGame": 8.23,
-          "errorsPerGame": 0.77,
           "sos": null
         },
         "Red Sox": {
@@ -194,86 +274,6 @@
           "oppRpg": 3.19,
           "hitsPerGame": 6.58,
           "errorsPerGame": 0.38,
-          "sos": null
-        },
-        "Guardians": {
-          "games": 25,
-          "rpg": 3.68,
-          "oppRpg": 4.72,
-          "hitsPerGame": 7.92,
-          "errorsPerGame": 0.68,
-          "sos": null
-        },
-        "Giants": {
-          "games": 25,
-          "rpg": 3.92,
-          "oppRpg": 4.32,
-          "hitsPerGame": 7.48,
-          "errorsPerGame": 0.56,
-          "sos": null
-        },
-        "Reds": {
-          "games": 27,
-          "rpg": 3.56,
-          "oppRpg": 4.41,
-          "hitsPerGame": 6.74,
-          "errorsPerGame": 0.59,
-          "sos": 0.52
-        },
-        "Cardinals": {
-          "games": 28,
-          "rpg": 4.11,
-          "oppRpg": 3.75,
-          "hitsPerGame": 8.04,
-          "errorsPerGame": 0.32,
-          "sos": null
-        },
-        "Rays": {
-          "games": 26,
-          "rpg": 4.77,
-          "oppRpg": 4.04,
-          "hitsPerGame": 9.15,
-          "errorsPerGame": 0.54,
-          "sos": 0.52
-        },
-        "Blue Jays": {
-          "games": 27,
-          "rpg": 4,
-          "oppRpg": 3.7,
-          "hitsPerGame": 8.63,
-          "errorsPerGame": 0.41,
-          "sos": null
-        },
-        "Royals": {
-          "games": 26,
-          "rpg": 3.92,
-          "oppRpg": 4.19,
-          "hitsPerGame": 7.58,
-          "errorsPerGame": 0.27,
-          "sos": 0.52
-        },
-        "Athletics": {
-          "games": 26,
-          "rpg": 3.92,
-          "oppRpg": 6.58,
-          "hitsPerGame": 7.77,
-          "errorsPerGame": 0.69,
-          "sos": null
-        },
-        "Brewers": {
-          "games": 26,
-          "rpg": 4.81,
-          "oppRpg": 3.88,
-          "hitsPerGame": 8.38,
-          "errorsPerGame": 0.58,
-          "sos": null
-        },
-        "Mariners": {
-          "games": 25,
-          "rpg": 3.36,
-          "oppRpg": 5.84,
-          "hitsPerGame": 7.76,
-          "errorsPerGame": 0.52,
           "sos": null
         }
       }
@@ -908,17 +908,17 @@
   "latestByLeague": [
     {
       "league": "MLB",
-      "conference": "AL West",
+      "conference": "NL Central",
       "gameDate": "2026-08-20T00:00:00.000Z",
-      "team": "Rangers",
-      "opponent": "Nationals",
-      "points": 0,
-      "opponentPoints": 6,
+      "team": "Reds",
+      "opponent": "Cardinals",
+      "points": 9,
+      "opponentPoints": 10,
       "rebounds": null,
       "assists": null,
       "yards": null,
-      "spread": -1.5,
-      "atsResult": "L",
+      "spread": 1.5,
+      "atsResult": "W",
       "won": false,
       "teamRank": null,
       "opponentRank": null,
@@ -946,10 +946,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 4,
-      "errors": 0,
+      "hits": 7,
+      "errors": 2,
       "source": "espn-public-api",
-      "sourceEventId": "401816599",
+      "sourceEventId": "401816603",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -1121,72 +1121,11 @@
     "Unknown",
     "Western"
   ],
-  "bestBets": [
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-08-20T17:11:00.000Z",
-      "matchup": "San Francisco Giants at Cleveland Guardians",
-      "pickTeam": "Cleveland Guardians",
-      "opponent": "San Francisco Giants",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Cleveland Guardians -1.5",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.00 (last-10 trend proxy)",
-        "ATS edge -0.100",
-        "History sample Cleveland Guardians: 25 games (mapped Guardians) vs San Francisco Giants: 25 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Cleveland Guardians 2d rest vs San Francisco Giants 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +1.6",
-        "Home SP: Parker Messick",
-        "Away SP: Matt Wilkinson",
-        "MLB model: 66.1% win prob (calibrated)"
-      ],
-      "momentumEdge": 0,
-      "atsEdge": -0.1,
-      "mlbModelProb": 0.6611,
-      "mlbEdge": -0.0157,
-      "mlbCalibrated": true
-    },
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-08-20T18:11:00.000Z",
-      "matchup": "Seattle Mariners at Milwaukee Brewers",
-      "pickTeam": "Milwaukee Brewers",
-      "opponent": "Seattle Mariners",
-      "spread": -1.5,
-      "modelSpread": -1.4,
-      "line": "Milwaukee Brewers -1.5",
-      "score": 58,
-      "confidence": 53,
-      "rationaleSignals": [
-        "Momentum edge +0.20 (last-10 trend proxy)",
-        "ATS edge +0.000",
-        "History sample Milwaukee Brewers: 26 games (mapped Brewers) vs Seattle Mariners: 25 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: Milwaukee Brewers 2d rest vs Seattle Mariners 2d rest",
-        "2 books: avg -1.5, variance 0 (tight consensus)",
-        "Net Rating edge: +4.4",
-        "Home SP: Dustin May",
-        "Away SP: Logan Gilbert",
-        "MLB model: 61.7% win prob (calibrated)"
-      ],
-      "momentumEdge": 0.2,
-      "atsEdge": 0,
-      "mlbModelProb": 0.6168,
-      "mlbEdge": 0.0492,
-      "mlbCalibrated": true
-    }
-  ],
+  "bestBets": [],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-08-20",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 2 eligible games found on 2026-08-20 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 0 eligible games found on 2026-08-20 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1309,6 +1248,14 @@
         "returnDate": "2026-10-01"
       },
       {
+        "player": "Aaron Gordon",
+        "team": "Denver Nuggets",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Calf",
+        "returnDate": "2026-10-01"
+      },
+      {
         "player": "Peyton Watson",
         "team": "Denver Nuggets",
         "position": "G",
@@ -1322,14 +1269,6 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Undisclosed",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Aaron Gordon",
-        "team": "Denver Nuggets",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Calf",
         "returnDate": "2026-10-01"
       },
       {
@@ -1394,22 +1333,6 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Hip",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Kobe Sanders",
-        "team": "LA Clippers",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-01"
-      },
-      {
-        "player": "Cam Christie",
-        "team": "LA Clippers",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
         "returnDate": "2026-10-01"
       },
       {
@@ -1823,6 +1746,14 @@
     ],
     "nfl": [
       {
+        "player": "Carson Beck",
+        "team": "Arizona Cardinals",
+        "position": "QB",
+        "status": "Questionable",
+        "injuryType": "Ribs",
+        "returnDate": "2026-08-22"
+      },
+      {
         "player": "Xavier Weaver",
         "team": "Arizona Cardinals",
         "position": "WR",
@@ -1845,14 +1776,6 @@
         "status": "Injured Reserve",
         "injuryType": "Undisclosed",
         "returnDate": "2027-02-15"
-      },
-      {
-        "player": "Carson Beck",
-        "team": "Arizona Cardinals",
-        "position": "QB",
-        "status": "Questionable",
-        "injuryType": "Ribs",
-        "returnDate": "2026-08-22"
       },
       {
         "player": "Chase Bisontis",
@@ -1919,6 +1842,14 @@
         "returnDate": "2026-08-22"
       },
       {
+        "player": "Michael Penix Jr.",
+        "team": "Atlanta Falcons",
+        "position": "QB",
+        "status": "Questionable",
+        "injuryType": "Knee - ACL",
+        "returnDate": "2026-08-28"
+      },
+      {
         "player": "Trey Sermon",
         "team": "Atlanta Falcons",
         "position": "RB",
@@ -1943,14 +1874,6 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Michael Penix Jr.",
-        "team": "Atlanta Falcons",
-        "position": "QB",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-28"
-      },
-      {
         "player": "DeAngelo Malone",
         "team": "Atlanta Falcons",
         "position": "LB",
@@ -1970,9 +1893,9 @@
         "player": "Danny Pinter",
         "team": "Baltimore Ravens",
         "position": "C",
-        "status": "Questionable",
+        "status": "Doubtful",
         "injuryType": "Leg",
-        "returnDate": "2026-08-22"
+        "returnDate": "2026-09-13"
       },
       {
         "player": "Dayton Wade",
@@ -1988,14 +1911,6 @@
         "position": "DT",
         "status": "Questionable",
         "injuryType": "Undisclosed",
-        "returnDate": "2026-08-22"
-      },
-      {
-        "player": "Ethan Pocic",
-        "team": "Baltimore Ravens",
-        "position": "C",
-        "status": "Questionable",
-        "injuryType": "Ankle",
         "returnDate": "2026-08-22"
       },
       {
@@ -2031,6 +1946,14 @@
         "returnDate": "2026-08-22"
       },
       {
+        "player": "Khalil Shakir",
+        "team": "Buffalo Bills",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-22"
+      },
+      {
         "player": "Ty Johnson",
         "team": "Buffalo Bills",
         "position": "RB",
@@ -2044,14 +1967,6 @@
         "position": "C",
         "status": "Questionable",
         "injuryType": "Leg",
-        "returnDate": "2026-08-22"
-      },
-      {
-        "player": "DJ Moore",
-        "team": "Buffalo Bills",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Lower Body",
         "returnDate": "2026-08-22"
       },
       {
@@ -2263,20 +2178,28 @@
         "returnDate": "2026-08-22"
       },
       {
-        "player": "Jack Stoll",
-        "team": "Cleveland Browns",
-        "position": "TE",
-        "status": "Injured Reserve",
-        "injuryType": "Undisclosed",
-        "returnDate": "2027-02-15"
-      },
-      {
         "player": "Quinshon Judkins",
         "team": "Cleveland Browns",
         "position": "RB",
         "status": "Questionable",
         "injuryType": "Undisclosed",
         "returnDate": "2026-08-22"
+      },
+      {
+        "player": "Alex Wright",
+        "team": "Cleveland Browns",
+        "position": "DE",
+        "status": "Questionable",
+        "injuryType": "Lower Leg",
+        "returnDate": "2026-08-22"
+      },
+      {
+        "player": "Jack Stoll",
+        "team": "Cleveland Browns",
+        "position": "TE",
+        "status": "Injured Reserve",
+        "injuryType": "Undisclosed",
+        "returnDate": "2027-02-15"
       },
       {
         "player": "Jamari Thrash",
@@ -2375,6 +2298,22 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Jaydon Blue",
+        "team": "Dallas Cowboys",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Shoulder",
+        "returnDate": "2026-08-22"
+      },
+      {
+        "player": "Michael Trigg",
+        "team": "Dallas Cowboys",
+        "position": "TE",
+        "status": "Questionable",
+        "injuryType": "Toe",
+        "returnDate": "2026-08-22"
+      },
+      {
         "player": "Tyler Guyton",
         "team": "Dallas Cowboys",
         "position": "OT",
@@ -2407,14 +2346,6 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Jaydon Blue",
-        "team": "Dallas Cowboys",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Shoulder",
-        "returnDate": "2026-08-22"
-      },
-      {
         "player": "Luke Wattenberg",
         "team": "Denver Broncos",
         "position": "C",
@@ -2444,7 +2375,7 @@
         "position": "LB",
         "status": "Questionable",
         "injuryType": "Leg",
-        "returnDate": "2026-09-14"
+        "returnDate": "2027-02-15"
       },
       {
         "player": "Michael Deiter",
@@ -2461,6 +2392,14 @@
         "status": "Questionable",
         "injuryType": "Lower Body",
         "returnDate": "2026-08-21"
+      },
+      {
+        "player": "Sam LaPorta",
+        "team": "Detroit Lions",
+        "position": "TE",
+        "status": "Questionable",
+        "injuryType": "Hip",
+        "returnDate": "2026-08-29"
       },
       {
         "player": "Payton Turner",
@@ -2708,7 +2647,7 @@
         "position": "TE",
         "status": "Questionable",
         "injuryType": "Groin",
-        "returnDate": "2026-08-22"
+        "returnDate": "2026-08-29"
       },
       {
         "player": "DJ Giddens",
@@ -2823,6 +2762,30 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Matt Waletzko",
+        "team": "Kansas City Chiefs",
+        "position": "OT",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
+        "returnDate": "2027-02-15"
+      },
+      {
+        "player": "Jeff Caldwell",
+        "team": "Kansas City Chiefs",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Knee",
+        "returnDate": "2026-08-28"
+      },
+      {
+        "player": "Patrick Mahomes",
+        "team": "Kansas City Chiefs",
+        "position": "QB",
+        "status": "Questionable",
+        "injuryType": "Knee - ACL",
+        "returnDate": "2026-08-28"
+      },
+      {
         "player": "Drue Tranquill",
         "team": "Kansas City Chiefs",
         "position": "LB",
@@ -2871,36 +2834,12 @@
         "returnDate": "2026-08-22"
       },
       {
-        "player": "Patrick Mahomes",
-        "team": "Kansas City Chiefs",
-        "position": "QB",
-        "status": "Questionable",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2026-08-22"
-      },
-      {
         "player": "Ashton Gillotte",
         "team": "Kansas City Chiefs",
         "position": "DE",
         "status": "Questionable",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-08-22"
-      },
-      {
-        "player": "Ethan Downs",
-        "team": "Kansas City Chiefs",
-        "position": "LB",
-        "status": "Injured Reserve",
-        "injuryType": "Knee - ACL",
-        "returnDate": "2027-02-15"
-      },
-      {
-        "player": "John Michael Gyllenborg",
-        "team": "Kansas City Chiefs",
-        "position": "TE",
-        "status": "Injured Reserve",
-        "injuryType": "Knee",
-        "returnDate": "2027-02-15"
+        "injuryType": "Foot",
+        "returnDate": "2026-09-14"
       },
       {
         "player": "Justin Pickett",
@@ -2967,6 +2906,14 @@
         "returnDate": "2026-08-20"
       },
       {
+        "player": "Puka Nacua",
+        "team": "Los Angeles Rams",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Groin",
+        "returnDate": "2026-08-22"
+      },
+      {
         "player": "Mario Williams",
         "team": "Los Angeles Rams",
         "position": "WR",
@@ -2981,14 +2928,6 @@
         "status": "Questionable",
         "injuryType": "Hamstring",
         "returnDate": "2026-09-10"
-      },
-      {
-        "player": "Puka Nacua",
-        "team": "Los Angeles Rams",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Groin",
-        "returnDate": "2026-08-22"
       },
       {
         "player": "Davis Allen",
@@ -3175,14 +3114,6 @@
         "returnDate": "2026-08-22"
       },
       {
-        "player": "Andrew Rupcich",
-        "team": "New England Patriots",
-        "position": "G",
-        "status": "Injured Reserve",
-        "injuryType": "Undisclosed",
-        "returnDate": "2027-02-15"
-      },
-      {
         "player": "Christian Gonzalez",
         "team": "New England Patriots",
         "position": "CB",
@@ -3251,7 +3182,7 @@
         "team": "New Orleans Saints",
         "position": "DT",
         "status": "Questionable",
-        "injuryType": "Back",
+        "injuryType": "Foot",
         "returnDate": "2026-08-22"
       },
       {
@@ -3292,6 +3223,14 @@
         "position": "DT",
         "status": "Questionable",
         "injuryType": "Shoulder",
+        "returnDate": "2026-08-22"
+      },
+      {
+        "player": "Francis Mauigoa",
+        "team": "New York Giants",
+        "position": "OT",
+        "status": "Questionable",
+        "injuryType": "Upper Body",
         "returnDate": "2026-08-22"
       },
       {
@@ -3399,14 +3338,6 @@
         "returnDate": "2026-08-22"
       },
       {
-        "player": "Najee Harris",
-        "team": "New York Giants",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Achilles",
-        "returnDate": "2026-09-13"
-      },
-      {
         "player": "Kingsley Jonathan",
         "team": "New York Jets",
         "position": "DE",
@@ -3484,6 +3415,22 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Hamstring",
+        "returnDate": "2026-08-22"
+      },
+      {
+        "player": "Jakorian Bennett",
+        "team": "Philadelphia Eagles",
+        "position": "CB",
+        "status": "Questionable",
+        "injuryType": "Knee",
+        "returnDate": "2026-08-28"
+      },
+      {
+        "player": "Elijah Moore",
+        "team": "Philadelphia Eagles",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Neck",
         "returnDate": "2026-08-22"
       },
       {
@@ -3679,6 +3626,14 @@
         "returnDate": "2026-08-21"
       },
       {
+        "player": "Patrick Taylor Jr.",
+        "team": "San Francisco 49ers",
+        "position": "RB",
+        "status": "Injured Reserve",
+        "injuryType": "Undisclosed",
+        "returnDate": "2027-02-15"
+      },
+      {
         "player": "Titus Leo",
         "team": "San Francisco 49ers",
         "position": "DE",
@@ -3855,6 +3810,14 @@
         "returnDate": "2026-08-23"
       },
       {
+        "player": "Zyon McCollum",
+        "team": "Tampa Bay Buccaneers",
+        "position": "CB",
+        "status": "Questionable",
+        "injuryType": "Groin",
+        "returnDate": "2026-08-28"
+      },
+      {
         "player": "Cade Otton",
         "team": "Tampa Bay Buccaneers",
         "position": "TE",
@@ -3879,14 +3842,6 @@
         "returnDate": "2026-08-22"
       },
       {
-        "player": "Marcus Banks",
-        "team": "Tampa Bay Buccaneers",
-        "position": "S",
-        "status": "Injured Reserve",
-        "injuryType": "Undisclosed",
-        "returnDate": "2027-02-15"
-      },
-      {
         "player": "Kadarius Calloway",
         "team": "Tampa Bay Buccaneers",
         "position": "RB",
@@ -3909,6 +3864,14 @@
         "status": "Questionable",
         "injuryType": "Knee",
         "returnDate": "2026-08-28"
+      },
+      {
+        "player": "Mitchell Trubisky",
+        "team": "Tennessee Titans",
+        "position": "QB",
+        "status": "Questionable",
+        "injuryType": "Biceps",
+        "returnDate": "2026-08-23"
       },
       {
         "player": "Carnell Tate",
