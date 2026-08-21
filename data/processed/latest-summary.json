@@ -1,41 +1,57 @@
 {
-  "generatedAt": "2026-08-21T14:51:14.216Z",
+  "generatedAt": "2026-08-21T22:58:47.331Z",
   "ready": true,
-  "recordsIngested": 830,
-  "recordsCompleted": 830,
+  "recordsIngested": 832,
+  "recordsCompleted": 832,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 768,
+      "games": 770,
       "conferences": [
-        "AL West",
-        "NL East",
         "NL Central",
+        "NL East",
+        "AL West",
         "AL Central",
         "NL West",
         "AL East",
         "Unknown"
       ],
-      "avgPoints": 4.30078125,
+      "avgPoints": 4.293506493506493,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 5.5,
+      "recentAvgPoints": 5.2,
       "recentAvgYards": null,
-      "trendScore": 33,
+      "trendScore": 34,
       "trendSignal": "down",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 768,
-        "rpg": 4.3,
-        "oppRpg": 4.3,
+        "games": 770,
+        "rpg": 4.29,
+        "oppRpg": 4.29,
         "hitsPerGame": 8.12,
         "errorsPerGame": 0.52,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Brewers": {
+          "games": 27,
+          "rpg": 4.81,
+          "oppRpg": 3.81,
+          "hitsPerGame": 8.52,
+          "errorsPerGame": 0.56,
+          "sos": null
+        },
+        "Braves": {
+          "games": 28,
+          "rpg": 3.82,
+          "oppRpg": 3.61,
+          "hitsPerGame": 7.68,
+          "errorsPerGame": 0.46,
+          "sos": null
+        },
         "Rangers": {
           "games": 26,
           "rpg": 3.35,
@@ -132,14 +148,6 @@
           "errorsPerGame": 0.77,
           "sos": null
         },
-        "Brewers": {
-          "games": 26,
-          "rpg": 4.92,
-          "oppRpg": 3.92,
-          "hitsPerGame": 8.5,
-          "errorsPerGame": 0.54,
-          "sos": null
-        },
         "Mariners": {
           "games": 25,
           "rpg": 3.4,
@@ -154,14 +162,6 @@
           "oppRpg": 4.65,
           "hitsPerGame": 7.96,
           "errorsPerGame": 0.73,
-          "sos": null
-        },
-        "Braves": {
-          "games": 27,
-          "rpg": 3.93,
-          "oppRpg": 3.67,
-          "hitsPerGame": 7.67,
-          "errorsPerGame": 0.48,
           "sos": null
         },
         "Orioles": {
@@ -955,17 +955,17 @@
     },
     {
       "league": "MLB",
-      "conference": "AL West",
+      "conference": "NL Central",
       "gameDate": "2026-08-21T00:00:00.000Z",
-      "team": "Rangers",
-      "opponent": "Nationals",
+      "team": "Brewers",
+      "opponent": "Braves",
       "points": 2,
-      "opponentPoints": 0,
+      "opponentPoints": 1,
       "rebounds": null,
       "assists": null,
       "yards": null,
       "spread": -1.5,
-      "atsResult": "W",
+      "atsResult": "L",
       "won": true,
       "teamRank": null,
       "opponentRank": null,
@@ -993,10 +993,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 6,
-      "errors": 0,
+      "hits": 9,
+      "errors": 1,
       "source": "espn-public-api",
-      "sourceEventId": "401816609",
+      "sourceEventId": "401816617",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -1125,33 +1125,95 @@
     {
       "league": "MLB",
       "conference": null,
-      "gameDate": "2026-08-22T01:41:00.000Z",
-      "matchup": "Minnesota Twins at San Diego Padres",
-      "pickTeam": "San Diego Padres",
-      "opponent": "Minnesota Twins",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "San Diego Padres +1.5",
+      "gameDate": "2026-08-21T23:11:00.000Z",
+      "matchup": "San Francisco Giants at Boston Red Sox",
+      "pickTeam": "Boston Red Sox",
+      "opponent": "San Francisco Giants",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Boston Red Sox -1.5",
+      "score": 60,
+      "confidence": 56,
+      "rationaleSignals": [
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.000",
+        "History sample Boston Red Sox: 26 games (mapped Red Sox) vs San Francisco Giants: 25 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Boston Red Sox 3d rest vs San Francisco Giants 2d rest",
+        "Net Rating edge: +2.6",
+        "Home SP: Sonny Gray",
+        "Away SP: Logan Webb",
+        "MLB model: 65.8% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.2,
+      "atsEdge": 0,
+      "mlbModelProb": 0.6583,
+      "mlbEdge": 0.0259,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-08-21T23:11:00.000Z",
+      "matchup": "Washington Nationals at Miami Marlins",
+      "pickTeam": "Miami Marlins",
+      "opponent": "Washington Nationals",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Miami Marlins -1.5",
       "score": 58,
       "confidence": 53,
       "rationaleSignals": [
         "Momentum edge +0.40 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample San Diego Padres: 26 games (mapped Padres) vs Minnesota Twins: 25 games",
+        "ATS edge +0.100",
+        "History sample Miami Marlins: 25 games (mapped Marlins) vs Washington Nationals: 26 games",
         "Home court (+1 pt adjustment)",
-        "Rest: San Diego Padres 3d rest vs Minnesota Twins 3d rest",
-        "Net Rating edge: +2.5"
+        "Rest: Miami Marlins 3d rest vs Washington Nationals B2B",
+        "Net Rating edge: +0.9",
+        "Home SP: Ryan Gusto",
+        "Away SP: Brad Lord",
+        "MLB model: 58.9% win prob (calibrated)"
       ],
       "momentumEdge": 0.4,
-      "atsEdge": 0.2,
-      "mlbModelProb": null,
-      "mlbEdge": null
+      "atsEdge": 0.1,
+      "mlbModelProb": 0.5887,
+      "mlbEdge": -0.0048,
+      "mlbCalibrated": true
+    },
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-08-22T01:41:00.000Z",
+      "matchup": "Cincinnati Reds at Arizona Diamondbacks",
+      "pickTeam": "Arizona Diamondbacks",
+      "opponent": "Cincinnati Reds",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Arizona Diamondbacks -1.5",
+      "score": 58,
+      "confidence": 53,
+      "rationaleSignals": [
+        "Momentum edge +0.20 (last-10 trend proxy)",
+        "ATS edge +0.000",
+        "History sample Arizona Diamondbacks: 26 games (mapped Diamondbacks) vs Cincinnati Reds: 27 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Arizona Diamondbacks 3d rest vs Cincinnati Reds 2d rest",
+        "Net Rating edge: +1.7",
+        "Home SP: Eduardo Rodriguez",
+        "Away SP: Nick Lodolo",
+        "MLB model: 62.0% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.2,
+      "atsEdge": 0,
+      "mlbModelProb": 0.6195,
+      "mlbEdge": 0.0327,
+      "mlbCalibrated": true
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-08-21",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-08-21 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 3 eligible games found on 2026-08-21 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -2044,6 +2106,22 @@
         "returnDate": "2026-08-22"
       },
       {
+        "player": "Jaelan Phillips",
+        "team": "Carolina Panthers",
+        "position": "LB",
+        "status": "Questionable",
+        "injuryType": "Arm",
+        "returnDate": "2026-08-28"
+      },
+      {
+        "player": "Xavier Legette",
+        "team": "Carolina Panthers",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Lower Body",
+        "returnDate": "2026-08-28"
+      },
+      {
         "player": "Chuba Hubbard",
         "team": "Carolina Panthers",
         "position": "RB",
@@ -2604,19 +2682,43 @@
         "returnDate": "2026-08-21"
       },
       {
-        "player": "Jaylin Noel",
+        "player": "Dominique Robinson",
         "team": "Houston Texans",
-        "position": "WR",
+        "position": "DE",
         "status": "Questionable",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-09-13"
+        "injuryType": "Calf",
+        "returnDate": "2026-08-28"
+      },
+      {
+        "player": "Noah Whittington",
+        "team": "Houston Texans",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Ankle",
+        "returnDate": "2026-08-28"
+      },
+      {
+        "player": "Wade Woodaz",
+        "team": "Houston Texans",
+        "position": "LB",
+        "status": "Questionable",
+        "injuryType": "Thumb",
+        "returnDate": "2026-08-28"
       },
       {
         "player": "Jayden Higgins",
         "team": "Houston Texans",
         "position": "WR",
-        "status": "Doubtful",
+        "status": "Injured Reserve",
         "injuryType": "Knee - ACL",
+        "returnDate": "2027-02-15"
+      },
+      {
+        "player": "Jaylin Noel",
+        "team": "Houston Texans",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Hamstring",
         "returnDate": "2026-09-13"
       },
       {
@@ -2916,6 +3018,14 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "Tre' Harris",
+        "team": "Los Angeles Chargers",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-27"
+      },
+      {
         "player": "Tyler Biadasz",
         "team": "Los Angeles Chargers",
         "position": "C",
@@ -3018,6 +3128,14 @@
         "status": "Injured Reserve",
         "injuryType": "Undisclosed",
         "returnDate": "2027-02-15"
+      },
+      {
+        "player": "James Ester",
+        "team": "Miami Dolphins",
+        "position": "G",
+        "status": "Questionable",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-08-22"
       },
       {
         "player": "JuJu Brents",
@@ -3388,14 +3506,6 @@
         "returnDate": "2026-08-22"
       },
       {
-        "player": "DT Sheffield",
-        "team": "New York Jets",
-        "position": "WR",
-        "status": "Injured Reserve",
-        "injuryType": "Undisclosed",
-        "returnDate": "2027-02-15"
-      },
-      {
         "player": "Kingsley Jonathan",
         "team": "New York Jets",
         "position": "DE",
@@ -3468,6 +3578,14 @@
         "returnDate": "2026-08-21"
       },
       {
+        "player": "Tariq Castro-Fields",
+        "team": "Philadelphia Eagles",
+        "position": "CB",
+        "status": "Injured Reserve",
+        "injuryType": "Heel",
+        "returnDate": "2027-02-15"
+      },
+      {
         "player": "Jakorian Bennett",
         "team": "Philadelphia Eagles",
         "position": "CB",
@@ -3521,7 +3639,7 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Knee",
-        "returnDate": "2026-08-22"
+        "returnDate": "2027-02-15"
       },
       {
         "player": "Grant Calcaterra",
@@ -3585,14 +3703,6 @@
         "position": "LB",
         "status": "Questionable",
         "injuryType": "Groin",
-        "returnDate": "2026-08-22"
-      },
-      {
-        "player": "Tariq Castro-Fields",
-        "team": "Philadelphia Eagles",
-        "position": "CB",
-        "status": "Questionable",
-        "injuryType": "Heel",
         "returnDate": "2026-08-22"
       },
       {
@@ -3740,14 +3850,6 @@
         "returnDate": "2026-08-27"
       },
       {
-        "player": "Sam Okuayinonu",
-        "team": "San Francisco 49ers",
-        "position": "DT",
-        "status": "Questionable",
-        "injuryType": "Ankle",
-        "returnDate": "2026-08-27"
-      },
-      {
         "player": "Dominick Puni",
         "team": "San Francisco 49ers",
         "position": "G",
@@ -3810,6 +3912,14 @@
         "status": "Questionable",
         "injuryType": "Quadriceps",
         "returnDate": "2026-08-27"
+      },
+      {
+        "player": "Jake Bobo",
+        "team": "Seattle Seahawks",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Knee",
+        "returnDate": "2026-08-23"
       },
       {
         "player": "Joseph Vaughn",
@@ -3932,12 +4042,12 @@
         "returnDate": "2026-08-28"
       },
       {
-        "player": "Mitchell Trubisky",
+        "player": "Nazeeh Johnson",
         "team": "Tennessee Titans",
-        "position": "QB",
-        "status": "Questionable",
-        "injuryType": "Biceps",
-        "returnDate": "2026-08-23"
+        "position": "S",
+        "status": "Injured Reserve",
+        "injuryType": "Suspension",
+        "returnDate": "2026-10-25"
       },
       {
         "player": "Carnell Tate",
@@ -3945,6 +4055,14 @@
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Undisclosed",
+        "returnDate": "2026-08-23"
+      },
+      {
+        "player": "Mitchell Trubisky",
+        "team": "Tennessee Titans",
+        "position": "QB",
+        "status": "Questionable",
+        "injuryType": "Biceps",
         "returnDate": "2026-08-23"
       },
       {
@@ -3969,14 +4087,6 @@
         "position": "TE",
         "status": "Injured Reserve",
         "injuryType": "Pectoral",
-        "returnDate": "2027-02-15"
-      },
-      {
-        "player": "Sean Brown",
-        "team": "Tennessee Titans",
-        "position": "LB",
-        "status": "Injured Reserve",
-        "injuryType": "Undisclosed",
         "returnDate": "2027-02-15"
       },
       {
