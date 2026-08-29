@@ -10,7 +10,17 @@
 // ledger uses), refreshed daily for free.
 
 import { devigTwoWay } from "../nfl-devig";
-import type { SharpEvent } from "../../../scripts/scrape-pinnacle";
+
+/** The slice of scrape-pinnacle's SharpEvent this builder reads — declared
+ *  here (not imported from scripts/) so the lib never depends on a script. */
+export interface SharpEventLike {
+  commence_time: string;
+  home_team: string;
+  away_team: string;
+  moneyline?: { home: number; away: number };
+  spread?: { point: number; home: number; away: number };
+  total?: { point: number; over: number; under: number };
+}
 
 export interface NflSlateGame {
   kickoffUtc: string;
@@ -43,7 +53,7 @@ export interface NflSlate {
 export const SLATE_LOOKBACK_MS = 6 * 3600_000;
 export const SLATE_WEEK_SPAN_MS = 6.5 * 24 * 3600_000;
 
-export function buildNflSlate(events: SharpEvent[], nowMs: number): NflSlate {
+export function buildNflSlate(events: SharpEventLike[], nowMs: number): NflSlate {
   const start = nowMs - SLATE_LOOKBACK_MS;
   const upcoming = events
     .map((e) => Date.parse(e.commence_time))

@@ -3,16 +3,14 @@ import {
   buildNflSlate,
   SLATE_LOOKBACK_MS,
   SLATE_WEEK_SPAN_MS,
+  type SharpEventLike,
 } from "../site-slate";
-import type { SharpEvent } from "../../../scripts/scrape-pinnacle";
 
 const NOW = Date.parse("2026-09-09T12:00:00Z");
 
-function ev(over: Partial<SharpEvent>): SharpEvent {
+function ev(over: Partial<SharpEventLike> & { id?: string }): SharpEventLike & { id?: string } {
   return {
     id: "pin_1",
-    sport_key: "americanfootball_nfl",
-    sport_title: "NFL",
     commence_time: "2026-09-13T17:00:00Z",
     home_team: "Philadelphia Eagles",
     away_team: "Kansas City Chiefs",

@@ -166,18 +166,22 @@ async function main(): Promise<void> {
   );
 
   // Kickoffs keyed by franchise pair; the /events slate is authoritative.
+  // The endpoint returns the WHOLE remaining season (272 events observed),
+  // so divisional pairs appear twice — keep the EARLIEST upcoming event per
+  // pair, or a week-1 game would inherit its December rematch's kickoff.
+  const keepEarliest = (map: Map<string, OddsApiEvent>, e: OddsApiEvent) => {
+    const hk = franchiseKey(e.home_team);
+    const ak = franchiseKey(e.away_team);
+    if (!hk || !ak) return;
+    const key = `${ak}@${hk}`;
+    const cur = map.get(key);
+    if (!cur || Date.parse(e.commence_time) < Date.parse(cur.commence_time))
+      map.set(key, e);
+  };
   const byPair = new Map<string, OddsApiEvent>();
-  for (const e of events) {
-    const hk = franchiseKey(e.home_team);
-    const ak = franchiseKey(e.away_team);
-    if (hk && ak) byPair.set(`${ak}@${hk}`, e);
-  }
+  for (const e of events) keepEarliest(byPair, e);
   const oddsByPair = new Map<string, OddsApiEvent>();
-  for (const e of snapshot.events) {
-    const hk = franchiseKey(e.home_team);
-    const ak = franchiseKey(e.away_team);
-    if (hk && ak) oddsByPair.set(`${ak}@${hk}`, e);
-  }
+  for (const e of snapshot.events) keepEarliest(oddsByPair, e);
 
   const nowMs = Date.now();
   const legs: PublishedLeg[] = [];

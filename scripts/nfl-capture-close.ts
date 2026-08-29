@@ -183,15 +183,15 @@ async function main(): Promise<void> {
     const trimmedPath = path.join(closesDir, `oddsapi-tier2-${stamp}.json`);
     fs.writeFileSync(trimmedPath, JSON.stringify(trimmed, null, 2));
 
-    const byPair = new Map<string, OddsApiEvent>();
-    for (const e of trimmed.events as OddsApiEvent[]) {
-      const hk = franchiseKey(e.home_team);
-      const ak = franchiseKey(e.away_team);
-      if (hk && ak) byPair.set(`${ak}@${hk}`, e);
-    }
+    // Match on franchise pair AND kickoff (sameGame) — the odds feed spans
+    // the whole remaining season, so a bare pair lookup could hand a week-1
+    // leg its December rematch's prices.
+    const oddsEvents = trimmed.events as OddsApiEvent[];
     for (const row of targets) {
       const g = rowGame(row);
-      const ev = byPair.get(`${franchiseKey(g.away)}@${franchiseKey(g.home)}`);
+      const ev = oddsEvents.find((e) =>
+        sameGame(g, { kickoffUtc: e.commence_time, home: e.home_team, away: e.away_team }),
+      );
       if (!ev) continue;
       const p = extractPrice(ev, row.market, row.side, row.point, TIER2_BOOKS);
       if (!p) continue;
