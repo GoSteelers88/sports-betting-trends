@@ -1,27 +1,30 @@
 /**
  * nfl-capture-close.ts — capture sharp closing prices for every pending
  * ledger leg kicking off soon (threat T3: a missed close is PERMANENTLY
- * unrecoverable on the free tier — the /odds endpoint drops completed events
- * and backfill is forbidden by ruling 4).
+ * unrecoverable — the /odds endpoint drops completed events and backfill is
+ * forbidden by ruling 4).
  *
  *   npx tsx --env-file-if-exists=.env.local --env-file=.env \
- *     scripts/nfl-capture-close.ts [--window-hours 6] [--no-oddsapi]
+ *     scripts/nfl-capture-close.ts [--window-hours 3] [--no-oddsapi]
  *
  * Benchmark chain (frozen — see nfl-clv-metric.ts):
- *   tier 1  pinnacle  — read from latest-sharp-pinnacle-americanfootball_nfl.json,
- *                       which the nfl-closes workflow scrapes STRICT + archives
- *                       to data/processed/nfl-live/closes/ immediately before
- *                       this script runs. Must be fresh (<30 min) to count.
+ *   tier 1  pinnacle  — read from the NEWEST ARCHIVED scrape in
+ *                       data/processed/nfl-live/closes/ (the nfl-closes
+ *                       workflow runs scrape-pinnacle --strict --archive
+ *                       immediately before this). The archive IS the
+ *                       sourceFile the grader's close-verifier re-derives
+ *                       from, so an uncommitted "latest" cache is never
+ *                       load-bearing. Must be fresh (<30 min) to count.
  *   tier 2  lowvig → betonlineag — from a paid Odds API snapshot (3 credits),
  *                       trimmed to just those books and archived alongside.
  * A higher tier always wins; same tier → latest capture wins (the close).
- * Spread/total closes must match the leg's EXACT point — a moved point is
- * skipped, never substituted (threat T12).
+ * All derivation goes through src/lib/nfl-receipts/close-derive.ts — the
+ * same functions the grader uses to verify every close against committed
+ * bytes, so capture and verification cannot drift apart.
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { loadEnvConfig } from "@next/env";
-import { franchiseKey, sameGame } from "../src/lib/nfl-receipts/teams";
 import {
   defaultLedgerPath,
   loadLedger,
@@ -30,70 +33,54 @@ import {
   type LedgerRow,
 } from "../src/lib/nfl-receipts/ledger";
 import {
-  fetchNflOdds,
-  extractPrice,
-  type OddsApiEvent,
-} from "../src/lib/nfl-receipts/odds-entry";
-import type { SharpEvent } from "./scrape-pinnacle";
+  derivePinnacleClose,
+  deriveTier2Close,
+  TIER2_BOOKS,
+  type CloseTarget,
+} from "../src/lib/nfl-receipts/close-derive";
+import { fetchNflOdds, type OddsApiEvent } from "../src/lib/nfl-receipts/odds-entry";
+import type { SharpEventLike } from "../src/lib/nfl-receipts/site-slate";
 
-const TIER2_BOOKS = ["lowvig", "betonlineag"]; // frozen priority order
 const PINNACLE_MAX_AGE_MIN = 30;
 
-interface PinnacleFile {
+interface PinnacleArchive {
   fetchedAt: string;
-  events: SharpEvent[];
+  events: SharpEventLike[];
 }
 
-function rowGame(row: LedgerRow): { kickoffUtc: string; home: string; away: string } {
-  const [away, home] = row.matchup.split(" @ ");
-  return { kickoffUtc: row.kickoffUtc, home: home ?? "", away: away ?? "" };
+function targetOf(row: LedgerRow): CloseTarget {
+  return {
+    matchup: row.matchup,
+    kickoffUtc: row.kickoffUtc,
+    market: row.market,
+    side: row.side,
+    point: row.point,
+  };
 }
 
-function latestClosesFile(closesDir: string, prefix: string): string | null {
+function newestPinnacleArchive(closesDir: string): { rel: string; data: PinnacleArchive } | null {
   if (!fs.existsSync(closesDir)) return null;
   const files = fs
     .readdirSync(closesDir)
-    .filter((f) => f.startsWith(prefix))
+    .filter((f) => f.startsWith("pinnacle-americanfootball_nfl-"))
     .sort();
-  return files.length ? path.join(closesDir, files[files.length - 1]) : null;
-}
-
-function pinnacleClose(
-  row: LedgerRow,
-  pin: PinnacleFile,
-): { sideAmerican: number; otherAmerican: number } | null {
-  const game = rowGame(row);
-  const ev = pin.events.find((e) =>
-    sameGame(game, { kickoffUtc: e.commence_time, home: e.home_team, away: e.away_team }),
-  );
-  if (!ev) return null;
-  if (row.market === "moneyline") {
-    if (!ev.moneyline) return null;
-    return row.side === "home"
-      ? { sideAmerican: ev.moneyline.home, otherAmerican: ev.moneyline.away }
-      : { sideAmerican: ev.moneyline.away, otherAmerican: ev.moneyline.home };
+  if (!files.length) return null;
+  const rel = path.posix.join("data", "processed", "nfl-live", "closes", files[files.length - 1]);
+  try {
+    const data = JSON.parse(
+      fs.readFileSync(path.join(closesDir, files[files.length - 1]), "utf8"),
+    ) as PinnacleArchive;
+    return { rel, data };
+  } catch {
+    return null;
   }
-  if (row.market === "ats") {
-    if (!ev.spread || row.point == null) return null;
-    // spread.point is the HOME line; our row.point is relative to row.side.
-    const homePoint = row.side === "home" ? row.point : -row.point;
-    if (ev.spread.point !== homePoint) return null; // moved point — never substitute
-    return row.side === "home"
-      ? { sideAmerican: ev.spread.home, otherAmerican: ev.spread.away }
-      : { sideAmerican: ev.spread.away, otherAmerican: ev.spread.home };
-  }
-  if (!ev.total || row.point == null) return null;
-  if (ev.total.point !== row.point) return null;
-  return row.side === "over"
-    ? { sideAmerican: ev.total.over, otherAmerican: ev.total.under }
-    : { sideAmerican: ev.total.under, otherAmerican: ev.total.over };
 }
 
 async function main(): Promise<void> {
   loadEnvConfig(process.cwd());
   const argv = process.argv.slice(2);
   const wIdx = argv.indexOf("--window-hours");
-  const windowHours = wIdx !== -1 ? Number(argv[wIdx + 1]) : 6;
+  const windowHours = wIdx !== -1 ? Number(argv[wIdx + 1]) : 3;
   const useOddsApi = !argv.includes("--no-oddsapi");
 
   const root = process.cwd();
@@ -115,31 +102,28 @@ async function main(): Promise<void> {
   }
   console.log(`${targets.length} legs kick off within ${windowHours}h`);
 
-  // ── tier 1: pinnacle (scraped immediately before by the workflow) ─────────
-  const pinPath = path.join(
-    root,
-    "data",
-    "processed",
-    "latest-sharp-pinnacle-americanfootball_nfl.json",
-  );
-  let pin: PinnacleFile | null = null;
-  if (fs.existsSync(pinPath)) {
-    const parsed = JSON.parse(fs.readFileSync(pinPath, "utf8")) as PinnacleFile;
-    const ageMin = (nowMs - Date.parse(parsed.fetchedAt)) / 60_000;
-    if (ageMin <= PINNACLE_MAX_AGE_MIN) pin = parsed;
-    else
+  // ── tier 1: newest COMMITTED pinnacle archive (scraped just before) ───────
+  const archive = newestPinnacleArchive(closesDir);
+  let pin: PinnacleArchive | null = null;
+  let pinRel: string | null = null;
+  if (archive) {
+    const ageMin = (nowMs - Date.parse(archive.data.fetchedAt)) / 60_000;
+    if (ageMin <= PINNACLE_MAX_AGE_MIN) {
+      pin = archive.data;
+      pinRel = archive.rel;
+    } else {
       console.warn(
-        `pinnacle snapshot is ${ageMin.toFixed(0)} min old (> ${PINNACLE_MAX_AGE_MIN}) — tier 1 skipped this tick`,
+        `newest pinnacle archive is ${ageMin.toFixed(0)} min old (> ${PINNACLE_MAX_AGE_MIN}) — tier 1 skipped this tick (run scrape-pinnacle --leagues nfl --strict --archive data/processed/nfl-live/closes first)`,
       );
+    }
   } else {
-    console.warn("no pinnacle snapshot on disk — tier 1 skipped this tick");
+    console.warn("no pinnacle archive in closes/ — tier 1 skipped this tick");
   }
-  const pinArchive = latestClosesFile(closesDir, "pinnacle-americanfootball_nfl-");
 
   let tier1 = 0;
-  if (pin) {
+  if (pin && pinRel) {
     for (const row of targets) {
-      const close = pinnacleClose(row, pin);
+      const close = derivePinnacleClose(targetOf(row), pin.events);
       if (!close) continue;
       recordClose(ledger, row.legId, {
         book: "pinnacle",
@@ -150,7 +134,7 @@ async function main(): Promise<void> {
         minutesBeforeKickoff: Math.round(
           (Date.parse(row.kickoffUtc) - Date.parse(pin.fetchedAt)) / 60_000,
         ),
-        sourceFile: pinArchive ? path.relative(root, pinArchive) : "latest-sharp-pinnacle-americanfootball_nfl.json",
+        sourceFile: pinRel,
       });
       tier1++;
     }
@@ -166,7 +150,7 @@ async function main(): Promise<void> {
     }
     const snap = await fetchNflOdds(apiKey);
     // Archive a TRIMMED copy (tier-2 books only) so every counted close is
-    // recomputable from committed bytes (threat T16).
+    // recomputable from committed bytes (threat T16 + the close-verifier).
     const trimmed = {
       fetchedAt: snap.fetchedAt,
       note: "trimmed to benchmark tier-2 books for close recomputation",
@@ -180,31 +164,24 @@ async function main(): Promise<void> {
     };
     fs.mkdirSync(closesDir, { recursive: true });
     const stamp = snap.fetchedAt.replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
-    const trimmedPath = path.join(closesDir, `oddsapi-tier2-${stamp}.json`);
-    fs.writeFileSync(trimmedPath, JSON.stringify(trimmed, null, 2));
+    const trimmedRel = path.posix.join(
+      "data", "processed", "nfl-live", "closes", `oddsapi-tier2-${stamp}.json`,
+    );
+    fs.writeFileSync(path.join(root, trimmedRel), JSON.stringify(trimmed, null, 2));
 
-    // Match on franchise pair AND kickoff (sameGame) — the odds feed spans
-    // the whole remaining season, so a bare pair lookup could hand a week-1
-    // leg its December rematch's prices.
-    const oddsEvents = trimmed.events as OddsApiEvent[];
     for (const row of targets) {
-      const g = rowGame(row);
-      const ev = oddsEvents.find((e) =>
-        sameGame(g, { kickoffUtc: e.commence_time, home: e.home_team, away: e.away_team }),
-      );
-      if (!ev) continue;
-      const p = extractPrice(ev, row.market, row.side, row.point, TIER2_BOOKS);
+      const p = deriveTier2Close(targetOf(row), trimmed.events as OddsApiEvent[], TIER2_BOOKS);
       if (!p) continue;
       recordClose(ledger, row.legId, {
         book: p.book,
         tier: 2,
-        sideAmerican: p.american,
+        sideAmerican: p.sideAmerican,
         otherAmerican: p.otherAmerican,
         capturedAt: snap.fetchedAt,
         minutesBeforeKickoff: Math.round(
           (Date.parse(row.kickoffUtc) - Date.parse(snap.fetchedAt)) / 60_000,
         ),
-        sourceFile: path.relative(root, trimmedPath),
+        sourceFile: trimmedRel,
       });
       tier2++;
     }

@@ -208,9 +208,9 @@ export default function NflReceiptsPage() {
               non-sharp close {h.play.byStatus.non_sharp_close} · void {h.play.byStatus.void}.
               Benchmark: Pinnacle (tier 1), lowvig/betonlineag fallback (tier 2, flagged). Every
               counted close's source snapshot is committed under{" "}
-              <span className="text-ink">data/processed/nfl-live/closes/</span>, so every close
-              price is recomputable from committed bytes; automated close re-verification lands
-              before the first grading run.
+              <span className="text-ink">data/processed/nfl-live/closes/</span>, and every
+              grading run re-derives every recorded close from those committed bytes before it
+              grades anything — a close that cannot be reproduced stops the run.
             </p>
           </>
         )}

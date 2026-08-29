@@ -26,6 +26,7 @@ import {
   strayRows,
 } from "../src/lib/nfl-receipts/ledger";
 import { verifyNotary } from "../src/lib/nfl-receipts/notary";
+import { verifyCloses } from "../src/lib/nfl-receipts/close-derive";
 import type { PublishedBoard } from "../src/lib/nfl-receipts/board";
 
 function pct(x: number | null): string {
@@ -88,6 +89,19 @@ async function main(): Promise<void> {
     );
     process.exit(1);
   }
+
+  // Entries are pinned by reconcileWithBoard; closes are pinned here — every
+  // recorded close must re-derive, via the same functions capture used, from
+  // the committed snapshot it names (round-2 review §3-4: without this, a
+  // forged close on a pending row grades a forged verdict).
+  const closeCheck = verifyCloses(ledger);
+  if (closeCheck.failures.length > 0) {
+    console.error("TAMPER CHECK FAILED: closes not derivable from committed bytes:");
+    for (const f of closeCheck.failures) console.error(`  ${f.legId}: ${f.reason}`);
+    process.exit(1);
+  }
+  if (closeCheck.verified > 0)
+    console.log(`close-verify: ${closeCheck.verified} close(s) re-derived from committed snapshots`);
 
   const before = ledger.rows.filter((r) => r.status === "graded").length;
   const { graded, noClose } = gradeRows(
