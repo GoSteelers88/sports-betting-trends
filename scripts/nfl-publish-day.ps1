@@ -30,8 +30,13 @@ if ($Week -eq 0) {
   $week1Tuesday = Get-Date "2026-09-08"
   $Week = [math]::Floor(((Get-Date) - $week1Tuesday).TotalDays / 7) + 1
   if ($Week -lt 1 -or $Week -gt 18) {
-    Write-Host "computed week $Week is outside the regular season (1-18) - nothing to publish"
-    exit 0
+    if ($DryRun) {
+      # a dry run should still exercise the full wiring incl. the Discord ping
+      $Week = 1
+    } else {
+      Write-Host "computed week $Week is outside the regular season (1-18) - nothing to publish"
+      exit 0
+    }
   }
 }
 
@@ -45,7 +50,11 @@ function Get-EnvValue([string]$name) {
   foreach ($f in @(".env.local", ".env")) {
     if (Test-Path $f) {
       $line = Select-String -Path $f -Pattern "^$name=" | Select-Object -First 1
-      if ($line) { return ($line.Line -replace "^$name=", "").Trim() }
+      if ($line) {
+        # .env values may be wrapped in quotes (DISCORD_WEBHOOK_URL is) —
+        # strip them or Invoke-RestMethod gets an unparseable URI.
+        return ($line.Line -replace "^$name=", "").Trim().Trim('"').Trim("'")
+      }
     }
   }
   return $null
@@ -75,13 +84,15 @@ try {
   }
 
   if ($DryRun) {
-    Run "git pull" { git pull --rebase origin master }
-    Notify "NFL publish-day DRY RUN ok: env keys present, repo current. Live run fires Sept 8, 10:07 AM."
+    Run "git pull" { git pull --rebase --autostash origin master }
+    Notify "NFL publish-day DRY RUN ok: env keys present, repo current, Discord wiring live. Real runs fire Tuesdays 10:07 AM ET starting Sept 8."
     Stop-Transcript | Out-Null
     exit 0
   }
 
-  Run "git pull" { git pull --rebase origin master }
+  # --autostash: this tree is allowed to hold unrelated WIP; the receipt
+  # commit stages only its three files.
+  Run "git pull" { git pull --rebase --autostash origin master }
   Run "refresh nflverse inputs" { npm run nfl:ingest }
   Run "refresh injuries" { npm run nfl:ingest-injuries }
   Run "regenerate model board (final doctrine)" {
