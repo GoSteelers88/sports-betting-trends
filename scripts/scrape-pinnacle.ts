@@ -16,7 +16,23 @@
  * where each event carries de-vig-ready full-game moneyline (priority) plus
  * the main total and main spread.
  *
- * NBA = leagueId 487, MLB = leagueId 246 (the only two in scope).
+ * NBA = leagueId 487, MLB = leagueId 246 (default: the clv-proof cron pair).
+ * NFL = leagueId 889, NCAAF = leagueId 880 — opt-in via --leagues, used by the
+ * /nfl receipts close-capture and the CFB shadow book (verified live 2026-08-19:
+ * HTTP 200, 16 week-1 NFL matchups).
+ *
+ * Flags (added 2026-08-29 for the receipts pipeline; default behavior for the
+ * existing clv-proof cron is unchanged):
+ *   --leagues nba,mlb,nfl,ncaaf   subset to scrape (default nba,mlb)
+ *   --strict                      any league that returns null, or fewer than
+ *                                 its strict minimum of matchups, exits 1.
+ *                                 The Pinnacle guest API is undocumented and
+ *                                 getJson() returns null on error — once a
+ *                                 feed is load-bearing (threat T15), silence
+ *                                 must be a hard failure, not an omission.
+ *   --archive <dir>               additionally write a DATED, committed copy
+ *                                 (the latest-* path is gitignored; captured
+ *                                 closes must survive in git — threat T16)
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -30,12 +46,48 @@ const BASE = "https://guest.api.arcadia.pinnacle.com/0.1";
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
-type LeagueSpec = { sportKey: string; sportTitle: string; leagueId: number };
+type LeagueSpec = {
+  sportKey: string;
+  sportTitle: string;
+  leagueId: number;
+  /** --strict floor: an in-season feed below this count is a broken scrape,
+   *  not a quiet week (NFL slates run 13–16 games and the matchups endpoint
+   *  lists upcoming weeks, so 14 is conservative — threat T15). */
+  strictMinMatchups: number;
+};
 
-const LEAGUES: LeagueSpec[] = [
-  { sportKey: "basketball_nba", sportTitle: "NBA", leagueId: 487 },
-  { sportKey: "baseball_mlb", sportTitle: "MLB", leagueId: 246 },
-];
+const ALL_LEAGUES: Record<string, LeagueSpec> = {
+  nba: { sportKey: "basketball_nba", sportTitle: "NBA", leagueId: 487, strictMinMatchups: 4 },
+  mlb: { sportKey: "baseball_mlb", sportTitle: "MLB", leagueId: 246, strictMinMatchups: 6 },
+  nfl: { sportKey: "americanfootball_nfl", sportTitle: "NFL", leagueId: 889, strictMinMatchups: 14 },
+  ncaaf: { sportKey: "americanfootball_ncaaf", sportTitle: "NCAAF", leagueId: 880, strictMinMatchups: 20 },
+};
+
+function parseArgs(): { leagues: LeagueSpec[]; strict: boolean; archiveDir: string | null } {
+  const argv = process.argv.slice(2);
+  let leagues = [ALL_LEAGUES.nba, ALL_LEAGUES.mlb];
+  let strict = false;
+  let archiveDir: string | null = null;
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === "--strict") strict = true;
+    else if (argv[i] === "--leagues") {
+      const names = (argv[++i] ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+      leagues = names.map((n) => {
+        const spec = ALL_LEAGUES[n];
+        if (!spec) throw new Error(`unknown league "${n}" (valid: ${Object.keys(ALL_LEAGUES).join(",")})`);
+        return spec;
+      });
+    } else if (argv[i] === "--archive") {
+      archiveDir = argv[++i] ?? null;
+      if (!archiveDir) throw new Error("--archive requires a directory");
+    }
+  }
+  const minOverride = Number(process.env.PINNACLE_STRICT_MIN ?? "");
+  if (Number.isFinite(minOverride) && minOverride > 0) {
+    leagues = leagues.map((l) => ({ ...l, strictMinMatchups: minOverride }));
+  }
+  return { leagues, strict, archiveDir };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pinnacle response shapes (only the fields we read)
@@ -241,16 +293,53 @@ function writeLeagueFile(outDir: string, spec: LeagueSpec, events: SharpEvent[])
   console.log(`  → ${p} (${events.length} games, ${withMl} with moneyline)`);
 }
 
+function writeArchiveFile(
+  archiveDir: string,
+  spec: LeagueSpec,
+  events: SharpEvent[],
+): void {
+  fs.mkdirSync(archiveDir, { recursive: true });
+  const stamp = new Date()
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d+Z$/, "Z");
+  const p = path.join(archiveDir, `pinnacle-${spec.sportKey}-${stamp}.json`);
+  fs.writeFileSync(
+    p,
+    JSON.stringify(
+      {
+        fetchedAt: new Date().toISOString(),
+        source: "pinnacle",
+        league: spec.sportKey,
+        eventCount: events.length,
+        events,
+      },
+      null,
+      2,
+    ),
+  );
+  console.log(`  → archived ${p}`);
+}
+
 async function main() {
+  const { leagues, strict, archiveDir } = parseArgs();
   const outDir = path.join(process.cwd(), "data", "processed");
   fs.mkdirSync(outDir, { recursive: true });
 
   let grandTotal = 0;
-  for (const spec of LEAGUES) {
+  const failures: string[] = [];
+  for (const spec of leagues) {
     const events = await scrapeLeague(spec);
     console.log(`${spec.sportKey}: ${events.length} sharp games`);
+    if (strict && events.length < spec.strictMinMatchups) {
+      failures.push(
+        `${spec.sportKey}: ${events.length} < strict minimum ${spec.strictMinMatchups}`,
+      );
+      continue;
+    }
     if (events.length > 0) {
       writeLeagueFile(outDir, spec, events);
+      if (archiveDir) writeArchiveFile(archiveDir, spec, events);
       grandTotal += events.length;
     } else {
       console.warn(
@@ -258,7 +347,13 @@ async function main() {
       );
     }
   }
-  console.log(`\nTotal: ${grandTotal} sharp games across ${LEAGUES.length} leagues`);
+  console.log(`\nTotal: ${grandTotal} sharp games across ${leagues.length} leagues`);
+  if (failures.length > 0) {
+    // Strict mode exists because a null/thin Pinnacle response is now
+    // load-bearing for the receipts ledger — fail LOUD, never omit silently.
+    console.error(`STRICT FAILURE:\n  ${failures.join("\n  ")}`);
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {

@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
     "*": ["./data/backups/**", "./data/raw/**"],
   },
   outputFileTracingIncludes: {
+    // /nfl discovers boards via readdirSync, which the tracer cannot follow —
+    // without this include the prod function sees an empty nfl-live dir and
+    // renders "no board published" over a published board. Boards + ledger
+    // only; closes/ + snapshots/ archives are audit data nothing renders.
+    "/nfl": ["./data/processed/nfl-live/*.json"],
     "/api/free-stats/summary": ["./data/processed/**/*"],
     "/api/player-props": ["./data/processed/**/*"],
     "/api/debug-odds": ["./data/processed/**/*"],

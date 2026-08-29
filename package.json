@@ -95,7 +95,13 @@
     "nfl:regrade": "tsx scripts/nfl-regrade.ts",
     "nfl:validate": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-validate.ts",
     "nfl:parlay-backtest": "tsx scripts/nfl-parlay-backtest.ts",
-    "nfl:dream": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-dream.ts"
+    "nfl:dream": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-dream.ts",
+    "nfl:publish": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-publish-board.ts",
+    "nfl:closes": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-capture-close.ts",
+    "nfl:grade-clv": "tsx scripts/nfl-grade-clv.ts",
+    "nfl:notary": "tsx scripts/verify-notary.ts",
+    "nfl:errata": "tsx scripts/nfl-errata.ts",
+    "cfb:closes": "tsx scripts/scrape-pinnacle.ts --leagues ncaaf --strict --archive data/processed/cfb-shadow/closes"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",

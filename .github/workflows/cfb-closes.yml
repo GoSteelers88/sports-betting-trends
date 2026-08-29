@@ -1,0 +1,85 @@
+name: CFB shadow — Pinnacle close archive
+
+# Free supplementary capture for the pre-registered CFB shadow book
+# (CFB_SHADOW_SPEC.md, frozen 2026-08-13). The spec's own entry/close sweeps
+# are Odds API pulls owned by the (not-yet-built) shadow-book workflow; this
+# job only archives Pinnacle NCAAF main lines each Saturday so sharp closes
+# exist in git whenever the book is built. Zero Odds API credits, no picks,
+# no criteria — nothing here can violate the pre-registration.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 16 * * SAT"  # noon ET — early slate closes
+    - cron: "30 19 * * SAT" # 3:30p ET — afternoon slate
+    - cron: "30 23 * * SAT" # 7:30p ET — night slate
+
+permissions:
+  contents: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Scrape Pinnacle NCAAF (STRICT) + archive
+        run: npx tsx scripts/scrape-pinnacle.ts --leagues ncaaf --strict --archive data/processed/cfb-shadow/closes
+
+      - name: Commit archived closes
+        run: |
+          git config user.name "cfb-shadow-bot"
+          git config user.email "58962244+GoSteelers88@users.noreply.github.com"
+          # Same guards as nfl-closes (review finding 9): secret grep before
+          # staging, and refuse a silent no-op add if a gitignore rule ever
+          # swallows this path.
+          SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|[Aa]uthorization":\s*"Bearer'
+          for f in data/processed/cfb-shadow/closes/*.json; do
+            [ -f "$f" ] || continue
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
+              exit 1
+            fi
+          done
+          git add data/processed/cfb-shadow/closes/
+          # Abort only when untracked/modified closes exist yet nothing staged
+          # (a tracked-and-unchanged archive dir legitimately stages nothing).
+          if [ -n "$(git status --porcelain data/processed/cfb-shadow/closes/)" ]; then
+            git diff --cached --name-only | grep -q "^data/processed/cfb-shadow/" || {
+              echo "ABORT: closes exist on disk but nothing staged — gitignore regression?"
+              exit 1
+            }
+          fi
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
+          git commit -m "cfb-shadow: pinnacle close archive ${DATE_TAG}"
+          # Push must land or the step must fail (review finding 1).
+          pushed=0
+          for i in 1 2 3; do
+            if git pull --rebase --autostash origin master && git push origin master; then
+              pushed=1
+              break
+            fi
+            echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            sleep 5
+          done
+          if [ "$pushed" != 1 ]; then
+            echo "ABORT: archived closes did NOT reach origin/master after 3 attempts"
+            exit 1
+          fi

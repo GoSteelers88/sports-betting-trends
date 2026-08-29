@@ -1,0 +1,95 @@
+name: NFL receipts — grade CLV
+
+# Tuesday-morning grading run: verifies the notary (board bytes vs published
+# SHA256, boards reachable from origin/master), grades devigged entry vs the
+# captured sharp closes, updates ledger.json.
+#
+# DIFF-GUARD (season-plan ruling 1): this workflow must NEVER modify a board
+# file. If grading leaves any board-*.json changed in the working tree, the
+# run FAILS before committing anything.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * TUE" # after MNF settles; before anything publishes
+
+permissions:
+  contents: write
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # The receipts test suite carries the CI anchors (gitignore-anchor,
+      # ledger idempotence, notary) — they only guard the environment they
+      # actually run in (review finding 6).
+      - name: Run receipts test suite (CI anchor)
+        run: npx vitest run src/lib/nfl-receipts src/lib/__tests__/nfl-clv-metric.test.ts
+
+      - name: Verify notary (refuses to grade on any receipt mismatch)
+        env:
+          # GH_PAT (admin-read) lets the run ASSERT force-push protection;
+          # the default token can only check rulesets. Falls back gracefully.
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: npx tsx scripts/verify-notary.ts
+
+      - name: Grade ledger
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: npx tsx scripts/nfl-grade-clv.ts
+
+      - name: Diff-guard — grading must never touch a board file
+        run: |
+          CHANGED=$(git status --porcelain -- 'data/processed/nfl-live/board-*.json')
+          if [ -n "$CHANGED" ]; then
+            echo "ABORT: grading modified a published board:"
+            echo "$CHANGED"
+            exit 1
+          fi
+
+      - name: Commit ledger (the ONLY file this workflow may commit)
+        run: |
+          git config user.name "nfl-receipts-bot"
+          git config user.email "58962244+GoSteelers88@users.noreply.github.com"
+          git add data/processed/nfl-live/ledger.json
+          if git diff --cached --quiet; then
+            echo "no grading changes to commit"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
+          git commit -m "nfl-grade: clv grading ${DATE_TAG}"
+          # Push must land or the step must fail (review finding 1).
+          pushed=0
+          for i in 1 2 3; do
+            if git pull --rebase --autostash origin master && git push origin master; then
+              pushed=1
+              break
+            fi
+            echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            sleep 5
+          done
+          if [ "$pushed" != 1 ]; then
+            echo "ABORT: graded ledger did NOT reach origin/master after 3 attempts"
+            exit 1
+          fi
+
+      - name: Heartbeat ping
+        if: success()
+        env:
+          PING: ${{ secrets.HC_PING_NFL }}
+        run: '[ -z "$PING" ] || curl -fsS -m 10 --retry 3 "$PING" > /dev/null || true'

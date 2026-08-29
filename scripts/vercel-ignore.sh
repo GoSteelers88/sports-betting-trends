@@ -19,7 +19,9 @@ if [ -z "$CHANGED" ]; then
   exit 1 # can't tell (shallow clone edge case) — build to be safe
 fi
 
-SKIP_RE='^(data/backups/|data/processed/pead-memos/|data/processed/(props-board-log|convergence-log|clv-proof-log|flb-backtest)\.json$)'
+# nfl-live/closes + cfb-shadow are raw close archives nothing renders; the
+# nfl-live ledger and boards ARE rendered (/nfl) and must NOT be added here.
+SKIP_RE='^(data/backups/|data/processed/pead-memos/|data/processed/nfl-live/closes/|data/processed/cfb-shadow/|data/processed/(props-board-log|convergence-log|clv-proof-log|flb-backtest)\.json$)'
 
 if echo "$CHANGED" | grep -qvE "$SKIP_RE"; then
   exit 1 # at least one file outside the skip-list → build

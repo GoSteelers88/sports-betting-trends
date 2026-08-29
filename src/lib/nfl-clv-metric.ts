@@ -23,13 +23,39 @@ import {
 } from "./nfl-devig";
 import { wilsonInterval } from "./nfl-calibration";
 
-/** Books whose closes are documented to predict realized returns. */
-export const SHARP_BENCHMARK_BOOKS = ["pinnacle", "circa", "bookmaker"] as const;
+/** Benchmark chain, re-pre-registered 2026-08-29 BEFORE the first published
+ *  board (threat T1/T16). The original chain ["pinnacle","circa","bookmaker"]
+ *  had no data source: across every Odds API snapshot this repo ever captured
+ *  there is zero Pinnacle (eu-region only), zero Circa, zero BookMaker (not
+ *  sold at any tier) — the verdict metric would have computed n=0 forever.
+ *
+ *  Tier 1 — pinnacle, via our own guest-API scrape (scripts/scrape-pinnacle.ts,
+ *    NFL leagueId 889). The headline benchmark.
+ *  Tier 2 — lowvig, betonlineag: low-vig Pinnacle-adjacent books that DO
+ *    appear in our Odds API captures. Used only when no Pinnacle close was
+ *    captured for a leg; every tier-2-benchmarked verdict is flagged and
+ *    counted separately so the substitution is visible, never silent.
+ *  Everything else (FanDuel/DK/MGM/…) is a soft close: recorded if captured,
+ *  EXCLUDED from the metric (Buchdahl: devigged soft closes predict nothing).
+ *
+ *  The priority order is frozen; a captured close from a higher tier always
+ *  wins. Changing this list after boards publish voids the season's metric. */
+export const BENCHMARK_TIERS: Readonly<Record<string, 1 | 2>> = {
+  pinnacle: 1,
+  lowvig: 2,
+  betonlineag: 2,
+};
+
+export const SHARP_BENCHMARK_BOOKS = Object.keys(
+  BENCHMARK_TIERS,
+) as readonly string[];
+
+export function benchmarkTier(book: string): 1 | 2 | null {
+  return BENCHMARK_TIERS[book.trim().toLowerCase()] ?? null;
+}
 
 export function isSharpBenchmark(book: string): boolean {
-  return (SHARP_BENCHMARK_BOOKS as readonly string[]).includes(
-    book.trim().toLowerCase(),
-  );
+  return benchmarkTier(book) !== null;
 }
 
 export interface ClosingBenchmark {
@@ -56,6 +82,8 @@ export interface ClvVerdict {
   method: DevigMethod;
   benchmarkBook: string;
   benchmarkIsSharp: boolean;
+  /** 1 = pinnacle, 2 = low-vig fallback, null = soft (excluded). */
+  benchmarkTier: 1 | 2 | null;
 }
 
 /** Score one settled-market entry against a sharp two-sided close.
@@ -80,6 +108,7 @@ export function clvVerdict(
     method,
     benchmarkBook: close.book,
     benchmarkIsSharp: isSharpBenchmark(close.book),
+    benchmarkTier: benchmarkTier(close.book),
   };
 }
 
@@ -95,6 +124,9 @@ export interface BeatRateSummary {
    *  Should be 0 in a healthy capture pipeline — a nonzero value means a
    *  soft-book feed leaked into the benchmark and was refused, not counted. */
   nonSharpExcluded: number;
+  /** Counted verdicts whose benchmark was a tier-2 (low-vig fallback) close
+   *  rather than Pinnacle — rendered next to n so substitution is visible. */
+  tier2Benchmarked: number;
 }
 
 /** Aggregate verdicts into the pre-registered metric (target: beat rate ≥55%,
@@ -116,6 +148,7 @@ export function summarizeBeatRate(verdicts: ClvVerdict[]): BeatRateSummary {
     avgDevigClvPp: avg((v) => v.devigClvPp),
     avgRawClvPp: avg((v) => v.rawClvPp),
     nonSharpExcluded: verdicts.length - n,
+    tier2Benchmarked: sharp.filter((v) => v.benchmarkTier === 2).length,
   };
 }
 

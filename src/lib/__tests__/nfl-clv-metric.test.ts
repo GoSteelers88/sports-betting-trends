@@ -45,7 +45,12 @@ describe("clvVerdict", () => {
     const v = clvVerdict(-110, { book: "draftkings", sideAmerican: -115, otherAmerican: -105 });
     expect(v.benchmarkIsSharp).toBe(false);
     expect(isSharpBenchmark("Pinnacle")).toBe(true);
-    expect(isSharpBenchmark("circa")).toBe(true);
+    // Chain re-registered 2026-08-29: circa/bookmaker had NO data source
+    // (absent from every capturable feed); lowvig/betonlineag are the tier-2
+    // fallbacks that actually exist.
+    expect(isSharpBenchmark("circa")).toBe(false);
+    expect(isSharpBenchmark("lowvig")).toBe(true);
+    expect(isSharpBenchmark("betonlineag")).toBe(true);
     expect(isSharpBenchmark("consensus")).toBe(false);
   });
 });
@@ -53,11 +58,12 @@ describe("clvVerdict", () => {
 describe("summarizeBeatRate", () => {
   it("counts only sharp benchmarks and excludes soft-book verdicts entirely", () => {
     const beat = clvVerdict(150, { book: "pinnacle", sideAmerican: -130, otherAmerican: 110 });
-    const sharpMiss = clvVerdict(-130, { book: "circa", sideAmerican: 120, otherAmerican: -140 });
+    const sharpMiss = clvVerdict(-130, { book: "lowvig", sideAmerican: 120, otherAmerican: -140 });
     const softBeat = clvVerdict(150, { book: "draftkings", sideAmerican: -130, otherAmerican: 110 });
     const s = summarizeBeatRate([beat, beat, sharpMiss, softBeat]);
     expect(s.n).toBe(3); // the DK verdict is refused, not counted
     expect(s.beats).toBe(2);
+    expect(s.tier2Benchmarked).toBe(1); // the lowvig verdict is flagged
     expect(s.beatRate).toBeCloseTo(2 / 3, 6);
     expect(s.nonSharpExcluded).toBe(1);
     expect(s.avgRawClvPp).toBeGreaterThan(s.avgDevigClvPp); // raw always flatters

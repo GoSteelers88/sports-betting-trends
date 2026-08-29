@@ -1,0 +1,127 @@
+name: NFL receipts — close capture
+
+# Captures sharp closing prices for pending /nfl board legs at each kickoff
+# cluster (threat T3: on the free Odds API tier a missed close is PERMANENTLY
+# unrecoverable — /odds drops completed events and backfill is forbidden).
+#
+# Tick times target T−20min before each cluster in EDT, with +1h twins so the
+# same clusters stay covered after the November DST flip (those land T−20
+# instead of T−80). The capture script exits BEFORE spending Odds API credits
+# when no pending leg kicks off within its window, so off-cluster ticks are
+# free. Thanksgiving/Saturday/Christmas odd slots: run via workflow_dispatch.
+#
+# FAILURE IS THE ALARM: the Pinnacle scrape runs --strict (a null or thin
+# response exits 1) and the capture script exits 1 when no benchmark source
+# succeeded — a red run on this workflow before a game is the dead-man's
+# switch firing while the close is still capturable.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * FRI"   # TNF (EDT) — kickoff 00:20Z
+    - cron: "0 1 * * FRI"   # TNF (EST twin)
+    - cron: "40 16 * * SUN" # Sunday early window (EDT)
+    - cron: "40 17 * * SUN" # Sunday early window (EST twin)
+    - cron: "45 19 * * SUN" # Sunday late window (EDT)
+    - cron: "45 20 * * SUN" # Sunday late window (EST twin)
+    - cron: "0 0 * * MON"   # SNF (EDT)
+    - cron: "0 1 * * MON"   # SNF (EST twin)
+    - cron: "0 0 * * TUE"   # MNF (EDT)
+    - cron: "0 1 * * TUE"   # MNF (EST twin)
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Scrape Pinnacle NFL (STRICT — null/thin response fails the run)
+        run: npx tsx scripts/scrape-pinnacle.ts --leagues nfl --strict --archive data/processed/nfl-live/closes
+
+      - name: Capture closes onto the ledger
+        run: npx tsx scripts/nfl-capture-close.ts --window-hours 3
+
+      - name: Commit ledger + archived closes (allowlisted paths only)
+        run: |
+          git config user.name "nfl-receipts-bot"
+          # Author must be the GoSteelers88 GitHub-noreply identity or Vercel's
+          # unknown-author check BLOCKS every deploy (threat T14).
+          git config user.email "58962244+GoSteelers88@users.noreply.github.com"
+          SECRET_RE='sk-ant-(api|oat|admin)|sk-[A-Za-z0-9]{40,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|tursodatabase\.com|libsql://|discord(app)?\.com/api/webhooks/|-----BEGIN [A-Z ]*PRIVATE KEY-----|[Aa]uthorization":\s*"Bearer'
+          for f in data/processed/nfl-live/ledger.json data/processed/nfl-live/closes/*.json; do
+            [ -f "$f" ] || continue
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
+              exit 1
+            fi
+          done
+          # ledger.json does not exist until the first board publishes; a bare
+          # add would be fatal (pathspec error) and open the season with a
+          # week of benign-red runs on the alarm channel (review finding 5).
+          [ -f data/processed/nfl-live/ledger.json ] && git add data/processed/nfl-live/ledger.json
+          git add data/processed/nfl-live/closes/ 2>/dev/null || true
+          # A silently-vanishing add is the documented WNBA incident (threat
+          # T6) — verify the intent-to-add actually staged when files exist.
+          if compgen -G "data/processed/nfl-live/closes/*.json" > /dev/null; then
+            git diff --cached --name-only | grep -q "^data/processed/nfl-live/" || {
+              echo "ABORT: closes exist on disk but nothing staged — gitignore regression?"
+              exit 1
+            }
+          fi
+          if git diff --cached --quiet; then
+            echo "no capture changes to commit"
+            exit 0
+          fi
+          DATE_TAG=$(date -u +"%Y-%m-%dT%H:%MZ")
+          git commit -m "nfl-closes: capture ${DATE_TAG}"
+          # The push MUST land or this step MUST fail: captured closes are
+          # permanently unrecoverable, and a for-loop's exit status is its
+          # last body command — three failed attempts would exit 0 with a
+          # green heartbeat (review finding 1, proven).
+          pushed=0
+          for i in 1 2 3; do
+            if git pull --rebase --autostash origin master && git push origin master; then
+              pushed=1
+              break
+            fi
+            echo "push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            sleep 5
+          done
+          if [ "$pushed" != 1 ]; then
+            echo "ABORT: captured closes did NOT reach origin/master after 3 attempts"
+            exit 1
+          fi
+
+      - name: Upload snapshots as artifacts (audit trail)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nfl-closes-${{ github.run_id }}
+          path: |
+            data/processed/nfl-live/ledger.json
+            data/processed/latest-sharp-pinnacle-americanfootball_nfl.json
+          retention-days: 30
+
+      - name: Heartbeat ping
+        if: success()
+        env:
+          PING: ${{ secrets.HC_PING_NFL }}
+        run: '[ -z "$PING" ] || curl -fsS -m 10 --retry 3 "$PING" > /dev/null || true'
