@@ -845,7 +845,11 @@ const INJURY_LEAGUES: Array<{
   {
     league: "NFL",
     injuryFile: "injuries-nfl.json",
-    oddsFile: "latest-odds-api-americanfootball_nfl.json",
+    // NOT the latest-odds-api NFL file — that path holds a stale February
+    // NCAAB payload (threat T5) and the Odds API NFL feed isn't refreshed.
+    // nfl-slate.json is the Pinnacle-sourced week board (build-nfl-slate.ts)
+    // and carries an Odds-API-compatible events[] for this scoping read.
+    oddsFile: "nfl-slate.json",
     watchWhenNoSlate: true,
   },
 ];

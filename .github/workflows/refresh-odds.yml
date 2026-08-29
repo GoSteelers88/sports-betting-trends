@@ -46,6 +46,11 @@ jobs:
           npm run ingest:injuries || echo "injuries refresh failed (non-fatal)"
           npm run ingest:free || echo "summary refresh failed (non-fatal)"
 
+      - name: Refresh NFL week board (free Pinnacle sharp feed, zero credits)
+        run: |
+          npx tsx scripts/scrape-pinnacle.ts --leagues nfl || echo "pinnacle nfl pull failed (non-fatal)"
+          npx tsx scripts/build-nfl-slate.ts || echo "nfl slate build refused/failed (non-fatal — previous board stays)"
+
       - name: Commit refreshed odds/injury data back to repo (allowlisted files only)
         if: success()
         run: |
@@ -69,6 +74,7 @@ jobs:
             "data/processed/injuries-mlb.json"
             "data/processed/injuries-nfl.json"
             "data/processed/injuries-nhl.json"
+            "data/processed/nfl-slate.json"
           )
           # Pre-commit secret scan — refuse to commit if any allowlisted file
           # contains a recognizable secret pattern. Defense in depth. Mirrors

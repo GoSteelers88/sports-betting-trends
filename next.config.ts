@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
     // renders "no board published" over a published board. Boards + ledger
     // only; closes/ + snapshots/ archives are audit data nothing renders.
     "/nfl": ["./data/processed/nfl-live/*.json"],
+    // Homepage NflWeek section reads the committed week board directly.
+    "/": ["./data/processed/nfl-slate.json"],
     "/api/free-stats/summary": ["./data/processed/**/*"],
     "/api/player-props": ["./data/processed/**/*"],
     "/api/debug-odds": ["./data/processed/**/*"],

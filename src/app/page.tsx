@@ -18,6 +18,7 @@ import { DevigPaperBook } from "./_components/DevigPaperBook";
 import { StockPaperBook } from "./_components/StockPaperBook";
 import { ParlayPaperBook } from "./_components/ParlayPaperBook";
 import { NflExp5 } from "./_components/NflExp5";
+import { NflWeek } from "./_components/NflWeek";
 import { MarketFeed } from "./_components/MarketFeed";
 import { PropsDesk } from "./_components/PropsDesk";
 import { MlbPropPlays } from "./_components/MlbPropPlays";
@@ -49,6 +50,8 @@ export default async function Home() {
         <DeploymentGate data={data.paperTrial} />
         {/* FOL. 04 — the account */}
         <OverallLedger data={data.overallRecord.games} />
+        {/* FOL. 11 — the NFL week board (display-only; picks live on /nfl) */}
+        <NflWeek />
         {/* FOL. 09 — MLB prop plays by stat (also lives in the Props tab) */}
         <MlbPropPlays board={data.mlbPropPlays} />
         {/* Exp. 4 — parlay paper book (also lives in the Experiments tab) */}
@@ -116,6 +119,8 @@ export default async function Home() {
       <>
         {/* FOL. 07 — the board */}
         <MarketFeed games={data.slate} />
+        {/* FOL. 11 — the NFL week board (also lives in the Tonight tab) */}
+        <NflWeek />
         {/* Back of book — agate */}
         <div
           id="back-of-book"

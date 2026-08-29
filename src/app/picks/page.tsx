@@ -150,6 +150,20 @@ export default function PicksPage() {
         kind="nba"
       />
 
+      <section className="mt-12">
+        <div className="panel-dim p-5">
+          <p className="num text-sm text-ink-2">
+            <span className="eyebrow" style={{ color: "var(--blue)" }}>NFL</span> — football is
+            deliberately absent from this screen. NFL picks publish only on{" "}
+            <a href="/nfl" className="underline underline-offset-4 text-ink hover:text-loss transition-colors">
+              the receipts page
+            </a>{" "}
+            — pre-registered, immutable, at real entry prices, judged by closing-line value
+            against a control arm.
+          </p>
+        </div>
+      </section>
+
       <footer className="mt-14">
         <div className="rule-double" />
         <p className="num text-xs text-ink-2 pt-4 leading-relaxed">
