@@ -22,6 +22,20 @@
  *
  * All edges are model-vs-market at TODAY's look-ahead lines — a live pick, not
  * a backtest. CLV verdict comes later (entry price vs close).
+ *
+ * ── 2026 DOCTRINE TIGHTENING (2026-08-29, after the negative 2025 holdout) ──
+ * Decision doc: docs/research/2026-08-29-doctrine-2026-tightening.md
+ *   T1. The ML floor becomes CONJUNCTIVE: the edge must clear the floor under
+ *       BOTH the haircut raw confidence (pre-existing gate, evaluateGame) and
+ *       the per-market CALIBRATED probability (this post-pass). Calibrated-
+ *       only would be LOOSER (the walk's ML map corrects upward) and would
+ *       re-assert the exact claim the holdout refuted. Floors unchanged
+ *       (3% div / 5% non-div).
+ *   T2. ATS legs are RETIRED for 2026 — every ATS slice was negative out of
+ *       sample (overall 48.6%, dogs −3.6%, favorites −14.9%). Reads still
+ *       print; verdict is always PASS.
+ *   T3. Totals likewise (51.6% < 52.4% BE out of sample, −12.1% in-walk).
+ * Tightening only: this pass can flip PLAY → PASS, never PASS → PLAY.
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -303,6 +317,35 @@ async function main(): Promise<void> {
         : 0;
     // A PLAY leg can legitimately carry stake 0.00% — doctrine says play,
     // Kelly says the calibrated probability has no edge at this price.
+  }
+
+  // ── 2026 doctrine tightening post-pass (see header; tightening ONLY) ──────
+  for (const leg of board) {
+    if (leg.market === "ats" || leg.market === "total") {
+      if (leg.verdict === "PLAY") {
+        leg.verdict = "PASS";
+        leg.passReason = `2026 doctrine: ${leg.market} retired — no ${leg.market} slice survived the 2025 holdout`;
+        leg.stakeFraction = 0;
+      }
+      leg.doctrineNotes.push("market retired for 2026 (negative holdout) — read shown, never played");
+      continue;
+    }
+    // Moneyline: the SECOND gate of the conjunctive floor — calibrated edge
+    // must also clear. The edge field becomes the calibrated edge (the number
+    // a surviving PLAY is judged on); the raw edge stays in the notes.
+    if (leg.marketFairProb == null || leg.calibratedConfidence == null) continue;
+    const rawEdge = leg.edge;
+    const calEdge = leg.calibratedConfidence - leg.marketFairProb;
+    leg.edge = calEdge;
+    leg.doctrineNotes.push(
+      `2026 gate: calibrated edge ${pct(calEdge)} (raw-conf edge was ${rawEdge == null ? "—" : pct(rawEdge)}) — calibration transferred, raw edge did not`,
+    );
+    const floor = leg.divGame ? EDGE_FLOOR : NON_DIV_EDGE_FLOOR;
+    if (leg.verdict === "PLAY" && calEdge < floor) {
+      leg.verdict = "PASS";
+      leg.passReason = `calibrated edge ${pct(calEdge)} < floor ${pct(floor)} (2026 doctrine: gate on calibrated probability)`;
+      leg.stakeFraction = 0;
+    }
   }
 
   // ── Full slate table ───────────────────────────────────────────────────────
