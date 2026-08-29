@@ -21,8 +21,19 @@
 param(
   [switch]$DryRun,
   [int]$Season = 2026,
-  [int]$Week = 1
+  # 0 = compute from the calendar (weekly scheduled runs); pass explicitly to
+  # override. Week N's publish Tuesday = Sept 8 + 7*(N-1).
+  [int]$Week = 0
 )
+
+if ($Week -eq 0) {
+  $week1Tuesday = Get-Date "2026-09-08"
+  $Week = [math]::Floor(((Get-Date) - $week1Tuesday).TotalDays / 7) + 1
+  if ($Week -lt 1 -or $Week -gt 18) {
+    Write-Host "computed week $Week is outside the regular season (1-18) - nothing to publish"
+    exit 0
+  }
+}
 
 $ErrorActionPreference = "Stop"
 $repo = "C:\Users\Nate\source\repos\GoSteelers88\sports-betting-trends"
