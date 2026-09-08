@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { getAnthropic, MODELS } from "./client";
+import { markRollingCacheBreakpoint } from "./prompt-cache";
 import {
   TOOL_DEFINITIONS,
   buildToolHandlers,
@@ -79,6 +80,18 @@ export type AnalyzeResult = {
   rawResponseText: string;
   reasoningTrace: TraceStep[];
   iterations: number;
+  // Prompt-cache telemetry summed across the loop's model calls. These are the
+  // only ground truth that caching is working: the costly failure is silent —
+  // a later change to prompt assembly starts rewriting the prefix, every call
+  // misses, nothing errors, and the only symptom is a bigger bill. Watch the
+  // read share, and re-check it whenever the system prompt or tool list moves.
+  //
+  // uncachedInputTokens is the remainder billed at full price. The prompt the
+  // loop actually sent is the sum of all three — reading any one alone
+  // misstates both the volume and the hit rate.
+  uncachedInputTokens: number;
+  cacheReadTokens: number;
+  cacheCreationTokens: number;
 };
 
 // ─── Prompts ───────────────────────────────────────────────────────────────
@@ -244,16 +257,56 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
   let iterations = 0;
   let finalText = "";
 
+  // ─── Prompt caching ────────────────────────────────────────────────────────
+  //
+  // `sys` is built ONCE above and TOOL_DEFINITIONS is a module constant, so the
+  // whole tools+system prefix is byte-stable across all ≤8 iterations. Render
+  // order is tools → system → messages, so this single breakpoint on the last
+  // (and only) system block caches the 12 tool definitions AND the system
+  // prompt together — measured at ~5,900 tokens, well clear of Sonnet 4.6's
+  // 1,024-token minimum cacheable prefix.
+  //
+  // Before this, none of it was cached: the full prefix was re-sent at full
+  // input price on every iteration, and so was every accumulated tool result —
+  // and tool results here are sliced at 200,000 characters apiece, so a slate
+  // that reads odds, model probabilities, props and injuries carries a large
+  // tail through every remaining round. Lane B's chat loop has done this since
+  // it was built; this loop, which runs twice as many iterations over bigger
+  // payloads, was the one that never got it.
+  const cachedSystem = [
+    { type: "text" as const, text: sys, cache_control: { type: "ephemeral" as const } },
+  ];
+
+  // Summed across the loop. Reads alone cannot tell "caching works" from "the
+  // prefix is rewritten every iteration and re-read from its own fresh write",
+  // so both halves are tracked — a healthy loop reads the whole accumulated
+  // prefix and writes only the delta the last iteration appended.
+  //
+  // `input_tokens` is tracked too because it is the UNCACHED REMAINDER, not the
+  // prompt size: the real prompt is input + read + write. A hit rate computed
+  // over read+write alone silently omits everything that never cached at all,
+  // which flatters the number precisely when caching is working least.
+  let uncachedInputTokens = 0;
+  let cacheReadTokens = 0;
+  let cacheCreationTokens = 0;
+
   while (iterations < MAX_ITERATIONS) {
     iterations++;
+    // Roll the conversation breakpoint to the end before each call, so the tool
+    // results pushed by the previous iteration become a cache read on this one.
+    markRollingCacheBreakpoint(messages);
     const response = await client.messages.create({
       model: MODELS.analyst,
       max_tokens: 4096,
-      system: sys,
+      system: cachedSystem,
       tools: TOOL_DEFINITIONS,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       messages: messages as any,
     });
+
+    uncachedInputTokens += response.usage?.input_tokens ?? 0;
+    cacheReadTokens += response.usage?.cache_read_input_tokens ?? 0;
+    cacheCreationTokens += response.usage?.cache_creation_input_tokens ?? 0;
 
     // Push assistant turn so the next iteration sees it
     messages.push({ role: "assistant", content: response.content });
@@ -316,6 +369,20 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
     break;
   }
 
+  // One line per run so a cache regression is visible without instrumenting the
+  // orchestrator. `hit` is the share of the cacheable prefix actually served
+  // from cache; it should climb across iterations and sit high on a multi-tool
+  // slate. A run that reads nothing means the prefix moved — check whether the
+  // system prompt picked up a per-run value, or the tool list stopped being
+  // stable, before assuming the cache is merely cold.
+  const promptTokens = uncachedInputTokens + cacheReadTokens + cacheCreationTokens;
+  console.log(
+    `analyst[${league}] run=${runId} iterations=${iterations} ` +
+      `prompt=${uncachedInputTokens} cacheRead=${cacheReadTokens} ` +
+      `cacheWrite=${cacheCreationTokens} total=${promptTokens} ` +
+      `hit=${promptTokens > 0 ? Math.round((cacheReadTokens / promptTokens) * 100) : 0}%`
+  );
+
   const parsed = parsePicks(finalText);
   const graded = gradePicksWithDrops(parsed);
 
@@ -334,6 +401,9 @@ export async function analyze(league: AgentLeague): Promise<AnalyzeResult> {
     rawResponseText: finalText,
     reasoningTrace,
     iterations,
+    uncachedInputTokens,
+    cacheReadTokens,
+    cacheCreationTokens,
   };
 }
 

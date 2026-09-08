@@ -8,6 +8,7 @@
 // single source of truth for what the chat can touch.
 
 import { getAnthropic, MODELS } from "@/lib/agent/client";
+import { markRollingCacheBreakpoint } from "@/lib/agent/prompt-cache";
 import {
   TOOL_DEFINITIONS,
   buildToolHandlers,
@@ -183,37 +184,10 @@ export function sumUsage(usage: {
   );
 }
 
-// ─── Prompt-cache breakpoint helper (rolling conversation breakpoint) ─────────
-//
-// Marks EXACTLY ONE cache_control breakpoint on the conversation: the LAST
-// content block of the LAST array-content message. It first clears any prior
-// cache_control marks so the rolling breakpoint doesn't accumulate (which would
-// blow the 4-breakpoint budget over a long loop). Together with the ONE
-// breakpoint on the system block (built once before the loop), total = 2 ≤ 4.
-//
-// Seed/user messages have STRING content (nothing to mark — skipped on iter 1);
-// the assistant `response.content` and the tool_result arrays we push ARE arrays
-// (marked from iter 2 on). This is byte-invisible to the model: cache_control is
-// caching metadata, not content — the model's view is unchanged, and it is NOT
-// part of toolResultTexts (collected separately from the message blocks).
-function markRollingCacheBreakpoint(
-  messages: Array<{ role: string; content: unknown }>
-): void {
-  for (const m of messages)
-    if (Array.isArray(m.content))
-      for (const b of m.content)
-        if (b && typeof b === "object" && "cache_control" in b)
-          delete (b as { cache_control?: unknown }).cache_control;
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const c = messages[i].content;
-    if (Array.isArray(c) && c.length > 0) {
-      const last = c[c.length - 1];
-      if (last && typeof last === "object")
-        (last as { cache_control?: unknown }).cache_control = { type: "ephemeral" };
-      break;
-    }
-  }
-}
+// The rolling conversation breakpoint now lives in @/lib/agent/prompt-cache so
+// the analyst's tool loop uses the same implementation rather than a copy. One
+// caveat this call site depends on: the mark is NOT part of toolResultTexts,
+// which is collected separately from the message blocks.
 
 // Build a tool-handler map restricted to the allowlist. Even if the model
 // hallucinates a write-tool name, there's no handler for it and we return an

@@ -112,6 +112,7 @@ Files:
 | File | Role |
 |---|---|
 | `client.ts` | Anthropic client + MODELS map |
+| `prompt-cache.ts` | Rolling conversation cache breakpoint, shared by the analyst + Lane B tool loops. Caching is a prefix match — see the file header before touching prompt assembly. |
 | `tools/index.ts` | get_odds (consensus + bestPrice off-market), get_model_probabilities, get_injuries, get_player_props, get_trend_summary, get_mlb_signals |
 | `analyst.ts` | Main analyst LLM loop; moneyline + player props (NBA/MLB); requires gameTime per pick |
 | `grader.ts` | Local pick rubric (edge ≥6%, stake ≤2u, thesis ≥80 chars, NaN-safe). Floor bumped from 3% → 6% in May 2026 to clear vig + safety margin. |
