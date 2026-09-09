@@ -94,8 +94,15 @@ export function NflExp5({ data }: { data: NflExp5 | null }) {
         </div>
         <p className="num text-[0.7rem] text-ink-2 leading-relaxed mt-1 max-w-3xl">
           A leak-free Elo fair value walked across {settled} settled NFL bets
-          (2023–2025), judged the desk way — by closing-line value, not wins.
+          (2015–2024), judged the desk way — by closing-line value, not wins.
           Not a live bet book; the raw per-week picks stay private.
+          {/* Span corrected 2026-09-09: this read "(2023–2025)", which was wrong
+              on both ends. Measured against the source the summary writer reads,
+              data/private/nfl-loop/quant/quant-desk-nfl-book.json — 310 bets,
+              earliest season 2015, latest 2024. The props and parlay blocks on
+              /nfl come from different logs and span 2019–2024; do not copy this
+              span onto those. nfl-exp5.json carries no season field, so neither
+              span can be derived at render time. */}
         </p>
       </header>
 

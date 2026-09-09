@@ -12,26 +12,53 @@
 // modules: node:fs"). Instead, page.tsx (a server component) renders each
 // tab's content server-side and passes it in as a ReactNode via `panels`.
 // TabShell only owns the rail + which pre-rendered panel is visible.
+//
+// URL: the active tab is the location fragment (`/#props`). Three rules make
+// that safe here:
+//
+//  1. The FIRST render is always DEFAULT_TAB, on the server and on the client.
+//     Reading location.hash during render would make the client's first paint
+//     disagree with the server's HTML — a hydration mismatch. The hash is read
+//     in an effect, after mount, which costs one extra render on a deep link
+//     and nothing at all on a normal load.
+//  2. Clicking a tab writes the fragment with history.replaceState, NOT
+//     `location.hash = …`. Assigning to location.hash makes the browser scroll
+//     to any element sharing that id (the experiments panel has one), which
+//     would yank the page mid-click; replaceState changes the URL and nothing
+//     else. It also fires no hashchange, so the listener below cannot loop.
+//  3. An unrecognised fragment (`/#nfl-week`, a section deep link) leaves the
+//     tab alone — parseTabHash returns null for it and the browser's own
+//     anchor scrolling still works inside whatever tab is open.
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { DEFAULT_TAB, TABS, parseTabHash, type Tab } from "@/lib/site-tabs";
 
-export type Tab =
-  | "tonight"
-  | "the-desk"
-  | "props"
-  | "experiments"
-  | "operations";
-
-const TABS: { id: Tab; num: string; label: string }[] = [
-  { id: "tonight", num: "T1", label: "Tonight" },
-  { id: "the-desk", num: "T2", label: "The Desk" },
-  { id: "props", num: "T3", label: "Props" },
-  { id: "experiments", num: "T4", label: "Experiments" },
-  { id: "operations", num: "T5", label: "Operations" },
-];
+export type { Tab };
 
 export function TabShell({ panels }: { panels: Record<Tab, ReactNode> }) {
-  const [activeTab, setActiveTab] = useState<Tab>("tonight");
+  const [activeTab, setActiveTab] = useState<Tab>(DEFAULT_TAB);
+
+  useEffect(() => {
+    const sync = () => {
+      const fromHash = parseTabHash(window.location.hash);
+      if (fromHash) setActiveTab(fromHash);
+    };
+    sync(); // deep link on first load: /#props, a bookmark, a refresh
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  const select = (id: Tab) => {
+    setActiveTab(id);
+    // Keep the URL shareable without moving the viewport. Wrapped because a
+    // sandboxed/opaque-origin embed throws on replaceState, and a nav rail
+    // that cannot rewrite the URL must still switch tabs.
+    try {
+      window.history.replaceState(null, "", `#${id}`);
+    } catch {
+      /* URL stays put; the tab still switches. */
+    }
+  };
 
   return (
     <>
@@ -52,7 +79,7 @@ export function TabShell({ panels }: { panels: Record<Tab, ReactNode> }) {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => select(tab.id)}
                 className="eyebrow shrink-0 py-2.5 pr-6 flex items-baseline gap-1.5 transition-colors cursor-pointer"
                 style={{
                   color: active ? "var(--ink)" : "var(--ink-3)",

@@ -52,6 +52,11 @@ import {
   modelResolution,
   type GameRow,
 } from "@/lib/nfl-receipts/receipts-view";
+import { parseExp5Research, type ResearchView } from "@/lib/nfl-receipts/exp5-view";
+import type { NflSlate } from "@/lib/nfl-receipts/site-slate";
+import { TABS, tabHref } from "@/lib/site-tabs";
+import { MarketNow } from "./_components/MarketNow";
+import { ResearchAppendix } from "./_components/ResearchAppendix";
 
 export const dynamic = "force-dynamic";
 
@@ -62,8 +67,38 @@ export const metadata: Metadata = {
   alternates: { canonical: "/nfl" },
 };
 
-const NFL_DIR = path.join(process.cwd(), "data", "processed", "nfl-live");
+const PROCESSED_DIR = path.join(process.cwd(), "data", "processed");
+const NFL_DIR = path.join(PROCESSED_DIR, "nfl-live");
 const SEASON_WEEKS = 18;
+
+/** Read one committed JSON file under data/processed. Read-only, and a
+ *  malformed or absent file degrades to null so the section it feeds hides
+ *  rather than rendering zeros — a zeroed figure is a claim, an absent block
+ *  is an absence.
+ *
+ *  EVERY file read on this route must also be listed in next.config.ts under
+ *  outputFileTracingIncludes["/nfl"]. The tracer cannot follow a path built at
+ *  runtime, and a missing entry renders an empty page over perfectly good
+ *  committed data — this route has shipped that bug before. */
+function readProcessed<T>(file: string): T | null {
+  const p = path.join(PROCESSED_DIR, file);
+  if (!fs.existsSync(p)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf-8")) as T;
+  } catch (err) {
+    console.error(`[/nfl] ${file} present but unparseable`, err);
+    return null;
+  }
+}
+
+function loadSlate(): NflSlate | null {
+  const slate = readProcessed<NflSlate>("nfl-slate.json");
+  return slate && Array.isArray(slate.games) ? slate : null;
+}
+
+function loadResearch(): ResearchView {
+  return parseExp5Research(readProcessed<unknown>("nfl-exp5.json"));
+}
 
 function loadLedgerFile(): Ledger | null {
   const p = path.join(NFL_DIR, "ledger.json");
@@ -144,18 +179,30 @@ export default function NflReceiptsPage() {
   const boards = loadBoards();
   const latest = boards[0]?.board ?? null;
   const h = ledger ? headline(ledger) : null;
+  const slate = loadSlate();
+  const research = loadResearch();
+  const hasResearch = research.props != null || research.parlays != null;
 
   return (
     <div className="receipts">
       <MastheadStrip season={latest?.season ?? null} week={latest?.week ?? null} />
+      <ReceiptsNav hasResearch={hasResearch} />
 
       <main className="receipts-shell">
-        <header className="receipts-head">
+        <header className="receipts-head" id="top">
           <p className="eyebrow">NATESTACKS · NFL EXPERIMENT NO. 5</p>
           <h1 className="headline receipts-h1">The receipts</h1>
           <p className="standfirst">
             Published before kickoff. Real book prices. Judged against a sharp close.
           </p>
+          {hasResearch && (
+            <p className="halves">
+              <span className="halves-live">Part one, below, is the live season</span>{" "}
+              — boards, passed games, the sharp market, no return claimed for any
+              of it. <a href="#research">Part two</a> is a walled-off backtest:
+              in-sample, and the one out-of-sample test came back negative.
+            </p>
+          )}
         </header>
 
         {boards.length === 0 ? (
@@ -184,6 +231,8 @@ export default function NflReceiptsPage() {
           ))
         )}
 
+        <MarketNow slate={slate} />
+
         <TheRules boards={boards.map((b) => b.board)} headlineData={h} />
 
         <TheLedger
@@ -193,6 +242,8 @@ export default function NflReceiptsPage() {
         />
 
         <Errata ledger={ledger} />
+
+        <ResearchAppendix research={research} />
 
         <footer className="receipts-footer">
           <div className="rule-double" />
@@ -225,6 +276,49 @@ function MastheadStrip({ season, week }: { season: number | null; week: number |
         </p>
       </div>
     </div>
+  );
+}
+
+/* ─── The section rail ────────────────────────────────────────────
+   /nfl used to be a cul-de-sac: the only href on the page was an internal
+   anchor, so a reader who arrived here from a link had no way back into the
+   desk except the browser button. A masthead over a section rail is the
+   broadsheet convention and it keeps the three disclosure tokens above it
+   permanently on screen instead of trading them for navigation.
+
+   The tab links are real deep links now — the homepage reads its active tab
+   from the fragment (src/lib/site-tabs.ts), so /#props opens the props desk
+   and survives a refresh. Before that change every one of these would have
+   landed on "tonight".
+
+   It does not animate and it does not react to scroll, exactly like the strip
+   above it. Below 768px it scrolls sideways rather than wrapping: a nav rail
+   may scroll horizontally, content may not. */
+
+function ReceiptsNav({ hasResearch }: { hasResearch: boolean }) {
+  return (
+    <nav className="receipts-nav" aria-label="Site sections">
+      <div className="receipts-nav-inner">
+        <a className="eyebrow nav-home" href="/">
+          ↩ NateStacks
+        </a>
+        <span className="nav-sep" aria-hidden="true" />
+        {TABS.map((t) => (
+          <a key={t.id} className="eyebrow nav-link" href={tabHref(t.id)}>
+            {t.label}
+          </a>
+        ))}
+        <span className="nav-spacer" />
+        <a className="eyebrow nav-link is-current" href="#top" aria-current="page">
+          The receipts
+        </a>
+        {hasResearch && (
+          <a className="eyebrow nav-link" href="#research">
+            Research ↓
+          </a>
+        )}
+      </div>
+    </nav>
   );
 }
 
@@ -336,9 +430,12 @@ function BoardSpread({
           <strong>Model − market</strong> is a disagreement in probability.{" "}
           <strong>The pass reason</strong> quotes the doctrine&rsquo;s edge test{" "}
           <em>at the offered price</em>. A game can disagree by twelve points and
-          still fail it — Buffalo did. The model emits {numberWord(resolution.distinct)}{" "}
-          distinct {resolution.distinct === 1 ? "probability" : "probabilities"}{" "}
-          across this slate; {numberWord(resolution.modalCount)} of the{" "}
+          still fail it — Buffalo did.
+        </p>
+        <p className="prose">
+          The model emits {numberWord(resolution.distinct)} distinct{" "}
+          {resolution.distinct === 1 ? "probability" : "probabilities"} across
+          this slate; {numberWord(resolution.modalCount)} of the{" "}
           {numberWord(resolution.total)} read {resolution.modalValue?.toFixed(1)}%.
           That is the model&rsquo;s resolution, not a rendering fault — the
           disagreement column is where these games differ.
@@ -440,9 +537,11 @@ function PlayCard({ row }: { row: GameRow }) {
         </p>
         {row.doctrineNotes.length > 0 && (
           <>
+            {/* Two lines of label over one short note is a caption wearing a
+                headline. Trimmed, but the contrast it exists to draw — a
+                FLOOR is not the GAP printed above it — survives. */}
             <p className="eyebrow notes-label">
-              Doctrine notes — the gate&rsquo;s own arithmetic, not the
-              disagreement above
+              Doctrine notes — floors, not the gap
             </p>
             <ul className="notes">
               {row.doctrineNotes.slice(0, 3).map((n) => (
@@ -777,7 +876,11 @@ function TheLedger({
 
   return (
     <section className="receipts-section" id="ledger">
-      <div className="panel-dim ledger-line">
+      {/* No panel. THE RULES keeps its dim slab; the ledger is a rule and bare
+          paper, so the two closing blocks no longer share one 672px silhouette
+          under a 1056px table — and losing the panel demotes the ledger further,
+          which was always the intent. */}
+      <div className="ledger-block">
         <p className="eyebrow">THE LEDGER — DORMANT UNTIL n ≥ {VERDICT_MIN_N}</p>
         <p className="num-display ledger-figure">
           {graded} / {VERDICT_MIN_N}{" "}

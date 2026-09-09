@@ -101,3 +101,63 @@ stored on every close.
 ## Errata
 
 (none)
+
+## Amendment 1 — 2026-09-09: the no-ROI rule is narrowed to live picks
+
+**Status: AMENDED 2026-09-09.** The rule in §1 is not edited. It is narrowed by
+this entry, and the original text stands above, unchanged, as written.
+
+§1 reads: "**No ROI claim appears anywhere on /nfl.**" As of 2026-09-09 it reads:
+
+> **No ROI claim appears anywhere on /nfl for a live pick.** No figure describing
+> the return of any published board, any passed game, or the live CLV ledger
+> appears on the page, and none ever will. The verdict metric is unchanged:
+> paired PLAY-arm minus control-arm devigged CLV beat rate at n >= 150, and
+> nothing else.
+
+**What this permits, exactly.** /nfl gains a research appendix ("Part two"),
+walled off from the live half by its own section front, republishing two
+aggregate blocks from the committed `data/processed/nfl-exp5.json`:
+
+- **Player props** — 671-401-7 over 1,079 settled picks, seasons 2019-2024.
+  No ROI and no CLV are published for this block, because the data has neither:
+  the picks were graded against nflverse box scores, never against a market
+  price. The page prints a hit rate against a threshold and states, in the same
+  block, that a hit rate is not a return.
+- **Three-leg parlays** — 103-444 over 547 settled, seasons 2019-2024;
+  flat-stake yield +38.96%, an 18.8% win rate against the 13.6% the odds
+  require. **This is the ROI figure the original rule forbade.** It is graded
+  against nflverse approximate closing lines, banks no closing-line value, and
+  is published as an explicit optimistic upper bound — with that caveat set
+  above the number, not below it.
+
+The moneyline block (+8.21% ROI, 310 bets, seasons 2015-2024) is NOT published
+on /nfl and this amendment does not permit it.
+
+**What this still forbids.** Any ROI, yield, unit, bankroll or return figure for
+a live pick, a published board, a passed game, or the CLV ledger. Any projection
+from a backtest figure to a live expectation. Any backtest figure presented
+without its in-sample span and the negative 2025 holdout adjacent to it in the
+same block.
+
+**Why.** The record behind the yield was already public on the site's homepage;
+publishing the record while suppressing the number it produced was the more
+misleading of the two available options. The frozen rule would also have barred
+the site from ever showing its own working, which was never its purpose — its
+purpose was to stop a live pick being sold on a claimed return.
+
+**How this is disclosed.** The amendment is reproduced on /nfl itself, dated,
+as "Amendment 1 — 2026-09-09", above the first research figure, quoting the
+original §1 text beside the amended text. A pre-registration that can be edited
+without the reader seeing the edit is not a pre-registration.
+
+**Season spans were measured, not assumed** (2026-09-09): the props block reads
+`data/private/nfl-loop/prop-picks-log.jsonl` (1,181 rows, seasons 2019-2024) and
+the parlay engine reads `data/private/nfl-loop/picks-log.jsonl` (4,794 rows,
+seasons 2019-2024). The moneyline block reads the quant book (310 bets, seasons
+2015-2024). The public `nfl-exp5.json` carries no season field, so the span on
+the page is a checked-in constant with a test guarding it.
+
+**What is NOT amended.** §2 (n >= 150 or no verdict, permanently), §3 (benchmark
+chain), §4 (entry prices), and the verdict metric itself are untouched and
+remain frozen as of 2026-08-29.

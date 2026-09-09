@@ -16,7 +16,18 @@ const nextConfig: NextConfig = {
     // without this include the prod function sees an empty nfl-live dir and
     // renders "no board published" over a published board. Boards + ledger
     // only; closes/ + snapshots/ archives are audit data nothing renders.
-    "/nfl": ["./data/processed/nfl-live/*.json"],
+    //
+    // EVERY file the route reads must be listed here. The page builds its
+    // paths at runtime (path.join(process.cwd(), …)), so the tracer sees none
+    // of them and a missing entry ships an EMPTY SECTION over perfectly good
+    // committed data — silently, with a green build. That has already happened
+    // once on this route. nfl-slate.json feeds THE MARKET NOW; nfl-exp5.json
+    // feeds the whole research appendix.
+    "/nfl": [
+      "./data/processed/nfl-live/*.json",
+      "./data/processed/nfl-slate.json",
+      "./data/processed/nfl-exp5.json",
+    ],
     // Homepage NflWeek section reads the committed week board directly.
     "/": ["./data/processed/nfl-slate.json"],
     "/api/free-stats/summary": ["./data/processed/**/*"],
