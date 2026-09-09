@@ -12,7 +12,11 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { sha256Hex, sha256OfFile } from "./leg-id";
+import {
+  contentHashes,
+  contentHashesOfFile,
+  matchesRecordedHash,
+} from "./leg-id";
 import { defaultLedgerPath, loadLedger } from "./ledger";
 
 export interface NotaryResult {
@@ -53,15 +57,15 @@ export function verifyNotary(opts: NotaryOptions): NotaryResult {
       log.push(`FAIL ${rec.file}: missing from working tree`);
       continue;
     }
-    // A Windows autocrlf re-checkout can rewrite LF→CRLF without changing
+    // A Windows autocrlf re-checkout can rewrite LF->CRLF without changing
     // content; that must not read as forgery. Normalized-hash fallback only.
-    const raw = fs.readFileSync(abs);
-    const localSha = sha256OfFile(abs);
-    const localShaNorm = sha256Hex(raw.toString("utf8").replace(/\r\n/g, "\n"));
-    if (localSha !== rec.sha256 && localShaNorm !== rec.sha256) {
+    // The raw/normalized pair lives in leg-id.ts so the /nfl page checks the
+    // board it renders exactly the way this does — one implementation.
+    const local = contentHashesOfFile(abs);
+    if (!matchesRecordedHash(local, rec.sha256)) {
       ok = false;
       log.push(
-        `FAIL ${rec.file}: local sha256 ${localSha.slice(0, 12)}… != published ${rec.sha256.slice(0, 12)}… — the board was EDITED after publish`,
+        `FAIL ${rec.file}: local sha256 ${local.raw.slice(0, 12)}… != published ${rec.sha256.slice(0, 12)}… — the board was EDITED after publish`,
       );
       continue;
     }
@@ -83,12 +87,11 @@ export function verifyNotary(opts: NotaryOptions): NotaryResult {
       continue;
     }
     // git cat-file emits the blob verbatim; hash what the remote actually holds
-    const remoteSha = sha256Hex(remoteBytes);
-    const remoteShaNorm = sha256Hex(remoteBytes.replace(/\r\n/g, "\n"));
-    if (remoteSha !== rec.sha256 && remoteShaNorm !== rec.sha256) {
+    const remote = contentHashes(remoteBytes);
+    if (!matchesRecordedHash(remote, rec.sha256)) {
       ok = false;
       log.push(
-        `FAIL ${rec.file}: origin/master content ${remoteSha.slice(0, 12)}… != published ${rec.sha256.slice(0, 12)}… — the public branch diverged from the receipt`,
+        `FAIL ${rec.file}: origin/master content ${remote.raw.slice(0, 12)}… != published ${rec.sha256.slice(0, 12)}… — the public branch diverged from the receipt`,
       );
       continue;
     }

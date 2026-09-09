@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Archivo, IBM_Plex_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 // Display face — Fraunces. A wonky, sharp editorial serif: the voice of a
@@ -72,6 +73,20 @@ export default function RootLayout({
         className={`${archivo.variable} ${fraunces.variable} ${plexMono.variable} antialiased`}
       >
         {children}
+        {/* Web Analytics. Wired 2026-09-09: the site had NO instrumentation of
+            any kind, so no redesign could be shown to have worked — on a site
+            whose whole thesis is measurement discipline.
+            Scope, stated accurately because this site's posture invites the
+            question: it sends the pathname (via usePathname — no query string
+            from our side), and Vercel additionally records referrer, filtered
+            query params, city-level geolocation, and device/OS/browser, with
+            the visitor keyed by a hash of the incoming request that is
+            discarded after 24h. No cookies. Verify against Vercel's current
+            privacy docs before repeating any of this publicly.
+            Requires Web Analytics to be ENABLED on the Vercel project or the
+            /_vercel/insights beacon 404s silently — confirm a pageview lands
+            on the dashboard after deploy rather than assuming. */}
+        <Analytics />
       </body>
     </html>
   );

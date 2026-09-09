@@ -460,3 +460,798 @@ body::after {
     background: rgba(180, 45, 28, 0.3);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   /nfl — THE RECEIPTS
+   Everything below is scoped to `.receipts`. The global values above are
+   load-bearing for Hero.tsx and DeploymentGate.tsx and are never touched:
+   this page raises the micro-type (10.4px agate was the literal cause of
+   "hard to read") and cuts tracking as it does, so the masthead does not get
+   wider as it gets bigger.
+
+   One law runs through it: --blue is the model's voice, --ink-2 is the
+   market's. --win green appears zero times until a leg settles as beat-close,
+   and nothing here moves.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Type scale (scoped overrides) ─────────────────────────────────────── */
+
+.receipts .eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  line-height: 1.3;
+}
+.receipts .folio {
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  line-height: 1.3;
+}
+.receipts .tag {
+  font-size: 0.8125rem;
+  letter-spacing: 0.16em;
+}
+.receipts .stamp-row {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+}
+.receipts .ledger-table thead th {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+}
+
+/* Prose is Archivo, always. Mono is for numbers, prices, dates, tickers and
+   file paths only — constraint 5, and the literal fix for "hard to read". */
+.receipts .prose {
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 68ch;
+}
+.receipts .prose + .prose {
+  margin-top: 0.9rem;
+}
+.receipts .prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.receipts .prose .num {
+  font-size: 0.875rem;
+  color: var(--ink);
+  /* "n >= 150" is one expression and must not break across a line. */
+  white-space: nowrap;
+}
+.receipts .prose .path {
+  white-space: normal;
+  word-break: break-all;
+}
+.receipts .prose a,
+.receipts .c-why a {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+/* ─── Masthead strip — a running head, not a banner ──────────────────────── */
+
+.receipts-mast {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 40px;
+  background: var(--paper);
+  border-bottom: 3px double var(--rule-strong);
+}
+.receipts-mast-inner {
+  max-width: 1120px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.receipts-mast-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+}
+.receipts-mast-tokens .eyebrow + .eyebrow::before {
+  content: "·";
+  margin-right: 1rem;
+  color: var(--ink-3);
+}
+.receipts-mast-folio {
+  white-space: nowrap;
+}
+
+/* Anchored sections clear the 40px strip rather than the site's 84px desk. */
+.receipts [id] {
+  scroll-margin-top: 56px;
+}
+
+/* ─── Shell ─────────────────────────────────────────────────────────────── */
+
+.receipts-shell {
+  --gutter: 2rem;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2rem var(--gutter) 4rem;
+}
+.receipts-head .eyebrow {
+  color: var(--ink-2);
+}
+.receipts-h1 {
+  font-size: 2.5rem;
+  color: var(--ink);
+  margin-top: 0.5rem;
+}
+.receipts .standfirst {
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin-top: 0.75rem;
+  max-width: 68ch;
+}
+.receipts-section {
+  margin-top: 2.5rem;
+}
+.section-head {
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--rule-strong);
+}
+.receipts .section-title {
+  font-size: 1.875rem;
+  color: var(--ink);
+}
+.receipts .section-meta {
+  margin-top: 0.4rem;
+}
+.receipts .standfirst-block {
+  margin-top: 1rem;
+}
+/* The board’s footnote, not its preamble: it sits UNDER the cards so the
+   first PLAY card keeps its place on the fold. Same measure as the notes it
+   replaced, which lived in the card foot. */
+.receipts .board-footnote {
+  margin-top: 1.25rem;
+}
+
+/* ─── The play card ─────────────────────────────────────────────────────── */
+
+.board-stack {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.receipts .play-card {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  /* --ink, not a franchise color. Week 1's picks are the Jets and the
+     Packers: two dark greens, 22.5 and 40 RGB units from --win. Two green
+     spines beside two PLAY stamps read as two settled wins, which is the one
+     thing this page must never imply. team-colors.ts stays in the repo. */
+  border-left: 4px solid var(--ink);
+  padding: 1.5rem 1.75rem;
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) 1fr auto;
+  column-gap: 2rem;
+  grid-template-areas:
+    "head head head"
+    "team rail stamp"
+    "foot foot foot";
+  align-items: start;
+}
+.play-card-head {
+  grid-area: head;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+.receipts .card-kick {
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.play-card-stamp {
+  grid-area: stamp;
+  padding-left: 0.5rem;
+}
+.receipts .play-stamp {
+  color: var(--blue);
+}
+
+/* The asymmetric team stack: from ten feet you see WHICH team without
+   reading a word. That asymmetry IS the pick — protect it. */
+.team-stack {
+  grid-area: team;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+}
+.receipts .team-sel {
+  font-size: clamp(2.75rem, 5.2vw, 4.5rem);
+  line-height: 0.86;
+  color: var(--ink);
+}
+.receipts .team-conn {
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+  text-transform: lowercase;
+  letter-spacing: 0.16em;
+}
+.receipts .team-opp {
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--ink-2);
+}
+
+/* ─── The comparison rail — two stops, one scale, one origin ────────────── */
+
+.rail {
+  grid-area: rail;
+  min-width: 260px;
+  max-width: 420px;
+}
+.rail-row {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+.rail-row + .rail-row {
+  margin-top: 0.65rem;
+}
+.receipts .rail-label {
+  color: var(--ink-2);
+}
+.rail-track {
+  position: relative;
+  display: block;
+  height: 10px;
+  background: rgba(31, 27, 22, 0.09);
+}
+.rail-fill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+}
+.rail-fill.is-model {
+  background: var(--blue);
+}
+.rail-fill.is-market {
+  background: var(--ink-2);
+  opacity: 0.45;
+}
+.receipts .rail-val {
+  font-size: 1.5rem;
+  min-width: 5ch;
+  text-align: right;
+}
+.receipts .rail-val.is-model {
+  color: var(--ink);
+}
+.receipts .rail-val.is-market {
+  color: var(--ink-2);
+}
+.rail-rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0.9rem 0 0.6rem;
+}
+.rail-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.receipts .rail-gap {
+  font-size: clamp(2.25rem, 3.6vw, 3.25rem);
+  color: var(--blue);
+}
+.receipts .no-market-note {
+  margin-top: 0.5rem;
+}
+
+.play-card-foot {
+  grid-area: foot;
+  margin-top: 1.35rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--rule);
+}
+.receipts .entry-line {
+  font-size: 0.875rem;
+  color: var(--ink-2);
+  letter-spacing: 0.01em;
+}
+.receipts .notes-label {
+  margin-top: 0.85rem;
+  color: var(--ink-3);
+  max-width: 60ch;
+}
+.receipts .notes {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.receipts .notes li {
+  position: relative;
+  padding-left: 1.1rem;
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 68ch;
+}
+.receipts .notes li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--ink-3);
+}
+
+/* ─── The empty board — a publication, never a disabled state ───────────── */
+
+.empty-board {
+  margin-top: 1rem;
+  min-height: 200px;
+  padding: 2.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1.1rem;
+}
+.receipts .empty-stamp {
+  color: var(--ink);
+}
+.receipts .empty-lede {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  color: var(--ink);
+  max-width: 30ch;
+}
+.receipts .empty-sub {
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+.awaiting-board {
+  margin-top: 1rem;
+  padding: 1.5rem 1.75rem;
+}
+
+/* ─── The pass grid ─────────────────────────────────────────────────────── */
+
+.pass-table {
+  margin-top: 1.1rem;
+  table-layout: fixed;
+}
+.pass-table .col-kick { width: 92px; }
+.pass-table .col-game { width: 190px; }
+.pass-table .col-model { width: 74px; }
+.pass-table .col-market { width: 74px; }
+.pass-table .col-gap { width: 84px; }
+.pass-table .col-diverge { width: 120px; }
+.pass-table .col-verdict { width: 92px; }
+.receipts .ledger-table thead th.th-right {
+  text-align: right;
+}
+.receipts .day-band td {
+  background: var(--paper-3);
+  padding: 0.45rem 0.65rem;
+  border-bottom: 1px solid var(--rule);
+}
+.receipts .ledger-table.agate tbody tr.day-band:hover {
+  background: transparent;
+}
+.receipts .c-kick {
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+}
+.receipts .c-game {
+  font-size: 1.125rem;
+}
+.receipts .c-game .lean {
+  font-weight: 600;
+  color: var(--ink);
+}
+.receipts .c-game .off,
+.receipts .c-game .at {
+  color: var(--ink-2);
+}
+.receipts .c-model,
+.receipts .c-market {
+  font-size: 0.9375rem;
+  text-align: right;
+}
+.receipts .c-model {
+  color: var(--ink);
+}
+.receipts .c-market {
+  color: var(--ink-2);
+}
+.receipts .cell-label {
+  display: none;
+}
+.receipts .c-gap {
+  font-size: 1.0625rem;
+  text-align: right;
+  color: var(--blue);
+}
+/* Negative here means "the model fades this side" — NOT "money was lost".
+   It must never take --loss. */
+.receipts .c-gap.is-neg {
+  color: var(--ink-2);
+}
+/* 14px, not the 13px the rest of the agate runs at: acceptance check 2
+   requires every element whose text contains "PLAY" to compute >= 14px, and
+   the PLAY verdict lives in this cell. PASS matches it so the column stays
+   one size. */
+.receipts .c-verdict,
+.receipts .c-verdict .tag {
+  font-size: 0.875rem;
+  color: var(--ink-2);
+}
+.receipts .c-verdict .tag.is-play {
+  color: var(--blue);
+}
+.receipts .c-why {
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.receipts .retired-note {
+  margin-top: 0.9rem;
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--ink-3);
+  max-width: 68ch;
+}
+
+/* .diverge belongs HERE — 16 instances is a small-multiple series, which is
+   what the glyph was built for. The shipped defaults paint negative bars in
+   --loss red; on this page negative is a direction, not a loss. */
+.receipts .diverge {
+  width: 110px;
+}
+.receipts .diverge-bar {
+  background: var(--blue);
+}
+.receipts .diverge-bar[data-dir="neg"] {
+  background: var(--ink-2);
+}
+.receipts .diverge-bar[data-dir="pos"]::after {
+  background: var(--blue);
+}
+.receipts .diverge-bar[data-dir="neg"]::after {
+  background: var(--ink-2);
+}
+
+/* ─── The rules ─────────────────────────────────────────────────────────── */
+
+/* The panel is the prose's ground, so it stops where the measure stops.
+   A full-width dim slab under a full-width table gives two adjacent sections
+   the same silhouette and leaves 400px of empty panel on the right. */
+.rules-panel {
+  margin-top: 1rem;
+  padding: 1.5rem 1.75rem;
+  max-width: 42rem;
+}
+.receipts .rules-warning {
+  color: var(--loss);
+  margin-bottom: 1rem;
+}
+.receipts .word-negative {
+  color: var(--loss);
+  font-weight: 600;
+}
+.receipts .status-dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem 1.5rem;
+  margin: 0.9rem 0 1.2rem;
+  max-width: 44rem;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.9rem 0;
+}
+.receipts .status-dl dd {
+  font-size: 1.125rem;
+  color: var(--ink);
+  margin-top: 0.2rem;
+}
+
+/* ─── The ledger — demoted to a status line, dormant on purpose ─────────── */
+
+.ledger-line {
+  padding: 1.35rem 1.75rem;
+  max-width: 42rem;
+}
+.receipts .ledger-figure {
+  font-size: 1.75rem;
+  /* --ink-2, not --ink: it is dormant and must not compete with the board. */
+  color: var(--ink-2);
+  margin: 0.7rem 0 0.8rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.receipts .ledger-figure-caption {
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+.receipts .ledger-body {
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 68ch;
+}
+.receipts .ledger-body .num {
+  color: var(--ink);
+}
+
+/* ─── Errata + footer ───────────────────────────────────────────────────── */
+
+.errata-list {
+  margin-top: 0.75rem;
+}
+.receipts .errata-list li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+}
+.receipts-footer {
+  margin-top: 3.5rem;
+}
+.receipts .colophon {
+  padding-top: 1rem;
+  font-family: var(--font-sans), "Archivo", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 68ch;
+}
+
+/* ═══ MOBILE — a spec, not a fallback ═══════════════════════════════════ */
+
+/* Layout collapse — the table stops fitting well before 768px. */
+@media (max-width: 1023px) {
+  /* Card runs full-bleed to the gutter; the 4px team rule is the page edge. */
+  .receipts .play-card {
+    margin-inline: calc(-1 * var(--gutter));
+    grid-template-columns: 1fr auto;
+    column-gap: 1rem;
+    grid-template-areas:
+      "head stamp"
+      "team team"
+      "rail rail"
+      "foot foot";
+  }
+  .play-card-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding-bottom: 0;
+    margin-bottom: 0.9rem;
+    border-bottom: 0;
+  }
+  .play-card-stamp {
+    padding-left: 0;
+    justify-self: end;
+  }
+  /* Selected team and opponent share ONE baseline — saves ~50px of height
+     and the asymmetry still reads. */
+  .team-stack {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.9rem;
+  }
+  .receipts .team-opp {
+    font-size: 1.25rem;
+  }
+  .rail {
+    min-width: 0;
+    max-width: none;
+  }
+  .rail-row {
+    grid-template-columns: 64px 1fr auto;
+    gap: 0.6rem;
+  }
+  .rail-track {
+    height: 8px;
+  }
+  .receipts .rail-val {
+    font-size: 1.25rem;
+    min-width: 4.5ch;
+  }
+  .play-card-foot {
+    margin-top: 1rem;
+  }
+
+  /* Pass grid: STACKED ROWS. Horizontal scroll on the site's most
+     differentiating content is a failure, not a compromise.
+     The collapse is at 1024px, not 768px, because MEASURED at 768px the
+     fixed columns (726px) plus the WHY measure overflow a 704px content box
+     by 220px — i.e. the "desktop" table does not actually fit a portrait
+     tablet. It fits from 1024px up (measured 0 overflow). */
+  .receipts .pass-table,
+  .receipts .pass-table tbody {
+    display: block;
+  }
+  .receipts .pass-table thead,
+  .receipts .pass-table colgroup {
+    display: none;
+  }
+  .receipts .pass-table tbody tr.day-band {
+    display: block;
+  }
+  .receipts .pass-table tbody tr.day-band td {
+    display: block;
+    margin-inline: calc(-1 * var(--gutter));
+    padding: 0.45rem var(--gutter);
+  }
+  .receipts .pass-table tbody tr.game-row {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-areas:
+      "kick  kick    verdict"
+      "game  game    gap"
+      "model market  diverge"
+      "why   why     why";
+    column-gap: 0.5rem;
+    row-gap: 0.2rem;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .receipts .pass-table tbody tr.game-row td {
+    display: block;
+    padding: 0;
+    border-bottom: 0;
+  }
+  .receipts .c-kick { grid-area: kick; }
+  .receipts .c-verdict { grid-area: verdict; text-align: right; }
+  .receipts .c-game { grid-area: game; }
+  .receipts .c-gap { grid-area: gap; }
+  .receipts .c-model { grid-area: model; font-size: 0.8125rem; text-align: left; }
+  .receipts .c-market { grid-area: market; font-size: 0.8125rem; text-align: left; }
+  /* Below 1024 the thead is gone, so the two numbers must say what they
+     are. They are two independent estimates of ONE event — an arrow between
+     them would read as a line that moved, which is a different claim. */
+  .receipts .cell-label {
+    /* inline, not block: the label belongs BESIDE its number, the way the
+       column head sat above it. Measured at 390px the pair costs 184px of a
+       350px row, so stacking them would buy nothing and cost ~16px a row
+       across sixteen rows. */
+    display: inline;
+    margin-right: 0.3rem;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    line-height: 1.3;
+  }
+  .receipts .c-diverge { grid-area: diverge; align-self: center; }
+  .receipts .c-why { grid-area: why; margin-top: 0.15rem; }
+  .receipts .diverge { width: 84px; }
+  /* The agate zebra is for scanning a dense table. Stacked rows are already
+     separated by a rule and 14px of air; the wash only makes them look
+     arbitrarily grouped. */
+  .receipts .ledger-table.agate tbody tr:nth-child(even) {
+    background: transparent;
+  }
+}
+
+/* Small-screen type and gutters. */
+@media (max-width: 767px) {
+  .receipts-mast {
+    /* height:auto + min-height, not a hard height: below ~400px the three
+       tokens cannot fit two lines beside the folio at 12px, and a hard 36px
+       spills the third line through the double rule. MEASURED: 3px of
+       overflow at 360px and at 320px. It still never reacts to scroll —
+       that is what "motionless" means here. */
+    height: auto;
+    min-height: 36px;
+  }
+  .receipts-mast-inner {
+    padding: 0 1.25rem;
+    gap: 0.75rem;
+  }
+  /* The strip must land on EXACTLY two lines at the 390px spec width.
+     Tracking is the lever the brief names: at 12px/0.18em the three tokens
+     plus the folio need 356px of a 350px gutter and spill to three lines.
+     Tracking comes down, size does not. */
+  .receipts-mast-tokens {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 0 0.5rem;
+  }
+  .receipts .receipts-mast-tokens .eyebrow {
+    line-height: 1.25;
+    letter-spacing: 0.13em;
+  }
+  .receipts .receipts-mast-folio {
+    letter-spacing: 0.14em;
+  }
+  /* Suppressing EVERY separator turned line 1 into the run-on
+     "RESEARCH LAB   NO ROI CLAIM". The wrap is made deterministic instead:
+     token 3 always starts line 2 (flex-basis:100%), so token 2 keeps its
+     middot and only token 3 — the one that is always first on its line —
+     loses one. Line 1 reads "RESEARCH LAB · NO ROI CLAIM"; line 2 reads
+     "NOT BETTING ADVICE" with no orphan bullet. */
+  .receipts-mast-tokens .eyebrow + .eyebrow::before {
+    margin-right: 0.3rem;
+  }
+  .receipts-mast-tokens .eyebrow:nth-child(3) {
+    flex-basis: 100%;
+  }
+  .receipts-mast-tokens .eyebrow:nth-child(3)::before {
+    content: none;
+  }
+  .receipts-shell {
+    --gutter: 1.25rem;
+    padding: 1.25rem var(--gutter) 3rem;
+  }
+  .receipts-h1 {
+    font-size: 1.875rem;
+  }
+  .receipts .section-title {
+    font-size: 1.5rem;
+  }
+  .receipts .team-conn {
+    font-size: 0.75rem;
+  }
+  .receipts .play-card {
+    padding: 1rem 1.25rem;
+  }
+  .receipts .entry-line {
+    font-size: 0.8125rem;
+  }
+  .receipts .c-game { font-size: 1.25rem; }
+  .receipts .c-gap { font-size: 1.375rem; }
+  .rules-panel,
+  .ledger-line,
+  .awaiting-board {
+    padding: 1.25rem;
+  }
+  .receipts .status-dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .receipts .ledger-figure {
+    font-size: 1.5rem;
+  }
+  .receipts .colophon,
+  .receipts .empty-sub,
+  .receipts .ledger-body {
+    font-size: 0.8125rem;
+  }
+}
