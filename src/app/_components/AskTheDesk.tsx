@@ -54,6 +54,26 @@ const STARTERS = [
   "Why no pick on a game?",
 ] as const;
 
+// The RECEIPTS starters. A visitor on /nfl is looking at a published board, so
+// the openers point at what the desk can actually answer there — the record,
+// the passes, and the method — rather than at "tonight's best play", which on
+// that page is a question the desk is built to refuse.
+const NFL_STARTERS = [
+  "Why did you pass on Buffalo?",
+  "What's the one play this week?",
+  "How does the CLV verdict work?",
+] as const;
+
+// Which page this panel is mounted on. The value is posted with every turn and
+// pins the router server-side BEFORE any slate entity matching — without it,
+// an NFL question asked on /nfl matches a September MLB city ("Seattle",
+// "Houston", "Baltimore") and gets answered with a real MLB edge.
+export type DeskScope = "default" | "nfl";
+
+export interface AskTheDeskProps {
+  scope?: DeskScope;
+}
+
 // A rotating "the desk is pulling files" line for the wait state — reads like a
 // quant desk consulting its own ledger, not a generic spinner. These are
 // FLAVOR: they only start after a few seconds (Lane A returns before that, and
@@ -92,7 +112,8 @@ function goToBoard(close: () => void) {
   });
 }
 
-export function AskTheDesk() {
+export function AskTheDesk({ scope = "default" }: AskTheDeskProps = {}) {
+  const starters = scope === "nfl" ? NFL_STARTERS : STARTERS;
   const [open, setOpen] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
@@ -210,7 +231,7 @@ export function AskTheDesk() {
           headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
           signal: ctrl.signal,
-          body: JSON.stringify({ message, history: priorHistory }),
+          body: JSON.stringify({ message, history: priorHistory, scope }),
         });
 
         // Every documented status (200/400/413/429/500) returns an in-character
@@ -283,7 +304,7 @@ export function AskTheDesk() {
         requestAnimationFrame(() => inputRef.current?.focus());
       }
     },
-    [pending, deskClosed, turns],
+    [pending, deskClosed, turns, scope],
   );
 
   const onSubmit = (e: React.FormEvent) => {
@@ -437,7 +458,7 @@ export function AskTheDesk() {
             {turns.length === 0 && !deskClosed && (
               <div className="shrink-0 px-4 pb-3">
                 <div className="flex flex-wrap gap-1.5">
-                  {STARTERS.map((s) => (
+                  {starters.map((s) => (
                     <button
                       key={s}
                       type="button"

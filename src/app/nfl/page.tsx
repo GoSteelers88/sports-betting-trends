@@ -57,6 +57,10 @@ import type { NflSlate } from "@/lib/nfl-receipts/site-slate";
 import { TABS, tabHref } from "@/lib/site-tabs";
 import { MarketNow } from "./_components/MarketNow";
 import { ResearchAppendix } from "./_components/ResearchAppendix";
+// ROLLBACK: delete this import and the <AskTheDesk scope="nfl" /> line below.
+// Those two lines are the entire mount. The homepage panel is the SAME
+// component with no scope prop, so removing them here cannot affect "/".
+import { AskTheDesk } from "../_components/AskTheDesk";
 
 export const dynamic = "force-dynamic";
 
@@ -244,6 +248,8 @@ export default function NflReceiptsPage() {
         <Errata ledger={ledger} />
 
         <ResearchAppendix research={research} />
+
+        <AskTheDesk scope="nfl" />
 
         <footer className="receipts-footer">
           <div className="rule-double" />

@@ -47,6 +47,18 @@ export const RESERVE_LANE_B = intFromEnv("CHAT_RESERVE_LANE_B", 120_000);
 export const RESERVE_REGROUND = intFromEnv("CHAT_RESERVE_REGROUND", 30_000);
 export const RESERVE_TIEBREAK = intFromEnv("CHAT_RESERVE_TIEBREAK", 2_000);
 
+// RECEIPTS mode (/nfl) reservation. Sized ABOVE Lane B, not equal to it: a
+// receipts turn is the most expensive shape this endpoint can produce — up to 4
+// Opus 5 round-trips, each re-sending the system prompt and 7 tool schemas, each
+// carrying adaptive thinking tokens, plus up to 3 server-side web searches whose
+// results land in the SAME context and are re-sent on every later iteration,
+// plus a possible no-tools reground. Reserving Lane B's 120k here would
+// under-reserve precisely the turns that cost the most, which is the failure
+// mode `withReservation` exists to prevent: the reservation must cover the worst
+// case, because the refund settles it back to real usage a moment later and an
+// over-reservation costs nothing but a briefly tighter budget.
+export const RESERVE_RECEIPTS = intFromEnv("CHAT_RESERVE_RECEIPTS", 400_000);
+
 // Per-session message cap (signed session cookie). 15 turns is plenty for a
 // real question; beyond it is almost always abuse or a loop.
 export const SESSION_MSG_CAP = intFromEnv("CHAT_SESSION_MSG_CAP", 15);

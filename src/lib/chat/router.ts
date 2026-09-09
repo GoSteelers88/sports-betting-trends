@@ -421,8 +421,37 @@ export function primaryLeagueWithGames(ent: SlateEntities): InScopeLeague | null
 // Deterministic classification with NO model call. Returns a decision, or
 // "ambiguous" to signal the caller should run the Haiku tiebreaker. This is the
 // pure core — fully unit-testable with an injected slate.
+// ─── Scope pinning (the mount tells the router where it is) ─────────────────
+//
+// A chat panel mounted on /nfl posts a SCOPE. The router honours it BEFORE
+// matchSlateEntity runs, and that ordering is the whole fix.
+//
+// THE BUG IT CLOSES, measured against the real committed slate: about 20 of the
+// 32 NFL cities collide with a September MLB/NBA board, and classifyDeterministic
+// gives a slate entity-match precedence over the scope class. So on the NFL
+// receipts page —
+//     "Seattle Patriots Thursday night"  → lane B, league MLB (entity: seattle)
+//     "what should I bet this week?"     → lane B, league MLB (slate-level)
+//     "Houston moneyline this weekend"   → lane B, league MLB
+//     "Baltimore -6.5 thoughts"          → lane B, league MLB
+// — an NFL asker was being handed a real MLB edge at a real price. That is a
+// live defect independent of this feature, and no amount of adding names to
+// SHARED_OOS_NICKNAMES fixes it: that set enumerates a collision that changes
+// every season, and enumerating a moving target is how you get a bug back.
+// Knowing which page the question came from is the durable signal.
+export type ChatScope = "default" | "nfl";
+
+/** Validate an untrusted scope value from the wire into the union. Written as
+ *  a testable function rather than a cast precisely because a cast erases at
+ *  runtime: an unrecognised value must fall back to "default", never sail
+ *  through as a scope the router will honour. */
+export function parseChatScope(raw: unknown): ChatScope {
+  return raw === "nfl" ? "nfl" : "default";
+}
+
 export type ClassifyResult =
   | { lane: "A"; outOfScope: true; sport: string; reason: string }
+  | { lane: "R"; reason: string }
   | {
       lane: "B";
       mode: "stats";
@@ -441,8 +470,18 @@ export type ClassifyResult =
 
 export function classifyDeterministic(
   message: string,
-  ent: SlateEntities
+  ent: SlateEntities,
+  scope: ChatScope = "default"
 ): ClassifyResult {
+  // (0) SCOPE PIN — checked FIRST, before any entity matching. A question asked
+  // on the NFL receipts page is an NFL question, full stop. Nothing downstream
+  // gets a vote: not the September MLB slate that happens to contain a Seattle
+  // and a Houston, not the slate-level "what should I bet this week", not the
+  // Haiku tiebreaker. See ChatScope above for the measured misroutes.
+  if (scope === "nfl") {
+    return { lane: "R", reason: "scope-pin:nfl" };
+  }
+
   // (1) BETTABLE ENTITY MATCH takes precedence over the scope class — but ONLY
   // for a strong (full team-name or player) hit. A mixed message ("parlay the
   // Yankees ML with the Chiefs") names both a bettable NAME (Yankees, on

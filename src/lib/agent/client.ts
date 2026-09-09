@@ -42,6 +42,24 @@ export const MODELS = {
   // Lane B (live grounded analysis) deliberately reuses `analyst` (Sonnet),
   // not this — never Opus.
   chatPersona: "claude-haiku-4-5",
+  // The Sharp — RECEIPTS mode (/nfl). A NEW entry rather than a change to
+  // `analyst`: the analyst model is on the NBA/MLB/WNBA pick path and several
+  // other callers depend on its behaviour, and re-pointing it to satisfy an
+  // NFL page would be a silent, unrelated change to the live betting lane.
+  //
+  // Opus 5 on purpose. Receipts mode is the one lane whose complaint was
+  // CAPABILITY: it has to read an immutable board, hold a doctrine, refuse a
+  // pick it can trivially phrase, and search the web without speaking somebody
+  // else's reporting in its own voice. That is a reasoning job, and the lane is
+  // already bounded on cost by the daily ceiling, the per-IP and per-session
+  // caps, and its own reserve-then-refund bracket (RESERVE_RECEIPTS).
+  //
+  // Opus 5 notes that this lane's loop depends on: thinking is ON BY DEFAULT
+  // (never send a `thinking` param expecting it off; `budget_tokens` is a 400),
+  // thinking blocks come back in `content` and must be echoed to the next turn
+  // unchanged, `stop_reason` can be "refusal" or "pause_turn", and assistant
+  // prefill is rejected.
+  receipts: "claude-opus-5",
 } as const;
 
 export type ModelKey = keyof typeof MODELS;

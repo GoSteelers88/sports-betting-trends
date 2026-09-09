@@ -7,7 +7,14 @@
 // Response contract (stable; documented in src/lib/chat/sharp.ts ChatResponse):
 //   { reply: string, lane: "A" | "B", closed?: boolean,
 //     intercepted?: "distress" | "injection" | "out_of_scope",
-//     toolsUsed?: string[] }
+//     toolsUsed?: string[], mode?: "bets"|"stats"|"receipts", sources?: string[] }
+//
+// REQUEST also accepts an optional `scope` discriminator ("nfl") posted by a
+// page-mounted chat panel. It pins the router BEFORE any slate entity matching
+// — see ChatScope in src/lib/chat/router.ts for the misroutes that fixes. It is
+// VALIDATED (parseChatScope), never cast: an unrecognised value from the wire
+// falls back to "default" rather than sailing through as a scope the router
+// would honour.
 
 export const dynamic = "force-dynamic";
 // 120s: even without the (now single no-tools) regen, a first loop alone on a fat
@@ -34,6 +41,7 @@ import {
   SESSION_COOKIE_OPTIONS,
 } from "@/lib/chat/session";
 import { clientIp } from "@/lib/chat/client-ip";
+import { parseChatScope } from "@/lib/chat/router";
 
 type IncomingTurn = { role: unknown; content: unknown };
 
@@ -69,6 +77,7 @@ export async function POST(req: NextRequest) {
     messages?: unknown;
     recentTurns?: unknown;
     history?: unknown;
+    scope?: unknown;
   };
   try {
     parsed = rawBody ? JSON.parse(rawBody) : {};
@@ -87,6 +96,8 @@ export async function POST(req: NextRequest) {
   const recentTurns = sanitizeTurns(
     parsed.history ?? parsed.recentTurns ?? parsed.messages
   );
+
+  const scope = parseChatScope(parsed.scope);
 
   // ── Distress interceptor — BEFORE the rate caps ──
   // Human-safety guard must fire regardless of cap state: a distressed user who
@@ -164,7 +175,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await answer(message, recentTurns);
+    const result = await answer(message, recentTurns, { scope });
     const res = NextResponse.json(result);
     if (issueCookie) {
       res.cookies.set(SESSION_COOKIE, mintSession(), SESSION_COOKIE_OPTIONS);

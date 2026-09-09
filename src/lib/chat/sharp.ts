@@ -16,6 +16,7 @@ import {
   RESERVE_LANE_B,
   RESERVE_REGROUND,
   RESERVE_TIEBREAK,
+  RESERVE_RECEIPTS,
   RESPONSIBLE_GAMBLING_MESSAGE,
 } from "./guards";
 import {
@@ -23,15 +24,27 @@ import {
   classifyDeterministic,
   classifyAmbiguousWithModel,
   type SlateEntities,
+  type ChatScope,
 } from "./router";
 import { runLaneB, regroundLaneB, sumUsage, type LaneBToolName } from "./laneB";
 import {
   checkGrounding,
+  checkBettingClaims,
   checkLeak,
   DOCTRINE_FALLBACK,
   STATS_MODE_FALLBACK,
   LANE_A_LEAK_FALLBACK,
 } from "./grounding";
+import {
+  runReceipts,
+  regroundReceipts,
+  fixedAnswerFor,
+  buildIndex,
+  RECEIPTS_FALLBACK,
+} from "./nfl/receipts";
+import { runReceiptsValidators } from "./nfl/validators";
+import { checkSearchAttribution } from "./nfl/search";
+import type { BoardIndex } from "./nfl/board-index";
 import type { InScopeLeague } from "@/lib/agent/tools";
 import type { StatsLeague } from "@/lib/agent/tools/stats";
 
@@ -46,6 +59,14 @@ export type ChatResponse = {
   closedReason?: "cookieless" | "session" | "ip" | "budget";
   intercepted?: "distress" | "injection" | "out_of_scope";
   toolsUsed?: string[];
+  // Which Lane B variant ran. ADDITIVE and optional — the wire contract stays
+  // {reply, lane:"A"|"B", ...} so the existing homepage client is untouched.
+  // Receipts turns report lane "B" (they ARE a grounded, tool-using, slow lane,
+  // which is what the client keys its waiting copy off) plus mode:"receipts".
+  mode?: "bets" | "stats" | "receipts";
+  // Hosts a searched fact was attributed to. Present only on a receipts turn
+  // that actually searched.
+  sources?: string[];
 };
 
 export const DESK_CLOSED_MESSAGE =
@@ -81,6 +102,15 @@ export type SharpDeps = {
   laneBRunner?: typeof runLaneB;
   // Override the ambiguity tiebreaker.
   ambiguityClassifier?: typeof classifyAmbiguousWithModel;
+  // Which page this turn was asked from. "nfl" pins the router to the receipts
+  // lane BEFORE any slate entity matching — see ChatScope in router.ts.
+  scope?: ChatScope;
+  // Override the receipts runner (tests stub the Opus turn).
+  receiptsRunner?: typeof runReceipts;
+  // Pre-built board index (tests inject; prod reads the committed boards).
+  boardIndex?: BoardIndex;
+  // Turn the server-side web search off for this turn.
+  enableSearch?: boolean;
   now?: Date;
   // Caller-supplied request id (the route generates one); falls back to a
   // freshly generated id when absent. Threads into the per-turn structured log.
@@ -98,10 +128,13 @@ type TurnMeta = {
   lane: "A" | "B" | null;
   // Bettable league (bets mode) OR a stats-only league (stats mode) OR null.
   league: InScopeLeague | StatsLeague | null;
-  // Which Lane B mode ran ("bets" | "stats"), or null for a Lane A turn. Kept
-  // for forensics: it disambiguates a stats-mode fallback from a bets-mode one.
-  mode: "bets" | "stats" | null;
-  toolsUsed: LaneBToolName[];
+  // Which Lane B mode ran ("bets" | "stats" | "receipts"), or null for a Lane A
+  // turn. Kept for forensics: it disambiguates a stats-mode fallback from a
+  // bets-mode one from a receipts-mode block.
+  mode: "bets" | "stats" | "receipts" | null;
+  toolsUsed: string[];
+  // Which post-model validator replaced the reply, if any (receipts mode).
+  blockedBy: string | null;
   // null until a Lane B grounding check has run; true/false after.
   grounded: boolean | null;
   intercepted: ChatResponse["intercepted"] | null;
@@ -148,6 +181,7 @@ function logTurn(meta: TurnMeta, reply: string): void {
       league: meta.league,
       mode: meta.mode,
       toolsUsed: meta.toolsUsed,
+      blockedBy: meta.blockedBy,
       grounded: meta.grounded,
       intercepted: meta.intercepted,
       outcome: meta.outcome,
@@ -170,6 +204,7 @@ export async function answer(
     league: null,
     mode: null,
     toolsUsed: [],
+    blockedBy: null,
     grounded: null,
     intercepted: null,
     outcome: "ok",
@@ -189,7 +224,7 @@ export async function answer(
 
   meta.lane = result.lane;
   meta.intercepted = result.intercepted ?? null;
-  if (result.toolsUsed) meta.toolsUsed = result.toolsUsed as LaneBToolName[];
+  if (result.toolsUsed) meta.toolsUsed = result.toolsUsed;
   logTurn(meta, result.reply);
   return result;
 }
@@ -258,8 +293,18 @@ async function answerCore(
   // ROUTER — out-of-scope and entity match are deterministic (no model). An
   // injection attempt is forced down the cheap Lane A persona path (never the
   // expensive grounded lane).
-  const slate = deps.slate ?? buildSlateEntities();
-  const decision = classifyDeterministic(message, slate);
+  const scope = deps.scope ?? "default";
+  // A scope-pinned NFL turn never touches the slate index at all: buildSlateEntities
+  // reads the NBA/MLB/WNBA snapshots, and on /nfl there is nothing in them this
+  // turn is allowed to route to. Skipping it also skips the file reads.
+  const slate =
+    deps.slate ?? (scope === "nfl" ? EMPTY_SLATE : buildSlateEntities());
+  const decision = classifyDeterministic(message, slate, scope);
+
+  // ─── RECEIPTS mode — the /nfl lane ────────────────────────────────────────
+  if (decision.lane === "R") {
+    return receiptsTurn(message, recentTurns, deps, meta, now, injectionAttempt);
+  }
 
   // Out-of-scope REFUSAL — the refuse tier only (golf/tennis/UFC, no data).
   // Single in-character message, NO model call, NO fabricated read. Stats-only
@@ -595,3 +640,198 @@ export const TIEBREAK_SETTLE_TOKENS = 1_500;
 //
 // Every lane now settles against the API's own `usage` (see sumUsage in
 // laneB.ts). Do not reintroduce a character-count estimator for the ceiling.
+
+// An empty slate index. A scope-pinned NFL turn is routed before any entity
+// matching, so the NBA/MLB/WNBA snapshots are never read on /nfl.
+const EMPTY_SLATE: SlateEntities = {
+  teams: new Map(),
+  tokens: new Map(),
+  players: new Map(),
+};
+
+// ─── Receipts mode ───────────────────────────────────────────────────────────
+//
+// The order here is the design:
+//   1. FIXED ANSWER, ZERO MODEL CALLS — "what about next week" before Tuesday's
+//      publish is the normal question, and its honest answer is a constant.
+//   2. The Opus 5 tool turn, bracketed by RESERVE_RECEIPTS.
+//   3. GROUNDING — checkGrounding on the desk's OWN payloads (search results are
+//      not in them, by construction). One bounded no-tools reground, then the
+//      honest fallback. This is the ONLY regeneration in the lane.
+//   4. THE THREE POST-MODEL VALIDATORS + the search-attribution rule. These
+//      REPLACE the reply and NEVER regenerate: a regen here re-derives the same
+//      fixed string at Opus prices, and stacked regens are the 504 spiral.
+async function receiptsTurn(
+  message: string,
+  recentTurns: Array<{ role: "user" | "assistant"; content: string }>,
+  deps: SharpDeps,
+  meta: TurnMeta,
+  now: Date,
+  injectionAttempt: boolean
+): Promise<ChatResponse> {
+  meta.mode = "receipts";
+  meta.league = "NFL";
+
+  const index = deps.boardIndex ?? buildIndex();
+
+  // (1) The zero-model-call path.
+  const fixed = fixedAnswerFor(
+    message,
+    index.weeks.map((w) => ({ season: w.season, week: w.week }))
+  );
+  if (fixed) {
+    meta.outcome = `receipts_fixed:${fixed.reason}`;
+    return { reply: fixed.reply, lane: "B", mode: "receipts", toolsUsed: [] };
+  }
+
+  // (2) The model turn.
+  const runner = deps.receiptsRunner ?? runReceipts;
+  const res = await withReservation(
+    RESERVE_RECEIPTS,
+    deps,
+    now,
+    () =>
+      runner(message, recentTurns, {
+        client: deps.client,
+        index,
+        ...(deps.enableSearch === undefined ? {} : { enableSearch: deps.enableSearch }),
+      }),
+    (r) => r.usageTokens
+  );
+  if (res.closed) {
+    meta.outcome = "desk_closed";
+    return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true, closedReason: "budget" };
+  }
+  const first = res.value;
+  meta.toolsUsed = first.toolsUsed;
+  meta.cacheReadTokens = first.cacheReadTokens;
+  meta.cacheCreationTokens = first.cacheCreationTokens;
+
+  if (first.refused) {
+    // stop_reason "refusal" — the model declined at the safety layer. Ship the
+    // desk's own honest line rather than an empty reply.
+    meta.outcome = "receipts_model_refusal";
+    return receiptsResponse(RECEIPTS_FALLBACK, first, index, meta, injectionAttempt);
+  }
+
+  // (3) Grounding.
+  //
+  // TWO checks, because a search turn and a files-only turn are not the same
+  // shape. A files-only turn is held to the full contract: every number traces
+  // to a payload. A SEARCH turn is held to checkBettingClaims — every PERCENT
+  // and every SIGNED PRICE must trace, while a date or a yardage figure the
+  // source supplied is free. Search results are in neither haystack, so a
+  // scraped "22% edge" grounds nothing either way; without the narrower check
+  // a searched schedule answer would fall back on its own kickoff dates, and
+  // the search feature would be broken in exactly the way it exists to fix.
+  const groundOf = (reply: string) => {
+    if (!reply.trim()) return { grounded: false, ungrounded: ["<empty-reply>"] };
+    return first.search.used
+      ? checkBettingClaims(reply, first.toolResultTexts)
+      : checkGrounding(reply, first.toolResultTexts);
+  };
+
+  let reply = first.reply;
+  let verdict = groundOf(reply);
+  meta.grounded = verdict.grounded;
+
+  if (!verdict.grounded) {
+    console.warn(
+      `[chat/sharp] receipts grounding violation (regenerating once). requestId=${meta.requestId}. Ungrounded: ${verdict.ungrounded.join(", ")}`
+    );
+    const rewriteRes = await withReservation(
+      RESERVE_REGROUND,
+      deps,
+      now,
+      () => regroundReceipts(message, first.toolResultTexts, index, deps.client),
+      (r) => r.usageTokens
+    );
+    if (rewriteRes.closed) {
+      meta.outcome = "desk_closed";
+      return { reply: DESK_CLOSED_MESSAGE, lane: "A", closed: true, closedReason: "budget" };
+    }
+    reply = rewriteRes.value.reply;
+    // The rewrite fetched nothing and could not search, so it is re-checked
+    // against the same haystack under the strict rule.
+    verdict = reply.trim()
+      ? checkGrounding(reply, first.toolResultTexts)
+      : { grounded: false, ungrounded: ["<empty-reply>"] };
+    meta.grounded = verdict.grounded;
+    if (!verdict.grounded) {
+      console.error(
+        `[chat/sharp] receipts grounding fallback after 2 attempts (requestId=${meta.requestId}). Ungrounded: ${verdict.ungrounded.join(", ")}`
+      );
+      meta.outcome = "receipts_grounding_fallback";
+      return receiptsResponse(RECEIPTS_FALLBACK, first, index, meta, injectionAttempt);
+    }
+  }
+
+  meta.outcome = "receipts_ok";
+  return receiptsResponse(reply, first, index, meta, injectionAttempt);
+}
+
+// The SINGLE receipts exit. Every path — grounded first draft, grounded
+// rewrite, model refusal, grounding fallback — leaves through here, so the
+// board-row / ROI / promo / attribution / leak guards cover all of them in one
+// place and cannot be bypassed by adding a return statement upstream.
+function receiptsResponse(
+  reply: string,
+  run: Awaited<ReturnType<typeof runReceipts>>,
+  index: BoardIndex,
+  meta: TurnMeta,
+  injectionAttempt: boolean
+): ChatResponse {
+  let finalReply = reply;
+
+  const validated = runReceiptsValidators(finalReply, index);
+  if (!validated.ok) {
+    console.warn(
+      `[chat/sharp] receipts validator blocked (requestId=${meta.requestId}): ${validated.reason}`
+    );
+    meta.blockedBy = validated.reason.split(":")[0] ?? "validator";
+    meta.outcome = "receipts_blocked";
+    finalReply = validated.replacement;
+  } else {
+    const attributed = checkSearchAttribution(finalReply, run.search);
+    if (!attributed.ok) {
+      console.warn(
+        `[chat/sharp] receipts attribution blocked (requestId=${meta.requestId}): ${attributed.reason}`
+      );
+      meta.blockedBy = "attribution";
+      meta.outcome = "receipts_blocked";
+      finalReply = attributed.replacement;
+    }
+  }
+
+  const leak = checkLeak(finalReply);
+  if (leak.leaked) {
+    console.warn(
+      `[chat/sharp] receipts plumbing leak blocked (requestId=${meta.requestId}, marker=${leak.marker}).`
+    );
+    meta.blockedBy = meta.blockedBy ?? `leak:${leak.marker}`;
+    meta.outcome = "receipts_leak_fallback";
+    finalReply = RECEIPTS_FALLBACK;
+  }
+
+  const sources = sourceHosts(run);
+  return {
+    reply: finalReply,
+    lane: "B",
+    mode: "receipts",
+    toolsUsed: run.toolsUsed,
+    ...(sources.length > 0 ? { sources } : {}),
+    ...(injectionAttempt ? { intercepted: "injection" as const } : {}),
+  };
+}
+
+function sourceHosts(run: Awaited<ReturnType<typeof runReceipts>>): string[] {
+  const out = new Set<string>();
+  for (const s of run.search.sources) {
+    try {
+      out.add(new URL(s.url).hostname.replace(/^www\./, ""));
+    } catch {
+      /* an unparseable source URL is simply not reported */
+    }
+  }
+  return [...out];
+}

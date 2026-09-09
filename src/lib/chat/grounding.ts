@@ -68,6 +68,10 @@ export type GroundingVerdict = {
 // is exactly the 504 spiral we just removed) and logs which marker matched.
 const LEAK_MARKERS: ReadonlyArray<{ name: string; re: RegExp }> = [
   { name: "tool-results", re: /tool results?/i },
+  // Observed on a live receipts turn: "nothing came back from my tools this
+  // turn". Narrower than the marker above and just as much a plumbing leak —
+  // the desk does not have "tools", it has already looked or it hasn't.
+  { name: "my-tools", re: /\b(?:my|its|his|our) tools\b/i },
   { name: "fire-the-tools", re: /fire (all )?the tools/i },
   { name: "run-the-tools", re: /(pull|call|re-?run) (the|my|all) tools/i },
   { name: "memory-rules-loaded", re: /memory and rules loaded/i },
@@ -124,9 +128,22 @@ const PROB_KEYS: ReadonlySet<string> = new Set([
   "fairOverProb",
   "fairUnderProb",
   "fairProb", // props-board row: fair prob of the quoted side (0–1)
-  "evPct", // already a percent (e.g. 7.4 means 7.4%) — handled below
+  "evPct", // AMBIGUOUS SCALE — see AMBIGUOUS_SCALE_KEYS below
   "clvBeatRatePct", // already a percent
   "confidence", // 0–1 prop confidence
+  // ─── NFL receipts (0–1 fractions) ───
+  "calibratedConfidence", // published board leg: calibrated P(win), 0–1
+  "coverage", // CLV ledger arm: graded / eligible, 0–1
+  "beatRate", // CLV ledger arm: beats / graded, 0–1
+  // ─── NFL receipts (ALREADY percents — see ALREADY_PERCENT_KEYS) ───
+  "roiPct",
+  "flatYieldPct",
+  "winRatePct",
+  "breakEvenPct",
+  "hitRatePct",
+  "avgLegEdgePct",
+  "avgDevigClvPp",
+  "pairedDifferentialPp",
   // ─── stats tools (0–1 fractions, or small rate decimals spoken as .XXX) ───
   "winPct", // standings win% (0–1)
   "roi", // desk record ROI (0–1 fraction)
@@ -147,7 +164,36 @@ const ALREADY_PERCENT_KEYS: ReadonlySet<string> = new Set([
   "evPct",
   "clvBeatRatePct",
   "precipPct",
+  // NFL receipts research + ledger figures. Every one of these is written as a
+  // percent by its producer (8.21 means 8.21%), so they must NOT be ×100'd.
+  "roiPct",
+  "flatYieldPct",
+  "winRatePct",
+  "breakEvenPct",
+  "hitRatePct",
+  "avgLegEdgePct",
+  "avgDevigClvPp",
+  "pairedDifferentialPp",
 ]);
+
+// ─── The evPct scale collision (resolved deliberately, do not "simplify") ────
+//
+// `evPct` is written at TWO DIFFERENT SCALES by two different producers:
+//   • src/lib/props-board.ts:203  →  +(ev * 100)  — a true PERCENT (7.4 = 7.4%)
+//   • the NFL receipts board       →  0.1275      — a FRACTION  (= 12.75%)
+// Same key, two scales. Treating every evPct as a percent (the old behaviour)
+// meant a FABRICATED "0.1% edge" grounded against a real 0.1275 fraction inside
+// tolerance, while a TRUTHFUL "12.7%" off that same row failed. Both directions
+// wrong from one ambiguity.
+//
+// Resolution: a value on an ambiguous-scale key contributes to the haystack
+// ONLY when its magnitude settles the scale — |v| >= 1 can only be a percent
+// (a 1.0 fraction would be a 100% edge, which does not exist). A sub-1 value is
+// genuinely ambiguous and therefore grounds NOTHING. This preserves the live
+// MLB props path exactly (its EVs are percent-scale and > 1) and closes the
+// fabrication hole; the NFL tools strip evPct entirely on top of this, so the
+// fraction never reaches the haystack from the receipts path at all.
+const AMBIGUOUS_SCALE_KEYS: ReadonlySet<string> = new Set(["evPct"]);
 
 // Price / line / point value keys → contribute price-grounding values (±1).
 //
@@ -178,6 +224,27 @@ const PRICE_KEYS: ReadonlySet<string> = new Set([
   "avgClvProbPoints",
   "expectedMargin",
   "recentAvgPoints",
+  // ─── NFL receipts board (published, immutable) ───────────────────────────
+  // THE FIX THAT MAKES A TRUTHFUL BOARD REPORT SHIPPABLE: these two carry the
+  // real entry price every published leg was taken at ("+106 at FanDuel"). They
+  // were absent from this set, so a completely honest quote off the receipt
+  // failed checkGrounding, forced the regen, failed again, and shipped the
+  // fallback — the desk refusing to read its own notarised ledger aloud.
+  "entryPriceAmerican",
+  "entryOtherSideAmerican",
+  // ─── NFL market snapshot (get_nfl_market's flat, purpose-named prices) ────
+  // Deliberately NOT the raw nested keys (`home`, `away`, `over`, `under`):
+  // a bare `home` in the whitelist would let any object with a numeric `home`
+  // field feed the price haystack. The tool renames them so the whitelist can
+  // be exact.
+  "homeMoneylineAmerican",
+  "awayMoneylineAmerican",
+  "homeSpreadAmerican",
+  "awaySpreadAmerican",
+  "spreadPoint",
+  "totalPoint",
+  "overAmerican",
+  "underAmerican",
 ]);
 
 // ─── Stat-value keys (exact match, tolerance 0) ──────────────────────────────
@@ -220,6 +287,29 @@ const STAT_VALUE_KEYS: ReadonlySet<string> = new Set([
   "equityUsd",
   "realizedPnlUsd",
   "exposureUsd",
+  // ─── NFL receipts sample sizes + ledger counts ───────────────────────────
+  // Purpose-named so they can be whitelisted exactly. "1,079 prop picks" and
+  // "547 parlays" are the sample sizes every research figure has to be read
+  // against, so they must be quotable; they ground by EXACT match, never in the
+  // ±1 price band.
+  "sampleSize",
+  "winsCount",
+  "lossesCount",
+  "pushesCount",
+  "noDataCount",
+  "rowCount",
+  "legCount",
+  "playCount",
+  "passCount",
+  "controlCount",
+  "eligible",
+  "graded",
+  "beats",
+  "tier2Benchmarked",
+  "pairedN",
+  "verdictMinN",
+  "gameCount",
+  "matched",
 ]);
 
 // Numeric keys whose value is a WIN/LOSS RECORD COLUMN ("45-20" → wins:45,
@@ -278,6 +368,37 @@ const EXCLUDED_KEYS: ReadonlySet<string> = new Set([
   "count",
   "weight",
   "windowDays",
+]);
+
+// ─── Published TEXT fields (quoted verbatim, ground by exact match) ─────────
+//
+// MEASURED, on the first live receipts turn: the desk quoted its own published
+// pass reason — "home-favorite 54-60% trap, no secondary edge" — and the
+// grounding guard flagged 54, 60% and 65% as fabricated, twice, and shipped the
+// fallback. The haystack collects numbers only from NUMERIC value keys, so a
+// number living inside a published STRING was invisible to it.
+//
+// That is backwards for this page. `passReason` and `doctrineNotes` are
+// IMMUTABLE COMMITTED TEXT written by the publisher before kickoff; reading one
+// back verbatim is the single most trustworthy thing the desk can do, and
+// "why did you pass on Buffalo" is the question the page exists to answer.
+//
+// So the numbers inside these specific string fields join the haystack, in
+// their own bucket, matched EXACTLY. The safety property holds: a figure can
+// only ground this way if it literally appears in text the desk itself
+// published. Timestamps are deliberately NOT here — see EXCLUDED_KEYS.
+const TEXT_VALUE_KEYS: ReadonlySet<string> = new Set([
+  "passReason",
+  "doctrineNotes",
+  "note",
+  "caveat",
+  "mandatoryCaveats",
+  "verdictRule",
+  "headline",
+  "disclosure",
+  "explanation",
+  "rationale",
+  "reason",
 ]);
 
 // NOTE (wins/losses): NOT excluded — standings + the desk record report them as
@@ -350,6 +471,11 @@ type Haystack = {
   // ground ONLY a claim the reply writes in hyphenated N-M form (see
   // collectRecordRaws), so a bare "lay the 7" can't borrow the 7 from a "24-7".
   recordValues: number[];
+  // Numbers appearing inside PUBLISHED TEXT fields (pass reasons, doctrine
+  // notes, research caveats). Exact match, and percent-aware: a "60%" written
+  // in a pass reason grounds a "60%" spoken in the reply. See TEXT_VALUE_KEYS.
+  quotedValues: number[];
+  quotedPercents: number[];
 };
 
 // Tolerance for a claimed percent/edge: must match a percentized prob/edge value
@@ -372,6 +498,17 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
   const prices: number[] = [];
   const statValues: number[] = [];
   const recordValues: number[] = [];
+  const quotedValues: number[] = [];
+  const quotedPercents: number[] = [];
+
+  // Pull every numeric token out of a published string. A token written with a
+  // trailing % feeds the percent bucket as well as the exact bucket.
+  const harvestText = (text: string): void => {
+    for (const c of extractClaims(text)) {
+      quotedValues.push(c.value);
+      if (c.isPercent) quotedPercents.push(c.value);
+    }
+  };
 
   const visit = (node: unknown): void => {
     if (Array.isArray(node)) {
@@ -380,6 +517,15 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
     }
     if (!isPlainObject(node)) return;
     for (const [key, val] of Object.entries(node)) {
+      if (Array.isArray(val) && TEXT_VALUE_KEYS.has(key)) {
+        // doctrineNotes / mandatoryCaveats are ARRAYS OF STRINGS. The array
+        // branch of visit() drops the key, so harvest here where it is known.
+        for (const item of val) {
+          if (typeof item === "string") harvestText(item);
+          else visit(item);
+        }
+        continue;
+      }
       if (isPlainObject(val) || Array.isArray(val)) {
         visit(val);
         continue;
@@ -391,6 +537,7 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
         if (RECORD_STRING_KEYS.has(key)) {
           for (const n of parseRecordString(val)) recordValues.push(n);
         }
+        if (TEXT_VALUE_KEYS.has(key)) harvestText(val);
         continue;
       }
 
@@ -400,6 +547,10 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
       if (EXCLUDED_KEYS.has(key)) continue;
 
       if (PROB_KEYS.has(key)) {
+        // Ambiguous-scale key (evPct): a sub-1 magnitude cannot be told apart
+        // from a fraction, so it grounds NOTHING rather than grounding the
+        // wrong thing. See AMBIGUOUS_SCALE_KEYS.
+        if (AMBIGUOUS_SCALE_KEYS.has(key) && Math.abs(val) < 1) continue;
         const pct = ALREADY_PERCENT_KEYS.has(key) ? val : val * 100;
         percents.push(pct);
         // An edge/prob is sometimes spoken as the raw fraction too (rare), but
@@ -437,7 +588,7 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
     visit(parsed);
   }
 
-  return { percents, prices, statValues, recordValues };
+  return { percents, prices, statValues, recordValues, quotedValues, quotedPercents };
 }
 
 // Parse a hyphenated record string into its component non-negative integers.
@@ -488,9 +639,16 @@ export function checkGrounding(
   // "lay the 7" can't borrow the 7 from a "24-7" record that's only in the data.
   const recordOkRaws = collectRecordRaws(reply);
 
+  // Calendar-date tokens ("September 8", "Sept. 8", "9/14", "2026-09-08"). A
+  // receipts answer is REQUIRED to date its rows ("pre-registered on September
+  // 8"), and a publish date is not a money number — it cannot ground and must
+  // not flag. Same rationale as the year and clock-time exemptions above.
+  const dateOkRaws = collectDateRaws(reply);
+
   for (const claim of claims) {
     if (yearOkRaws.has(claim.raw)) continue;
     if (timeOkRaws.has(claim.raw)) continue;
+    if (dateOkRaws.has(claim.raw)) continue;
 
     // Free small-count / doctrine integers ("1 unit", "6% floor", the RG phone
     // number). Gate on INTEGER values only: a sub-1 rate like ".787" truncates
@@ -506,7 +664,12 @@ export function checkGrounding(
       // Percent/edge claim → ONLY a percentized prob/edge value can back it, and
       // only within a tight tolerance. A "10% edge" must match a real
       // edge/prob, not a timestamp "10", a price "-110", or a stat integer.
-      if (!groundsAsPercent(claim.value, hay.percents)) {
+      if (
+        !groundsAsPercent(claim.value, hay.percents) &&
+        // …or the figure is written verbatim in a PUBLISHED text field (a pass
+        // reason's "54-60% trap", a research caveat's span). See TEXT_VALUE_KEYS.
+        !groundsAsQuoted(claim, hay.quotedPercents, recordOkRaws)
+      ) {
         ungrounded.push(claim.raw);
       }
       continue;
@@ -515,7 +678,10 @@ export function checkGrounding(
     // Non-percent claim. It might still be a probability stated as a decimal
     // ("model has them at 0.58"): a 0–1 value grounds against percents (×100).
     if (claim.value > 0 && claim.value < 1) {
-      if (!groundsAsPercent(claim.value * 100, hay.percents)) {
+      if (
+        !groundsAsPercent(claim.value * 100, hay.percents) &&
+        !groundsAsQuoted(claim, hay.quotedValues, recordOkRaws)
+      ) {
         ungrounded.push(claim.raw);
       }
       continue;
@@ -536,6 +702,7 @@ export function checkGrounding(
     if (
       !groundsAsPrice(claim.value, hay.prices) &&
       !groundsAsStatValue(claim.value, hay.statValues) &&
+      !groundsAsQuoted(claim, hay.quotedValues, recordOkRaws) &&
       !recordOk
     ) {
       ungrounded.push(claim.raw);
@@ -552,7 +719,22 @@ export function checkGrounding(
 function collectYearRaws(text: string): Set<string> {
   const ok = new Set<string>();
   const isYear = (n: number) => n >= 1900 && n <= 2099;
-  // YYYY-YY spans first.
+  // FULL YYYY-YYYY spans FIRST — "2019-2024", the in-sample season range every
+  // properly-caveated research answer is REQUIRED to state.
+  //
+  // MEASURED BUG this closes: only the YYYY-YY form below was handled, so the
+  // extractor's "-2024" tail had nothing to ground against. A completely
+  // correct, fully-caveated research answer ("in-sample over 2019-2024") came
+  // back ungrounded on ["-2024"], regenerated, and shipped the fallback. The
+  // guard was punishing the exact caveat the ROI guard demands. (The en-dash
+  // spelling "2019–2024" never had the bug: an en-dash is not a minus sign, so
+  // both halves surface as bare years.)
+  for (const m of text.matchAll(/\b(19\d{2}|20\d{2})\s*-\s*(19\d{2}|20\d{2})\b/g)) {
+    ok.add(m[1]!); // "2019"
+    ok.add(`-${m[2]!}`); // "-2024" (the extractor sign-captures the tail)
+    ok.add(m[2]!); // "2024" (when spaced, it surfaces unsigned)
+  }
+  // YYYY-YY spans ("2025-26").
   for (const m of text.matchAll(/\b(19\d{2}|20\d{2})-(\d{2})\b/g)) {
     ok.add(m[1]!); // "2025"
     ok.add(`-${m[2]!}`); // "-26" (regex sign-capture on the hyphenated tail)
@@ -575,6 +757,28 @@ function collectTimeRaws(text: string): Set<string> {
   for (const m of text.matchAll(/\b(\d{1,2}):(\d{2})\b/g)) {
     ok.add(m[1]!); // hour, e.g. "9" or "12"
     ok.add(m[2]!); // minute, e.g. "40" or "05" — emitted verbatim by the extractor
+  }
+  // ISO datetimes: "2026-09-08T14:09:00.447Z".
+  //
+  // MEASURED BUG this closes: the pattern above requires a word boundary before
+  // the hour, and in the ISO form the hour is preceded by "T" — a word
+  // character — so there is NO boundary and NOTHING matched. A receipts answer
+  // that quoted its own publish timestamp came back ungrounded on ["14"] (and
+  // on ["00.447"], the fractional-seconds tail), regenerated, and shipped the
+  // fallback. Intermittently: only when the model chose the ISO spelling over
+  // "14:09 UTC", which is why it survived every unit test and appeared on the
+  // first live run. A publish timestamp is prose, never a money number.
+  for (const m of text.matchAll(
+    /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(\.\d+)?)?/g
+  )) {
+    ok.add(m[1]!); // "2026"
+    ok.add(`-${m[2]!}`); // "-09"
+    ok.add(`-${m[3]!}`); // "-08"
+    ok.add(m[4]!); // "14"
+    ok.add(m[5]!); // "09"
+    if (m[6]) ok.add(m[6]); // "00"
+    // The extractor reads ":00.447" as the single token "00.447".
+    if (m[6] && m[7]) ok.add(`${m[6]}${m[7]}`);
   }
   return ok;
 }
@@ -622,6 +826,29 @@ function groundsAsRecordValue(claimed: number, recordValues: number[]): boolean 
   );
 }
 
+// A claim grounds against the PUBLISHED-TEXT bucket if it matches exactly, or —
+// when the reply writes it as the tail of a hyphenated range — by absolute
+// value.
+//
+// MEASURED: the board's pass reason is written with an EN-DASH ("home-favorite
+// 54–60% trap"), and a model quoting it back naturally retypes the range with
+// an ASCII HYPHEN ("54-60%"). The extractor then reads the tail as the NEGATIVE
+// claim "-60%", which no positive published 60 could match, so a verbatim quote
+// of the desk's own reason failed. The abs path is gated on the reply actually
+// writing an N-M form (the same gate record splits use), so a bare fabricated
+// "-107" can still never borrow a positive 107.
+function groundsAsQuoted(
+  claim: NumberClaim,
+  quoted: number[],
+  rangeOkRaws: Set<string>
+): boolean {
+  if (groundsAsStatValue(claim.value, quoted)) return true;
+  const bare = claim.raw.replace(/%$/, "");
+  if (!rangeOkRaws.has(bare)) return false;
+  const abs = Math.abs(claim.value);
+  return quoted.some((q) => Math.abs(Math.abs(q) - abs) <= STAT_VALUE_EPSILON);
+}
+
 // Collect the exact raw tokens (as extractClaims emits them) for every
 // hyphenated N-M record form the reply writes: "24-7" → "24" and "-7";
 // "12-2 at home" → "12" and "-2". Mirrors collectYearRaws. A record-column
@@ -631,6 +858,115 @@ function collectRecordRaws(text: string): Set<string> {
   for (const m of text.matchAll(/\b(\d+)-(\d+)\b/g)) {
     ok.add(m[1]!); // "24"  (leading component — extractor emits it bare)
     ok.add(`-${m[2]!}`); // "-7" (trailing component — extractor sign-captures it)
+  }
+  return ok;
+}
+
+// ─── Betting-claim grounding (the SEARCH-turn variant) ───────────────────────
+//
+// checkGrounding requires EVERY number in a reply to trace to a tool result.
+// That is exactly right for a turn whose only inputs are the desk's own files.
+// It is wrong for a turn that also used WEB SEARCH: a searched schedule answer
+// is full of legitimate numbers — a date, a jersey number, a yardage total —
+// that came from a source, and search results deliberately never enter the
+// haystack (an affiliate page must never be able to ground the desk's own
+// figure). Under checkGrounding every such turn would fall back, and the
+// feature would appear broken in exactly the way it was built to fix.
+//
+// So a search turn is held to the NARROWER invariant that actually matters on
+// a betting page: no BETTING-SHAPED number may be stated that the desk's own
+// files do not carry. Concretely —
+//   • any percent claim ("16.6% edge", "62% win rate"), and
+//   • any signed American price ("+106", "-124"),
+// must ground against the desk's tool results. Everything else is free.
+//
+// Search cannot satisfy either: its blocks are not in `toolResultTexts`. So a
+// scraped "22% edge on the Jets" still fails, while "they kick at 1:00 on
+// September 14, per espn.com" ships. Pairs with checkSearchAttribution (a
+// searched fact must name its source) and with the board-row validator (a
+// selection must be a published row) — three narrow deterministic gates in
+// place of one broad one that would swallow the feature.
+export function checkBettingClaims(
+  reply: string,
+  toolResultTexts: string[]
+): GroundingVerdict {
+  const claims = extractClaims(reply);
+  if (claims.length === 0) return { grounded: true, ungrounded: [] };
+
+  const hay = buildHaystack(toolResultTexts);
+  const ungrounded: string[] = [];
+  const yearOkRaws = collectYearRaws(reply);
+  const timeOkRaws = collectTimeRaws(reply);
+  const dateOkRaws = collectDateRaws(reply);
+  const rangeOkRaws = collectRecordRaws(reply);
+
+  for (const claim of claims) {
+    if (yearOkRaws.has(claim.raw) || timeOkRaws.has(claim.raw)) continue;
+    if (dateOkRaws.has(claim.raw)) continue;
+
+    if (claim.isPercent) {
+      const bare = String(Math.abs(Math.trunc(claim.value)));
+      if (ALWAYS_OK.has(bare)) continue;
+      if (
+        !groundsAsPercent(claim.value, hay.percents) &&
+        !groundsAsQuoted(claim, hay.quotedPercents, rangeOkRaws)
+      ) {
+        ungrounded.push(claim.raw);
+      }
+      continue;
+    }
+
+    // A SIGNED three-or-more-digit integer is an American price ("+106",
+    // "-124"). Signed two-digit values are spreads/totals and are checked the
+    // same way. Unsigned numbers are left alone here: that is the whole
+    // relaxation, and it is what lets a date or a yardage figure through.
+    if (!/^[+-]/.test(claim.raw)) continue;
+    if (!Number.isInteger(claim.value) && !/\.5$/.test(claim.raw)) continue;
+    if (Math.abs(claim.value) < 2) continue; // "-1", small prose numbers
+    if (
+      !groundsAsPrice(claim.value, hay.prices) &&
+      !groundsAsStatValue(claim.value, hay.statValues) &&
+      !groundsAsQuoted(claim, hay.quotedValues, rangeOkRaws)
+    ) {
+      ungrounded.push(claim.raw);
+    }
+  }
+
+  return { grounded: ungrounded.length === 0, ungrounded };
+}
+
+// Collect the exact raw tokens (as extractClaims emits them) for every calendar
+// date in the text. Mirrors collectYearRaws / collectTimeRaws.
+//   "September 8"  → "8"          "Sept. 14"      → "14"
+//   "9/14"         → "9", "14"    "2026-09-08"    → "2026", "-09", "-08"
+// Fabrication risk on a publish date is ~zero, and the receipts prompt REQUIRES
+// every row to be dated — so an unexempt date token would fail the exact
+// answers this page exists to give.
+const MONTHS =
+  "january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept|sep|oct|nov|dec";
+
+const MONTH_DAY_RE = new RegExp(String.raw`\b(?:${MONTHS})\.?\s+(\d{1,2})\b`, "gi");
+const DAY_MONTH_RE = new RegExp(
+  String.raw`\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?(?:${MONTHS})\b`,
+  "gi"
+);
+const SLASH_DATE_RE = /\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/g;
+const ISO_DATE_RE = /\b(19\d{2}|20\d{2})-(\d{2})-(\d{2})\b/g;
+
+function collectDateRaws(text: string): Set<string> {
+  const ok = new Set<string>();
+  for (const m of text.matchAll(MONTH_DAY_RE)) ok.add(m[1]!);
+  for (const m of text.matchAll(DAY_MONTH_RE)) ok.add(m[1]!);
+  for (const m of text.matchAll(SLASH_DATE_RE)) {
+    ok.add(m[1]!);
+    ok.add(m[2]!);
+    if (m[3]) ok.add(m[3]);
+  }
+  // ISO dates: the extractor sign-captures the hyphenated tails.
+  for (const m of text.matchAll(ISO_DATE_RE)) {
+    ok.add(m[1]!);
+    ok.add(`-${m[2]!}`);
+    ok.add(`-${m[3]!}`);
   }
   return ok;
 }
