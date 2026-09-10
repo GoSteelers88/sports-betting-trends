@@ -813,7 +813,9 @@ function receiptsResponse(
 ): ChatResponse {
   let finalReply = reply;
 
-  const validated = runReceiptsValidators(finalReply, index);
+  const validated = runReceiptsValidators(finalReply, index, {
+    searched: run.search.used,
+  });
   if (!validated.ok) {
     console.warn(
       `[chat/sharp] receipts validator blocked (requestId=${meta.requestId}): ${validated.reason}`

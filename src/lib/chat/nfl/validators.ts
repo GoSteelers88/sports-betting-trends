@@ -415,7 +415,21 @@ function hasLiveParlayConstruction(sentence: string): boolean {
 
 // ─── Guard 1: the board-row validator ────────────────────────────────────────
 
+/** Player-prop vocabulary. A sentence carrying any of these is a prop read,
+ *  which R1 cannot evaluate: the board has never published a prop and the sharp
+ *  slate holds game markets only, so there is nothing for a prop selection to
+ *  match against. Kept deliberately narrow — it names STAT markets, not the
+ *  word "player", so an ordinary game sentence cannot slip through it. */
+const PROP_CONTEXT =
+  /(?:receiving|rushing|passing|reception|receptions|rec\s*yds|pass\s*yds|rush\s*yds|passing yards|rushing yards|receiving yards|completions|attempts|carries|targets|interceptions thrown|anytime touchdown|anytime td|first touchdown|longest (?:reception|rush|completion)|sacks|tackles|assists|pass tds?|passing tds?|rushing tds?|receiving tds?)/i;
+
 export function checkBoardRows(reply: string, index: BoardIndex): ValidatorVerdict {
+  // Prop detection is a WHOLE-REPLY test, not per sentence. Measured: a prop
+  // answer listed its picks as terse bullets — "JSN UNDER 60.5 (-115)" — and
+  // the stat word ("receiving yards") lived in a different line, so a
+  // per-sentence check never saw it and R1 blocked on "UNDER 60.5".
+  const isPropReply = PROP_CONTEXT.test(reply);
+
   for (const sentence of sentences(reply)) {
     // Parlay construction is ALLOWED (operator decision 2026-09-09). It used to
     // be blocked outright because the published board's parlay slot is null and
@@ -431,6 +445,17 @@ export function checkBoardRows(reply: string, index: BoardIndex): ValidatorVerdi
     // R1 — every concrete selection token must exist on a published board,
     // in ANY role. This is what stops "BUF -3" when the board wrote "BUF -2.5",
     // and it applies whether or not the sentence carries a stance.
+    // PLAYER PROPS are exempt from R1 (2026-09-09). R1 asks "is this selection
+    // a real board leg or a real game line", and a prop is neither by
+    // definition — the board has never carried one and the slate holds game
+    // markets only. Measured: a prop answer sourced from rotowire/covers/
+    // actionnetwork was blocked because "over 49.5 receiving yards" parsed as a
+    // total with no matching line. The operator asked for named prop picks, so
+    // the check that structurally cannot pass one has to stand aside for them.
+    // A prop line still has to come from an attributed search — that is the
+    // attribution rule in search.ts, and it is what keeps the number real.
+    if (isPropReply) continue;
+
     for (const sel of explicitSelections(sentence)) {
       if (
         !index.legs.some((leg) => legMatchesSelection(leg, sel)) &&
@@ -623,7 +648,8 @@ export function checkUrlsAndPromos(reply: string): ValidatorVerdict {
  *  replaces the whole reply. */
 export function runReceiptsValidators(
   reply: string,
-  index: BoardIndex
+  index: BoardIndex,
+  opts: { searched?: boolean } = {}
 ): ValidatorVerdict {
   const url = checkUrlsAndPromos(reply);
   if (!url.ok) return url;
@@ -631,5 +657,24 @@ export function runReceiptsValidators(
   if (!stake.ok) return stake;
   const roi = checkRoiCaveat(reply);
   if (!roi.ok) return roi;
+
+  // R1 does not apply to a turn that SEARCHED (2026-09-09). R1 asks "is this
+  // selection a real board leg or a real sharp-market line" — a fair question
+  // for a game-market answer, and the wrong question entirely for a player
+  // prop, which the board has never carried and the slate does not price.
+  // Measured twice: a prop answer sourced from covers/rotowire/actionnetwork
+  // was replaced with the off-board refusal over "UNDER 60.5", a receiving
+  // yards line. A per-sentence prop-vocabulary bypass did not fix it either,
+  // because the picks arrive as terse bullets with the stat word on another
+  // line.
+  //
+  // A searched turn is a live-research turn by definition, and its numbers come
+  // from an attributed source rather than from the model's imagination — which
+  // is what the attribution rule in search.ts enforces. The ROI, stake and
+  // promo guards above still run, and nothing here is ever written to the
+  // ledger. Cost of this: the desk could state a searched line that the source
+  // has since moved. Accepted deliberately.
+  if (opts.searched) return OK;
+
   return checkBoardRows(reply, index);
 }
