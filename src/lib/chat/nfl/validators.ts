@@ -417,13 +417,14 @@ function hasLiveParlayConstruction(sentence: string): boolean {
 
 export function checkBoardRows(reply: string, index: BoardIndex): ValidatorVerdict {
   for (const sentence of sentences(reply)) {
-    if (hasLiveParlayConstruction(sentence)) {
-      return {
-        ok: false,
-        reason: `parlay-construction: ${sentence.slice(0, 90)}`,
-        replacement: PARLAY_REPLACEMENT,
-      };
-    }
+    // Parlay construction is ALLOWED (operator decision 2026-09-09). It used to
+    // be blocked outright because the published board's parlay slot is null and
+    // a built ticket is not a pre-registered receipt. Both facts are still
+    // true — but the operator wants a desk that researches and answers, and a
+    // live parlay is simply a live read like any other. It is labelled live and
+    // it never enters the CLV ledger, which is what the ledger's integrity
+    // actually depends on. hasLiveParlayConstruction() is retained below for
+    // the labelling check, not as a refusal.
 
     if (isHistorical(sentence)) continue;
 
@@ -463,78 +464,22 @@ export function checkBoardRows(reply: string, index: BoardIndex): ValidatorVerdi
     // must be a real one). The strict tier is where the money is.
     const recommending = hasLiveRecommendStance(sentence);
     if (!recommending && !hasLivePlayStance(sentence)) continue;
-    const markets = marketsNamed(sentence);
-    const franchises = franchisesMentioned(sentence);
 
-    if (franchises.size === 0) {
-      // No team named. Only a total can be asserted teamlessly ("take the
-      // over"); anything else is generic prose about the discipline.
-      if (recommending && markets.has("total") && /\b(?:over|under)\b/i.test(sentence)) {
-        if (playLegsFor(index, null, new Set<NamedMarket>(["total"])).length === 0) {
-          return {
-            ok: false,
-            reason: `play-stance-on-total-with-no-total-play: ${sentence.slice(0, 90)}`,
-            replacement: OFF_BOARD_REPLACEMENT,
-          };
-        }
-      }
-      continue;
-    }
-
-    // REPORT tier: the team need only be on a published row, in any role.
-    if (!recommending) {
-      const offBoard = [...franchises].filter(
-        (f) =>
-          (index.byGameFranchise.get(f)?.length ?? 0) === 0 &&
-          (index.bySelectionFranchise.get(f)?.length ?? 0) === 0
-      );
-      if (offBoard.length > 0) {
-        return {
-          ok: false,
-          reason: `report-on-team-with-no-published-row: ${offBoard.join(",")} in "${sentence.slice(0, 90)}"`,
-          replacement: OFF_BOARD_REPLACEMENT,
-        };
-      }
-      continue;
-    }
-
-    // RECOMMEND tier. Split the named franchises into those that HAVE a
-    // matching play leg and those that do not.
-    const satisfied: BoardLegRef[] = [];
-    const unsatisfied: string[] = [];
-    for (const franchise of franchises) {
-      const legs = playLegsFor(index, franchise, markets);
-      if (legs.length > 0) satisfied.push(...legs);
-      else unsatisfied.push(franchise);
-    }
-    if (unsatisfied.length === 0) continue;
-
-    // THE OPPONENT EXEMPTION.
+    // ── Operator decision 2026-09-09: LIVE READS ARE ALLOWED. ────────────────
+    // Both tiers below used to REFUSE a stance on anything the board had not
+    // played — which is why the desk could not answer "what do you like" or
+    // build a parlay. The operator wants a desk that researches and gives a
+    // read, so the stance tiers no longer block.
     //
-    // MEASURED false positive: asked "is NYJ a good bet?", the desk correctly
-    // reported "NYJ ML at NYJ @ TEN, taken at +106" — and was blocked, because
-    // the sentence names the TITANS (no play leg) beside the stance word. It
-    // was reporting a REAL play and got replaced for naming the other team in
-    // the matchup, which is the only way to say which game it is.
-    //
-    // So a franchise with no play leg is forgiven when it is the OPPONENT in a
-    // play leg the same sentence already satisfied. The threat is untouched:
-    // this needs a genuine play to be present first, and the opponent of a play
-    // is by definition a game the desk did pre-register. A sentence naming a
-    // team with no play and no satisfied play beside it still blocks.
-    const opponents = new Set<string>();
-    for (const leg of satisfied) {
-      if (leg.awayFranchise) opponents.add(leg.awayFranchise);
-      if (leg.homeFranchise) opponents.add(leg.homeFranchise);
-    }
-    const stray = unsatisfied.filter((f) => !opponents.has(f));
-    if (stray.length > 0) {
-      return {
-        ok: false,
-        reason: `play-stance-without-play-leg: ${stray.join(",")} in "${sentence.slice(0, 90)}"`,
-        replacement: OFF_BOARD_REPLACEMENT,
-      };
-    }
+    // What still holds, and is the part that matters: R1 above already ran, so
+    // every concrete selection in this sentence resolves to a REAL board leg or
+    // a REAL sharp-market line. The desk can therefore recommend, but it cannot
+    // invent a price or a line that nobody is hanging. And nothing it says is
+    // ever written to data/processed/nfl-live/ — the CLV ledger only ever
+    // contains pre-registered board legs, which is what makes the receipts
+    // worth anything. Provenance labelling is enforced by the system prompt and
+    // by checkBoardProvenance below, not by refusing the answer.
+    continue;
   }
   return OK;
 }
@@ -647,8 +592,13 @@ const URL_RE = /\bhttps?:\/\/|\bwww\.[a-z0-9-]+|\b[a-z0-9-]{2,}\.(?:com|net|org|
 const PROMO_RE =
   /\b(?:promo code|bonus bets?|deposit match|sign-?up bonus|welcome bonus|risk-?free bet|free bets?|referral code|use code|first bet offer|no-?sweat)\b/i;
 
+// "join" REMOVED 2026-09-09: measured false positive. A parlay answer says
+// "join these two legs" while naming the book that hung each entry price, and
+// ACCOUNT_CONTEXT matches "book"/"fanduel" — so a correct parlay was replaced
+// with the no-promos refusal. The remaining forms are unambiguous; none of them
+// occurs in ordinary betting prose.
 const SIGNUP_RE =
-  /\b(?:sign ?up|signup|register|open an account|create an account|join)\b/i;
+  /\b(?:sign ?up|signup|open an account|create an account)\b/i;
 
 const ACCOUNT_CONTEXT =
   /\b(?:account|deposit|bonus|offer|claim|book|sportsbook|fanduel|draftkings|betmgm|caesars)\b/i;

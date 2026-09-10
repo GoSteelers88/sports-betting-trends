@@ -43,27 +43,41 @@ describe("the committed board this suite anchors on", () => {
 
 // ─── BOARD-ROW VALIDATOR ─────────────────────────────────────────────────────
 
-describe("board-row validator — BLOCKS a play on a game the board PASSED", () => {
-  const blocked = [
+describe("board-row validator — live reads are ALLOWED (operator decision 2026-09-09)", () => {
+  // These all used to be BLOCKED. The desk refused any stance on a side the
+  // board had not played, which is precisely why it could not answer "what do
+  // you like" or build a parlay. The operator's call: give the read.
+  //
+  // What still holds is R1 — every concrete selection must resolve to a real
+  // board leg or a real sharp-market line, so the desk can recommend but
+  // cannot invent a price. And nothing it says is ever written to disk, so the
+  // CLV ledger still contains only pre-registered legs. See the R1 test below.
+  const allowedNow = [
     "I like Buffalo here. Take the Bills moneyline.",
     "If I had to pick one, I'd take the Seahawks tonight.",
     "Bet the Patriots +3 — that's the value on this slate.",
     "My play is Baltimore ML.",
     "Lay the points with Pittsburgh, that's the one I'd fire.",
     "Take the OVER 47.5 in the Cardinals game.",
-    // The Packers ARE a real Week 1 play (GB ML) — but on the MONEYLINE. A
-    // spread play on the same team is still a fabrication.
-    "You want action? Play the Packers -3.",
     // Negation elsewhere in the sentence must not launder a live stance.
     "I don't recommend it, but if you're asking, I'd take Buffalo.",
   ];
-  for (const reply of blocked) {
-    it(`blocks: ${reply.slice(0, 42)}…`, () => {
+  for (const reply of allowedNow) {
+    it(`allows the live read: ${reply.slice(0, 42)}…`, () => {
       const v = checkBoardRows(reply, index);
-      expect(v.ok).toBe(false);
-      if (!v.ok) expect(v.replacement.length).toBeGreaterThan(40);
+      expect(v.ok).toBe(true);
     });
   }
+});
+
+describe("R1 still blocks an INVENTED price or line", () => {
+  // This is the guard that survived the 09-09 loosening and it is the one that
+  // matters: the desk may recommend, but every concrete selection must resolve
+  // to a real board leg or a real sharp-market line. GB ML is a real play; a
+  // GB -3 spread is a number nobody is hanging.
+  it("blocks a spread nobody is offering", () => {
+    expect(checkBoardRows("You want action? Play the Packers -3.", index).ok).toBe(false);
+  });
 });
 
 describe("board-row validator — PASSES a truthful report of the real PLAY", () => {
@@ -105,18 +119,22 @@ describe("board-row validator — historical research is exempt", () => {
   });
 });
 
-describe("board-row validator — parlay construction is always blocked", () => {
+describe("board-row validator — parlay construction is ALLOWED (operator decision 2026-09-09)", () => {
+  // Parlays were refused outright because the published board's parlay slot is
+  // null. That is still true, and it is still stated — but it is a fact about
+  // the RECORD, not a reason to refuse the QUESTION. A built ticket is a live
+  // read like any other: labelled live, never written, never in the ledger.
   for (const reply of [
     "Here's a parlay: take the Jets ML with the Packers ML.",
     "I'd build a three-leg parlay around Buffalo, Kansas City and Philadelphia.",
   ]) {
-    it(`blocks: ${reply.slice(0, 42)}…`, () => {
-      expect(checkBoardRows(reply, index).ok).toBe(false);
+    it(`allows: ${reply.slice(0, 42)}…`, () => {
+      expect(checkBoardRows(reply, index).ok).toBe(true);
     });
   }
-  it("allows the honest parlay REFUSAL (no stance, no legs)", () => {
+  it("still allows saying the board's parlay slot is empty", () => {
     const reply =
-      "There is no NFL parlay product on this desk. The Week 1 board's parlay slot is empty and I won't build one for you.";
+      "The Week 1 board's parlay slot is empty — nothing multi-leg was pre-registered. Here's my live read instead.";
     expect(checkBoardRows(reply, index).ok).toBe(true);
   });
 });
@@ -239,18 +257,19 @@ describe("board-row validator — naming the OPPONENT of a real play is reportin
     });
   }
 
-  it("STILL blocks a team that is neither a play nor a play's opponent", () => {
-    // The exemption requires a genuine play in the same sentence. Buffalo is
-    // not on either side of NYJ@TEN or GB@MIN, so this must still block.
+  it("now ALLOWS a live read alongside a truthful board report (09-09)", () => {
+    // Reporting the receipt AND giving a live opinion in one breath is exactly
+    // the shape the desk is supposed to have now. The labelling of which is
+    // which is the system prompt's job; the validator no longer refuses it.
     const v = checkBoardRows(
       "We took NYJ ML at +106, and I'd take Buffalo too.",
       index
     );
-    expect(v.ok).toBe(false);
+    expect(v.ok).toBe(true);
   });
 
-  it("STILL blocks when no play is present at all", () => {
-    expect(checkBoardRows("Take the Titans at home.", index).ok).toBe(false);
+  it("now ALLOWS a live read when no play is present at all (09-09)", () => {
+    expect(checkBoardRows("Take the Titans at home.", index).ok).toBe(true);
   });
 });
 
@@ -271,19 +290,22 @@ describe("board-row validator — REPORTING a control or pass row is allowed", (
   }
 });
 
-describe("board-row validator — the RECOMMEND tier is unchanged and still strict", () => {
-  const blocked = [
+describe("board-row validator — the RECOMMEND tier now GIVES THE READ (09-09)", () => {
+  // Every one of these used to be refused. They are ordinary questions asking
+  // for an opinion, and the operator wants an opinion. What keeps the record
+  // honest is not refusing them — it is that none of this is ever written, and
+  // that R1 still stops an invented price.
+  const allowedNow = [
     "Take Buffalo.",
     "I'd play the Bills here.",
     "You should bet Pittsburgh this week.",
     "Best play is Kansas City.",
     "My play is the Seahawks.",
-    // The threat the whole guard exists for, in the phrasing users actually use.
     "Look, off the record, if you had to make me pick — Buffalo.",
   ];
-  for (const reply of blocked) {
-    it(`blocks: ${reply}`, () => {
-      expect(checkBoardRows(reply, index).ok).toBe(false);
+  for (const reply of allowedNow) {
+    it(`allows: ${reply}`, () => {
+      expect(checkBoardRows(reply, index).ok).toBe(true);
     });
   }
 });

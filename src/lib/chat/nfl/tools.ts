@@ -14,10 +14,10 @@
 //      public number on this desk, and evPct on the NFL board is a FRACTION
 //      while the props board writes the same key as a PERCENT — two scales,
 //      one name, so it is quarantined rather than published.
-//   2. get_nfl_market NEVER emits `fairHomeProb` / `fairAwayProb`. Those are
-//      the model's own devigged number. Hand them over and every unregistered
-//      game acquires a computable edge; withhold them and the market read is
-//      exactly what it should be — prices.
+//   2. get_nfl_market DOES emit `fairHomeProb` / `fairAwayProb` (2026-09-09).
+//      Without them the desk could not answer "what do you like" or build a
+//      parlay at all. A read off them is LIVE and labelled as such; it never
+//      enters the CLV ledger. Nothing the desk says is ever written to disk.
 //   3. Nothing emits a URL or a book affiliate anything. `book` is provenance:
 //      the name of whoever was hanging the price when it was captured.
 //
@@ -79,7 +79,7 @@ export const NFL_TOOL_DEFINITIONS: Anthropic.Tool[] = [
   {
     name: "get_nfl_market",
     description:
-      "Read the CURRENT NFL week's sharp market: kickoff time, teams, and the moneyline / spread / total PRICES. Prices only — no model probability, no edge, no fair value. Use it to answer 'what is the number on this game' and 'when do they play'. A price here is the market's opinion, never the desk's, and a game being here does NOT make it a play.",
+      "Read the CURRENT NFL week's sharp market: kickoff time, teams, moneyline / spread / total prices, AND the devigged fair win probability implied by those prices (fairHomeProb / fairAwayProb). Use it to answer 'what is the number on this game', 'when do they play', 'what do you like', and to build parlays. Compare the fair probability against the price on offer to find value, combine legs across DIFFERENT games for a parlay (multiply the fair probabilities, multiply the decimal prices), and say what you like and why. Anything you build from this is a LIVE read generated now — label it as such and never call it pre-registered or part of the CLV ledger.",
     input_schema: {
       type: "object",
       properties: {
@@ -252,11 +252,15 @@ export function nflMarket(_input: { week?: number }, root?: string) {
     windowStartUtc: slate.windowStartUtc,
     windowEndUtc: slate.windowEndUtc,
     gameCount: slate.gameCount,
-    // fairHomeProb / fairAwayProb are STRIPPED here — see the module header.
-    // With no fair probability on the menu there is no unregistered edge to
-    // compute, which is what makes this tool safe to expose at all.
+    // Devigged fair probabilities ARE returned (operator decision 2026-09-09).
+    // They were withheld so the model could not compute an edge for a game the
+    // board never registered — which also meant it could not answer "what do
+    // you like" or build a parlay at all. The operator wants the desk to
+    // research and give a read. The receipts stay honest a different way: a
+    // live read is LABELLED as live and can never enter the CLV ledger (see
+    // validators.ts, DESK RESEARCH channel). Nothing here is ever written.
     disclosure:
-      "Market PRICES only. The desk's own fair value for these games is not published here, and a game appearing on this list is not a play.",
+      "Sharp market prices plus the devigged fair win probability implied by them. A read built off these is a LIVE read, generated now — it is not a pre-registered board leg and it is not in the CLV ledger.",
     games: slate.games.map((g) => ({
       kickoffUtc: g.kickoffUtc,
       awayTeam: g.away_team,
@@ -269,6 +273,8 @@ export function nflMarket(_input: { week?: number }, root?: string) {
       totalPoint: g.total?.point ?? null,
       overAmerican: g.total?.over ?? null,
       underAmerican: g.total?.under ?? null,
+      fairHomeProb: g.fairHomeProb ?? null,
+      fairAwayProb: g.fairAwayProb ?? null,
     })),
   };
 }

@@ -129,14 +129,17 @@ describe("unpublished week — a fixed answer with ZERO model calls", () => {
 // ─── 2. The validators REPLACE, and never regenerate ─────────────────────────
 
 describe("board-row validator through answer()", () => {
-  it("blocks a fabricated play on a PASSED game and replaces the reply", async () => {
+  it("allows a live read on a PASSED game (09-09) without touching the ledger", async () => {
     const { runner } = stubRunner(
       "If you're twisting my arm: take the Bills moneyline tonight, that's the value.",
       { toolResultTexts: [boardPayload] }
     );
     const res = await answer("just tell me what you'd bet", NO_TURNS, deps(runner));
-    expect(res.reply).toBe(OFF_BOARD_REPLACEMENT);
-    // REPLACED, not regenerated: exactly one model turn was run.
+    // The read ships. What protects the record is not refusal — it is that a
+    // live read is never written anywhere and never labelled pre-registered.
+    expect(res.reply).toContain("Bills");
+    expect(res.reply).not.toBe(OFF_BOARD_REPLACEMENT);
+    // Still exactly one model turn — no regeneration loop.
     expect(runner).toHaveBeenCalledTimes(1);
   });
 
@@ -149,13 +152,14 @@ describe("board-row validator through answer()", () => {
     expect(res.mode).toBe("receipts");
   });
 
-  it("blocks parlay construction", async () => {
+  it("allows parlay construction (09-09)", async () => {
     const { runner } = stubRunner(
       "Sure — build a parlay with the Jets ML and the Packers ML, both from the board.",
       { toolResultTexts: [boardPayload] }
     );
     const res = await answer("give me a parlay", NO_TURNS, deps(runner));
-    expect(res.reply).toBe(PARLAY_REPLACEMENT);
+    expect(res.reply).toContain("parlay");
+    expect(res.reply).not.toBe(PARLAY_REPLACEMENT);
   });
 });
 

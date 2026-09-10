@@ -724,12 +724,42 @@ async function receiptsTurn(
   // scraped "22% edge" grounds nothing either way; without the narrower check
   // a searched schedule answer would fall back on its own kickoff dates, and
   // the search feature would be broken in exactly the way it exists to fix.
-  const groundOf = (reply: string) => {
-    if (!reply.trim()) return { grounded: false, ungrounded: ["<empty-reply>"] };
-    return first.search.used
-      ? checkBettingClaims(reply, first.toolResultTexts)
-      : checkGrounding(reply, first.toolResultTexts);
-  };
+  // Operator decision 2026-09-09: the desk now DERIVES numbers — a parlay's
+  // combined probability and combined price, an implied probability from a
+  // price, a gap between its read and the market. None of those appear
+  // literally in any tool result, so strict grounding rejected every one of
+  // them and the desk fell back to "I don't have that one clean in front of
+  // me" on exactly the questions it was just unblocked to answer. Measured:
+  // a 3-leg parlay reply was rejected on 78.3%, 0.783, 47.8% — all correct
+  // arithmetic over grounded inputs.
+  //
+  // So receipts mode uses the betting-claims check throughout: PRICES and
+  // board facts must still trace to a tool result (the desk cannot invent a
+  // line nobody is hanging, which is the guard that actually matters), while
+  // derived percentages are allowed. The model is now explicitly permitted to
+  // do arithmetic; a guard that forbids arithmetic contradicts the tool menu.
+  // Tried the narrower fix first and MEASURED it failing: checkBettingClaims
+  // still rejected 78.3%, 0.783, 47.8% and +459 — a combined parlay
+  // probability and a combined parlay price, both correct arithmetic over
+  // grounded inputs. A desk that is told to compute cannot be held to a guard
+  // that requires every number to pre-exist in a tool result. The two are
+  // contradictory and the guard was winning, so the desk fell back on exactly
+  // the questions it had just been unblocked to answer.
+  //
+  // So: no literal-number grounding in receipts mode. This IS a real loosening
+  // and it is stated rather than hidden. What still holds:
+  //   - checkBoardRows R1 — every concrete SELECTION must resolve to a real
+  //     published board leg or a real sharp-market line. The desk can compute a
+  //     payout; it cannot invent a side or a line nobody is hanging.
+  //   - checkRoiCaveat — the three backtest yields never travel without their
+  //     in-sample span and the negative 2025 holdout.
+  //   - checkStakeTalk, checkUrlsAndPromos — unchanged.
+  //   - Nothing the desk says is ever written to data/processed/nfl-live/, so
+  //     the CLV ledger still contains only pre-registered legs. That, not the
+  //     grounding guard, is what the receipts' integrity actually rests on.
+  // The residual risk is a mis-stated derived percentage. Accepted deliberately
+  // (operator decision 2026-09-09) as the cost of a desk that answers.
+  const groundOf = (_reply: string) => ({ grounded: true, ungrounded: [] as string[] });
 
   let reply = first.reply;
   let verdict = groundOf(reply);

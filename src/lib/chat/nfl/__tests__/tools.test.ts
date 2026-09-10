@@ -28,14 +28,28 @@ describe("the strip rules — enforced by the tool, not by the prompt", () => {
     expect(payload).toContain("calibratedConfidence");
   });
 
-  it("get_nfl_market NEVER emits fairHomeProb / fairAwayProb", () => {
+  it("get_nfl_market DOES emit fairHomeProb / fairAwayProb (operator decision 2026-09-09)", () => {
+    // These were stripped so the model could not compute an edge on a game the
+    // board never registered. That also made it impossible to answer "what do
+    // you like" or to build a parlay, which is the product the operator wants.
+    // The ledger's integrity does not depend on withholding them — it depends
+    // on a live read never being written anywhere or labelled pre-registered.
     const payload = JSON.stringify(nflMarket({}));
-    expect(payload).not.toContain("fairHomeProb");
-    expect(payload).not.toContain("fairAwayProb");
-    expect(payload).not.toContain("fairProb");
-    // Prices survive — that is the whole point of the tool.
+    expect(payload).toContain("fairHomeProb");
+    expect(payload).toContain("fairAwayProb");
+    // Prices still survive.
     expect(payload).toContain("homeMoneylineAmerican");
     expect(payload).toContain("totalPoint");
+    // And the payload still tells the model what kind of number it is holding.
+    expect(payload).toMatch(/LIVE read|not a pre-registered|CLV ledger/i);
+  });
+
+  it("get_nfl_board STILL never emits stakeFraction or evPct", () => {
+    // Unchanged by the 09-09 loosening: stake is never public, and evPct is a
+    // fraction on the NFL board while the props board writes it as a percent.
+    const payload = JSON.stringify(nflBoard({}));
+    expect(payload).not.toContain("stakeFraction");
+    expect(payload).not.toContain("evPct");
   });
 
   it("no tool emits a URL", () => {
