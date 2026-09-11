@@ -486,3 +486,95 @@ export function gateFairProb(sideAmerican: number, otherAmerican: number): numbe
   const d = devigTwoWay(sideAmerican, otherAmerican);
   return Math.max(...Object.values(d.byMethod));
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. Referees — nflverse `officials` release (checklist item 10)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// nflverse publishes crew assignments in officials.csv keyed by the NFL's
+// numeric game key (games.csv `old_game_id`). Measured 2026-09-10: the
+// 2026 week-1 crews were present (16 Referee rows) and 15/16 joined — the
+// Melbourne game's key differs by a day between the two files (local vs UTC
+// date), which is reported as missing rather than fuzzy-joined. Research
+// (2026-08-15, debunked #7) found referee ATS/OU records are coin flips and
+// only the penalty-rate channel is legitimate; the name is supplied so item
+// 10 is not a blank, not because it carries much.
+
+export type OfficialRow = {
+  season: number;
+  seasonType: string;
+  week: number;
+  gameKey: string; // == games.csv old_game_id
+  name: string;
+  position: string; // "Referee" | "Umpire" | …
+};
+
+export function parseOfficials(matrix: string[][]): OfficialRow[] {
+  if (matrix.length === 0) return [];
+  const header = matrix[0].map((h) => h.trim());
+  const ix = new Map(header.map((h, i) => [h, i]));
+  for (const n of ["game_id", "official_name", "position", "season", "week"]) if (!ix.has(n)) return [];
+  const out: OfficialRow[] = [];
+  for (let i = 1; i < matrix.length; i++) {
+    const r = matrix[i];
+    if (!r || r.length < 5) continue;
+    const season = Number(r[ix.get("season")!]);
+    const week = Number(r[ix.get("week")!]);
+    const gameKey = r[ix.get("game_id")!]?.trim();
+    const name = r[ix.get("official_name")!]?.trim();
+    const position = r[ix.get("position")!]?.trim();
+    if (!Number.isFinite(season) || !Number.isFinite(week) || !gameKey || !name || !position) continue;
+    out.push({
+      season,
+      seasonType: ix.has("season_type") ? (r[ix.get("season_type")!]?.trim() ?? "") : "",
+      week,
+      gameKey,
+      name,
+      position,
+    });
+  }
+  return out;
+}
+
+/** old_game_id → referee name for one (season, week). */
+export function refereesForWeek(rows: OfficialRow[], season: number, week: number): Map<string, string> {
+  const m = new Map<string, string>();
+  for (const r of rows) {
+    if (r.season !== season || r.week !== week || r.position !== "Referee") continue;
+    m.set(r.gameKey, r.name);
+  }
+  return m;
+}
+
+export type RefereesApplied = { games: GameRow[]; applied: number; missing: string[] };
+
+/** Fill `referee` where nflverse left it blank, joining on old_game_id. A
+ *  value already present (a played game) is never overwritten. */
+export function applyReferees(games: GameRow[], byOldId: Map<string, string>): RefereesApplied {
+  const out: GameRow[] = [];
+  let applied = 0;
+  const missing: string[] = [];
+  for (const g of games) {
+    if (g.referee.trim()) {
+      out.push(g);
+      continue;
+    }
+    const ref = g.oldGameId ? byOldId.get(g.oldGameId) : undefined;
+    if (!ref) {
+      missing.push(g.gameId);
+      out.push(g);
+      continue;
+    }
+    applied++;
+    out.push({ ...g, referee: ref });
+  }
+  return { games: out, applied, missing };
+}
+
+export type OfficialsFile = {
+  generatedAt?: string;
+  season?: number;
+  week?: number;
+  referees?: Array<{ gameId: string; oldGameId: string; referee: string }>;
+  missing?: string[];
+};

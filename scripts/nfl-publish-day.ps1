@@ -104,7 +104,16 @@ try {
   Write-Host "== refresh ESPN injuries (non-fatal)"
   npm run ingest:injuries
   if ($LASTEXITCODE -ne 0) { Write-Host "ingest:injuries failed (non-fatal) — board will use whatever injuries-nfl.json holds" }
-  Write-Host "== refresh live inputs: weather / EPA / stadiums (non-fatal)"
+  # Grade LAST week's private model board into the live calibration record
+  # (live-graded.jsonl). Record only — the fit reads it solely behind
+  # --with-live-calibration on nfl-live-week.ts, which this runbook does NOT
+  # pass. Non-fatal: a missing board or an unrefreshed spine just logs.
+  if ($Week -gt 1) {
+    Write-Host "== grade last week's live reads into live-graded.jsonl (non-fatal)"
+    npm run nfl:grade-live -- $Season ($Week - 1)
+    if ($LASTEXITCODE -ne 0) { Write-Host "nfl:grade-live failed (non-fatal) — calibration record not updated this week" }
+  }
+  Write-Host "== refresh live inputs: weather / EPA / stadiums / referees (non-fatal)"
   npm run nfl:ingest-live -- $Season $Week
   if ($LASTEXITCODE -ne 0) { Write-Host "nfl:ingest-live failed (non-fatal) — board will record missing inputs" }
   Run "regenerate model board (final doctrine)" {

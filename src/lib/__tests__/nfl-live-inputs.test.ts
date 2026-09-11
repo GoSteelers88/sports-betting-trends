@@ -18,6 +18,9 @@ import {
   parseTeamWeekEpa,
   stadiumCityFor,
   STADIUM_CITIES,
+  applyReferees,
+  parseOfficials,
+  refereesForWeek,
   type TeamGameEpa,
   type WeatherForecast,
 } from "../nfl-live-inputs";
@@ -301,6 +304,40 @@ describe("gate devig (doctrine tightening T4)", () => {
       for (const p of Object.values(d.byMethod)) expect(g).toBeGreaterThanOrEqual(p - 1e-12);
       expect(g).toBeGreaterThanOrEqual(d.worstCaseA); // never looser than the CLV envelope
     }
+  });
+});
+
+describe("referees (nflverse officials release)", () => {
+  const CSV = `game_id,game_key,official_name,position,jersey_number,official_id,season,season_type,week
+2026091300,2026091300,Adrian Hill,Referee,29,1,2026,REG,1
+2026091300,2026091300,Some Umpire,Umpire,12,2,2026,REG,1
+2026091301,2026091301,Alex Kemp,Referee,55,3,2026,REG,1
+2026092000,2026092000,Brad Allen,Referee,122,4,2026,REG,2
+`;
+  it("parses rows and keys Referee names by the NFL game key for one week", () => {
+    const rows = parseOfficials(parseCsv(CSV));
+    expect(rows).toHaveLength(4);
+    const wk1 = refereesForWeek(rows, 2026, 1);
+    expect([...wk1]).toEqual([
+      ["2026091300", "Adrian Hill"],
+      ["2026091301", "Alex Kemp"],
+    ]);
+    expect(refereesForWeek(rows, 2026, 2).get("2026092000")).toBe("Brad Allen");
+  });
+  it("fills a blank referee by old_game_id, keeps an existing one, reports the rest", () => {
+    const games = [
+      gameRow({ gameId: "a", oldGameId: "2026091300", referee: "" }),
+      gameRow({ gameId: "b", oldGameId: "2026091301", referee: "Already Known" }),
+      gameRow({ gameId: "c", oldGameId: "2026091399", referee: "" }), // Melbourne-style key mismatch
+      gameRow({ gameId: "d", referee: "" }), // no key at all
+    ];
+    const res = applyReferees(games, refereesForWeek(parseOfficials(parseCsv(CSV)), 2026, 1));
+    expect(res.games.map((g) => g.referee)).toEqual(["Adrian Hill", "Already Known", "", ""]);
+    expect(res.applied).toBe(1);
+    expect(res.missing).toEqual(["c", "d"]);
+    // The referee reaches the blind context through the ordinary path.
+    const blind = buildBlindWeek(res.games.slice(0, 1), CURSOR, "");
+    expect(blind.games[0].context.referee).toBe("Adrian Hill");
   });
 });
 

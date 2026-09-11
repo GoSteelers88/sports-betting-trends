@@ -93,6 +93,9 @@ export type GameRow = {
   /** Set by the live-week forecast overlay (nfl-live-inputs.ts) when temp /
    *  wind came from a FORECAST rather than nflverse's post-game actuals. */
   weatherForecastHoursAhead?: number | null;
+  /** nflverse `old_game_id` — the NFL's numeric game key (e.g. "2026090900").
+   *  The officials release is keyed by it, so this is the referee join key. */
+  oldGameId?: string;
   // POST-GAME (results) — NEVER allowed into the blind input
   awayScore: number | null;
   homeScore: number | null;
@@ -251,6 +254,7 @@ export function parseGames(csvText: string): GameRow[] {
       // City, Rio). Unparsed until 2026-09-10, so every one of them carried a
       // full home-field read in the prompt and +55 Elo in the dry-run.
       neutralSite: str(col(row, "location")).trim().toLowerCase() === "neutral",
+      oldGameId: str(col(row, "old_game_id")),
       awayScore: num(col(row, "away_score")),
       homeScore: num(col(row, "home_score")),
       result: num(col(row, "result")),

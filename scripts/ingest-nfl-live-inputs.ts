@@ -36,8 +36,11 @@ import {
 import {
   isDomeRoof,
   kickoffUtcFromEastern,
+  parseOfficials,
   parseTeamWeekEpa,
+  refereesForWeek,
   stadiumCityFor,
+  type OfficialsFile,
   type StadiumCity,
   type TeamGameEpa,
   type WeatherFile,
@@ -278,6 +281,28 @@ async function main(): Promise<void> {
   } else {
     console.warn("[nfl-live-inputs] no EPA rows fetched — leaving any previous nfl-epa.json in place");
   }
+
+  // 4. Referees — nflverse officials release, joined on old_game_id. The NFL
+  //    announces crews during the week; a Tuesday run may find none for the
+  //    coming week yet, and that is recorded, not defaulted.
+  const officialsPath = path.join(PROCESSED, "nfl-officials.json");
+  let refereeFile: OfficialsFile = { generatedAt: nowIso, season, week, referees: [], missing: slate.map((g) => g.gameId) };
+  try {
+    const csv = await fetchText("https://github.com/nflverse/nflverse-data/releases/download/officials/officials.csv");
+    const byOldId = refereesForWeek(parseOfficials(parseCsv(csv)), season, week);
+    const referees: NonNullable<OfficialsFile["referees"]> = [];
+    const missing: string[] = [];
+    for (const g of slate) {
+      const ref = g.oldGameId ? byOldId.get(g.oldGameId) : undefined;
+      if (ref) referees.push({ gameId: g.gameId, oldGameId: g.oldGameId!, referee: ref });
+      else missing.push(g.gameId);
+    }
+    refereeFile = { generatedAt: nowIso, season, week, referees, missing };
+    console.log(`  referees: ${referees.length}/${slate.length} games assigned in nflverse officials (season ${season} wk${week})`);
+  } catch (err) {
+    console.warn(`  referees: fetch failed — ${(err as Error).message}`);
+  }
+  writeJson(officialsPath, refereeFile);
 
   // Coverage — printed AND the exit code says whether the week is fully covered.
   const outdoor = slate.filter((g) => !isDomeRoof(g.roof)).length;

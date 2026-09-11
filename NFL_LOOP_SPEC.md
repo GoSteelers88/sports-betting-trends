@@ -47,7 +47,22 @@ PRE-GAME fields only:
   (`context.epa`: EWMA EPA per dropback / per carry, offense and allowed,
   plays-weighted, prior season ×0.67, games strictly before the cursor). All
   of these are inputs, not rules; each is counted in the private board's
-  `inputs` block. Backtest weeks pass none of them and get `null`.
+  `inputs` block. Backtest weeks pass none of them and get `null`. Also
+  `referee` from the nflverse `officials` release, joined on `old_game_id`
+  (`nfl-officials.json`; crews appear during the week, so a Tuesday build may
+  legitimately have none — recorded, never defaulted).
+- **Live calibration record (2026-09-10):** `npm run nfl:grade-live -- <season>
+  <week>` grades the PRIVATE model board's reads — every leg, PLAY and PASS —
+  against `games.csv` into `data/private/nfl-loop/live-graded.jsonl` (same
+  `GradedRow` shape, separate file; `picks-log.jsonl` is never touched). The
+  calibration fit reads it ONLY behind `--with-live-calibration` on
+  `nfl-live-week.ts`, off by default and not passed by the runbook: a refit is
+  not tightening-only, and per-market maps need ≥20 rows before they leave the
+  pooled fallback.
+- **Pre-entry line history (2026-09-10):** `refresh-odds.yml` archives its daily
+  Pinnacle pull to `data/processed/nfl-live/lines/` (dated, committed). Nothing
+  reads it yet; it exists so a rec-5 "last line move" feature can be evaluated
+  against real history instead of built blind.
 
 **ZERO post-game fields** ever enter the blind input: no `away_score`,
 `home_score`, `result`, actual `total`, or anything derived from them. The

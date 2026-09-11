@@ -47,8 +47,13 @@ jobs:
           npm run ingest:free || echo "summary refresh failed (non-fatal)"
 
       - name: Refresh NFL week board (free Pinnacle sharp feed, zero credits)
+        # --archive keeps a DATED copy of every daily pull under nfl-live/lines/
+        # (2026-09-10, research rec 5): the Tuesday entry snapshot is one paid
+        # pull, so this free daily series is the only pre-entry line-move
+        # history the pipeline will ever have. Nothing reads it yet — a
+        # "bet against the last move" feature needs weeks of it to evaluate.
         run: |
-          npx tsx scripts/scrape-pinnacle.ts --leagues nfl || echo "pinnacle nfl pull failed (non-fatal)"
+          npx tsx scripts/scrape-pinnacle.ts --leagues nfl --archive data/processed/nfl-live/lines || echo "pinnacle nfl pull failed (non-fatal)"
           npx tsx scripts/build-nfl-slate.ts || echo "nfl slate build refused/failed (non-fatal — previous board stays)"
 
       - name: Commit refreshed odds/injury data back to repo (allowlisted files only)
@@ -93,6 +98,16 @@ jobs:
           # didn't write) can't make an atomic `git add A B C` fail and stage
           # NOTHING.
           for f in "${ALLOWED[@]}"; do [ -f "$f" ] && git add "$f"; done
+          # The dated Pinnacle line archive (see the refresh step above): same
+          # secret scan, then stage whatever new snapshots landed.
+          for f in data/processed/nfl-live/lines/*.json; do
+            [ -f "$f" ] || continue
+            if grep -qE "$SECRET_RE" "$f"; then
+              echo "ABORT: $f matched secret-grep regex; refusing to commit."
+              exit 1
+            fi
+            git add "$f"
+          done
           if git diff --cached --quiet; then
             echo "no data changes to commit"
             exit 0

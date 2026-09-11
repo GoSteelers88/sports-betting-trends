@@ -90,6 +90,17 @@ picks made WITHOUT these inputs, and live 2026 results never enter
 `picks-log.jsonl`, so the maps cannot re-fit to the new information regime
 during the season. The raw-confidence gate (T1) still binds.
 
+Same day, the record half of that caveat was closed without touching the
+rules: `nfl:grade-live` grades each private board's reads (every leg, PLAY and
+PASS) into `live-graded.jsonl`, and the fit can read it behind
+`--with-live-calibration` on `nfl-live-week.ts`. The switch is OFF and the
+Tuesday runbook does not pass it. Turning it on is a doctrine decision to be
+made in writing here: it is not tightening-only (a live under-confident map
+corrects UPWARD and can add PLAYs), and the record is too thin to move a
+per-market map before roughly week 3. Referee names now reach the blind input
+from the nflverse officials release (item 10) — still a low-value factor per
+the 2026-08-15 research; the penalty-rate channel it recommends is not built.
+
 ## Un-freezing
 
 These retirements hold for the 2026 season. Reinstating a market in 2027

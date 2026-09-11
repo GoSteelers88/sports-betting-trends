@@ -64,14 +64,17 @@ import {
 } from "../src/lib/devig";
 import {
   applyForecasts,
+  applyReferees,
   computeEpaFeatures,
   espnInjuriesToRows,
   gateFairProb,
   mergeInjuryRows,
   type EspnInjuryFile,
+  type OfficialsFile,
   type TeamGameEpa,
   type WeatherFile,
 } from "../src/lib/nfl-live-inputs";
+import { loadLiveGradedRows } from "../src/lib/nfl-live-grade";
 import { QUANT_DESK_CONFIG } from "../src/lib/quant-desk/engine";
 
 const B = "\x1b[1m";
@@ -292,7 +295,16 @@ async function main(): Promise<void> {
     wxFile && wxFile.season === season && wxFile.week === week ? (wxFile.forecasts ?? []) : [];
   const wx = applyForecasts(games.filter((g) => weekIds.has(g.gameId)), wxForWeek);
   const wxById = new Map(wx.games.map((g) => [g.gameId, g]));
-  const gamesLive = games.map((g) => wxById.get(g.gameId) ?? g);
+  const gamesWx = games.map((g) => wxById.get(g.gameId) ?? g);
+
+  // Referees (nflverse officials via nfl:ingest-live → nfl-officials.json).
+  const refFile = readJsonIf<OfficialsFile>(path.join(processed, "nfl-officials.json"));
+  const refForWeek =
+    refFile && refFile.season === season && refFile.week === week ? (refFile.referees ?? []) : [];
+  const refByOldId = new Map<string, string>(refForWeek.map((r) => [r.oldGameId, r.referee]));
+  const refs = applyReferees(gamesWx.filter((g) => weekIds.has(g.gameId)), refByOldId);
+  const refById = new Map(refs.games.map((g) => [g.gameId, g]));
+  const gamesLive = gamesWx.map((g) => refById.get(g.gameId) ?? g);
 
   const espn = readJsonIf<EspnInjuryFile>(path.join(processed, "injuries-nfl.json"));
   const espnConv = espn ? espnInjuriesToRows(espn, cursor) : { rows: [], unresolvedTeams: [] };
@@ -328,6 +340,12 @@ async function main(): Promise<void> {
       fileGeneratedAt: epaFile?.generatedAt ?? null,
       teamsWithFeatures: epa?.size ?? 0,
       gamesWithBothSides: blind.games.filter((g) => g.context.epa?.away && g.context.epa?.home).length,
+    },
+    referee: {
+      fileGeneratedAt: refFile?.generatedAt ?? null,
+      fileMatchesWeek: !!refFile && refFile.season === season && refFile.week === week,
+      gamesWithReferee: blind.games.filter((g) => g.context.referee.trim() !== "").length,
+      missing: refs.missing,
     },
     neutralSiteGames: blind.games.filter((g) => g.context.neutralSite).map((g) => g.gameId),
   };
@@ -370,7 +388,17 @@ async function main(): Promise<void> {
   // copied to all three rows, but realized rates differ by market — ML
   // favorites won ~66% while ATS ran ~55%, so a pooled map would overstake
   // ATS legs (review finding 2).
-  const gradedForCal = loadGradedRows(dir).filter((r) => r.result !== "push");
+  // The live calibration record (live-graded.jsonl, written by nfl:grade-live)
+  // joins the fit ONLY behind --with-live-calibration. Default off: a refit is
+  // not tightening-only, and per-market maps need >= 20 rows before they
+  // leave the pooled fallback — inert for the first weeks regardless.
+  const liveCal = process.argv.includes("--with-live-calibration") ? loadLiveGradedRows(dir) : [];
+  const gradedForCal = [...loadGradedRows(dir), ...liveCal].filter((r) => r.result !== "push");
+  console.log(
+    `  ${D}calibration record: backtest ${gradedForCal.length - liveCal.filter((r) => r.result !== "push").length} rows` +
+      (liveCal.length ? ` + live ${liveCal.filter((r) => r.result !== "push").length} rows (--with-live-calibration)` : " (live record NOT included — pass --with-live-calibration to add it)") +
+      `${R}`,
+  );
   const toSamples = (rows: typeof gradedForCal) =>
     rows.map((r) => ({ score: r.confidence, won: r.result === "win" }));
   const pooledCal = fitBetaCalibration(toSamples(gradedForCal));
