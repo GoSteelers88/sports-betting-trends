@@ -25,7 +25,7 @@ import { prisma } from "@/lib/prisma";
 
 export class OutOfScopeLeagueError extends Error {
   constructor(league: string) {
-    super(`league ${league} is out of scope (allowed: NBA, MLB)`);
+    super(`league ${league} is out of scope (allowed: ${IN_SCOPE_LEAGUES.join(", ")})`);
     this.name = "OutOfScopeLeagueError";
   }
 }
@@ -66,7 +66,7 @@ Operating procedure:
 
 Map of staleReasons → ingest scripts:
 - "odds file …" → ingest:odds
-- "model file …" / "model has 0 games" → ingest:nba-efficiency + ingest:nba-model (NBA), ingest:wnba-efficiency + ingest:wnba-model (WNBA), or ingest:mlb-model (MLB; also requires ingest:mlb-pitchers, ingest:mlb-bullpen, ingest:mlb-batting if those are also flagged)
+- "model file …" / "model has 0 games" → ingest:nba-efficiency + ingest:nba-model (NBA), ingest:wnba-efficiency + ingest:wnba-model (WNBA), ingest:nfl-model (NFL — projects the committed /nfl doctrine board, no network; "0 games" on NFL means no board is published for the coming week yet, which is normal Mon–Tue: delegate anyway, the analyst will find no NFL edge), or ingest:mlb-model (MLB; also requires ingest:mlb-pitchers, ingest:mlb-bullpen, ingest:mlb-batting if those are also flagged)
 - "injury file …" → ingest:injuries
 
 Respond with a brief plain-text summary at the end (1-3 sentences). The picks themselves are returned out-of-band — your text is just for the run log.`;

@@ -63,7 +63,7 @@ describe("gradeMoneyline", () => {
     awayTeam: string,
     homeScore: number,
     awayScore: number,
-    league: "NBA" | "MLB" = "NBA"
+    league: "NBA" | "MLB" | "NFL" = "NBA"
   ) => ({ league, homeTeam, awayTeam, homeScore, awayScore, date: "2026-06-11" });
 
   it("grades a home-team pick that won", () => {
@@ -83,6 +83,16 @@ describe("gradeMoneyline", () => {
     // drops "sox". The old logic silently graded it as the home team; now it
     // refuses rather than risk a wrong grade corrupting the trial ledger.
     expect(gradeMoneyline("Sox", gf("Chicago White Sox", "Boston Red Sox", 5, 3, "MLB"))).toBeNull();
+  });
+
+  it("NFL: a tied final is a PUSH, not a void — NFL games can end tied", () => {
+    // Ties are real in the NFL (regular-season OT). A moneyline on either side
+    // returns the stake; grading it void would drop it from the ledger, grading
+    // it a loss would charge a stake nobody lost.
+    expect(gradeMoneyline("Detroit Lions", gf("Detroit Lions", "Green Bay Packers", 24, 24, "NFL"))).toBe("push");
+    expect(gradeMoneyline("Green Bay Packers", gf("Detroit Lions", "Green Bay Packers", 24, 24, "NFL"))).toBe("push");
+    // And a decided NFL final still grades normally through the same path.
+    expect(gradeMoneyline("Green Bay Packers", gf("Detroit Lions", "Green Bay Packers", 20, 27, "NFL"))).toBe("win");
   });
 
   it("voids a tie (bad data — NBA/MLB cannot end tied)", () => {

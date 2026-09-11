@@ -34,16 +34,21 @@ type Espn = {
   }>;
 };
 
-const ESPN: Record<"NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB", string> = {
+type GradeLeague = "NBA" | "MLB" | "WNBA" | "NFL" | "NHL" | "NCAAB";
+
+const ESPN: Record<GradeLeague, string> = {
   NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
   MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
   WNBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard",
+  // Verified 2026-09-10: same event/competitor/status shape as the others
+  // (14 finals on 20260104, the Super Bowl on 20260208).
+  NFL: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard",
   NHL: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard",
   NCAAB: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard",
 };
 
 type GameFinal = {
-  league: "NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB";
+  league: GradeLeague;
   homeTeam: string;
   awayTeam: string;
   homeScore: number;
@@ -51,7 +56,7 @@ type GameFinal = {
   date: string;
 };
 
-async function fetchFinalsForDay(league: "NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB", yyyymmdd: string): Promise<GameFinal[]> {
+async function fetchFinalsForDay(league: GradeLeague, yyyymmdd: string): Promise<GameFinal[]> {
   const url = `${ESPN[league]}?dates=${yyyymmdd}`;
   const res = await fetch(url, {
     headers: { "User-Agent": "sports-betting-trends-agent/1.0" },
@@ -138,8 +143,11 @@ export function gradeMoneyline(selection: string, finals: GameFinal): GradeResul
   // to grade rather than silently default to the home arm — a wrong grade
   // corrupts the trial ledger worse than an ungraded pick does.
   if (pickedHome && pickedAway) return null;
-  // NBA/MLB don't allow ties; a tied "final" is bad data → mark void, not push.
-  if (finals.homeScore === finals.awayScore) return "void";
+  // A tied final: NFL games CAN end tied (regular-season overtime), and a tied
+  // moneyline is a PUSH — stake returned, nothing won or lost. NBA/MLB/WNBA/NHL
+  // cannot tie, so a tied "final" there is bad data → void, never a silent push
+  // into the ledger.
+  if (finals.homeScore === finals.awayScore) return finals.league === "NFL" ? "push" : "void";
   const homeWon = finals.homeScore > finals.awayScore;
   if (pickedHome) return homeWon ? "win" : "loss";
   return homeWon ? "loss" : "win";
@@ -199,7 +207,7 @@ export async function autoGradeYesterday(daysBack = 1): Promise<AutoGradeReport>
   const mlPicks = pendingPicks.filter(p => p.market === "moneyline");
   const propPicks = pendingPicks.filter(p => p.market === "prop");
 
-  const leagues = Array.from(new Set(mlPicks.map(p => p.league))) as Array<"NBA" | "MLB" | "WNBA" | "NHL" | "NCAAB">;
+  const leagues = Array.from(new Set(mlPicks.map(p => p.league))) as GradeLeague[];
   const finalsByLeague = new Map<string, GameFinal[]>();
   for (const lg of leagues) {
     const seenIds = new Set<string>();

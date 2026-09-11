@@ -1,7 +1,7 @@
 // Folio 04 — the account. One oversized cumulative-units figure (counted
 // into place), a vertical stat rail, then the by-league table with in-scope
-// leagues (NBA/MLB) first and legacy out-of-scope leagues demoted below an
-// agate rule. ROI prints only where the graded sample clears n=20 — display
+// leagues (NBA/MLB/WNBA/NFL) first and legacy out-of-scope leagues demoted
+// below an agate rule. ROI prints only where the graded sample clears n=20 — display
 // type is not lent to noise.
 
 import type { OverallRecord } from "../_data/dashboard";
@@ -20,7 +20,10 @@ function fmtDate(iso: string): string {
     .toUpperCase();
 }
 
-const IN_SCOPE = ["NBA", "MLB", "WNBA"];
+// Mirrors IN_SCOPE_LEAGUES in src/lib/agent/tools/index.ts. NFL joined the
+// account 2026-09-10 — moneyline only, its picks are a subset of the /nfl
+// doctrine board's PLAY legs (see nfl-model-from-board.ts).
+const IN_SCOPE = ["NBA", "MLB", "WNBA", "NFL"];
 
 export function OverallLedger({ data }: { data: OverallRecord }) {
   const {

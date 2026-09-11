@@ -52,7 +52,7 @@ const NBA_TEAMS = new Set([
   "Washington Wizards",
 ]);
 
-export type HonestLeague = "NBA" | "MLB" | "WNBA" | "NHL" | "OTHER";
+export type HonestLeague = "NBA" | "MLB" | "WNBA" | "NFL" | "NHL" | "OTHER";
 
 export function honestLeague(g: Pick<SlateGame, "league" | "homeTeam" | "awayTeam">): HonestLeague {
   if (g.league === "MLB") {
@@ -64,10 +64,11 @@ export function honestLeague(g: Pick<SlateGame, "league" | "homeTeam" | "awayTea
   return g.league;
 }
 
-/** In-scope = the trial's actual remit: real NBA + MLB + WNBA games. */
+/** In-scope = the trial's actual remit: real NBA + MLB + WNBA + NFL games
+ *  (NFL added 2026-09-10, moneyline only). */
 export function isInScopeGame(g: Pick<SlateGame, "league" | "homeTeam" | "awayTeam">): boolean {
   const l = honestLeague(g);
-  return l === "NBA" || l === "MLB" || l === "WNBA";
+  return l === "NBA" || l === "MLB" || l === "WNBA" || l === "NFL";
 }
 
 // ─── Prop label map (shared by hero, ledgers, props desk) ───────────────────

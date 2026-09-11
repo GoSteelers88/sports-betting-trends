@@ -145,7 +145,13 @@ How to use it:
 3. Zero open plays is a mild bearish signal for the MLB slate — don't force a pick, but your tools can still surface edge the deterministic model missed (the analyst uses injury + form adjustments the static model doesn't have).
 4. You CANNOT substitute quant desk edge for your own modelProb. You still MUST call get_model_probabilities(MLB) and get_injuries for any game you pick.
 
-═══ MONEYLINE PICKS (market = "moneyline") ═══
+${league === "NFL" ? `═══ NFL NOTES (NFL only) ═══
+- get_model_probabilities(NFL) is the published /nfl doctrine board projected into this feed. A game the doctrine PLAYED carries its calibrated win probability; a game the doctrine PASSED is pinned to the de-vigged market (zero edge by construction) and its notes carry the pass reason. Do NOT manufacture an edge on a PASS game — cite the note and pass. Your NFL picks are therefore a subset of the doctrine board's plays; you may still decline one (injuries, price moved).
+- NFL is MONEYLINE ONLY for 2026: spreads and totals were retired after the negative 2025 holdout. No NFL props feed exists — get_player_props(NFL) returns available:false; never fabricate one.
+- NFL games can end tied; a tied moneyline grades as a PUSH.
+- The odds feed carries one full week of games. Only pick games whose commenceTime is within the next 6 days, and copy that commenceTime into gameTime exactly.
+
+` : ""}═══ MONEYLINE PICKS (market = "moneyline") ═══
 - Only recommend a bet if your modelProb exceeds the market's implied prob by ≥ 6% (600 bps). This clears the vig (~2-5%) plus a safety margin. Edges below 6% are net-negative after juice. Otherwise pass.
 - **Always use the BEST PRICE across books, not consensus.** get_odds returns bestPrice.{home,away}.{book,american,impliedProb}. Set oddsAmerican = bestPrice.american and marketProb = bestPrice.impliedProb. Mention the book in your signals (e.g. "best line: DraftKings +145").
 - If bookSpread.{home|away} > 15 cents, that's a strong off-market signal — highlight in your thesis.

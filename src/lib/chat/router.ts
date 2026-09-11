@@ -49,9 +49,16 @@ export type RouteDecision =
 // two buckets BEFORE any model call:
 //
 //   "stats-only"  — we have TRUSTWORTHY stat data for the league (standings/
-//                   gamelogs/efficiency) but we do NOT bet it: NFL, NHL, NCAAB
+//                   gamelogs/efficiency) but we do NOT bet it: NHL, NCAAB
 //                   (basketball). Routes to Lane B in STATS mode: pull + cite the
 //                   numbers, but never issue a pick, edge, or stake.
+//   "receipts"    — NFL. Bettable (IN_SCOPE_LEAGUES, 2026-09-10) but the desk
+//                   answers it on the RECEIPTS lane — the lane that owns the
+//                   published board, the CLV ledger, the post-model validators
+//                   and web search — never through the slate index. That keeps
+//                   the 2026-09-09 scope-pin fix intact: NFL team names are never
+//                   indexed as Lane-B entities, so a September MLB/NBA board
+//                   cannot swallow an NFL question. Same lane /nfl mounts.
 //   "refuse"      — no data, or no TRUSTWORTHY data. golf/tennis/UFC (none),
 //                   NCAAF/college-football (none), and SOCCER (standings drop
 //                   draws → false records). In-character refusal, NO model call.
@@ -63,12 +70,13 @@ export type RouteDecision =
 // unmatched → normal entity/slate flow downstream.
 export type ScopeClass =
   | { kind: "stats-only"; statsLeague: StatsLeague; sport: string }
-  | { kind: "refuse"; sport: string };
+  | { kind: "refuse"; sport: string }
+  | { kind: "receipts"; sport: "NFL" };
 
 // Stats-only leagues (data exists AND is trustworthy, but not bettable). Each
 // pattern maps to the StatsLeague whose snapshot files back it. The STATS-ONLY
-// tier is now exactly NFL, NHL, and NCAAB (basketball). Ordered most-specific-
-// first.
+// tier is now exactly NHL and NCAAB (basketball); NFL moved to the receipts
+// class on 2026-09-10. Ordered most-specific-first.
 //
 // SOCCER is NOT here — it moved to REFUSE (see REFUSE_PATTERNS): our only soccer
 // data is standings-{epl,mls,ucl}.json and StandingsRow drops draws, so a club's
@@ -137,7 +145,7 @@ export function detectOutOfScope(message: string): ScopeClass | null {
     if (re.test(message)) return { kind: "stats-only", statsLeague, sport };
   }
   if (NFL_PATTERNS.some((p) => p.test(message))) {
-    return { kind: "stats-only", statsLeague: "NFL", sport: "NFL" };
+    return { kind: "receipts", sport: "NFL" };
   }
   return null;
 }
@@ -173,7 +181,10 @@ const STOPWORD_TOKENS = new Set([
 // indexing order (NBA, then MLB, then WNBA in IN_SCOPE_LEAGUES) can't let WNBA
 // last-writer-wins clobber MLB/NBA. Mirrors primaryLeagueWithGames' MLB>NBA>WNBA
 // tie-break so a shared token routes to the deeper-book league.
-const LEAGUE_RANK: Record<InScopeLeague, number> = { MLB: 3, NBA: 2, WNBA: 1 };
+// NFL is rank 0 and is never written into the index (see buildSlateEntities) —
+// the Record is exhaustive over InScopeLeague so the compiler holds this file to
+// the scope list, and 0 documents the routing choice rather than a precedence.
+const LEAGUE_RANK: Record<InScopeLeague, number> = { MLB: 3, NBA: 2, WNBA: 1, NFL: 0 };
 
 // Set key→league only if the new league outranks whatever's already there. First
 // write wins for a fresh key; a collision keeps the higher-ranked league.
@@ -224,7 +235,13 @@ export function buildSlateEntities(deps?: {
   // Index every bettable league's board (NBA, MLB, WNBA). getOdds("WNBA")
   // reads latest-odds-api-basketball_wnba.json; an absent/empty feed degrades
   // to [] rather than throwing, so a dark WNBA night just adds nothing.
+  //
+  // NFL is deliberately NOT indexed even though it is in scope: the desk
+  // answers NFL on the receipts lane (detectOutOfScope → kind "receipts"), and
+  // indexing 32 NFL cities here would re-open the exact collision the
+  // 2026-09-09 scope pin closed ("Seattle" → Mariners, "Houston" → Astros…).
   for (const league of IN_SCOPE_LEAGUES) {
+    if (league === "NFL") continue;
     try {
       const { events } = oddsFn(league);
       for (const ev of events) {
@@ -509,10 +526,15 @@ export function classifyDeterministic(
     };
   }
 
-  // (2) SCOPE CLASS — cheapest, no model. A stats-only league (trustworthy data,
-  // not bettable) routes to Lane B in STATS mode; a refused sport (no data / no
-  // trustworthy data) returns the out-of-scope Lane-A refusal.
+  // (2) SCOPE CLASS — cheapest, no model. NFL routes to the RECEIPTS lane (the
+  // same lane /nfl mounts — board, ledger, validators, search); a stats-only
+  // league (trustworthy data, not bettable) routes to Lane B in STATS mode; a
+  // refused sport (no data / no trustworthy data) returns the out-of-scope
+  // Lane-A refusal.
   if (oos) {
+    if (oos.kind === "receipts") {
+      return { lane: "R", reason: "nfl-receipts" };
+    }
     if (oos.kind === "stats-only") {
       return {
         lane: "B",

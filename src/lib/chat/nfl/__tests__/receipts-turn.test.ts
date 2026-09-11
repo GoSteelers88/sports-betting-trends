@@ -268,9 +268,30 @@ describe("web search is a SEPARATE channel", () => {
 // ─── 4. The lane never leaks into the homepage lane ──────────────────────────
 
 describe("the /nfl lane does not regress '/'", () => {
-  it("without scope, an NFL question still takes the pre-existing stats path", async () => {
+  // 2026-09-10: NFL is in scope, and the homepage answers NFL on THIS lane too
+  // (router: detectOutOfScope → "receipts"). What must not regress is the
+  // isolation: Lane B never sees the question, and a non-NFL stats ask (NHL)
+  // still takes the pre-existing stats path — asserted right below.
+  it("without scope, an NFL question runs the receipts lane and never Lane B", async () => {
+    const laneB = vi.fn();
+    const { runner } = stubRunner("The board has two plays this week.");
+    const res = await answer("what are the Chiefs standings", NO_TURNS, {
+      slate: { teams: new Map(), tokens: new Map(), players: new Map() },
+      spendCheck: openSpend,
+      client: forbiddenClient().client,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      laneBRunner: laneB as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      receiptsRunner: runner as any,
+    });
+    expect(laneB).not.toHaveBeenCalled();
+    expect(runner).toHaveBeenCalledTimes(1);
+    expect(res.mode).toBe("receipts");
+  });
+
+  it("without scope, a stats-only league (NHL) still takes the pre-existing stats path", async () => {
     const laneB = vi.fn().mockResolvedValue({
-      reply: "The Chiefs are 0-0.",
+      reply: "The Bruins are 0-0.",
       toolsUsed: ["get_standings"],
       toolResultTexts: ["{}"],
       iterations: 1,
@@ -279,7 +300,7 @@ describe("the /nfl lane does not regress '/'", () => {
       usageTokens: 10,
     });
     const { runner } = stubRunner("SHOULD NEVER BE USED");
-    const res = await answer("what are the Chiefs standings", NO_TURNS, {
+    const res = await answer("how do the Bruins look this year in hockey?", NO_TURNS, {
       slate: { teams: new Map(), tokens: new Map(), players: new Map() },
       spendCheck: openSpend,
       client: forbiddenClient().client,
@@ -290,6 +311,7 @@ describe("the /nfl lane does not regress '/'", () => {
     });
     expect(runner).not.toHaveBeenCalled();
     expect(laneB).toHaveBeenCalledTimes(1);
+    // Lane B responses carry no `mode` on the wire (only receipts does).
     expect(res.mode).toBeUndefined();
   });
 

@@ -20,6 +20,7 @@ const data = new SlashCommandBuilder()
         { name: "NBA", value: "NBA" },
         { name: "MLB", value: "MLB" },
         { name: "WNBA", value: "WNBA" },
+        { name: "NFL", value: "NFL" },
         { name: "NHL", value: "NHL" }
       )
   );

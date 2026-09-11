@@ -37,6 +37,10 @@ export const LEAGUE_TO_SPORT: Record<string, string> = {
   WNBA: "basketball_wnba",
   MLB: "baseball_mlb",
   NCAAB: "basketball_ncaab",
+  // In scope 2026-09-10. The file is written by scripts/scrape-odds.ts (FanDuel
+  // custom NFL page + Bovada football/nfl) on every odds refresh, so CLV capture
+  // has a live NFL close to read.
+  NFL: "americanfootball_nfl",
 };
 
 // File data is considered usable for CLV if it's been refreshed within this

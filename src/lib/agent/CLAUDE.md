@@ -41,7 +41,7 @@ These are load-bearing. Don't relax them without explicit user buy-in.
 |---|---|---|
 | Critic JSON parse failure | `critic.ts:294-300` | Drop **all** picks for the run. Logged + notified. |
 | Orchestrator hard-stop after delegate | `orchestrator.ts:245` | `analystDone = true` ends the orchestrator's LLM loop immediately. |
-| Scope guard (NBA + MLB + WNBA) | `analyst.ts:170-172`, `orchestrator.ts:115-121` | `isInScope(league)` throws `OutOfScopeLeagueError` + notify. WNBA re-added 2026-06-30 (trial-integrated); NHL/NCAAB still stripped. |
+| Scope guard (NBA + MLB + WNBA + NFL) | `analyst.ts:170-172`, `orchestrator.ts:115-121` | `isInScope(league)` throws `OutOfScopeLeagueError` + notify. WNBA re-added 2026-06-30; NFL added 2026-09-10 (moneyline only, model = published /nfl doctrine board via `ingest:nfl-model`, ties grade as push); NHL/NCAAB still stripped. |
 | Cross-run idempotency | `analyst.ts:368-376` | Prisma P2002 on `@@unique([league, gameDate, market, selection])` caught, counted as skipped, no throw. |
 | Critic floor safety net | `orchestrator.ts:324-356` | If critic kills ≥3 grader-kept picks on ≥3 raw, rescue top-edge pick at 0.5× (only if edge ≥6%). |
 | Grader edge tolerance band | `grader.ts:72-87` | Edges in `[5.5%, 6%)` → keep at 0.5× stake with warning. Below 5.5% → drop. |
@@ -51,7 +51,7 @@ These are load-bearing. Don't relax them without explicit user buy-in.
 | Tool | Data source | Notes |
 |---|---|---|
 | `get_odds(league)` | `data/processed/latest-odds-api-*.json` | Consensus + bestPrice off-market. |
-| `get_model_probabilities(league)` | `data/processed/{nba,mlb}-model*.json` | Stale (>6h) status passed back in-band. |
+| `get_model_probabilities(league)` | `data/processed/{nba,wnba,nhl,nfl,mlb}-model*.json` | Stale (>6h) status passed back in-band. NFL results carry `verdict` (PLAY/PASS) + doctrine `notes`; PASS games are pinned to the de-vigged market (`nfl-model-from-board.ts`). |
 | `get_injuries(league)` | `data/processed/injuries-*.json` | |
 | `get_player_props(league)` | `data/processed/latest-player-props*.json` | NBA + MLB; absence ≠ error. |
 | `get_trend_summary(league)` | `data/processed/latest-summary.json` | Legacy heuristic best-bets. |

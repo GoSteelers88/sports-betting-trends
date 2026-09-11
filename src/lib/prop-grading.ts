@@ -39,7 +39,11 @@ export type EspnSummary = {
   };
 };
 
-export const PROP_GRADING_LEAGUES = ["NBA", "MLB", "WNBA"] as const;
+// NFL is here for the MONEYLINE grading path + the scope-integration invariant
+// (an in-scope league must resolve to an ESPN scoreboard). There is no NFL
+// props feed, so no NFL prop is ever generated; if one ever were, the box-score
+// lookup would run against the football summary and fall through to unmatched.
+export const PROP_GRADING_LEAGUES = ["NBA", "MLB", "WNBA", "NFL"] as const;
 export type PropGradingLeague = (typeof PROP_GRADING_LEAGUES)[number];
 
 // WNBA shares the ESPN basketball box-score schema with the NBA, so the
@@ -49,12 +53,14 @@ export const SCOREBOARD: Record<PropGradingLeague, string> = {
   NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
   MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
   WNBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard",
+  NFL: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard",
 };
 
 export const SUMMARY: Record<PropGradingLeague, string> = {
   NBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary",
   MLB: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary",
   WNBA: "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/summary",
+  NFL: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary",
 };
 
 // 36-hour proximity gate — picks anchored to one snapshot date can only

@@ -33,7 +33,12 @@ const USER_AGENT =
 type LeagueSpec = {
   sportKey: string;
   sportTitle: string;
-  fd?: { eventTypeId: number; competitionId?: number };
+  // FanDuel serves most sports on the SPORT page keyed by eventTypeId; NFL is
+  // only reachable through its CUSTOM page (page=SPORT&eventTypeId=7521 returns
+  // an error envelope — verified 2026-09-10). Exactly one of the two keys.
+  fd?:
+    | { eventTypeId: number; customPageId?: undefined; competitionId?: number }
+    | { customPageId: string; eventTypeId?: undefined; competitionId?: number };
   bovada?: { path: string };
 };
 
@@ -62,6 +67,15 @@ const LEAGUES: LeagueSpec[] = [
     fd: { eventTypeId: 7524 },
     bovada: { path: "hockey/nhl" },
   },
+  {
+    // NFL (in scope 2026-09-10). competitionId 12282733 is the "NFL" competition
+    // on the custom page; it drops the Draft / Specials / Futures pseudo-events
+    // the same page carries (the "@ / vs" name filter drops most, this drops all).
+    sportKey: "americanfootball_nfl",
+    sportTitle: "NFL",
+    fd: { customPageId: "nfl", competitionId: 12282733 },
+    bovada: { path: "football/nfl" },
+  },
 ];
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -89,7 +103,11 @@ type FdEvent = {
 
 async function fetchFanDuel(spec: LeagueSpec): Promise<OddsEvent[]> {
   if (!spec.fd) return [];
-  const url = `https://sbapi.nj.sportsbook.fanduel.com/api/content-managed-page?page=SPORT&eventTypeId=${spec.fd.eventTypeId}&_ak=FhMFpcPWXMeyZxOx&timezone=America%2FNew_York`;
+  const page =
+    spec.fd.customPageId !== undefined
+      ? `page=CUSTOM&customPageId=${spec.fd.customPageId}`
+      : `page=SPORT&eventTypeId=${spec.fd.eventTypeId}`;
+  const url = `https://sbapi.nj.sportsbook.fanduel.com/api/content-managed-page?${page}&_ak=FhMFpcPWXMeyZxOx&timezone=America%2FNew_York`;
   const res = await fetch(url, {
     headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
     signal: AbortSignal.timeout(20000),
@@ -233,7 +251,14 @@ async function fetchBovada(spec: LeagueSpec): Promise<OddsEvent[]> {
     console.warn(`Bovada ${spec.sportKey}: HTTP ${res.status}`);
     return [];
   }
-  const data = (await res.json()) as Array<{ events?: BvEvent[] }>;
+  const data = (await res.json()) as Array<{ events?: BvEvent[] }> | Record<string, unknown>;
+  // Bovada answers a throttled/blocked request with HTTP 200 and a bare `{}`
+  // (measured 2026-09-10 on football/nfl: 2 bytes, no error). Treat any
+  // non-array body as "no events" so the other book still writes the file.
+  if (!Array.isArray(data)) {
+    console.warn(`Bovada ${spec.sportKey}: non-array coupon payload (${JSON.stringify(data).slice(0, 80)}) — treating as 0 events`);
+    return [];
+  }
   const events: BvEvent[] = [];
   for (const group of data) for (const ev of group.events ?? []) events.push(ev);
 
@@ -407,6 +432,31 @@ async function main() {
       } else {
         console.warn(
           `baseball_mlb: MLB filter would empty a ${merged.length}-event feed — keeping unfiltered set (allowlist bug?)`,
+        );
+      }
+    }
+
+    // NFL: the book posts two weeks of lines at once (29 events on 2026-09-10),
+    // but the pipeline's unit is the WEEK — the doctrine board, nfl-model.json
+    // and the analyst's 6-day pick window all cover one week. Scope the file to
+    // kickoffs within the next 8 days so the health check's model-vs-odds
+    // count, the dashboard slate and CLV capture all see the same week. Same
+    // guard as MLB: never empty a non-empty feed.
+    if (spec.sportKey === "americanfootball_nfl" && merged.length > 0) {
+      const horizon = Date.now() + 8 * 24 * 60 * 60 * 1000;
+      const thisWeek = merged.filter((e) => {
+        const t = Date.parse(e.commence_time);
+        return Number.isFinite(t) && t <= horizon;
+      });
+      if (thisWeek.length > 0) {
+        const dropped = merged.length - thisWeek.length;
+        if (dropped > 0) {
+          console.log(`  americanfootball_nfl: dropped ${dropped} game(s) beyond 8 days → ${thisWeek.length} this week`);
+        }
+        toWrite = thisWeek;
+      } else {
+        console.warn(
+          `americanfootball_nfl: 8-day window would empty a ${merged.length}-event feed — keeping unfiltered set (clock or feed problem?)`,
         );
       }
     }

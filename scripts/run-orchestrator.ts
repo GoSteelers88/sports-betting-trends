@@ -2,11 +2,12 @@
 // Usage: npm run agent:run -- NBA
 //        npm run agent:run -- MLB
 //        npm run agent:run -- WNBA
+//        npm run agent:run -- NFL
 //        npm run agent:run -- BOTH   (all in-scope leagues; default)
 //
-// BOTH and ALL expand to IN_SCOPE_LEAGUES = [NBA, MLB, WNBA] (WNBA re-added
-// 2026-06-30). Passing NHL/NCAAB explicitly will hit the scope guard in
-// orchestrate() and throw OutOfScopeLeagueError.
+// BOTH and ALL expand to IN_SCOPE_LEAGUES = [NBA, MLB, WNBA, NFL] (WNBA re-added
+// 2026-06-30, NFL added 2026-09-10). Passing NHL/NCAAB explicitly will hit the
+// scope guard in orchestrate() and throw OutOfScopeLeagueError.
 import { config } from "dotenv";
 config();
 

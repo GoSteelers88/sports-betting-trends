@@ -38,12 +38,11 @@ function slate(): SlateEntities {
 }
 
 describe("scope gate — three-tier league model", () => {
-  it("classifies NFL as STATS-ONLY (standings-nfl exists, not bettable)", () => {
+  it("classifies NFL as the RECEIPTS class (bettable since 2026-09-10, answered on the /nfl lane)", () => {
     const oos = detectOutOfScope("who do you like in the Chiefs game?");
-    expect(oos?.kind).toBe("stats-only");
-    if (oos?.kind === "stats-only") {
+    expect(oos?.kind).toBe("receipts");
+    if (oos?.kind === "receipts") {
       expect(oos.sport).toBe("NFL");
-      expect(oos.statsLeague).toBe("NFL");
     }
   });
   it("classifies NHL / college-basketball as STATS-ONLY with the right StatsLeague", () => {
@@ -100,14 +99,12 @@ describe("scope gate — three-tier league model", () => {
     expect(d.lane).toBe("A");
     expect("outOfScope" in d && d.outOfScope).toBe(true);
   });
-  it("routes a STATS-ONLY league to Lane B in stats mode (NOT a refusal)", () => {
+  it("routes an NFL ask on the DEFAULT scope to the receipts lane (same lane /nfl mounts)", () => {
     const d = classifyDeterministic("what are the Chiefs' standings?", slate());
-    expect(d.lane).toBe("B");
-    expect("mode" in d && d.mode).toBe("stats");
-    if (d.lane === "B" && "mode" in d) {
-      expect(d.statsLeague).toBe("NFL");
-      expect(d.reason).toBe("stats-only:NFL");
-    }
+    expect(d.lane).toBe("R");
+    expect(d.reason).toBe("nfl-receipts");
+  });
+  it("routes a STATS-ONLY league to Lane B in stats mode (NOT a refusal)", () => {
     // NHL / soccer likewise reach Lane B stats mode.
     const nhl = classifyDeterministic("how do the Bruins look this year in hockey?", slate());
     expect(nhl.lane).toBe("B");
@@ -162,10 +159,14 @@ describe("mixed-league message → bettable entity wins (SHOULD-FIX 3)", () => {
     }
   });
   it("a PURE stats-only ask (no bettable entity) still routes to stats mode", () => {
-    const d = classifyDeterministic("what are the Chiefs' standings?", slate());
+    const d = classifyDeterministic("how do the Bruins look this year in hockey?", slate());
     expect(d.lane).toBe("B");
     expect("mode" in d && d.mode).toBe("stats");
-    if (d.lane === "B" && "mode" in d) expect(d.statsLeague).toBe("NFL");
+    if (d.lane === "B" && "mode" in d) expect(d.statsLeague).toBe("NHL");
+  });
+  it("a PURE NFL ask (no bettable entity) routes to the receipts lane, never stats mode", () => {
+    const d = classifyDeterministic("what are the Chiefs' standings?", slate());
+    expect(d.lane).toBe("R");
   });
 });
 

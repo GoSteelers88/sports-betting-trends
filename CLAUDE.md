@@ -11,9 +11,15 @@
 ## What This Is
 Full-stack sports betting platform with a Claude-powered agent layer. Tracks
 performance, generates picks, runs a 30-day paper trial, and (eventually)
-places bets on Kalshi. Scope: **NBA + MLB + WNBA** — hard-enforced via
+places bets on Kalshi. Scope: **NBA + MLB + WNBA + NFL** — hard-enforced via
 `IN_SCOPE_LEAGUES` + `isInScope()` at the `orchestrate()` and `analyze()`
-boundaries. WNBA/NHL/NCAAB were stripped on 2026-05-20 after they leaked
+boundaries. **NFL was added 2026-09-10 (moneyline only)**: its model feed is the
+published /nfl doctrine board projected by `scripts/ingest-nfl-model.ts` (PASS
+games pinned to the market, so the account can only find NFL edge where the
+doctrine did), its moneylines grade off the ESPN NFL scoreboard (a tie is a
+PUSH), CLV reads `latest-odds-api-americanfootball_nfl.json` (now refreshed by
+`scrape-odds.ts` from FanDuel + Bovada), and the desk answers NFL on the
+receipts lane from every page. No NFL props feed. WNBA/NHL/NCAAB were stripped on 2026-05-20 after they leaked
 into the paper trial and contaminated the CLV/ROI metrics; **WNBA was
 re-added 2026-06-30 by operator decision (trial-integrated, ML + props)** —
 its moneylines grade off the ESPN WNBA scoreboard and its props share the

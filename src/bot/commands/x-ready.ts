@@ -24,10 +24,11 @@ const data = new SlashCommandBuilder()
       .setDescription("Filter by league")
       .addChoices(
         { name: "BOTH (NBA + MLB)", value: "BOTH" },
-        { name: "ALL (NBA + MLB + WNBA + NHL)", value: "ALL" },
+        { name: "ALL (NBA + MLB + WNBA + NFL + NHL)", value: "ALL" },
         { name: "NBA", value: "NBA" },
         { name: "MLB", value: "MLB" },
         { name: "WNBA", value: "WNBA" },
+        { name: "NFL", value: "NFL" },
         { name: "NHL", value: "NHL" }
       )
   )

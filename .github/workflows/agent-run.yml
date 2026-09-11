@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       league:
-        description: League to analyze (NBA | MLB | WNBA | BOTH = all in-scope)
+        description: League to analyze (NBA | MLB | WNBA | NFL | BOTH = all in-scope)
         required: true
         default: BOTH
         type: choice
@@ -15,6 +15,7 @@ on:
           - NBA
           - MLB
           - WNBA
+          - NFL
           - BOTH
   schedule:
     # Off-the-hour offsets to dodge GH Actions cron congestion at :00/:30 boundaries.
@@ -93,6 +94,10 @@ jobs:
           npm run ingest:wnba-model || echo "wnba model build failed (non-fatal — likely offseason)"
           npm run ingest:nhl-efficiency || echo "nhl efficiency refresh failed (non-fatal — likely offseason)"
           npm run ingest:nhl-model || echo "nhl model build failed (non-fatal — likely offseason)"
+          # NFL: projects the committed /nfl doctrine board into nfl-model.json.
+          # No network, no credits; the odds file it joins against is refreshed
+          # by ingest:odds above (FanDuel custom NFL page + Bovada football/nfl).
+          npm run ingest:nfl-model || echo "nfl model build failed (non-fatal — no board published yet?)"
           # Forward-looking pitching (Statcast xERA/xwOBA). Season-long stats,
           # independent of today's slate — safe to refresh here so mlb-model
           # (rebuilt by the orchestrator's run_ingest) reads current numbers.
@@ -115,8 +120,8 @@ jobs:
 
       - name: Run orchestrator
         # Pass LEAGUE via env, never interpolate ${{ }} into shell bodies.
-        # Scope is NBA + MLB + WNBA (WNBA re-added 2026-06-30, trial-integrated);
-        # NHL / NCAAB remain removed. The scope guard in orchestrate() throws
+        # Scope is NBA + MLB + WNBA + NFL (WNBA re-added 2026-06-30, NFL added
+        # 2026-09-10, both trial-integrated); NHL / NCAAB remain removed. The scope guard in orchestrate() throws
         # OutOfScopeLeagueError if anything else slips in via workflow_dispatch.
         env:
           LEAGUE: ${{ github.event.inputs.league || 'BOTH' }}
@@ -137,6 +142,7 @@ jobs:
             "data/processed/latest-odds-api-basketball_ncaab.json"
             "data/processed/latest-odds-api-basketball_wnba.json"
             "data/processed/latest-odds-api-icehockey_nhl.json"
+            "data/processed/latest-odds-api-americanfootball_nfl.json"
             "data/processed/latest-summary.json"
             "data/processed/latest-player-props.json"
             "data/processed/injuries-nba.json"
@@ -152,6 +158,7 @@ jobs:
             "data/processed/wnba-efficiency.json"
             "data/processed/nhl-model.json"
             "data/processed/nhl-efficiency.json"
+            "data/processed/nfl-model.json"
             "data/processed/mlb-pitchers-today.json"
             "data/processed/mlb-bullpen.json"
             "data/processed/mlb-batting.json"

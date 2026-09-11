@@ -123,6 +123,9 @@ const STDDEV_FLOOR: Record<PropGradingLeague, Record<string, number>> = {
     player_rebounds_assists: 2.2,
     player_blocks_steals: 1.0,
   },
+  // No NFL props are projected (no feed); an empty map falls through to the
+  // 1.0 default floor if one ever were.
+  NFL: {},
 };
 
 // Shrinkage constant k (in "effective games"). The player mean gets weight
@@ -131,7 +134,9 @@ const STDDEV_FLOOR: Record<PropGradingLeague, Record<string, number>> = {
 // totals, so MLB shrinks harder. At n=5 with k=6, the prior still carries
 // 55% of the weight — exactly the caution thin samples demand. WNBA mirrors
 // the NBA until its own game-log history exists.
-const SHRINK_K: Record<PropGradingLeague, number> = { NBA: 4, MLB: 6, WNBA: 4 };
+// NFL has no props feed and no game-log history; the entry exists only so the
+// Record stays exhaustive over PropGradingLeague. No NFL prop is ever projected.
+const SHRINK_K: Record<PropGradingLeague, number> = { NBA: 4, MLB: 6, WNBA: 4, NFL: 4 };
 
 // League-average bases per NON-HR hit, used to SYNTHESIZE total bases from
 // (H, HR) when the box-score feed lacks 2B/3B. Of non-HR hits, roughly 76%

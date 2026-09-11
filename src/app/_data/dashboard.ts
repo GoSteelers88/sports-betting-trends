@@ -20,8 +20,10 @@ type OutcomeWithPick = Prisma.AgentOutcomeGetPayload<{ include: { pick: true } }
 
 const PROCESSED = path.resolve(process.cwd(), "data", "processed");
 
+export type SlateLeague = "NBA" | "MLB" | "WNBA" | "NFL" | "NHL";
+
 export type SlateGame = {
-  league: "NBA" | "MLB" | "WNBA" | "NHL";
+  league: SlateLeague;
   eventId: string;
   commenceTime: string;
   homeTeam: string;
@@ -467,10 +469,15 @@ type RawOddsFile = { events?: RawOddsEvent[] };
 // MLB references the single-source MLB_ODDS_FILE from the prop-plays loader so the
 // dashboard's odds read and the loader's slate-scoping read can never diverge on a
 // feed rename (Finding 2). The loader → dashboard import is one-way (no cycle).
-const ODDS_FILE: Record<"NBA" | "MLB" | "WNBA" | "NHL", string> = {
+const ODDS_FILE: Record<SlateLeague, string> = {
   NBA: "latest-odds-api-basketball_nba.json",
   MLB: MLB_ODDS_FILE,
   WNBA: "latest-odds-api-basketball_wnba.json",
+  // In scope 2026-09-10 — written by scrape-odds.ts (FanDuel custom NFL page +
+  // Bovada football/nfl) on every odds refresh. Before that this path held a
+  // stale February NCAAB payload (threat T5); the injury wire below still
+  // scopes off the Pinnacle nfl-slate.json so it shares one source with /nfl.
+  NFL: "latest-odds-api-americanfootball_nfl.json",
   NHL: "latest-odds-api-icehockey_nhl.json",
 };
 
@@ -483,7 +490,7 @@ type ModelGame = {
   expectedMargin?: number;
 };
 
-function loadOdds(league: "NBA" | "MLB" | "WNBA" | "NHL"): SlateGame[] {
+function loadOdds(league: SlateLeague): SlateGame[] {
   const file = readJson<RawOddsFile>(ODDS_FILE[league], { events: [] });
   return (file.events ?? []).map(ev => {
     const home: number[] = [];
@@ -550,13 +557,15 @@ function loadOdds(league: "NBA" | "MLB" | "WNBA" | "NHL"): SlateGame[] {
   });
 }
 
-function loadModelMap(league: "NBA" | "MLB" | "WNBA" | "NHL"): Map<string, ModelGame> {
-  // NBA / WNBA / NHL share the basketball-model.ts / hockey-model.ts envelope:
-  // outer { generatedAt, data: { results } }. MLB uses its own flat shape.
+function loadModelMap(league: SlateLeague): Map<string, ModelGame> {
+  // NBA / WNBA / NHL / NFL share the basketball-model.ts / hockey-model.ts /
+  // nfl-model-from-board.ts envelope: outer { generatedAt, data: { results } }.
+  // MLB uses its own flat shape.
   const wrappedFile =
     league === "NBA" ? "nba-model.json"
     : league === "WNBA" ? "wnba-model.json"
     : league === "NHL" ? "nhl-model.json"
+    : league === "NFL" ? "nfl-model.json"
     : null;
   if (wrappedFile) {
     const file = readJson<{ data?: { results?: ModelGame[] } }>(wrappedFile, {});
@@ -572,11 +581,13 @@ function attachModel(games: SlateGame[]): SlateGame[] {
   const mlbModel = loadModelMap("MLB");
   const wnbaModel = loadModelMap("WNBA");
   const nhlModel = loadModelMap("NHL");
+  const nflModel = loadModelMap("NFL");
   return games.map(g => {
     const map =
       g.league === "NBA" ? nbaModel
       : g.league === "WNBA" ? wnbaModel
       : g.league === "NHL" ? nhlModel
+      : g.league === "NFL" ? nflModel
       : mlbModel;
     const model = map.get(`${g.homeTeam}::${g.awayTeam}`);
     if (!model) return g;
@@ -598,9 +609,9 @@ type SummaryFile = {
 function loadMarketPicks(): MarketPick[] {
   const file = readJson<SummaryFile>("latest-summary.json", { bestBets: [] });
   const picks = file.bestBets ?? [];
-  // Restrict to NBA + MLB and take the top 5
+  // Restrict to covered leagues and take the top 5
   return picks
-    .filter(p => p.league === "NBA" || p.league === "MLB" || p.league === "WNBA" || p.league === "NHL")
+    .filter(p => p.league === "NBA" || p.league === "MLB" || p.league === "WNBA" || p.league === "NFL" || p.league === "NHL")
     .slice(0, 5);
 }
 
@@ -1758,6 +1769,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     ...loadOdds("NBA"),
     ...loadOdds("MLB"),
     ...loadOdds("WNBA"),
+    ...loadOdds("NFL"),
     ...loadOdds("NHL"),
   ]);
   const picks = await loadTodaysPicks();

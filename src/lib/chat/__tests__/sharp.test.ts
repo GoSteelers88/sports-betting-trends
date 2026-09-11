@@ -113,16 +113,16 @@ describe("scope gate — refuse tier (no data → refusal, no fabricated read)",
   });
 });
 
-describe("scope gate — stats-only tier (NFL/NHL/soccer → Lane B stats mode)", () => {
-  it("an NFL question routes to Lane B in stats mode via the injected runner", async () => {
+describe("scope gate — stats-only tier (NHL/NCAAB → Lane B stats mode)", () => {
+  it("an NHL question routes to Lane B in stats mode via the injected runner", async () => {
     const { client } = fakeClient("unused-persona");
     const laneBRunner = vi.fn().mockResolvedValue({
-      reply: "Chiefs are 11-3, top of the AFC West. I'll show you the numbers, but I don't bet that league.",
+      reply: "Bruins are 30-12. I'll show you the numbers, but I don't bet that league.",
       toolsUsed: ["get_standings"],
-      toolResultTexts: [JSON.stringify({ available: true, teams: [{ team: "Chiefs", wins: 11, losses: 3 }] })],
+      toolResultTexts: [JSON.stringify({ available: true, teams: [{ team: "Bruins", wins: 30, losses: 12 }] })],
       iterations: 1,
     });
-    const res = await answer("what are the Chiefs' standings this year?", NO_TURNS, {
+    const res = await answer("how do the Bruins look this year in hockey?", NO_TURNS, {
       client,
       slate: slate(),
       spendCheck: openSpend,
@@ -133,9 +133,38 @@ describe("scope gate — stats-only tier (NFL/NHL/soccer → Lane B stats mode)"
     // Runner called with the stats-only StatsLeague + scope + mode="stats".
     expect(laneBRunner).toHaveBeenCalledTimes(1);
     const args = laneBRunner.mock.calls[0];
-    expect(args[0]).toBe("NFL"); // league
+    expect(args[0]).toBe("NHL"); // league
     expect(args[5]).toBe("slate"); // scope
     expect(args[6]).toBe("stats"); // mode
+  });
+
+  // 2026-09-10: NFL is bettable and is answered on the RECEIPTS lane from the
+  // homepage too — the injected receipts runner must be the one that fires, and
+  // Lane B must never see the question.
+  it("an NFL question on the default scope runs the RECEIPTS lane, never Lane B", async () => {
+    const { client } = fakeClient("unused-persona");
+    const laneBRunner = vi.fn();
+    const receiptsRunner = vi.fn().mockResolvedValue({
+      reply: "Week 1 board: two plays, NYJ ML and GB ML. Everything else passed.",
+      toolsUsed: ["get_nfl_board"],
+      toolResultTexts: [],
+      search: { used: false, sources: [], errors: [] },
+      iterations: 1,
+      usageTokens: 100,
+      cacheReadTokens: 0,
+      cacheCreationTokens: 0,
+      refused: false,
+    });
+    const res = await answer("who do you like in the Chiefs game this week?", NO_TURNS, {
+      client,
+      slate: slate(),
+      spendCheck: openSpend,
+      laneBRunner: laneBRunner as never,
+      receiptsRunner: receiptsRunner as never,
+    });
+    expect(res.mode).toBe("receipts");
+    expect(laneBRunner).not.toHaveBeenCalled();
+    expect(receiptsRunner).toHaveBeenCalledTimes(1);
   });
 });
 
