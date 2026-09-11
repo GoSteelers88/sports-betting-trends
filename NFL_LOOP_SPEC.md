@@ -36,6 +36,18 @@ PRE-GAME fields only:
   has no score/result columns at all) and `buildBlindWeek` never attaches another
   team's or another week's rows. Empty arrays when the cache is absent (offline-safe).
 - the accumulated lessons memo
+- **live weeks only (2026-09-10, `src/lib/nfl-live-inputs.ts`):** `neutralSite`
+  from nflverse `location` (no home field at the international series / Super
+  Bowl); ESPN `injuries-nfl.json` mapped onto the same report-only `InjuryRow`
+  shape (IR/PUP → Out, Day-To-Day → Questionable; nflverse week-N reports do
+  not exist until Wednesday, after the Tuesday publish); Open-Meteo kickoff
+  forecasts for outdoor games written into `temp`/`wind` with the horizon in
+  `weatherForecastHoursAhead` (domes stay null; a blank roof is retractable and
+  is fetched); nflverse `stats_team_week` EPA features per side
+  (`context.epa`: EWMA EPA per dropback / per carry, offense and allowed,
+  plays-weighted, prior season ×0.67, games strictly before the cursor). All
+  of these are inputs, not rules; each is counted in the private board's
+  `inputs` block. Backtest weeks pass none of them and get `null`.
 
 **ZERO post-game fields** ever enter the blind input: no `away_score`,
 `home_score`, `result`, actual `total`, or anything derived from them. The

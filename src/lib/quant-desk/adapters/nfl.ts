@@ -61,9 +61,12 @@ export class EloLedger {
     return r;
   }
 
-  /** Pre-game home win prob (with HFA). Does NOT mutate ratings — leak-safe. */
-  homeWinProb(home: string, away: string, season: number): number {
-    const h = this.get(home, season) + ELO_HFA;
+  /** Pre-game home win prob (with HFA unless the venue is neutral — the
+   *  international series and the Super Bowl carry no home field, and until
+   *  2026-09-10 every one of them got the full +55). Does NOT mutate ratings —
+   *  leak-safe. */
+  homeWinProb(home: string, away: string, season: number, neutralSite = false): number {
+    const h = this.get(home, season) + (neutralSite ? 0 : ELO_HFA);
     const a = this.get(away, season);
     return eloWinProb(h, a);
   }
@@ -73,7 +76,7 @@ export class EloLedger {
   update(game: GameRow): void {
     if (game.homeScore == null || game.awayScore == null) return;
     const season = game.season;
-    const home = this.get(game.homeTeam, season) + ELO_HFA;
+    const home = this.get(game.homeTeam, season) + (game.neutralSite === true ? 0 : ELO_HFA);
     const away = this.get(game.awayTeam, season);
     const expHome = eloWinProb(home, away);
     const homeWon = game.homeScore > game.awayScore ? 1 : game.homeScore < game.awayScore ? 0 : 0.5;
@@ -109,7 +112,7 @@ export function buildNflWeekOpps(
     const devig = noVigFairProbTwoWay(g.homeMoneyline, g.awayMoneyline);
     if (!devig) continue;
 
-    const homeFair = elo.homeWinProb(g.homeTeam, g.awayTeam, g.season);
+    const homeFair = elo.homeWinProb(g.homeTeam, g.awayTeam, g.season, g.neutralSite === true);
     const gameId = `nflml|${g.season}|${g.gameType}|${g.week}|${g.gameId}`;
     const commenceTime = isoKickoff(g);
 

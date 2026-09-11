@@ -42,6 +42,7 @@ import * as path from "node:path";
 import {
   defaultStateDir,
   loadGames,
+  gamesForCursor,
   assertSpreadConvention,
   loadInjuries,
   loadPlayerStats,
@@ -58,10 +59,19 @@ import {
   kellyStakeFraction,
 } from "../src/lib/nfl-calibration";
 import {
-  noVigFairProbTwoWay,
   americanToDecimal,
   expectedValue,
 } from "../src/lib/devig";
+import {
+  applyForecasts,
+  computeEpaFeatures,
+  espnInjuriesToRows,
+  gateFairProb,
+  mergeInjuryRows,
+  type EspnInjuryFile,
+  type TeamGameEpa,
+  type WeatherFile,
+} from "../src/lib/nfl-live-inputs";
 import { QUANT_DESK_CONFIG } from "../src/lib/quant-desk/engine";
 
 const B = "\x1b[1m";
@@ -131,11 +141,15 @@ function evaluateGame(g: BlindGame, p: GamePick): BoardLeg[] {
   const am = g.market.awayMoneyline;
   const hm = g.market.homeMoneyline;
   if (am != null && hm != null) {
-    const fair = noVigFairProbTwoWay(am, hm);
     const side = p.moneylineSide;
     const price = side === "home" ? hm : am;
-    const fairProb = fair ? (side === "home" ? fair.fairB : fair.fairA) : null;
-    // NOTE: fairA corresponds to the first price passed (away), fairB to home.
+    const other = side === "home" ? am : hm;
+    // T4 (2026-09-10): the gate's fair probability is the HIGHEST across the
+    // four devig methods (multiplicative / odds-weighted / power / Shin) — the
+    // smallest edge. Until T4 this was the naive proportional split alone,
+    // which research rec 7 flagged as the one method that mints phantom dog
+    // value. Tightening-only; measured 0/16 verdict flips on the wk1 board.
+    const fairProb: number | null = gateFairProb(price, other);
     const edge = fairProb == null ? null : adj - fairProb;
     const ev = expectedValue(adj, price);
     const notes = [...notesBase];
@@ -260,10 +274,76 @@ async function main(): Promise<void> {
   // within-backtest-season chatter (currently 2015-era teams). Only the durable
   // cross-season doctrine applies to a live week — makeClaudePickFn loads and
   // gates it internally.
-  const blind = buildBlindWeek(games, cursor, "", loadInjuries(dir), loadPlayerStats(dir));
+  // ── Live-week inputs (2026-09-10; see src/lib/nfl-live-inputs.ts) ─────────
+  // The backtest gets weather/injuries from nflverse after the fact; a live
+  // board must bring its own. Every source degrades to "unknown" (null / empty)
+  // and is COUNTED below, so the receipt records what the model actually saw.
+  const processed = path.join(process.cwd(), "data", "processed");
+  const readJsonIf = <T,>(p: string): T | null => {
+    try {
+      return JSON.parse(fs.readFileSync(p, "utf8")) as T;
+    } catch {
+      return null;
+    }
+  };
+  const weekIds = new Set(gamesForCursor(games, cursor).map((g) => g.gameId));
+  const wxFile = readJsonIf<WeatherFile>(path.join(processed, "nfl-weather.json"));
+  const wxForWeek =
+    wxFile && wxFile.season === season && wxFile.week === week ? (wxFile.forecasts ?? []) : [];
+  const wx = applyForecasts(games.filter((g) => weekIds.has(g.gameId)), wxForWeek);
+  const wxById = new Map(wx.games.map((g) => [g.gameId, g]));
+  const gamesLive = games.map((g) => wxById.get(g.gameId) ?? g);
+
+  const espn = readJsonIf<EspnInjuryFile>(path.join(processed, "injuries-nfl.json"));
+  const espnConv = espn ? espnInjuriesToRows(espn, cursor) : { rows: [], unresolvedTeams: [] };
+  const nflverseInj = loadInjuries(dir);
+  const injuries = mergeInjuryRows(nflverseInj, espnConv.rows, cursor);
+
+  const epaFile = readJsonIf<{ generatedAt?: string; rows?: TeamGameEpa[] }>(path.join(processed, "nfl-epa.json"));
+  const epa = epaFile?.rows?.length ? computeEpaFeatures(epaFile.rows, cursor) : undefined;
+
+  const blind = buildBlindWeek(gamesLive, cursor, "", injuries, loadPlayerStats(dir), epa ? { epa } : {});
   if (blind.games.length === 0) {
     console.error(`${RED}No games found for ${season} REG wk${week}. Run npm run nfl:ingest?${R}`);
     process.exit(1);
+  }
+
+  // Coverage of the live inputs — printed and persisted with the board.
+  const inputs = {
+    injuries: {
+      source: espn ? "espn+nflverse" : "nflverse-only",
+      espnFetchedAt: espn?.fetchedAt ?? null,
+      rowsForWeek: injuries.filter((r) => r.season === season && r.week === week && r.gameType === "REG").length,
+      gamesWithAnyRow: blind.games.filter((g) => g.injuries.away.length + g.injuries.home.length > 0).length,
+      unresolvedTeams: espnConv.unresolvedTeams,
+    },
+    weather: {
+      fileGeneratedAt: wxFile?.generatedAt ?? null,
+      fileMatchesWeek: !!wxFile && wxFile.season === season && wxFile.week === week,
+      outdoorGamesWithForecast: wx.applied,
+      domeGames: wx.skippedDome,
+      outdoorGamesMissing: wx.missing,
+    },
+    epa: {
+      fileGeneratedAt: epaFile?.generatedAt ?? null,
+      teamsWithFeatures: epa?.size ?? 0,
+      gamesWithBothSides: blind.games.filter((g) => g.context.epa?.away && g.context.epa?.home).length,
+    },
+    neutralSiteGames: blind.games.filter((g) => g.context.neutralSite).map((g) => g.gameId),
+  };
+  console.log(
+    `  ${D}inputs: injuries ${inputs.injuries.rowsForWeek} rows / ${inputs.injuries.gamesWithAnyRow}/${blind.games.length} games (${inputs.injuries.source}) · ` +
+      `weather ${inputs.weather.outdoorGamesWithForecast}/${blind.games.length - inputs.weather.domeGames} outdoor · ` +
+      `epa ${inputs.epa.gamesWithBothSides}/${blind.games.length} games · neutral ${inputs.neutralSiteGames.length}${R}`,
+  );
+  if (inputs.injuries.unresolvedTeams.length) console.warn(`  ${Y}ESPN teams not resolved: ${inputs.injuries.unresolvedTeams.join(", ")}${R}`);
+  if (inputs.weather.outdoorGamesMissing.length) console.warn(`  ${Y}no forecast for: ${inputs.weather.outdoorGamesMissing.join(", ")}${R}`);
+
+  // --print-blind: dump exactly what the model would see and stop BEFORE the
+  // Claude call — the no-spend way to verify the inputs landed.
+  if (process.argv.includes("--print-blind")) {
+    console.log(JSON.stringify({ inputs, games: blind.games }, null, 1));
+    return;
   }
   console.log(
     `${C}Live-week selection${R} ${B}${season} REG wk${week}${R} ${D}(${blind.games.length} games, blind pick + doctrine post-pass)${R}\n`,
@@ -441,6 +521,10 @@ async function main(): Promise<void> {
         // The maps stakes were sized with — refit from picks-log.jsonl every
         // run, so the receipt records WHICH map produced these fractions.
         calibration: calMaps,
+        // What the model actually SAW this week (2026-09-10): injury rows,
+        // forecast coverage, EPA coverage, neutral sites. A board built on a
+        // feed outage says so here instead of pretending.
+        inputs,
         board,
         rationales: pickMeta,
       },

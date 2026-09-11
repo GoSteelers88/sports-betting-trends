@@ -12,6 +12,9 @@
 
 import fs from "node:fs";
 import path from "node:path";
+// Type-only: nfl-live-inputs.ts imports this module's types too, and a
+// type-only cycle is erased at compile time.
+import type { EpaFeatures } from "./nfl-live-inputs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Paths
@@ -84,6 +87,12 @@ export type GameRow = {
   homeCoach: string;
   referee: string;
   stadium: string;
+  /** nflverse `location` == "Neutral" (international series, Super Bowl).
+   *  Optional so hand-built fixtures stay valid; absent means false. */
+  neutralSite?: boolean;
+  /** Set by the live-week forecast overlay (nfl-live-inputs.ts) when temp /
+   *  wind came from a FORECAST rather than nflverse's post-game actuals. */
+  weatherForecastHoursAhead?: number | null;
   // POST-GAME (results) — NEVER allowed into the blind input
   awayScore: number | null;
   homeScore: number | null;
@@ -237,6 +246,11 @@ export function parseGames(csvText: string): GameRow[] {
       homeCoach: str(col(row, "home_coach")),
       referee: str(col(row, "referee")),
       stadium: str(col(row, "stadium")),
+      // nflverse `location`: "Home" | "Neutral". Neutral = no home field —
+      // 8 games in 2026 (Melbourne, London ×2, Madrid, Munich, Paris, Mexico
+      // City, Rio). Unparsed until 2026-09-10, so every one of them carried a
+      // full home-field read in the prompt and +55 Elo in the dry-run.
+      neutralSite: str(col(row, "location")).trim().toLowerCase() === "neutral",
       awayScore: num(col(row, "away_score")),
       homeScore: num(col(row, "home_score")),
       result: num(col(row, "result")),
@@ -700,6 +714,15 @@ export type BlindGame = {
     homeCoach: string;
     referee: string;
     stadium: string;
+    /** True = neutral venue (international series / Super Bowl): NO home field. */
+    neutralSite: boolean;
+    /** Non-null when temp/wind are a kickoff FORECAST (live week), with the
+     *  horizon in hours; null when they are nflverse actuals or absent. */
+    weatherForecastHoursAhead: number | null;
+    /** Research rec 4: EWMA EPA per play for each side, computed strictly
+     *  from games before this week. null when the feature file is absent
+     *  (the backtest walk) — never fabricated. */
+    epa: { away: EpaFeatures | null; home: EpaFeatures | null } | null;
   };
   // Pre-game injury reports, scoped to ONLY this game's two teams for this exact
   // (season, phase, week). Report-only fields — see BlindInjury. Empty arrays
@@ -735,16 +758,26 @@ export type BlindWeek = {
  *  Player contexts are derived ONLY from prior weeks (strict < cursor.week) so the
  *  no-leakage guarantee extends to props. Only BlindPlayerContext (season averages)
  *  is attached — never a raw PlayerStatRow. */
+/** Live-week extras (nfl-live-inputs.ts). All optional: the backtest walk
+ *  passes nothing and every field degrades to null, never to a fabricated
+ *  value. `epa` is keyed by nflverse team code and must already be computed
+ *  from games strictly before the cursor (computeEpaFeatures enforces that). */
+export type BlindExtras = {
+  epa?: Map<string, EpaFeatures>;
+};
+
 export function buildBlindWeek(
   games: GameRow[],
   cursor: Cursor,
   lessons: string,
   injuries: InjuryRow[] = [],
   playerStats: PlayerStatRow[] = [],
+  extras: BlindExtras = {},
 ): BlindWeek {
   const slate = gamesForCursor(games, cursor);
   const standings = standingsBefore(games, cursor.season, cursor.phase, cursor.week);
   const injIndex = indexInjuries(injuries);
+  const epaFor = (team: string): EpaFeatures | null => extras.epa?.get(team) ?? null;
   const blindGames: BlindGame[] = slate.map((g) => ({
     gameId: g.gameId,
     season: g.season,
@@ -777,6 +810,9 @@ export function buildBlindWeek(
       homeCoach: g.homeCoach,
       referee: g.referee,
       stadium: g.stadium,
+      neutralSite: g.neutralSite === true,
+      weatherForecastHoursAhead: g.weatherForecastHoursAhead ?? null,
+      epa: extras.epa ? { away: epaFor(g.awayTeam), home: epaFor(g.homeTeam) } : null,
     },
     injuries: {
       away:

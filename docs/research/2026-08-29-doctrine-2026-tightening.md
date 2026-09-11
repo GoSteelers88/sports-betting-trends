@@ -52,6 +52,44 @@ sharp close, PLAY minus control, n≥150 or no verdict) is unchanged by any of
 this; doctrine decides what publishes, the pre-registration decides how it is
 judged.
 
+## T4 — 2026-09-10: the moneyline gate devigs with the conservative envelope
+
+Added after the week-1 board published (2026-09-08); applies from week 2.
+Tightening-only, so it is admissible under the rule above: a leg can flip
+PLAY→PASS, never PASS→PLAY.
+
+The gate's market fair probability was the naive proportional (multiplicative)
+split — the one method research rec 7 (2026-08-15) said never to use for a
+dog, because it leaves ~0.5–0.6pp of phantom value on longshots. Everything
+else in the pipeline (CLV grading, the site slate) already used the power
+method. From T4 the gate judges the edge against the HIGHEST fair probability
+of the played side across multiplicative / odds-weighted / power / Shin — the
+smallest edge — via `gateFairProb` in `src/lib/nfl-live-inputs.ts`. Note the
+asymmetry with `DevigResult.worstCaseA` (the LOWEST fair close probability),
+which stays the conservative envelope for the CLV verdict; the two are
+conservative in opposite directions because a PLAY decision and a "beat the
+close" verdict face opposite ways.
+
+Measured on the published week-1 board before adopting: max−min across the
+four methods ≤ 0.7pp on every leg, 0 of 16 verdicts flip.
+
+## Input completeness — 2026-09-10 (inputs, not rules)
+
+Not a doctrine change — the floors, haircut, trap band and retirements above
+are untouched. Measured on the week-1 board: the model saw 0 injury rows
+(`injuries.csv` ends at 2024; ESPN had 343 players / 158 IR / 43 Out at the
+same moment), 0/16 games with temp/wind/referee (nflverse fills them
+post-game), and no neutral-site flag (the Rams' Melbourne "home" game carried
+full home-field; +55 Elo in the dry-run). From week 2 the live board is built
+with ESPN injuries mapped onto the loop's report shape, Open-Meteo kickoff
+forecasts for outdoor games (horizon recorded per game), the nflverse
+`location` flag, and nflverse team-week EPA features (research rec 4) — each
+counted in the private board's `inputs` block so a feed outage is visible on
+the receipt. Caveat, stated plainly: the beta-calibration maps were fitted on
+picks made WITHOUT these inputs, and live 2026 results never enter
+`picks-log.jsonl`, so the maps cannot re-fit to the new information regime
+during the season. The raw-confidence gate (T1) still binds.
+
 ## Un-freezing
 
 These retirements hold for the 2026 season. Reinstating a market in 2027

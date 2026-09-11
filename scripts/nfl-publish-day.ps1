@@ -95,6 +95,18 @@ try {
   Run "git pull" { git pull --rebase --autostash origin master }
   Run "refresh nflverse inputs" { npm run nfl:ingest }
   Run "refresh injuries" { npm run nfl:ingest-injuries }
+  # 2026-09-10: the live-week inputs the backtest gets for free but a live
+  # board does not — ESPN injuries (nflverse week-N reports don't exist until
+  # Wednesday; the board publishes Tuesday), kickoff weather forecasts, EPA
+  # features, stadium geocodes. All free APIs, no credits. Non-fatal by
+  # design: the model board must still publish on a feed outage — the board
+  # then records which inputs were missing (inputs.* coverage block).
+  Write-Host "== refresh ESPN injuries (non-fatal)"
+  npm run ingest:injuries
+  if ($LASTEXITCODE -ne 0) { Write-Host "ingest:injuries failed (non-fatal) — board will use whatever injuries-nfl.json holds" }
+  Write-Host "== refresh live inputs: weather / EPA / stadiums (non-fatal)"
+  npm run nfl:ingest-live -- $Season $Week
+  if ($LASTEXITCODE -ne 0) { Write-Host "nfl:ingest-live failed (non-fatal) — board will record missing inputs" }
   Run "regenerate model board (final doctrine)" {
     npx tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-live-week.ts $Season $Week --force
   }
