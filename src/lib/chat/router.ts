@@ -25,6 +25,7 @@ import {
 import type { StatsLeague } from "@/lib/agent/tools/stats";
 import { getHomeRunLikes } from "@/lib/props-board";
 import { getAnthropic, MODELS } from "@/lib/agent/client";
+import { etDayKey, parseIso } from "./slate";
 
 export type Lane = "A" | "B";
 
@@ -164,6 +165,21 @@ export type SlateEntities = {
   tokens: Map<string, InScopeLeague>;
   // Lowercased player full names → league.
   players: Map<string, InScopeLeague>;
+  // Games STARTING TODAY (America/New_York) per league.
+  //
+  // REQUIRED, not optional, and separate from `teams` on purpose. The entity
+  // maps index every event in a league's snapshot so a named team still routes
+  // to a grounded read whenever the game exists — but an odds file holds FUTURE
+  // events too, and the September NBA snapshot measurably holds October-20 and
+  // December-25 games while the WNBA snapshot holds next week's. Counting
+  // `teams` to decide "which league is on tonight" therefore reported NBA and
+  // WNBA as live on a September Saturday, and the ambiguity tiebreaker — handed
+  // that list — routed "what games are on today?" and "any player props
+  // tonight?" to an EMPTY NBA board, which is exactly what shipped the
+  // matchup-shaped fallback. This map is the only honest answer to that
+  // question, so every league-selection path below reads it and none reads
+  // `teams`.
+  gamesToday: Map<InScopeLeague, number>;
 };
 
 const STOPWORD_TOKENS = new Set([
@@ -221,15 +237,19 @@ export function buildSlateEntities(deps?: {
   odds?: (league: AgentLeague) => ReturnType<typeof getOdds>;
   props?: (league: AgentLeague) => ReturnType<typeof getPlayerProps>;
   hrLikes?: () => ReturnType<typeof getHomeRunLikes>;
+  now?: Date;
 }): SlateEntities {
   const oddsFn = deps?.odds ?? getOdds;
   const propsFn = deps?.props ?? getPlayerProps;
   const hrFn = deps?.hrLikes ?? getHomeRunLikes;
+  const now = deps?.now ?? new Date();
+  const todayKey = etDayKey(now);
 
   const ent: SlateEntities = {
     teams: new Map(),
     tokens: new Map(),
     players: new Map(),
+    gamesToday: new Map(),
   };
 
   // Index every bettable league's board (NBA, MLB, WNBA). getOdds("WNBA")
@@ -244,12 +264,20 @@ export function buildSlateEntities(deps?: {
     if (league === "NFL") continue;
     try {
       const { events } = oddsFn(league);
+      let today = 0;
       for (const ev of events) {
         addTeam(ent, ev.homeTeam, league);
         addTeam(ent, ev.awayTeam, league);
+        // Count ONLY games starting on today's ET calendar day. A row we cannot
+        // date is not counted — an undated game must never be claimed as
+        // tonight's.
+        const start = parseIso(ev.commenceTime);
+        if (start && etDayKey(start) === todayKey) today++;
       }
+      ent.gamesToday.set(league, today);
     } catch (err) {
       console.error(`[chat/router] buildSlateEntities odds ${league}:`, err);
+      ent.gamesToday.set(league, 0);
     }
   }
 
@@ -402,10 +430,57 @@ const SLATE_LEVEL_HINTS: RegExp[] = [
   /\bgive me (?:a|the|your|one|some) (?:play|plays|pick|picks|bet|bets|best|action)\b/i,
   /\bwhat'?s good (?:tonight|today)?\b/i,
   /\b(?:your )?(?:best|top) (?:plays|bets|picks)\b/i,
+  // PROPS are desk product, and a prop ask is a BOARD survey — the prop board
+  // spans the whole slate, not one game. MEASURED 2026-09-12: "Any player props
+  // worth looking at tonight?" matched none of the hints above, fell to the
+  // Haiku tiebreaker, was routed to a September NBA board with zero games, and
+  // shipped the matchup-shaped fallback. Deterministic now, and on the league
+  // that actually has games.
+  /\bany\s+(?:good\s+|great\s+|solid\s+)?(?:player\s+)?props?\b/i,
+  /\b(?:player\s+)?props?\b[^?.!]*\b(?:tonight|today|worth a look|worth looking|on the board)\b/i,
 ];
 
 export function looksSlateLevel(message: string): boolean {
   return SLATE_LEVEL_HINTS.some((p) => p.test(message));
+}
+
+// ─── Schedule intent ─────────────────────────────────────────────────────────
+//
+// "What games are on today?", "what's on tonight", "who's playing today",
+// "today's slate" — a CALENDAR question, not a best-play question. It has a
+// deterministic answer (a date filter over the odds snapshots) and it must never
+// cost a routing model call.
+//
+// MEASURED, before this existed: none of these matched SLATE_LEVEL_HINTS, so
+// they fell through to looksGameSpecific (\btoday\b / \btonight\b both match),
+// which sent them to the Haiku tiebreaker — a model that, told NBA/MLB/WNBA all
+// "had games tonight" because the entity index counted October NBA rows,
+// answered NBA. Lane B then ran the BEST-PLAY survey prompt against an empty
+// September NBA board and shipped the matchup-shaped fallback to a question
+// about today's schedule. Two separate defects compounding; this hint set closes
+// the routing half.
+const SCHEDULE_LEVEL_HINTS: RegExp[] = [
+  // "what games are on today", "what game is on tonight", "which games are on"
+  /\bwh(?:at|ich)\s+games?\b[^?.!]*\b(?:on|playing|today|tonight|scheduled|slate)\b/i,
+  // "what's on tonight", "what is on today", "anything on tonight"
+  /\b(?:what(?:'?s| is)|anything)\s+(?:on|going on)\b[^?.!]*\b(?:today|tonight|this (?:afternoon|evening))\b/i,
+  // "who's playing today", "who plays tonight", "who is playing"
+  /\bwho(?:'?s| is| are)?\s+(?:playing|plays|on)\b/i,
+  // "today's slate", "tonight's slate", "the slate", "what's the slate"
+  /\b(?:today'?s|tonight'?s|the)\s+(?:slate|schedule|card|board)\b/i,
+  /\bwhat(?:'?s| is)\s+(?:the\s+)?(?:slate|schedule|card)\b/i,
+  // "any games today", "are there games tonight", "games on today"
+  /\b(?:any|are there(?: any)?)\s+games?\b[^?.!]*\b(?:today|tonight|on)\b/i,
+  /\bgames?\s+(?:on|today|tonight)\b[^?.!]*\?/i,
+  // "what time do they play", "when do the games start"
+  /\b(?:what time|when)\b[^?.!]*\b(?:games?|they|first pitch|tip(?:-| )?off|kick(?:-| )?off)\b[^?.!]*\b(?:start|on|play|playing)\b/i,
+  // "schedule for today", "today's games"
+  /\bschedule\b[^?.!]*\b(?:today|tonight)\b/i,
+  /\b(?:today'?s|tonight'?s)\s+games?\b/i,
+];
+
+export function looksScheduleLevel(message: string): boolean {
+  return SCHEDULE_LEVEL_HINTS.some((p) => p.test(message));
 }
 
 // The league to survey for a slate-level question = whichever has the most
@@ -413,24 +488,31 @@ export function looksSlateLevel(message: string): boolean {
 // nothing is on the board at all. Ties break by IN_SCOPE_LEAGUES order reversed
 // so MLB wins an NBA/MLB tie (preserves the historical default), then WNBA.
 export function primaryLeagueWithGames(ent: SlateEntities): InScopeLeague | null {
-  const counts = new Map<InScopeLeague, number>();
-  for (const lg of IN_SCOPE_LEAGUES) counts.set(lg, 0);
-  for (const lg of ent.teams.values()) {
-    counts.set(lg, (counts.get(lg) ?? 0) + 1);
-  }
   // Tie-break precedence: MLB > NBA > WNBA (a slate-level ask with no named
-  // league leans to the deeper-book leagues first).
+  // league leans to the deeper-book leagues first). NFL is excluded — it is
+  // answered on the receipts lane, never surveyed here.
   const precedence: InScopeLeague[] = ["MLB", "NBA", "WNBA"];
   let best: InScopeLeague | null = null;
   let bestCount = 0;
   for (const lg of precedence) {
-    const c = counts.get(lg) ?? 0;
+    const c = ent.gamesToday.get(lg) ?? 0;
     if (c > bestCount) {
       best = lg;
       bestCount = c;
     }
   }
   return bestCount === 0 ? null : best;
+}
+
+// Every bettable-lane league with at least one game starting TODAY (ET). The
+// Haiku tiebreaker is told this list, and sharp.ts validates the league it picks
+// against it — a model may not send a turn to a dark board.
+export function leaguesWithGamesToday(ent: SlateEntities): InScopeLeague[] {
+  const out: InScopeLeague[] = [];
+  for (const lg of ["MLB", "NBA", "WNBA"] as const) {
+    if ((ent.gamesToday.get(lg) ?? 0) > 0) out.push(lg);
+  }
+  return out;
 }
 
 // ─── Main router ─────────────────────────────────────────────────────────────
@@ -481,6 +563,10 @@ export type ClassifyResult =
       league: InScopeLeague;
       matchedEntities: string[];
       reason: string;
+      // "schedule" = a CALENDAR question ("what games are on today?"). It runs
+      // Lane B in schedule scope: one deterministic get_todays_slate read, every
+      // league, ET start times. Absent on a normal matchup/best-play turn.
+      intent?: "schedule";
     }
   | { lane: "A"; ambiguous: true; reason: string }
   | { lane: "A"; reason: string };
@@ -571,6 +657,22 @@ export function classifyDeterministic(
     // can honestly say there's no slate tonight.
   }
 
+  // (4) SCHEDULE intent ("what games are on today?", "who's playing tonight?",
+  // "what's tonight's slate?"). Deterministic, NO routing model call. It runs
+  // even when every bettable league is dark today: "nothing is on" is the
+  // correct, checkable answer to a calendar question, and get_todays_slate says
+  // when each league is next up. The nominal league only shapes the prompt's
+  // phrasing — the schedule tool covers every league in one read.
+  if (looksScheduleLevel(message)) {
+    return {
+      lane: "B",
+      league: primaryLeagueWithGames(ent) ?? "MLB",
+      matchedEntities: [],
+      reason: "schedule-level",
+      intent: "schedule",
+    };
+  }
+
   if (looksGameSpecific(message)) {
     return { lane: "A", ambiguous: true, reason: "ambiguous-game-specific" };
   }
@@ -587,8 +689,17 @@ export async function classifyAmbiguousWithModel(
   ent: SlateEntities,
   client = getAnthropic()
 ): Promise<{ lane: "A" } | { lane: "B"; league: InScopeLeague }> {
-  const leaguesTonight = new Set([...ent.teams.values()]);
-  const leagueList = [...leaguesTonight].join(", ") || "none";
+  // Leagues with a game STARTING TODAY — not "every league whose teams appear in
+  // a snapshot". MEASURED: the old `new Set([...ent.teams.values()])` reported
+  // "NBA, MLB, WNBA" on 2026-09-12, when the NBA snapshot's earliest game was
+  // October 20 and the WNBA's was September 17. Handed that list, the classifier
+  // answered NBA for "what games are on today?" and "any player props worth
+  // looking at tonight?", and both turns ran against an empty board and shipped
+  // the fallback. The caller ALSO validates the returned league against this set
+  // (see sharp.ts) — a model must never be the only thing standing between a
+  // user and a dark board.
+  const leaguesTonight = leaguesWithGamesToday(ent);
+  const leagueList = leaguesTonight.join(", ") || "none";
 
   const resp = await client.messages.create({
     model: MODELS.chatPersona,

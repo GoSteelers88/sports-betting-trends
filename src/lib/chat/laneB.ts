@@ -32,6 +32,32 @@ import {
   getDeskRecordSummary,
 } from "@/lib/agent/memory";
 import { buildLaneBSystemPrompt } from "./persona";
+import { buildTodaySlate } from "./slate";
+
+// ─── The chat-only schedule tool ─────────────────────────────────────────────
+//
+// `get_odds` returns EVERY event in a league's snapshot regardless of date — the
+// September NBA file holds October-20 and December-25 games, the WNBA file holds
+// next week's. A model asked "what's on tonight" and handed that feed has to do
+// UTC→ET arithmetic and a date filter in its head, and MEASURED it does not: the
+// desk answered a slate question off an empty NBA board.
+//
+// So the schedule is computed in pure code (./slate.ts) and exposed as a tool
+// that exists ONLY in chat. It is deliberately NOT added to the agent's
+// TOOL_DEFINITIONS: the analyst has its own slate handling and must not change
+// behaviour because chat needed a calendar.
+export const TODAYS_SLATE_TOOL = "get_todays_slate" as const;
+
+const TODAYS_SLATE_DEFINITION = {
+  name: TODAYS_SLATE_TOOL,
+  description:
+    "THE SCHEDULE. Read-only. Returns TODAY'S board across every league the desk covers (MLB, NFL, NBA, WNBA), already filtered to games that START on today's calendar day in America/New_York and already formatted in ET — you must NOT do timezone math yourself. Per league: gameCount, each game's matchup + startEt (e.g. \"7:15 PM ET\") + whether it has started + the consensus moneyline on each side, when that league's lines were last refreshed (linesRefreshedEt), and — for a league that is DARK today — nextSlateDateEt, the next date it appears on the board. Also a per-league `note` and a top-level `note` you can read aloud verbatim. CALL THIS FIRST for any question about what is on today/tonight, who is playing, or the slate/schedule. NFL rows are SCHEDULE ONLY: give the times, then point the user at the published /nfl board for the read. Everything here is a real field — cite it directly, never estimate a start time.",
+  input_schema: {
+    type: "object" as const,
+    properties: {},
+    required: [],
+  },
+};
 
 // ─── The read-only allowlist (load-bearing) ──────────────────────────────────
 //
@@ -58,12 +84,17 @@ export const LANE_B_READ_ONLY_TOOLS: readonly ToolName[] = [
 // (src/lib/agent/tools/stats.ts — standings, efficiency, gamelogs, props board,
 // pitching, team stats, parlay book, desk record). Every one is a pure data
 // read; none can write, ingest, or place a bet.
-const ALLOWED = new Set<string>([...LANE_B_READ_ONLY_TOOLS, ...STATS_TOOL_NAMES]);
+const ALLOWED = new Set<string>([
+  ...LANE_B_READ_ONLY_TOOLS,
+  ...STATS_TOOL_NAMES,
+  TODAYS_SLATE_TOOL,
+]);
 
 // Tool definitions we hand the model in BETS mode = the allowlisted pipeline
 // tools + all the stats tool defs. The model literally cannot see write tools
 // (there are none).
 export const LANE_B_TOOL_DEFINITIONS = [
+  TODAYS_SLATE_DEFINITION,
   ...TOOL_DEFINITIONS.filter((t) => ALLOWED.has(t.name)),
   ...STATS_TOOL_DEFINITIONS,
 ];
@@ -77,8 +108,18 @@ export const LANE_B_TOOL_DEFINITIONS = [
 // mechanism that makes a stats turn incapable of issuing a bet: nothing on the
 // menu can return a book/side/price play. get_desk_record stays (honest,
 // league-independent track record — surfaces no play).
-const STATS_ONLY_ALLOWED = new Set<string>(PURE_STATS_TOOL_NAMES);
-export const LANE_B_STATS_TOOL_DEFINITIONS = [...PURE_STATS_TOOL_DEFINITIONS];
+// The schedule tool joins stats mode as well: it surfaces no bet, no edge and no
+// play — only who is on, when, and the market's price — so it cannot break the
+// structural "a stats turn cannot issue a bet" property, and "what's on tonight"
+// is a fair question from a hockey asker too.
+const STATS_ONLY_ALLOWED = new Set<string>([
+  ...PURE_STATS_TOOL_NAMES,
+  TODAYS_SLATE_TOOL,
+]);
+export const LANE_B_STATS_TOOL_DEFINITIONS = [
+  TODAYS_SLATE_DEFINITION,
+  ...PURE_STATS_TOOL_DEFINITIONS,
+];
 
 // Mirror the analyst's ≤8 cap, but tighter for a public, latency-sensitive,
 // single-question turn. With the "batch your tool calls" instruction in the
@@ -139,7 +180,7 @@ export function inlineToolResults(toolResultTexts: string[]): string {
 
 // A Lane B turn can call pipeline tools (bets mode) OR stats tools (either
 // mode), so toolsUsed spans both name spaces.
-export type LaneBToolName = ToolName | StatsToolName;
+export type LaneBToolName = ToolName | StatsToolName | typeof TODAYS_SLATE_TOOL;
 
 export type LaneBResult = {
   reply: string;
@@ -215,9 +256,10 @@ export async function runLaneB(
   client = getAnthropic(),
   // Stricter regeneration instruction appended on a grounding-guard retry.
   extraInstruction?: string,
-  // "matchup" = a specific named game; "slate" = a board-level "best play"
-  // survey across all of tonight's games.
-  scope: "matchup" | "slate" = "matchup",
+  // "matchup"  = a specific named game; "slate" = a board-level "best play"
+  // survey across all of tonight's games; "schedule" = a calendar question
+  // answered from get_todays_slate across every league.
+  scope: "matchup" | "slate" | "schedule" = "matchup",
   // "bets" = full pick pipeline (in-scope leagues only). "stats" = stats tools
   // ONLY, for a league we do NOT bet — structurally cannot issue a play.
   mode: "bets" | "stats" = "bets"
@@ -242,7 +284,10 @@ export async function runLaneB(
     // (NBA/MLB/WNBA), not this stats league. On DB failure the fetch returns
     // null → get_desk_record degrades to available:false, never breaks.
     const deskRecord = await getDeskRecordSummary(IN_SCOPE_LEAGUES, 30);
-    handlers = buildStatsHandlers(deskRecord);
+    handlers = {
+      ...buildStatsHandlers(deskRecord),
+      [TODAYS_SLATE_TOOL]: () => buildTodaySlate(),
+    };
   } else {
     const [memories, latestDream, teamRecords, deskRecord] = await Promise.all([
       getActiveMemoriesForScope(league),
@@ -262,6 +307,7 @@ export async function runLaneB(
         teamRecords,
       }),
       ...buildStatsHandlers(deskRecord),
+      [TODAYS_SLATE_TOOL]: () => buildTodaySlate(),
     };
   }
 
@@ -469,7 +515,7 @@ export async function regroundLaneB(
   userMessage: string,
   priorToolResultTexts: string[],
   mode: "bets" | "stats" = "bets",
-  scope: "matchup" | "slate" = "matchup",
+  scope: "matchup" | "slate" | "schedule" = "matchup",
   client = getAnthropic()
 ): Promise<{ reply: string; usageTokens: number }> {
   const system = buildLaneBSystemPrompt(league, scope, mode);

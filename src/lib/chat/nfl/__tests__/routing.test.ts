@@ -26,7 +26,7 @@ import {
 } from "../../router";
 
 function collidingSlate(): SlateEntities {
-  const ent: SlateEntities = { teams: new Map(), tokens: new Map(), players: new Map() };
+  const ent: SlateEntities = { teams: new Map(), tokens: new Map(), players: new Map(), gamesToday: new Map() };
   const mlb = [
     "seattle mariners",
     "houston astros",

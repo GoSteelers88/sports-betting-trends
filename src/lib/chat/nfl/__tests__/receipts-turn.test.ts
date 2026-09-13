@@ -276,7 +276,7 @@ describe("the /nfl lane does not regress '/'", () => {
     const laneB = vi.fn();
     const { runner } = stubRunner("The board has two plays this week.");
     const res = await answer("what are the Chiefs standings", NO_TURNS, {
-      slate: { teams: new Map(), tokens: new Map(), players: new Map() },
+      slate: { teams: new Map(), tokens: new Map(), players: new Map(), gamesToday: new Map() },
       spendCheck: openSpend,
       client: forbiddenClient().client,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -301,7 +301,7 @@ describe("the /nfl lane does not regress '/'", () => {
     });
     const { runner } = stubRunner("SHOULD NEVER BE USED");
     const res = await answer("how do the Bruins look this year in hockey?", NO_TURNS, {
-      slate: { teams: new Map(), tokens: new Map(), players: new Map() },
+      slate: { teams: new Map(), tokens: new Map(), players: new Map(), gamesToday: new Map() },
       spendCheck: openSpend,
       client: forbiddenClient().client,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -459,3 +459,182 @@ describe("FIX 2 — leading-dot decimals (.787) ground off an ops field", () => 
     expect(v.ungrounded).toContain(".850");
   });
 });
+
+// ─── 2026-09-12: the guard was punishing HONESTY ─────────────────────────────
+//
+// Three measured Lane B failures on a night with a live 15-game MLB slate all
+// came back to the haystack whitelist, not to the model. The drafts were good;
+// the guard rejected them.
+
+describe("REGRESSION — a staleness disclosure must not read as a fabricated number", () => {
+  // The exact payload shape get_board_edges returned on 2026-09-12.
+  const staleBoard = [
+    JSON.stringify({
+      generatedAt: "2026-09-09T00:38:33.098Z",
+      edges: [],
+      note: "No games could be joined between the odds feed and the model — data may be stale or non-overlapping. No read; don't force a play.",
+      dataWarning:
+        "DATA WARNING: mlb-model-output.json is 94h old (stale > 6h). Numbers may not reflect the current slate — treat with caution and prefer skipping rather than picking on stale data.",
+    }),
+  ];
+
+  it("'the model data is 94 hours old' GROUNDS off the dataWarning it came from", () => {
+    // THE MEASURED BUG: this sentence, inside an otherwise-correct Phillies at
+    // Braves read that quoted the real -130/+110, was flagged ungrounded on
+    // "94" — twice — and the desk shipped "I don't have a clean live read on
+    // that game" while holding the line. dataWarning is desk-authored text; a
+    // figure the desk itself published must be quotable.
+    const v = checkGrounding(
+      "Straight with you: the model file is 94 hours old, so there's no priceable edge here.",
+      staleBoard
+    );
+    expect(v.grounded).toBe(true);
+  });
+
+  it("the 6h staleness threshold is quotable too", () => {
+    const v = checkGrounding("Anything past 6h I treat as stale.", staleBoard);
+    expect(v.grounded).toBe(true);
+  });
+
+  it("a FABRICATED figure still fails — the loosening is scoped to published text", () => {
+    const v = checkGrounding("The model has them at 63%, so that's a play.", staleBoard);
+    expect(v.grounded).toBe(false);
+    expect(v.ungrounded).toContain("63%");
+  });
+
+  it("a fabricated PRICE still fails against a stale board", () => {
+    const v = checkGrounding("Take the Braves at -155.", staleBoard);
+    expect(v.grounded).toBe(false);
+    expect(v.ungrounded).toContain("-155");
+  });
+});
+
+describe("REGRESSION — get_player_props writes `confidence` on a 0-100 scale", () => {
+  // The live NBA feed's real shape: confidence 95, not 0.95.
+  const props = [
+    JSON.stringify({
+      generatedAt: "2026-09-09T00:36:06.185Z",
+      available: true,
+      topProps: [
+        {
+          player: "Shai Gilgeous-Alexander",
+          market: "player_points",
+          line: 29.5,
+          overPrice: -122,
+          underPrice: -106,
+          pickSide: "under",
+          confidence: 95,
+          rationaleSignals: ["1-book consensus line 29.5 (spread 0.0)"],
+        },
+      ],
+    }),
+  ];
+
+  it("'95% confidence' grounds off confidence:95 (was x100'd to 9500 and failed)", () => {
+    const v = checkGrounding(
+      "The model's on the under 29.5 there at 95% confidence.",
+      props
+    );
+    expect(v.grounded).toBe(true);
+  });
+
+  it("a DIFFERENT confidence figure still fails", () => {
+    const v = checkGrounding("That one's an 80% confidence under.", props);
+    expect(v.grounded).toBe(false);
+    expect(v.ungrounded).toContain("80%");
+  });
+
+  it("a per-row provenance string is quotable ('1-book consensus line 29.5')", () => {
+    const v = checkGrounding(
+      "That's a 1-book consensus line at 29.5 with a 0.0 spread — a line, not an edge.",
+      props
+    );
+    expect(v.grounded).toBe(true);
+  });
+});
+
+describe("REGRESSION — a dream-memory rule's own numbers are quotable", () => {
+  const memory = [
+    JSON.stringify({
+      rules: [
+        {
+          id: 30,
+          scope: "NBA",
+          rule: "Lean NYK moneyline at -130 or better; the desk is 9-2 on it.",
+          reasoning: "Sample is small but the net-rating gap has held for 11 games.",
+          weight: 0.6,
+        },
+      ],
+    }),
+  ];
+
+  it("quoting the rule's record back grounds off the rule text", () => {
+    const v = checkGrounding("My own book has me 9-2 on that side.", memory);
+    expect(v.grounded).toBe(true);
+  });
+
+  it("a number that is NOT in the rule still fails", () => {
+    const v = checkGrounding("My own book has me 14-1 on that side.", memory);
+    expect(v.grounded).toBe(false);
+  });
+});
+
+describe("the today's-slate payload is fully quotable", () => {
+  // get_todays_slate's shape (src/lib/chat/slate.ts). Every field it emits is
+  // named so this guard already accepts it — if a rename breaks that, the desk
+  // silently stops being able to read its own schedule aloud. This test is the
+  // pin on that contract.
+  const slate = [
+    JSON.stringify({
+      dateEt: "Saturday, September 12, 2026",
+      dayKeyEt: "2026-09-12",
+      nowEt: "7:02 PM ET",
+      gameCount: 2,
+      leagues: [
+        {
+          league: "MLB",
+          gameCount: 2,
+          games: [
+            {
+              matchup: "Philadelphia Phillies @ Atlanta Braves",
+              startEt: "7:16 PM ET",
+              started: false,
+              awayMoneylineAmerican: 116,
+              homeMoneylineAmerican: -134,
+            },
+          ],
+          linesRefreshedEt: "6:43 PM ET on September 12",
+          nextSlateDateEt: null,
+          note: "MLB: 2 games on the board today, lines last refreshed 6:43 PM ET on September 12.",
+        },
+        {
+          league: "NBA",
+          gameCount: 0,
+          games: [],
+          linesRefreshedEt: "6:43 PM ET on September 12",
+          nextSlateDateEt: "October 20",
+          note: "NBA: nothing today — the next NBA game on the board is October 20.",
+        },
+      ],
+    }),
+  ];
+
+  it("a full schedule answer — times, prices, counts, dark leagues — grounds", () => {
+    const v = checkGrounding(
+      "Saturday, September 12. Two on the MLB board: Phillies at Braves, 7:16 PM ET, " +
+        "Braves -134 and Phillies +116. Nothing in the NBA tonight — that board opens " +
+        "October 20. Lines last refreshed 6:43 PM ET.",
+      slate
+    );
+    expect(v.grounded).toBe(true);
+  });
+
+  it("an INVENTED start time or price in a schedule answer still fails", () => {
+    const v = checkGrounding(
+      "Phillies at Braves, and you can get the Braves at -190.",
+      slate
+    );
+    expect(v.grounded).toBe(false);
+    expect(v.ungrounded).toContain("-190");
+  });
+});

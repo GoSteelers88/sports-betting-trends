@@ -164,6 +164,12 @@ const ALREADY_PERCENT_KEYS: ReadonlySet<string> = new Set([
   "evPct",
   "clvBeatRatePct",
   "precipPct",
+  // get_player_props writes `confidence` on a 0–100 scale (measured: the live
+  // NBA feed carries confidence: 95). It was being ×100'd into 9500, so a
+  // TRUTHFUL "95% confidence" quoted straight off the row came back ungrounded
+  // and forced the doctrine fallback — observed on the 2026-09-12 props probe
+  // (ungrounded list included "95%"). One producer, one scale; it belongs here.
+  "confidence",
   // NFL receipts research + ledger figures. Every one of these is written as a
   // percent by its producer (8.21 means 8.21%), so they must NOT be ×100'd.
   "roiPct",
@@ -399,6 +405,33 @@ const TEXT_VALUE_KEYS: ReadonlySet<string> = new Set([
   "explanation",
   "rationale",
   "reason",
+  // ─── THE STALENESS BANNER (2026-09-12, measured) ─────────────────────────
+  //
+  // `dataWarning` is the loader's own sentence: "DATA WARNING:
+  // mlb-model-output.json is 94h old (stale > 6h)…". It is desk-authored text,
+  // exactly like a pass reason, and quoting it back is the single most honest
+  // thing the desk can do with a stale feed.
+  //
+  // It was NOT in this set, and that one omission was the whole mechanism
+  // behind the "Phillies at Braves" failure. The draft was correct — it quoted
+  // Braves -130 / Phillies +110, the records, the bullpen ERAs — and added "the
+  // model data is roughly 94 hours old". checkGrounding flagged "94" as a
+  // fabricated number, the no-tools rewrite said "over 94 hours old" again, and
+  // the desk shipped "I don't have a clean live read on that game" while
+  // holding the line. The guard was punishing the desk for disclosing
+  // staleness, on a site whose brand is that every number is real.
+  "dataWarning",
+  // Tool notes ("No HR likes on the current board…", "1 game(s) clear the 6%
+  // edge floor") are desk-authored English the desk is meant to read aloud.
+  // ("note" is already listed above.)
+  "notes",
+  // get_dream_memory rules + their reasoning are committed, human-curated text;
+  // a rule that says "9-2 on NYK moneylines" must be quotable as written.
+  "rule",
+  "reasoning",
+  // Per-row provenance strings from the props feed ("1-book consensus line
+  // 29.5 (spread 0.0)") — an array of strings, handled by the array branch.
+  "rationaleSignals",
 ]);
 
 // NOTE (wins/losses): NOT excluded — standings + the desk record report them as

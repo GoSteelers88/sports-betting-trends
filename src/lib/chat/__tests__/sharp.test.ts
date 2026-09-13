@@ -26,6 +26,7 @@ import { answer } from "../sharp";
 import { runLaneB, regroundLaneB } from "../laneB";
 import { buildLaneBSystemPrompt, DISCIPLINE_BLOCK, PERSONA_RULES } from "../persona";
 import type { SlateEntities } from "../router";
+import { buildLaneBFallback } from "../fallback";
 
 // The `system` passed to messages.create is now a cached block array
 // ([{type:"text", text, cache_control}]) instead of a bare string (prompt
@@ -41,7 +42,12 @@ function systemText(s: unknown): string {
 }
 
 function slate(): SlateEntities {
-  const ent: SlateEntities = { teams: new Map(), tokens: new Map(), players: new Map() };
+  const ent: SlateEntities = {
+    teams: new Map(),
+    tokens: new Map(),
+    players: new Map(),
+    gamesToday: new Map([["NBA", 1]]),
+  };
   ent.teams.set("los angeles lakers", "NBA");
   ent.tokens.set("lakers", "NBA");
   ent.teams.set("boston celtics", "NBA");
@@ -499,12 +505,15 @@ describe("plumbing-leak guard ships a fallback, never the leak (A2)", () => {
       laneBRunner: laneBRunner as never,
     });
     expect(res.lane).toBe("B");
-    // Shipped the doctrine fallback, NOT the leak.
+    // Shipped the MATCHUP-shaped bets fallback, NOT the leak. Pinned against
+    // buildLaneBFallback rather than a frozen copy string: the load-bearing
+    // property is that the SHAPE matches the question ("that one", a named
+    // game), and that assertion survives a copy edit while still going red if
+    // the leak path ever ships a slate- or schedule-shaped line here.
     expect(res.reply).toBe(
-      "I don't have a clean live read on that game right now — the numbers I'd need aren't in front of me, " +
-        "and on this discipline, no read means no bet. If the desk had an edge on it tonight, it'd show as a pick on the board. " +
-        "Ask me about a different NBA, MLB, or WNBA game, or come back once tonight's lines have firmed up."
+      buildLaneBFallback({ scope: "matchup", mode: "bets", league: "NBA", gaps: [] })
     );
+    expect(res.reply).toContain("no read means no bet");
     expect(res.reply).not.toContain("still loading");
     // Terminal: the runner ran once, no no-tools regen was triggered by the leak.
     expect(laneBRunner).toHaveBeenCalledTimes(1);

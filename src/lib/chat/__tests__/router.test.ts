@@ -15,7 +15,18 @@ import {
 } from "../router";
 
 function slate(): SlateEntities {
-  const ent: SlateEntities = { teams: new Map(), tokens: new Map(), players: new Map() };
+  const ent: SlateEntities = {
+    teams: new Map(),
+    tokens: new Map(),
+    players: new Map(),
+    // One game apiece on TODAY'S board. gamesToday — not the teams map — is what
+    // every league-selection path reads; see SlateEntities in router.ts.
+    gamesToday: new Map([
+      ["NBA", 1],
+      ["MLB", 1],
+      ["WNBA", 1],
+    ]),
+  };
   // NBA matchup tonight
   for (const t of ["los angeles lakers", "boston celtics"]) {
     ent.teams.set(t, "NBA");
@@ -174,7 +185,15 @@ describe("FIX 4 — shared-nickname collision yields to the scope class", () => 
   // Put the Texas Rangers (MLB) on tonight's board so "rangers" is a token hit.
   // "Rangers" is ALSO the NY Rangers (NHL) nickname → SHARED_OOS_NICKNAMES.
   function rangersSlate(): SlateEntities {
-    const ent: SlateEntities = { teams: new Map(), tokens: new Map(), players: new Map() };
+    const ent: SlateEntities = {
+      teams: new Map(),
+      tokens: new Map(),
+      players: new Map(),
+      gamesToday: new Map([
+        ["MLB", 1],
+        ["NBA", 1],
+      ]),
+    };
     for (const t of ["texas rangers", "houston astros"]) {
       ent.teams.set(t, "MLB");
       for (const tok of t.split(" ")) if (tok.length >= 4) ent.tokens.set(tok, "MLB");
@@ -303,11 +322,16 @@ describe("slate-level intent → Lane B (the board survey)", () => {
   it("picks the league with more games on the board", () => {
     // slate() has 2 NBA + 2 MLB teams → tie → defaults MLB.
     expect(primaryLeagueWithGames(slate())).toBe("MLB");
-    const nbaHeavy: SlateEntities = { teams: new Map([["los angeles lakers", "NBA"], ["boston celtics", "NBA"], ["miami heat", "NBA"], ["denver nuggets", "NBA"]]), tokens: new Map(), players: new Map() };
+    const nbaHeavy: SlateEntities = {
+      teams: new Map([["los angeles lakers", "NBA"], ["boston celtics", "NBA"], ["miami heat", "NBA"], ["denver nuggets", "NBA"]]),
+      tokens: new Map(),
+      players: new Map(),
+      gamesToday: new Map([["NBA", 2], ["MLB", 1]]),
+    };
     expect(primaryLeagueWithGames(nbaHeavy)).toBe("NBA");
   });
   it("falls through (not Lane B) when the board is EMPTY", () => {
-    const empty: SlateEntities = { teams: new Map(), tokens: new Map(), players: new Map() };
+    const empty: SlateEntities = { teams: new Map(), tokens: new Map(), players: new Map(), gamesToday: new Map() };
     const d = classifyDeterministic("what's the best play tonight?", empty);
     expect(d.lane).toBe("A"); // no games → honest persona answer, not a survey of nothing
   });

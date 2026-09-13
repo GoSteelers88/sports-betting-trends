@@ -23,16 +23,17 @@ import {
   buildSlateEntities,
   classifyDeterministic,
   classifyAmbiguousWithModel,
+  leaguesWithGamesToday,
+  primaryLeagueWithGames,
   type SlateEntities,
   type ChatScope,
 } from "./router";
+import { collectGaps, buildLaneBFallback } from "./fallback";
 import { runLaneB, regroundLaneB, sumUsage, type LaneBToolName } from "./laneB";
 import {
   checkGrounding,
   checkBettingClaims,
   checkLeak,
-  DOCTRINE_FALLBACK,
-  STATS_MODE_FALLBACK,
   LANE_A_LEAK_FALLBACK,
 } from "./grounding";
 import {
@@ -328,9 +329,12 @@ async function answerCore(
   let statsLeagueForB: StatsLeague | null = null;
   // Which Lane B mode this turn runs in.
   let laneBMode: "bets" | "stats" = "bets";
-  // "matchup" = a specific named game; "slate" = a board-level "best play"
-  // survey (no specific entity matched, e.g. "what's tonight's best play?").
-  let scopeForB: "matchup" | "slate" = "matchup";
+  // "matchup"  = a specific named game.
+  // "slate"    = a board-level "best play" survey ("what's tonight's best play?").
+  // "schedule" = a CALENDAR question ("what games are on today?") — one
+  //              deterministic get_todays_slate read across every league, ET
+  //              start times, no manufactured play.
+  let scopeForB: "matchup" | "slate" | "schedule" = "matchup";
 
   if (!injectionAttempt) {
     if (decision.lane === "B" && "mode" in decision) {
@@ -345,7 +349,12 @@ async function answerCore(
     } else if (decision.lane === "B") {
       lane = "B";
       leagueForB = decision.league;
-      scopeForB = decision.matchedEntities.length > 0 ? "matchup" : "slate";
+      scopeForB =
+        decision.intent === "schedule"
+          ? "schedule"
+          : decision.matchedEntities.length > 0
+            ? "matchup"
+            : "slate";
     } else if ("ambiguous" in decision && decision.ambiguous) {
       const tiebreak = (deps.ambiguityClassifier ?? classifyAmbiguousWithModel);
       // The tiebreaker is a single fixed-size Haiku call. It's the one call whose
@@ -367,7 +376,34 @@ async function answerCore(
       const r = tb.value;
       if (r.lane === "B") {
         lane = "B";
-        leagueForB = r.league;
+        // VALIDATE THE MODEL'S LEAGUE AGAINST THE ACTUAL BOARD.
+        //
+        // MEASURED 2026-09-12: the tiebreaker answered "NBA" for both "what
+        // games are on today?" and "any player props worth looking at tonight?"
+        // on a night when the NBA's earliest snapshot game was October 20. Lane
+        // B then surveyed an empty board, failed grounding twice, and shipped
+        // the fallback. A routing model picking a DARK league is not a
+        // judgement call we honour — it is a wrong answer, and the board is the
+        // frozen anchor that says so. If the league it picked has no game
+        // starting today, we substitute the league that does; if nothing is on
+        // anywhere, we drop to Lane A, which can honestly say the board is dark.
+        const live = leaguesWithGamesToday(slate);
+        if (live.includes(r.league)) {
+          leagueForB = r.league;
+        } else {
+          const substitute = primaryLeagueWithGames(slate);
+          if (substitute) {
+            console.info(
+              `[chat/sharp] tiebreak league ${r.league} has no games today; substituting ${substitute}. requestId=${meta.requestId}`
+            );
+            leagueForB = substitute;
+          } else {
+            console.info(
+              `[chat/sharp] tiebreak league ${r.league} has no games today and no league does; falling back to Lane A. requestId=${meta.requestId}`
+            );
+            lane = "A";
+          }
+        }
         // The tiebreaker only fires for entity-less asks, so survey the board.
         scopeForB = "slate";
       }
@@ -428,7 +464,8 @@ async function answerCore(
         injectionAttempt,
         laneBMode,
         laneBLeague,
-        meta
+        meta,
+        scopeForB
       );
     }
 
@@ -483,7 +520,8 @@ async function answerCore(
         injectionAttempt,
         laneBMode,
         laneBLeague,
-        meta
+        meta,
+        scopeForB
       );
     }
 
@@ -498,18 +536,24 @@ async function answerCore(
     meta.outcome =
       laneBMode === "stats"
         ? "laneB_stats_fallback"
-        : "laneB_doctrine_fallback";
-    const fallback =
-      laneBMode === "stats"
-        ? STATS_MODE_FALLBACK(String(laneBLeague))
-        : DOCTRINE_FALLBACK;
+        : `laneB_${scopeForB}_fallback`;
+    // Shaped to the QUESTION and NAMING what was missing — built from this
+    // turn's own payloads, so a calendar question never gets "that game" again
+    // and a data gap is stated with its refresh date. See ./fallback.ts.
+    const fallback = buildLaneBFallback({
+      scope: scopeForB,
+      mode: laneBMode,
+      league: String(laneBLeague),
+      gaps: collectGaps(first.toolResultTexts),
+    });
     return laneBResponse(
       fallback,
       first.toolsUsed,
       injectionAttempt,
       laneBMode,
       laneBLeague,
-      meta
+      meta,
+      scopeForB
     );
   }
 
@@ -564,7 +608,8 @@ function laneBResponse(
   injectionAttempt: boolean,
   mode: "bets" | "stats",
   league: InScopeLeague | StatsLeague | null,
-  meta: TurnMeta
+  meta: TurnMeta,
+  scope: "matchup" | "slate" | "schedule" = "matchup"
 ): ChatResponse {
   const leak = checkLeak(reply);
   let finalReply = reply;
@@ -572,10 +617,14 @@ function laneBResponse(
     console.warn(
       `[chat/sharp] Lane B plumbing leak blocked (requestId=${meta.requestId}, mode=${mode}, marker=${leak.marker}). Shipping fallback.`
     );
-    finalReply =
-      mode === "stats"
-        ? STATS_MODE_FALLBACK(String(league))
-        : DOCTRINE_FALLBACK;
+    // A leak-blocked reply has no gap list to offer (the payloads were fine —
+    // the VOICE was wrong), so this fallback names the shape but not a cause.
+    finalReply = buildLaneBFallback({
+      scope,
+      mode,
+      league: String(league),
+      gaps: [],
+    });
     meta.outcome = "laneB_leak_fallback";
   }
   return {
@@ -647,6 +696,7 @@ const EMPTY_SLATE: SlateEntities = {
   teams: new Map(),
   tokens: new Map(),
   players: new Map(),
+  gamesToday: new Map(),
 };
 
 // ─── Receipts mode ───────────────────────────────────────────────────────────

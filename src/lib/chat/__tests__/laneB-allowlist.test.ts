@@ -7,14 +7,24 @@ import {
   LANE_B_READ_ONLY_TOOLS,
   LANE_B_TOOL_DEFINITIONS,
   LANE_B_STATS_TOOL_DEFINITIONS,
+  TODAYS_SLATE_TOOL,
 } from "../laneB";
 import {
   STATS_TOOL_NAMES,
   PURE_STATS_TOOL_NAMES,
 } from "@/lib/agent/tools/stats";
 
-// The full read-only surface = the pick-pipeline read tools + the stats tools.
-const FULL_ALLOWLIST = [...LANE_B_READ_ONLY_TOOLS, ...STATS_TOOL_NAMES];
+// The full read-only surface = the pick-pipeline read tools + the stats tools +
+// the chat-only schedule tool (get_todays_slate, defined in laneB.ts and
+// DELIBERATELY absent from the agent's TOOL_DEFINITIONS so the analyst is
+// unaffected). It is a pure file read that returns matchups, ET start times and
+// the market moneyline — no edge, no stake, no play — so it is safe on BOTH the
+// bets and stats surfaces.
+const FULL_ALLOWLIST = [
+  ...LANE_B_READ_ONLY_TOOLS,
+  ...STATS_TOOL_NAMES,
+  TODAYS_SLATE_TOOL,
+];
 
 const WRITE_OR_CONTROL = [
   "run_ingest",
@@ -87,7 +97,11 @@ describe("Lane B read-only allowlist", () => {
 describe("Lane B STATS-MODE tool surface (a league we do NOT bet)", () => {
   it("stats-mode defs are EXACTLY the PURE stat tools (bet-shaped tools stripped)", () => {
     const names = LANE_B_STATS_TOOL_DEFINITIONS.map((d) => d.name).sort();
-    expect(names).toEqual([...PURE_STATS_TOOL_NAMES].sort());
+    // The PURE stat tools PLUS the chat-only schedule tool. get_todays_slate
+    // surfaces no edge, stake, side or +EV row — only who is on, when, and the
+    // market's own price — so it cannot break the structural "a stats turn is
+    // incapable of issuing a bet" property the next test pins.
+    expect(names).toEqual([...PURE_STATS_TOOL_NAMES, TODAYS_SLATE_TOOL].sort());
     // PURE = all stats tools MINUS the two bet-shaped ones.
     expect(names).not.toEqual([...STATS_TOOL_NAMES].sort());
   });
