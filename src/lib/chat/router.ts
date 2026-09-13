@@ -459,27 +459,100 @@ export function looksSlateLevel(message: string): boolean {
 // September NBA board and shipped the matchup-shaped fallback to a question
 // about today's schedule. Two separate defects compounding; this hint set closes
 // the routing half.
+// ROUND 2 NARROWING (systems-reviewer, proven by execution against the real
+// classifier). Two alternatives were far too loose and pulled BET questions
+// into the no-pick calendar prompt, deterministically and ahead of the
+// tiebreaker:
+//
+//   • bare `(today's|tonight's|the)\s+(slate|schedule|card|board)` — "the board"
+//     is THIS PRODUCT'S WORD FOR ITS OWN PICKS, so "is anything on the board
+//     worth a unit tonight?" and "how did the board do last night?" routed to a
+//     prompt that opens "This is a CALENDAR answer, not a pick."
+//   • bare `who(?:'s| is| are)?\s+(playing|plays|on)` — caught "who's on the
+//     mound tonight?", "who's playing well lately?", and "who's on first?".
+//
+// So: "the board/slate/card" now needs an explicit calendar verb or a day word,
+// and "who's playing" needs a day word. On top of that a NEGATIVE list runs
+// first — if the message carries bet/record/pitching intent it is NOT a
+// calendar question, whatever else it matches, and it falls through to
+// looksSlateLevel / the tiebreaker exactly as before.
+const SCHEDULE_DISQUALIFIERS: RegExp[] = [
+  // BET INTENT. Deliberately NARROW: `looksSlateLevel` runs BEFORE this and
+  // already owns "any plays/picks/bets tonight", so this list only has to catch
+  // the bet phrasings that slip past it — "worth a unit", "fading the public".
+  // Words that are both bet nouns AND ordinary prose are excluded on purpose:
+  // "plays" (who PLAYS tonight), "over"/"under" (games OVER the weekend),
+  // "odds" (what's on today and what are the ODDS — the schedule payload
+  // carries moneylines, so that is a schedule question with a price rider).
+  /\b(?:unit|units|stake|wager|bet|bets|betting|fade|fading|tail|parlay|edge|edges|moneyline|spread|prop|props)\b/i,
+  /\+\s?ev\b/i,
+  // THE DESK'S OWN PERFORMANCE, not the calendar. "how did the board do last
+  // night?" is a results question wearing a calendar word.
+  /\b(?:record|results?|graded|clv|roi|profit|win rate|how did|how'?d|last night|yesterday)\b/i,
+  // PITCHING / FORM questions that read like "who's playing".
+  /\b(?:mound|pitching|starter|starters|probable|probables|playing well|playing good|in form)\b/i,
+];
+
+// Day words the schedule read understands. "tomorrow" and the weekday names are
+// here because get_todays_slate now takes a `day` argument (see slate.ts): a
+// Sunday question is answerable from the same snapshots, and the round-1 build
+// routed it to a today-only tool, which made the desk deny a board it was
+// holding — measured on 2026-09-12, when it said Sunday's board "isn't live
+// yet" while the MLB file held 9 Sunday rows and the NFL file 13.
+const DAY_WORD =
+  String.raw`today|tonight|tomorrow|this\s+(?:afternoon|evening)|this\s+weekend|the\s+weekend|` +
+  String.raw`(?:on\s+|this\s+|next\s+)?(?:sun|mon|tues|tue|wednes|wed|thurs|thur|thu|fri|satur|sat)(?:day)?\b`;
+
 const SCHEDULE_LEVEL_HINTS: RegExp[] = [
-  // "what games are on today", "what game is on tonight", "which games are on"
-  /\bwh(?:at|ich)\s+games?\b[^?.!]*\b(?:on|playing|today|tonight|scheduled|slate)\b/i,
-  // "what's on tonight", "what is on today", "anything on tonight"
-  /\b(?:what(?:'?s| is)|anything)\s+(?:on|going on)\b[^?.!]*\b(?:today|tonight|this (?:afternoon|evening))\b/i,
-  // "who's playing today", "who plays tonight", "who is playing"
-  /\bwho(?:'?s| is| are)?\s+(?:playing|plays|on)\b/i,
-  // "today's slate", "tonight's slate", "the slate", "what's the slate"
-  /\b(?:today'?s|tonight'?s|the)\s+(?:slate|schedule|card|board)\b/i,
-  /\bwhat(?:'?s| is)\s+(?:the\s+)?(?:slate|schedule|card)\b/i,
-  // "any games today", "are there games tonight", "games on today"
-  /\b(?:any|are there(?: any)?)\s+games?\b[^?.!]*\b(?:today|tonight|on)\b/i,
-  /\bgames?\s+(?:on|today|tonight)\b[^?.!]*\?/i,
+  // "what games are on today", "which games are on Sunday"
+  new RegExp(
+    String.raw`\bwh(?:at|ich)\s+games?\b[^?.!]*\b(?:on|playing|scheduled|slate|${DAY_WORD})`,
+    "i"
+  ),
+  // "what's on tonight", "anything on tomorrow"
+  new RegExp(
+    String.raw`\b(?:what(?:'?s| is)|anything)\s+(?:on|going on)\b[^?.!]*\b(?:${DAY_WORD})`,
+    "i"
+  ),
+  // "who's playing today/tomorrow/Sunday" — a DAY WORD is now REQUIRED, so
+  // "who's on the mound tonight" is left to the disqualifiers and "who's on
+  // first" / "who's playing well lately" no longer match at all.
+  new RegExp(
+    String.raw`\bwho(?:'?s| is| are)?\s+(?:playing|plays)\b[^?.!]*\b(?:${DAY_WORD})`,
+    "i"
+  ),
+  // "today's slate", "tomorrow's card" — a DAY WORD only. The bare
+  // "the slate/board" alternative is deliberately gone: "the board" is this
+  // product's word for its own picks.
+  new RegExp(
+    String.raw`\b(?:${DAY_WORD})(?:'?s)?\s+(?:slate|schedule|card|games?)\b`,
+    "i"
+  ),
+  // "what's the slate", "what is the schedule" — calendar nouns only; "board"
+  // is excluded for the same reason.
+  // "what's the card tonight", "the slate tomorrow" — the noun BEFORE the day
+  // word. "board" stays off the noun list: it names the desk's picks.
+  new RegExp(
+    String.raw`\b(?:the\s+)?(?:slate|schedule|card)\b[^?.!]*\b(?:${DAY_WORD})`,
+    "i"
+  ),
+  /\bwhat(?:'?s| is)\s+(?:the\s+)?(?:slate|schedule)\b/i,
+  // "any games today", "are there games on Sunday"
+  new RegExp(
+    String.raw`\b(?:any|are there(?: any)?)\s+games?\b[^?.!]*\b(?:on|${DAY_WORD})`,
+    "i"
+  ),
+  new RegExp(String.raw`\bgames?\s+(?:on|${DAY_WORD})\b[^?.!]*\?`, "i"),
   // "what time do they play", "when do the games start"
   /\b(?:what time|when)\b[^?.!]*\b(?:games?|they|first pitch|tip(?:-| )?off|kick(?:-| )?off)\b[^?.!]*\b(?:start|on|play|playing)\b/i,
-  // "schedule for today", "today's games"
-  /\bschedule\b[^?.!]*\b(?:today|tonight)\b/i,
-  /\b(?:today'?s|tonight'?s)\s+games?\b/i,
+  // "schedule for today", "schedule on Sunday"
+  new RegExp(String.raw`\bschedule\b[^?.!]*\b(?:${DAY_WORD})`, "i"),
 ];
 
 export function looksScheduleLevel(message: string): boolean {
+  // Bet / record / pitching intent is never a calendar question, however the
+  // sentence is phrased. Checked FIRST so a disqualifier always wins.
+  if (SCHEDULE_DISQUALIFIERS.some((p) => p.test(message))) return false;
   return SCHEDULE_LEVEL_HINTS.some((p) => p.test(message));
 }
 

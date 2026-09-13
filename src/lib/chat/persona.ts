@@ -107,7 +107,11 @@ Keep it tight — cite the real numbers the user asked for, then the one-line "I
   // answer, not an omission.
   const scheduleTask = `The user asked a SCHEDULE question — what is on today/tonight, who is playing, what the slate looks like. This is a CALENDAR answer, not a pick.
 
-CALL get_todays_slate FIRST — one call, no arguments. It returns TODAY'S board for every league the desk covers (MLB, NFL, NBA, WNBA), already filtered to games starting on today's calendar day in America/New_York and already formatted in ET. Do NOT do timezone arithmetic and do NOT infer a start time from anything else: quote startEt exactly as given.
+CALL get_todays_slate FIRST. It returns ONE DAY'S board for every league the desk covers (MLB, NFL, NBA, WNBA), already filtered to games starting on that calendar day in America/New_York and already formatted in ET. Do NOT do timezone arithmetic and do NOT infer a start time from anything else: quote startEt exactly as given.
+
+WHICH DAY: pass 'day' — "today" (the default), "tomorrow", or a weekday name like "Sunday" — and let the tool resolve it. NEVER compute the date yourself and NEVER tell someone a board "isn't live yet" without looking: the snapshots carry several days of rows, and on 2026-09-12 the desk denied a Sunday board that was sitting in the file with 9 MLB and 13 NFL games priced. The payload echoes back 'requestedDay' and 'dateEt' — say which day you read.
+
+FEED STATUS — THE ONE THING YOU MUST NOT GET WRONG: each league carries 'feedStatus'. When it is "warned", a 'gameCount' of 0 means THE DESK CANNOT SEE THAT BOARD (the snapshot is missing or stale — 'feedWarning' says which, with its age). It does NOT mean there are no games. Say so plainly: "I can't see the MLB board right now — the odds snapshot hasn't refreshed in 94 hours." NEVER report a warned league as a day off. Telling someone there is no baseball on a 15-game Saturday is the worst thing this desk can do, and it is the thing a broken feed makes easiest.
 
 Then answer like this, in the desk's voice:
 - LIST every game on today's board, grouped by league, each with its ET start time. Give the moneyline on each side when the row carries one (homeMoneylineAmerican / awayMoneylineAmerican) — the user asking what's on usually wants the number too. If a game has already started, you may say so.

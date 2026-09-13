@@ -48,14 +48,31 @@ import { buildTodaySlate } from "./slate";
 // behaviour because chat needed a calendar.
 export const TODAYS_SLATE_TOOL = "get_todays_slate" as const;
 
+// Read the model's `day` argument defensively. Anything that is not a short
+// string degrades to undefined, which resolveSlateDay reads as "today" — an
+// unparsed day word must never become a silently different date.
+function readDayArg(input: unknown): string | undefined {
+  if (typeof input !== "object" || input === null) return undefined;
+  const day = (input as { day?: unknown }).day;
+  if (typeof day !== "string") return undefined;
+  const trimmed = day.trim();
+  return trimmed.length > 0 && trimmed.length <= 32 ? trimmed : undefined;
+}
+
 const TODAYS_SLATE_DEFINITION = {
   name: TODAYS_SLATE_TOOL,
   description:
-    "THE SCHEDULE. Read-only. Returns TODAY'S board across every league the desk covers (MLB, NFL, NBA, WNBA), already filtered to games that START on today's calendar day in America/New_York and already formatted in ET — you must NOT do timezone math yourself. Per league: gameCount, each game's matchup + startEt (e.g. \"7:15 PM ET\") + whether it has started + the consensus moneyline on each side, when that league's lines were last refreshed (linesRefreshedEt), and — for a league that is DARK today — nextSlateDateEt, the next date it appears on the board. Also a per-league `note` and a top-level `note` you can read aloud verbatim. CALL THIS FIRST for any question about what is on today/tonight, who is playing, or the slate/schedule. NFL rows are SCHEDULE ONLY: give the times, then point the user at the published /nfl board for the read. Everything here is a real field — cite it directly, never estimate a start time.",
+    "THE SCHEDULE. Read-only. Returns the board for ONE DAY across every league the desk covers (MLB, NFL, NBA, WNBA), already filtered to games that START on that calendar day in America/New_York and already formatted in ET — you must NOT do timezone math or date arithmetic yourself. Pass `day` as \"today\" (the default), \"tomorrow\", or a weekday name (\"Sunday\"); the tool resolves it from the desk's own clock and echoes the resolved date back as `dateEt` + `requestedDay`. Per league: gameCount, each game's matchup + startEt (e.g. \"7:15 PM ET\") + whether it has started + the consensus moneyline on each side, when that league's lines were last refreshed (linesRefreshedEt), and — for a league with nothing on that day — nextSlateDateEt, the next date it appears on the board. CRITICAL: `feedStatus` is \"ok\" or \"warned\". A league with gameCount 0 and feedStatus \"warned\" means the desk CANNOT SEE that board (the snapshot is missing or stale, see feedWarning) — it does NOT mean no games are scheduled, and you must never report it as a day off. Read the per-league `note` and the top-level `note`: they are written for exactly this and are safe to read aloud verbatim. CALL THIS FIRST for any question about what is on today, tonight, tomorrow or a named day, who is playing, or the slate/schedule. NFL rows are SCHEDULE ONLY: give the times, then point the user at the published /nfl board for the read. Everything here is a real field — cite it directly, never estimate a start time.",
   input_schema: {
     type: "object" as const,
-    properties: {},
-    required: [],
+    properties: {
+      day: {
+        type: "string" as const,
+        description:
+          'Which day to read: "today" (default), "tomorrow", or a weekday name such as "Sunday". Resolved server-side from the desk clock — never compute the date yourself.',
+      },
+    },
+    required: [] as string[],
   },
 };
 
@@ -286,7 +303,8 @@ export async function runLaneB(
     const deskRecord = await getDeskRecordSummary(IN_SCOPE_LEAGUES, 30);
     handlers = {
       ...buildStatsHandlers(deskRecord),
-      [TODAYS_SLATE_TOOL]: () => buildTodaySlate(),
+      [TODAYS_SLATE_TOOL]: (input: unknown) =>
+        buildTodaySlate({ day: readDayArg(input) }),
     };
   } else {
     const [memories, latestDream, teamRecords, deskRecord] = await Promise.all([
@@ -307,7 +325,8 @@ export async function runLaneB(
         teamRecords,
       }),
       ...buildStatsHandlers(deskRecord),
-      [TODAYS_SLATE_TOOL]: () => buildTodaySlate(),
+      [TODAYS_SLATE_TOOL]: (input: unknown) =>
+        buildTodaySlate({ day: readDayArg(input) }),
     };
   }
 

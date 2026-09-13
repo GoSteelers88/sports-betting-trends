@@ -342,3 +342,89 @@ describe("the schedule prompt tells the model to read, not to compute", () => {
     expect(p).toContain("PROPS, WHEN THE BOARD IS EMPTY");
   });
 });
+
+// ─── SHOULD 3 — the calendar prompt must not swallow bet questions ───────────
+//
+// Every string below was MEASURED by the systems-reviewer routing to
+// `B/MLB/schedule (schedule-level)` against a real September board. The
+// schedule prompt opens "This is a CALENDAR answer, not a pick", so a bet
+// question landing there runs under instructions that are wrong for it.
+//
+// Two culprits: the bare `(today's|tonight's|the)\s+(slate|schedule|card|board)`
+// alternative — "the board" is this product's word for its own picks — and the
+// bare `who(?:'s| is| are)?\s+(playing|plays|on)` alternative.
+
+describe("REGRESSION — bet, record and pitching questions are NOT calendar questions", () => {
+  const NOT_SCHEDULE = [
+    "how did the board do last night?",
+    "what's the desk's record on the board this week?",
+    "who's on the mound tonight?",
+    "who's on first?",
+    "who's playing well lately?",
+    "is anything on the board worth a unit tonight?",
+    "any games today worth fading the public on?",
+    "what's the board looking like for tonight's parlay?",
+    "how'd we do on the card yesterday?",
+  ];
+  for (const q of NOT_SCHEDULE) {
+    it(`does NOT route "${q}" to the schedule prompt`, () => {
+      expect(looksScheduleLevel(q)).toBe(false);
+      const d = classifyDeterministic(q, septemberSlate());
+      if (d.lane === "B" && !("mode" in d)) expect(d.intent).not.toBe("schedule");
+    });
+  }
+
+  it("still routes the plain calendar questions", () => {
+    for (const q of [
+      "what games are on today?",
+      "who's playing tonight",
+      "what's the card tonight",
+      "what's tonight's slate",
+      "any games today?",
+    ]) {
+      expect(looksScheduleLevel(q)).toBe(true);
+    }
+  });
+});
+
+// ─── SHOULD 4 — tomorrow / a named weekday is a schedule question too ────────
+//
+// MEASURED 2026-09-12 21:23 ET: "what games are on tomorrow?" routed to a
+// TODAY-ONLY tool, and the desk replied "'Tomorrow' is Sunday, September 13,
+// and that board isn't live yet" — while the MLB snapshot held 9 rows dated
+// 2026-09-13 ET and the NFL snapshot held 13, all with prices. Honest about
+// what it had; false about what exists.
+
+describe("tomorrow and weekday questions route to the schedule read", () => {
+  const FUTURE_DAY = [
+    "what games are on tomorrow?",
+    "which games are on Sunday?",
+    "who's playing on Sunday?",
+    "what's the slate tomorrow",
+    "any games on Sunday?",
+  ];
+  for (const q of FUTURE_DAY) {
+    it(`routes "${q}" to the schedule read`, () => {
+      expect(looksScheduleLevel(q)).toBe(true);
+      const d = classifyDeterministic(q, septemberSlate());
+      expect(d.lane).toBe("B");
+      if (d.lane === "B" && !("mode" in d)) expect(d.intent).toBe("schedule");
+    });
+  }
+});
+
+describe("the schedule prompt teaches the two things a payload alone cannot", () => {
+  it("tells the model to pass `day` and never compute a date", () => {
+    const p = buildLaneBSystemPrompt("MLB", "schedule", "bets", NOW);
+    expect(p).toContain("WHICH DAY");
+    expect(p).toContain("tomorrow");
+    expect(p).toContain("NEVER compute the date yourself");
+  });
+
+  it("tells the model a WARNED feed is not a day off", () => {
+    const p = buildLaneBSystemPrompt("MLB", "schedule", "bets", NOW);
+    expect(p).toContain("feedStatus");
+    expect(p).toContain("CANNOT SEE THAT BOARD");
+    expect(p).toContain("NEVER report a warned league as a day off");
+  });
+});

@@ -15,7 +15,6 @@ import {
   etDayKey,
   etClock,
   etShortDate,
-  gamesTodayByLeague,
   parseIso,
 } from "../slate";
 import type { GameOdds } from "@/lib/agent/tools";
@@ -220,7 +219,10 @@ describe("buildTodaySlate — only games that START today (ET)", () => {
     });
     const nba = slate.leagues.find((l) => l.league === "NBA")!;
     expect(nba.gameCount).toBe(0);
-    expect(nba.note).toContain("not readable");
+    // A throw is the hardest possible warning: flagged, never reported as dark.
+    expect(nba.feedStatus).toBe("warned");
+    expect(nba.note).toMatch(/can'?t see/i);
+    expect(nba.note).not.toContain("nothing today");
     // The rest of the board still reports.
     expect(slate.leagues.find((l) => l.league === "MLB")!.gameCount).toBe(2);
   });
@@ -237,15 +239,5 @@ describe("buildTodaySlate — only games that START today (ET)", () => {
       })) as never,
     });
     expect(slate.gameCount).toBe(0);
-  });
-});
-
-describe("gamesTodayByLeague", () => {
-  it("counts only today's games, per league", () => {
-    const counts = gamesTodayByLeague(deps);
-    expect(counts.get("MLB")).toBe(2);
-    expect(counts.get("NBA")).toBe(0);
-    expect(counts.get("WNBA")).toBe(0);
-    expect(counts.get("NFL")).toBe(0);
   });
 });

@@ -164,12 +164,6 @@ const ALREADY_PERCENT_KEYS: ReadonlySet<string> = new Set([
   "evPct",
   "clvBeatRatePct",
   "precipPct",
-  // get_player_props writes `confidence` on a 0–100 scale (measured: the live
-  // NBA feed carries confidence: 95). It was being ×100'd into 9500, so a
-  // TRUTHFUL "95% confidence" quoted straight off the row came back ungrounded
-  // and forced the doctrine fallback — observed on the 2026-09-12 props probe
-  // (ungrounded list included "95%"). One producer, one scale; it belongs here.
-  "confidence",
   // NFL receipts research + ledger figures. Every one of these is written as a
   // percent by its producer (8.21 means 8.21%), so they must NOT be ×100'd.
   "roiPct",
@@ -200,6 +194,29 @@ const ALREADY_PERCENT_KEYS: ReadonlySet<string> = new Set([
 // fabrication hole; the NFL tools strip evPct entirely on top of this, so the
 // fraction never reaches the haystack from the receipts path at all.
 const AMBIGUOUS_SCALE_KEYS: ReadonlySet<string> = new Set(["evPct"]);
+
+// ─── `confidence`: ONE key, TWO scales, both live ──────────────────────
+//
+// Measured in the real payloads:
+//   get_player_props  topProps[].confidence      = 95            (0–100)
+//   get_trend_summary bestBets[].confidence      = 61, 56, 53    (0–100)
+//   get_trend_summary leagues[].confidence       = 1, 0.35, 1, 1 (0–1)
+//
+// The last two come out of the SAME TOOL, in the SAME payload. Round 1 declared
+// the key already-percent for every producer, which fixed the truthful "95%"
+// and broke a truthful "35%" (0.35 read as 0.35%). Neither scale choice can be
+// right for both, so the scale is read off the VALUE: a magnitude above 1 can
+// only be a percent (a 61.0 fraction is not a probability), and a magnitude at
+// or below 1 can only be a fraction (0.35 = 35%, 1 = 100%).
+//
+// This is a guard-side accommodation for a producer-side defect. The real fix
+// is one key, one scale, at free-stats-summary.ts — out of scope for this
+// change and flagged in the report.
+const DUAL_SCALE_PROB_KEYS: ReadonlySet<string> = new Set(["confidence"]);
+
+function percentizeDualScale(val: number): number {
+  return Math.abs(val) > 1 ? val : val * 100;
+}
 
 // Price / line / point value keys → contribute price-grounding values (±1).
 //
@@ -405,32 +422,47 @@ const TEXT_VALUE_KEYS: ReadonlySet<string> = new Set([
   "explanation",
   "rationale",
   "reason",
-  // ─── THE STALENESS BANNER (2026-09-12, measured) ─────────────────────────
-  //
-  // `dataWarning` is the loader's own sentence: "DATA WARNING:
-  // mlb-model-output.json is 94h old (stale > 6h)…". It is desk-authored text,
-  // exactly like a pass reason, and quoting it back is the single most honest
-  // thing the desk can do with a stale feed.
-  //
-  // It was NOT in this set, and that one omission was the whole mechanism
-  // behind the "Phillies at Braves" failure. The draft was correct — it quoted
-  // Braves -130 / Phillies +110, the records, the bullpen ERAs — and added "the
-  // model data is roughly 94 hours old". checkGrounding flagged "94" as a
-  // fabricated number, the no-tools rewrite said "over 94 hours old" again, and
-  // the desk shipped "I don't have a clean live read on that game" while
-  // holding the line. The guard was punishing the desk for disclosing
-  // staleness, on a site whose brand is that every number is real.
+  // DELIBERATELY ABSENT: `dataWarning`, `rule`, `reasoning`, `notes`,
+  // `rationaleSignals`. See RECORD_TEXT_KEYS and collectAgeRaws below — round 1
+  // of this fix put them here and that was the wrong mechanism.
+]);
+
+// ─── Free-prose text keys: RECORD BUCKET ONLY (the round-2 narrowing) ───
+//
+// Round 1 needed two things and reached for one lever for both: let the desk
+// quote its own staleness banner ("the model file is 94 hours old"), and let it
+// quote a memory rule's record ("the desk is 9-2 on that side"). It added
+// `dataWarning`, `rule`, `reasoning` and `notes` to TEXT_VALUE_KEYS, whose
+// numbers are harvested into the CONTEXT-FREE `quoted` bucket: a figure is
+// "real" if it appears ANYWHERE in ANY payload this turn.
+//
+// MEASURED by the systems-reviewer, against the real module, with the haystack
+// set to tonight's real Braves odds plus ONLY the four COMMITTED memory seeds
+// (production adds every nightly rule on top):
+//
+//   "Braves are a 20% edge tonight, hammer it."   REJECTED before -> GROUNDED after
+//   "The model has the Braves at 90% tonight."    REJECTED before -> GROUNDED after
+//   "Clean 15.1% edge on the Phillies here."                      -> GROUNDED
+//   "That is an 18% edge, bet it big."                            -> GROUNDED
+//   "Only a 2.4% edge, pass."                                     -> GROUNDED
+//
+// Those four seeds alone carry 24 numeric tokens, 9 of them percents (3, 3, 18,
+// 90, 14.6, 15.1, 2.4, 20, 20) — a parlay rule about longshot EV became a
+// license to invent an edge on tonight's game. `get_dream_memory` is in
+// toolsUsed on 11 of 17 logged Lane B turns, so this was the COMMON path, on
+// the one guard this product's credibility rests on.
+//
+// The narrowing: free LLM-written or loader-written prose contributes ONLY its
+// hyphenated N-M RECORDS, to `recordValues`. That bucket backs a claim solely
+// when the REPLY ALSO writes the token in N-M form (see collectRecordRaws), so
+// "9-2 on that side" still quotes and "20% edge" goes red. The staleness AGE is
+// handled on the REPLY side instead (collectAgeRaws) — exempting a phrase adds
+// nothing to the haystack at all, which is the whole point.
+const RECORD_TEXT_KEYS: ReadonlySet<string> = new Set([
   "dataWarning",
-  // Tool notes ("No HR likes on the current board…", "1 game(s) clear the 6%
-  // edge floor") are desk-authored English the desk is meant to read aloud.
-  // ("note" is already listed above.)
   "notes",
-  // get_dream_memory rules + their reasoning are committed, human-curated text;
-  // a rule that says "9-2 on NYK moneylines" must be quotable as written.
   "rule",
   "reasoning",
-  // Per-row provenance strings from the props feed ("1-book consensus line
-  // 29.5 (spread 0.0)") — an array of strings, handled by the array branch.
   "rationaleSignals",
 ]);
 
@@ -452,6 +484,19 @@ export type NumberClaim = {
 // require them to be backed: small counts ("1 unit", "2 plays"), the edge floor
 // doctrine ("6%"), units, and the responsible-gambling phone number.
 const ALWAYS_OK = new Set(["0", "1", "2", "3", "4", "5", "6", "800", "1800"]);
+
+// The ALWAYS_OK exemption truncates, so "6.4%" checked as "6" and sailed
+// through — and 6.4% is ABOVE the desk's 6% edge floor, i.e. a fabricated
+// figure that JUSTIFIES A BET. (Found while writing the round-2 negative
+// controls: "Only a 2.4% edge, pass." grounded against a haystack containing
+// no such number, before and after this change.) The doctrine phrases the
+// exemption exists for are whole numbers — "the 6% floor", "1 unit", "2 plays"
+// — so a PERCENT claim keeps the exemption only when it is integer-valued. A
+// non-percent claim is unchanged ("1.5 units" still reads as prose).
+function percentExemptFromCount(claim: NumberClaim): boolean {
+  if (!Number.isInteger(claim.value)) return false;
+  return ALWAYS_OK.has(String(Math.abs(claim.value)));
+}
 
 // Extract candidate numeric claims from a reply, tagging each as percent-like or
 // not. Percent-like = written with a trailing % OR phrased as an edge/prob (we
@@ -543,6 +588,18 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
     }
   };
 
+  // Free prose (memory rules, loader warnings, per-row provenance) contributes
+  // ONLY its hyphenated N-M records. parseRecordString is not usable here: it
+  // requires the WHOLE string to be a record ("29-10-2"), and these are
+  // sentences that happen to contain one. Mirrors collectRecordRaws on the
+  // reply side, which is the gate that makes this bucket safe.
+  const harvestRecords = (text: string): void => {
+    for (const m of text.matchAll(/\b(\d+)-(\d+)\b/g)) {
+      recordValues.push(Number(m[1]));
+      recordValues.push(Number(m[2]));
+    }
+  };
+
   const visit = (node: unknown): void => {
     if (Array.isArray(node)) {
       for (const item of node) visit(item);
@@ -550,6 +607,15 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
     }
     if (!isPlainObject(node)) return;
     for (const [key, val] of Object.entries(node)) {
+      if (Array.isArray(val) && RECORD_TEXT_KEYS.has(key)) {
+        // rationaleSignals is an ARRAY OF STRINGS; the array branch of visit()
+        // drops the key, so handle it here where the key is still known.
+        for (const item of val) {
+          if (typeof item === "string") harvestRecords(item);
+          else visit(item);
+        }
+        continue;
+      }
       if (Array.isArray(val) && TEXT_VALUE_KEYS.has(key)) {
         // doctrineNotes / mandatoryCaveats are ARRAYS OF STRINGS. The array
         // branch of visit() drops the key, so harvest here where it is known.
@@ -571,6 +637,7 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
           for (const n of parseRecordString(val)) recordValues.push(n);
         }
         if (TEXT_VALUE_KEYS.has(key)) harvestText(val);
+        if (RECORD_TEXT_KEYS.has(key)) harvestRecords(val);
         continue;
       }
 
@@ -584,7 +651,11 @@ function buildHaystack(toolResultTexts: string[]): Haystack {
         // from a fraction, so it grounds NOTHING rather than grounding the
         // wrong thing. See AMBIGUOUS_SCALE_KEYS.
         if (AMBIGUOUS_SCALE_KEYS.has(key) && Math.abs(val) < 1) continue;
-        const pct = ALREADY_PERCENT_KEYS.has(key) ? val : val * 100;
+        const pct = DUAL_SCALE_PROB_KEYS.has(key)
+          ? percentizeDualScale(val)
+          : ALREADY_PERCENT_KEYS.has(key)
+            ? val
+            : val * 100;
         percents.push(pct);
         // An edge/prob is sometimes spoken as the raw fraction too (rare), but
         // we deliberately do NOT add it to prices — percents ground percents.
@@ -678,10 +749,15 @@ export function checkGrounding(
   // not flag. Same rationale as the year and clock-time exemptions above.
   const dateOkRaws = collectDateRaws(reply);
 
+  // Staleness ages ("94 hours old", "6h", "4 days old"). Reply-side exemption,
+  // never a haystack entry — see collectAgeRaws.
+  const ageOkRaws = collectAgeRaws(reply);
+
   for (const claim of claims) {
     if (yearOkRaws.has(claim.raw)) continue;
     if (timeOkRaws.has(claim.raw)) continue;
     if (dateOkRaws.has(claim.raw)) continue;
+    if (ageOkRaws.has(claim.raw)) continue;
 
     // Free small-count / doctrine integers ("1 unit", "6% floor", the RG phone
     // number). Gate on INTEGER values only: a sub-1 rate like ".787" truncates
@@ -691,9 +767,13 @@ export function checkGrounding(
     const bare = String(Math.abs(Math.trunc(claim.value)));
     const isSubOneDecimal =
       !claim.isPercent && Math.abs(claim.value) > 0 && Math.abs(claim.value) < 1;
-    if (!isSubOneDecimal && ALWAYS_OK.has(bare)) continue;
+    // Percent claims are handled by percentExemptFromCount below (integer-only);
+    // letting them truncate here is what let "6.4%" through.
+    if (!claim.isPercent && !isSubOneDecimal && ALWAYS_OK.has(bare)) continue;
 
     if (claim.isPercent) {
+      // Whole-number doctrine percents only ("the 6% floor"); "6.4%" must ground.
+      if (percentExemptFromCount(claim)) continue;
       // Percent/edge claim → ONLY a percentized prob/edge value can back it, and
       // only within a tight tolerance. A "10% edge" must match a real
       // edge/prob, not a timestamp "10", a price "-110", or a stat integer.
@@ -816,6 +896,43 @@ function collectTimeRaws(text: string): Set<string> {
   return ok;
 }
 
+// ─── Staleness AGE tokens in the REPLY (the round-2 replacement) ────────────
+//
+// THE MEASURED FAILURE this exists for: an otherwise-perfect Phillies at Braves
+// read — it quoted the real -130/+110, the records, the bullpen ERAs — added
+// "the model data is roughly 94 hours old", and checkGrounding flagged "94" as
+// a fabricated number. Twice. The desk then shipped "I don't have a clean live
+// read on that game" WHILE HOLDING THE LINE. The guard was punishing the desk
+// for disclosing staleness, on a site whose brand is that every number is real.
+//
+// Round 1 fixed it by harvesting `dataWarning`'s numbers into the haystack.
+// That was the wrong lever twice over:
+//   • It let a 8.5-hour age ground a fabricated "over 8.5", a 45.5-hour age
+//     ground "over 45.5", and a 94.2-hour age ground "94.2 innings" — all
+//     measured.
+//   • It did not even reliably work: the loader writes ages with toFixed(1)
+//     ("94.2h"), and the haystack matches EXACTLY, so a reply saying "94 hours
+//     old" still failed against a "94.2h" banner.
+//
+// An AGE is not a money number in any market: nobody bets an over on hours.
+// So it is exempted on the REPLY side, exactly like a clock time or a calendar
+// date — which adds NOTHING to the haystack, and so cannot ground anything
+// else. The unit word is required, so a bare "94" is still a claim.
+const AGE_UNITS = "h|hr|hrs|hour|hours|day|days|week|weeks|month|months|min|mins|minute|minutes";
+const AGE_RE = new RegExp(String.raw`(\d+(?:\.\d+)?)\s*(?:${AGE_UNITS})\b`, "gi");
+
+function collectAgeRaws(text: string): Set<string> {
+  const ok = new Set<string>();
+  for (const m of text.matchAll(AGE_RE)) {
+    const raw = m[1]!;
+    ok.add(raw);
+    // The extractor sign-captures a token written as a hyphenated tail
+    // ("refreshed 12-94 hours"); accept that spelling too.
+    ok.add(`-${raw}`);
+  }
+  return ok;
+}
+
 // A claimed percent N is grounded iff some percent value is within PCT_TOLERANCE.
 function groundsAsPercent(claimedPct: number, percents: number[]): boolean {
   const target = Math.abs(claimedPct);
@@ -932,14 +1049,15 @@ export function checkBettingClaims(
   const timeOkRaws = collectTimeRaws(reply);
   const dateOkRaws = collectDateRaws(reply);
   const rangeOkRaws = collectRecordRaws(reply);
+  const ageOkRaws = collectAgeRaws(reply);
 
   for (const claim of claims) {
     if (yearOkRaws.has(claim.raw) || timeOkRaws.has(claim.raw)) continue;
     if (dateOkRaws.has(claim.raw)) continue;
+    if (ageOkRaws.has(claim.raw)) continue;
 
     if (claim.isPercent) {
-      const bare = String(Math.abs(Math.trunc(claim.value)));
-      if (ALWAYS_OK.has(bare)) continue;
+      if (percentExemptFromCount(claim)) continue;
       if (
         !groundsAsPercent(claim.value, hay.percents) &&
         !groundsAsQuoted(claim, hay.quotedPercents, rangeOkRaws)

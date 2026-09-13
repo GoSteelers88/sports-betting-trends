@@ -34,7 +34,9 @@ const MAX_GAPS = 3;
 // Map a snapshot filename (as it appears in a dataWarning) to how the desk says
 // it out loud. Anything unmatched degrades to a de-hyphenated filename, which is
 // still more useful than silence.
-function friendlyFile(file: string): string {
+/** How the desk says a snapshot filename out loud. Exported so slate.ts can
+ *  render a feed warning in the same voice (never the raw filename). */
+export function friendlyFile(file: string): string {
   const f = file.replace(/\.json$/i, "");
   let m = /^latest-odds-api-(?:baseball_mlb|basketball_nba|basketball_wnba|americanfootball_nfl|icehockey_nhl|basketball_ncaab)$/.exec(f);
   if (m) {
@@ -118,7 +120,15 @@ export function collectGaps(toolResultTexts: string[]): Gap[] {
       if (m) push(friendlyFile(m[1]!), sincePhrase(node.generatedAt ?? node.fetchedAt));
     }
     if (node.available === false && typeof node.note === "string" && node.note.trim()) {
-      push(node.note.trim().replace(/\.$/, ""), sincePhrase(node.generatedAt ?? node.fetchedAt));
+      // An ARGUMENT error is not a data gap. get_player_gamelog answers a bad
+      // call with available:false + "player name is required" (stats.ts:332);
+      // reflected verbatim that becomes "What's missing: player name is
+      // required", which reads like the desk is missing the user's input. Those
+      // are the model's mistakes, not the feed's — drop them.
+      const note = node.note.trim().replace(/\.$/, "");
+      if (!/is required|unknown (?:player|team|league)/i.test(note)) {
+        push(note, sincePhrase(node.generatedAt ?? node.fetchedAt));
+      }
     }
 
     for (const val of Object.values(node)) {
