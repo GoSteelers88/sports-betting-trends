@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-13T09:01:54.091Z",
+  "generatedAt": "2026-09-14T10:11:41.387Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,8 +95,8 @@
   ],
   "props": {
     "record": {
-      "wins": 672,
-      "losses": 400,
+      "wins": 671,
+      "losses": 401,
       "pushes": 7
     },
     "settled": 1079,
@@ -109,7 +109,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Elite target volume (8.4 targets, 73.2 recYds avg) as Mahomes' security blanket even vs strong PHI defense.",
+        "rationale": "Kelce averages 73.2 recYds/g as Mahomes' top target; consistent volume even vs strong defenses.",
         "season": 2024,
         "week": 22
       },
@@ -120,7 +120,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Season avg 74.1 recYds on massive 9.3 targets/gm, clear WR1 role for KC after midseason acquisition.",
+        "rationale": "Hopkins averages 74 recYds/g on 9.3 targets, high-volume role in KC passing attack.",
         "season": 2024,
         "week": 22
       },
@@ -131,7 +131,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "WR1 target share, 75.1 recYds avg vs KC secondary in a high-stakes game with heavy PHI passing efficiency.",
+        "rationale": "Brown averages 75 recYds/g as Hurts' top downfield weapon in a high-scoring Eagles offense (568 PF).",
         "season": 2024,
         "week": 22
       },
@@ -142,7 +142,7 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Consistent WR2 role, 63.9 recYds avg, dome conditions favor clean passing game for PHI.",
+        "rationale": "Smith averages 63.9 recYds/g with steady 7 targets/g, benefits from Eagles' prolific scoring offense.",
         "season": 2024,
         "week": 22
       },
@@ -153,7 +153,7 @@
         "threshold": 250,
         "side": "under",
         "result": "win",
-        "rationale": "Career avg only 193.6 passYds; run-heavy offense leans on Hurts/Barkley legs, limiting pass volume vs threshold.",
+        "rationale": "Hurts averages only 193 pass yds/g, run-heavy offense with Barkley; unlikely to clear 250 vs solid KC pass D.",
         "season": 2024,
         "week": 22
       },
@@ -164,7 +164,7 @@
         "threshold": 1.5,
         "side": "over",
         "result": "win",
-        "rationale": "Avg 2.18 passTDs per game historically, elite red-zone efficiency, dome environment supports scoring.",
+        "rationale": "Mahomes averages 2.18 TD/g; even vs strong PHI D, red-zone efficiency in a close SB likely yields 2+ TDs.",
         "season": 2024,
         "week": 22
       },
@@ -184,9 +184,9 @@
         "team": "KC",
         "stat": "passYds",
         "threshold": 250,
-        "side": "over",
-        "result": "win",
-        "rationale": "Career avg 287 passYds, dome conditions ideal for passing, though tough PHI defense (PA358) tempers confidence.",
+        "side": "under",
+        "result": "loss",
+        "rationale": "Elite Eagles D (358 PA) faces Mahomes in dome SB; tougher pass rush/coverage likely limits volume below his 287 season avg.",
         "season": 2024,
         "week": 22
       }
