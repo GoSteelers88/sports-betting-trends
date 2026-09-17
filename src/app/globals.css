@@ -2126,3 +2126,27 @@ button.card-source-link:hover {
 #props .prior-week[open] > .panel {
   margin-bottom: 1rem;
 }
+
+/* THE PROP BOARD — the picks, above the market they were taken from. */
+.prop-plays {
+  margin-top: 1.25rem;
+}
+.prop-plays__label {
+  color: var(--ink);
+  font-weight: 700;
+}
+/* The warning is not a footnote. This lane has never been validated
+   out-of-sample, and the reader sees that before the first row. */
+.prop-plays__warning {
+  margin: 0.35rem 0 0.9rem;
+  max-width: 62ch;
+}
+.prop-plays__matchup {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  font-weight: 400;
+}

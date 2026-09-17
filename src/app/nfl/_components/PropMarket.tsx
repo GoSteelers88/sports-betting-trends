@@ -34,6 +34,7 @@ export function PropMarket({ board }: { board: PublicPropBoard | null }) {
 
   const t = board.totals;
   const ungraded = t.settled === 0;
+  const plays = (board.picks ?? []).filter((p) => p.verdict === "play");
 
   return (
     <section className="receipts-section" id="props">
@@ -53,6 +54,84 @@ export function PropMarket({ board }: { board: PublicPropBoard | null }) {
         the result lands between them both sides won. That gap is what line shopping
         buys, and it is what this record exists to measure.
       </p>
+
+      {plays.length > 0 && (
+        <div className="prop-plays">
+          <p className="eyebrow prop-plays__label">
+            THE BOARD · {plays.length} PLAY · PRE-REGISTERED, NO STAKE
+          </p>
+          {/* Said plainly and up top. The prop model has never been validated
+              out-of-sample on posted lines, and the one prop path that WAS
+              tested added +0.4pp over backing the same player blindly. A reader
+              is entitled to know that before the first row, not in a footnote. */}
+          <p className="prose prop-plays__warning">
+            These are model picks against the posted number, published before
+            kickoff and graded in public. <strong>No stake is implied and no
+            return is claimed</strong> — this lane has never been validated
+            out-of-sample. Judge it by the receipts below, after they settle.
+          </p>
+          <div className="panel overflow-x-auto">
+            <table className="ledger-table">
+              <caption className="sr-only">Week {board.week} prop picks</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Player</th>
+                  <th scope="col">Pick</th>
+                  <th scope="col" className="text-right">Price</th>
+                  <th scope="col" className="text-right hidden sm:table-cell">Model</th>
+                  <th scope="col" className="text-right hidden sm:table-cell">Market</th>
+                  <th scope="col" className="text-right">Gap</th>
+                  <th scope="col" className="text-right">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {plays.map((p, i) => (
+                  <tr key={`${p.player}-${p.stat}-${i}`}>
+                    <th scope="row">
+                      {p.player}
+                      <span className="prop-plays__matchup"> {p.matchup}</span>
+                    </th>
+                    <td>
+                      {STAT_LABEL[p.stat] ?? p.stat} {p.side.toUpperCase()} {p.point}
+                    </td>
+                    <td className="text-right num">{price(p.priceAmerican)}</td>
+                    <td className="text-right num hidden sm:table-cell">
+                      {(p.confidence * 100).toFixed(0)}%
+                    </td>
+                    <td className="text-right num hidden sm:table-cell text-ink-3">
+                      {(p.impliedProb * 100).toFixed(0)}%
+                    </td>
+                    <td className="text-right num">
+                      +{(p.edge * 100).toFixed(1)}pp
+                    </td>
+                    <td className="text-right">
+                      {!p.result || p.result === "pending" ? (
+                        <span className="text-ink-3">—</span>
+                      ) : (
+                        <span
+                          style={{
+                            color:
+                              p.result === "win"
+                                ? "var(--win)"
+                                : p.result === "loss"
+                                  ? "var(--loss)"
+                                  : "var(--ink)",
+                          }}
+                        >
+                          {p.result.toUpperCase()}
+                          {p.actualValue != null && (
+                            <span className="text-ink-3"> ({p.actualValue})</span>
+                          )}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <dl className="account-rail">
         {board.byStat.map((s) => (

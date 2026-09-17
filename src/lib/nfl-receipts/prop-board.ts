@@ -32,6 +32,29 @@ export interface PublicPropLine {
   actualValue: number | null;
 }
 
+/** A model pick against one of the posted lines. Mirrors LivePropPick in
+ *  nfl-live-props-pick.ts; duplicated as a plain shape so the page type does
+ *  not depend on the script-side module. */
+export interface PublicPropPick {
+  gameId: string;
+  matchup: string;
+  player: string;
+  team: string;
+  stat: string;
+  side: PropSide;
+  point: number;
+  priceAmerican: number;
+  book: string;
+  confidence: number;
+  impliedProb: number;
+  edge: number;
+  rationale: string;
+  verdict: "play" | "pass";
+  passReason: string | null;
+  result?: PropOutcome;
+  actualValue?: number | null;
+}
+
 export interface PublicPropBoard {
   season: number;
   week: number;
@@ -41,6 +64,10 @@ export interface PublicPropBoard {
   lines: PublicPropLine[];
   byStat: Array<{ stat: string; n: number; wins: number; losses: number; pushes: number; hitRatePct: number | null }>;
   totals: { lines: number; settled: number; pending: number; wins: number; losses: number; hitRatePct: number | null };
+  /** Model picks against those lines. Absent until nfl:props-picks has run. */
+  picks?: PublicPropPick[];
+  picksGeneratedAt?: string;
+  pickFloors?: { confidence: number; edge: number };
 }
 
 export function summarizeProps(lines: PublicPropLine[]): {
