@@ -31,13 +31,19 @@ const boards = loadPublishedBoards();
 const index = buildBoardIndex(boards);
 
 describe("the committed board this suite anchors on", () => {
+  // SCOPED TO wk01 by gameId prefix. These used to assert GLOBAL totals across
+  // every published board, which silently meant "exactly one board exists" —
+  // publishing 2026 wk02 broke them. Boards accumulate every week of the
+  // season, so a global count here would fail weekly from now on.
+  const isWk1 = (l: { gameId: string }) => l.gameId.startsWith("2026_01_");
+
   it("has the wk01 receipt with the NYJ ML play and 46 passes", () => {
     expect(boards.length).toBeGreaterThan(0);
-    expect(index.plays.length).toBe(2);
+    expect(index.plays.filter(isWk1).length).toBe(2);
     const nyj = index.plays.find((l) => l.selection === "NYJ ML");
     expect(nyj).toBeDefined();
     expect(nyj!.legId).toBe("24c69b3f3edbb4b5");
-    expect(index.legs.filter((l) => l.role === "pass").length).toBe(46);
+    expect(index.legs.filter((l) => l.role === "pass" && isWk1(l)).length).toBe(46);
   });
 });
 

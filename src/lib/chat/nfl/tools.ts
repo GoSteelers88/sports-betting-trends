@@ -181,9 +181,20 @@ export function nflBoard(input: { season?: number; week?: number }, root?: strin
       week: board.week,
       publishedAt: board.publishedAt,
       entrySnapshotFetchedAt: board.entrySnapshotFetchedAt,
-      // The parlay slot is published as null on purpose and is reported as
-      // such — "there is no NFL parlay product" is a fact about the data.
-      parlay: board.parlay,
+      // The parlay slot is often published as null, and "there is no NFL parlay
+      // product" is a fact about the data worth reporting. But when a board DOES
+      // carry one it must get the same EXPLICIT field list the legs get: the raw
+      // object carries `evPct`, and passing it through leaked that straight to
+      // the public desk the first time a board shipped a parlay (2026 wk02 —
+      // every prior board's parlay was null, so the pass-through looked safe).
+      // Do NOT restore the spread.
+      parlay: board.parlay
+        ? {
+            legIds: board.parlay.legIds,
+            combinedProb: board.parlay.combinedProb,
+            combinedDecimal: board.parlay.combinedDecimal,
+          }
+        : board.parlay,
       legCount: board.legs.length,
       playCount: board.legs.filter((l) => l.role === "play").length,
       passCount: board.legs.filter((l) => l.role === "pass").length,

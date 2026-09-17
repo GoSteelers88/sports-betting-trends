@@ -100,7 +100,10 @@ describe("get_nfl_ledger", () => {
     const res = nflLedger();
     expect(res.available).toBe(true);
     if (!res.available) return;
-    expect(res.rowCount).toBe(50);
+    // The ledger accumulates a row per leg for EVERY published week, so this
+    // grows all season. Pin the floor (wk01's 50) rather than an exact total
+    // that every future publish would break.
+    expect(res.rowCount).toBeGreaterThanOrEqual(50);
     expect(res.verdictMinN).toBe(150);
     expect(res.insufficientN).toBe(true);
     expect(res.weeksPublished[0]?.sha256).toMatch(/^[0-9a-f]{64}$/);
