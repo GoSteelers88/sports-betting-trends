@@ -20,7 +20,9 @@ export interface NavEntry {
 /** The header's four links, in order. Labels and order are the spec's. */
 export const NAV: ReadonlyArray<NavEntry> = [
   { href: "/", label: "Today" },
-  { href: "/nfl", label: "Receipts" },
+  // "NFL", not "Receipts": the operator went looking for the NFL page in this
+  // nav and could not find it — the label named the artefact, not the subject.
+  { href: "/nfl", label: "NFL" },
   { href: "/experiments", label: "Experiments" },
   { href: "/desk", label: "Desk" },
 ];

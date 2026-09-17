@@ -14,7 +14,7 @@ const TARGET_VALUES = new Set(Object.values(LEGACY_HASH_TARGETS));
 describe("NAV", () => {
   it("is exactly the four routes, in the spec's order, with the spec's labels", () => {
     expect(NAV.map((n) => n.href)).toEqual(["/", "/nfl", "/experiments", "/desk"]);
-    expect(NAV.map((n) => n.label)).toEqual(["Today", "Receipts", "Experiments", "Desk"]);
+    expect(NAV.map((n) => n.label)).toEqual(["Today", "NFL", "Experiments", "Desk"]);
   });
 
   it("has no duplicate hrefs or labels", () => {
