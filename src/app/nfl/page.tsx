@@ -222,15 +222,46 @@ export default function NflReceiptsPage() {
             </div>
           </section>
         ) : (
-          boards.map(({ board, hashes }) => (
+          // The CURRENT week is the page; prior weeks are receipts you can open.
+          // Rendering every board in full made this page grow by a whole week's
+          // legs every publish — 50 legs at wk1, 95 at wk2, and on that line
+          // ~900 by wk18. <details> is the platform's own disclosure control:
+          // no JS, no client component, server-rendered, and the collapsed
+          // content stays in the DOM so it is still findable and still crawled.
+          <>
             <BoardSpread
-              key={`${board.season}-${board.week}`}
-              board={board}
-              hashes={hashes}
-              recordedSha={recordedShaFor(ledger, board)}
+              key={`${boards[0].board.season}-${boards[0].board.week}`}
+              board={boards[0].board}
+              hashes={boards[0].hashes}
+              recordedSha={recordedShaFor(ledger, boards[0].board)}
               multiWeek={boards.length > 1}
             />
-          ))
+            {boards.slice(1).map(({ board, hashes }) => {
+              const c = boardCounts(board);
+              return (
+                <details
+                  className="prior-week"
+                  key={`${board.season}-${board.week}`}
+                >
+                  <summary>
+                    <span className="prior-week__wk">
+                      {board.season} WEEK {board.week}
+                    </span>
+                    <span className="prior-week__counts">
+                      {c.games} GAMES · {c.played} PLAYED · {c.legsRead} READ
+                    </span>
+                    <span className="prior-week__cue">OPEN RECEIPT</span>
+                  </summary>
+                  <BoardSpread
+                    board={board}
+                    hashes={hashes}
+                    recordedSha={recordedShaFor(ledger, board)}
+                    multiWeek={boards.length > 1}
+                  />
+                </details>
+              );
+            })}
+          </>
         )}
 
         <MarketNow slate={slate} />

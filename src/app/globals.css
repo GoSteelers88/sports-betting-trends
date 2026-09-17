@@ -2049,3 +2049,61 @@ button.card-source-link:hover {
 .site-footer-links a {
   padding: 0.25rem 0;
 }
+
+/* PRIOR WEEKS — the receipt stays public, it just stops being the page.
+   /nfl rendered every published board in full, so it grew by a week's legs on
+   every publish (50 at wk1, 95 at wk2, ~900 by wk18). The current week stays
+   open; earlier weeks collapse to a one-line receipt you can open. Native
+   <details>: no JS, no client component, and the content remains in the DOM
+   so it is still findable in-page and still crawlable. */
+.prior-week {
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--rule-strong);
+}
+.prior-week > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 1rem;
+  padding: 0.85rem 0;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  list-style: none;
+}
+.prior-week > summary::-webkit-details-marker {
+  display: none;
+}
+.prior-week__wk {
+  font-weight: 700;
+  color: var(--ink);
+}
+.prior-week__counts {
+  color: var(--ink-3, var(--ink));
+  opacity: 0.66;
+}
+/* The affordance has to say which way it goes — a bare row of metadata does
+   not read as openable. */
+.prior-week__cue {
+  margin-left: auto;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.8;
+}
+.prior-week[open] > summary .prior-week__cue::after {
+  content: " \2014 CLOSE";
+}
+.prior-week:not([open]) > summary .prior-week__cue::after {
+  content: " \2193";
+}
+.prior-week > summary:hover .prior-week__cue,
+.prior-week > summary:focus-visible .prior-week__cue {
+  opacity: 1;
+}
+/* Keyboard users must see the target; the summary is the control. */
+.prior-week > summary:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
