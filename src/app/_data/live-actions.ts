@@ -17,6 +17,7 @@
 // cannot follow them, and a missing entry ships an EMPTY LIST over perfectly
 // good committed data — silently, with a green build. It has happened on /nfl.
 
+import type { PlayRecord } from "@/lib/nfl-receipts/play-record";
 import fs from "node:fs";
 import path from "node:path";
 import type { PublishedBoard } from "@/lib/nfl-receipts/board";
@@ -164,4 +165,19 @@ export function loadLiveActions(nowMs: number = Date.now()): LiveActions {
     nextBoard,
     freshness,
   };
+}
+
+/** The PUBLIC settled record of published NFL PLAY legs, or null before the
+ *  first grade run has written one.
+ *
+ *  Lives in its own file because the paper trial's byLeague map is built from
+ *  AgentPick rows and the NFL board has never written one — measured
+ *  2026-09-17: MLB 81 / NBA 14 / WNBA 26 / NHL 4 / NFL 0. The site therefore
+ *  showed live NFL plays above an all-time table with no NFL line in it.
+ *
+ *  🚨 Two different ledgers. Never merge this into byLeague: those picks are
+ *  Kelly-staked with a real ROI denominator, these are flat 1u doctrine plays.
+ *  Anything rendering both must keep them visibly apart. */
+export function loadNflPlayRecord(): PlayRecord | null {
+  return readJsonFile<PlayRecord>(path.join(NFL_DIR, "play-record.json"));
 }

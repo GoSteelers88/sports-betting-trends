@@ -12,6 +12,7 @@
 // prints only where the graded sample clears n=20 — display type is not lent
 // to noise.
 
+import { playRecordLabel, type PlayRecord } from "@/lib/nfl-receipts/play-record";
 import type { OverallRecord } from "../_data/dashboard";
 import { SectionHeader } from "./SectionHeader";
 
@@ -32,7 +33,16 @@ function fmtDate(iso: string): string {
 // doctrine board's PLAY legs (see nfl-model-from-board.ts).
 const IN_SCOPE = ["NBA", "MLB", "WNBA", "NFL"];
 
-export function OverallLedger({ data }: { data: OverallRecord }) {
+export function OverallLedger({
+  data,
+  nflPlayRecord = null,
+}: {
+  data: OverallRecord;
+  /** The /nfl board's settled PLAY legs — a SEPARATE ledger from the paper
+   *  trial, rendered in its own band so the two are never read as one record.
+   *  Null before the first grade run writes play-record.json. */
+  nflPlayRecord?: PlayRecord | null;
+}) {
   const {
     startDate, totalPicks, graded, pending,
     wins, losses, pushes, pnl, totalStake, roi, winRate,
@@ -131,6 +141,43 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
               {inScope.map(([league, lg]) => (
                 <LeagueRow key={league} league={league} lg={lg} />
               ))}
+              {nflPlayRecord && nflPlayRecord.totals.published > 0 && (
+                <>
+                  <tr>
+                    <td colSpan={5} className="!py-1.5" style={{ background: "var(--paper-3)" }}>
+                      <span className="tag text-ink-3">
+                        NFL receipts · separate ledger · flat 1u, no Kelly stake
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">NFL</th>
+                    <td>
+                      {playRecordLabel(nflPlayRecord.totals)}
+                    </td>
+                    {/* Staked and ROI are deliberately blank: the receipts lane
+                        publishes no stake, so there is no denominator these
+                        columns could honestly use. An en dash beats a number
+                        that invites comparison with the Kelly-staked rows. */}
+                    <td className="text-right hidden sm:table-cell text-ink-3">—</td>
+                    <td
+                      className="text-right num"
+                      style={{
+                        color:
+                          nflPlayRecord.totals.unitsPnl > 0
+                            ? "var(--win)"
+                            : nflPlayRecord.totals.unitsPnl < 0
+                              ? "var(--loss)"
+                              : "var(--ink)",
+                      }}
+                    >
+                      {nflPlayRecord.totals.unitsPnl > 0 ? "+" : ""}
+                      {nflPlayRecord.totals.unitsPnl.toFixed(2)}u
+                    </td>
+                    <td className="text-right hidden sm:table-cell text-ink-3">—</td>
+                  </tr>
+                </>
+              )}
               {legacy.length > 0 && (
                 <tr>
                   <td colSpan={5} className="!py-1.5" style={{ background: "var(--paper-3)" }}>

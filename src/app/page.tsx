@@ -21,7 +21,7 @@
 // five minutes late; that is accepted.
 
 import { getDashboardData, type SlatePick } from "./_data/dashboard";
-import { loadLiveActions } from "./_data/live-actions";
+import { loadLiveActions, loadNflPlayRecord } from "./_data/live-actions";
 import { buildTodayRows, fmtAgeHours, fmtEtDayTime } from "@/lib/today-list";
 import { Hero } from "./_components/Hero";
 import { RunMeta } from "./_components/RunMeta";
@@ -155,7 +155,7 @@ export default async function Home() {
             )}
           </section>
 
-          <OverallLedger data={data.overallRecord.games} />
+          <OverallLedger data={data.overallRecord.games} nflPlayRecord={loadNflPlayRecord()} />
 
           <AskSection />
 

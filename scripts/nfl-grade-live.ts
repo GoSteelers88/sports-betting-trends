@@ -16,7 +16,13 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { defaultStateDir, loadGames } from "../src/lib/nfl-loop";
+import { defaultStateDir, loadGames, type GradedRow } from "../src/lib/nfl-loop";
+import {
+  summarizePlayRecord,
+  playRecordLabel,
+  type PlayRecord,
+  type PlayRecordLeg,
+} from "../src/lib/nfl-receipts/play-record";
 import {
   gradeLiveBoard,
   loadLiveGradedRows,
@@ -65,6 +71,61 @@ function main(): void {
   for (const p of res.pending) console.log(`  pending: ${p}`);
   for (const u of res.unparsed) console.warn(`  UNPARSED: ${u}`);
   for (const u of res.unknownGames) console.warn(`  UNKNOWN GAME: ${u}`);
+
+  writePublicPlayRecord(total);
+}
+
+/** Emit the PUBLIC settled record of published PLAY legs.
+ *
+ *  The graded log and games.csv are both gitignored, so without this the built
+ *  site has no way to know how a published play finished — the homepage showed
+ *  live NFL plays above an all-time table with no NFL row in it. PLAY legs
+ *  only: passes and controls are reads, not positions. */
+function writePublicPlayRecord(graded: GradedRow[]): void {
+  const publicDir = path.join(process.cwd(), "data", "processed", "nfl-live");
+  if (!fs.existsSync(publicDir)) return;
+
+  const byKey = new Map(graded.map((r) => [`${r.gameId}|${r.market}`, r]));
+  const legs: PlayRecordLeg[] = [];
+
+  for (const file of fs.readdirSync(publicDir).filter((f) => /^board-\d{4}-wk\d{2}\.json$/.test(f)).sort()) {
+    const board = JSON.parse(fs.readFileSync(path.join(publicDir, file), "utf8")) as {
+      season: number; week: number;
+      legs: Array<{ legId: string; role: string; gameId: string; matchup: string; market: string; selection: string; entryPriceAmerican: number | null }>;
+    };
+    for (const leg of board.legs) {
+      if (leg.role !== "play") continue;
+      const g = byKey.get(`${leg.gameId}|${leg.market}`);
+      legs.push({
+        season: board.season,
+        week: board.week,
+        legId: leg.legId,
+        gameId: leg.gameId,
+        matchup: leg.matchup,
+        market: leg.market,
+        selection: leg.selection,
+        entryPriceAmerican: leg.entryPriceAmerican ?? null,
+        // A leg with no graded row is PENDING, never a loss. An ungraded play
+        // must not be able to depress the record.
+        result: g ? (g.result as PlayRecordLeg["result"]) : "pending",
+        pnlUnits: g && g.result !== "push" ? g.pnlUnits : g ? 0 : null,
+      });
+    }
+  }
+
+  const record: PlayRecord = {
+    generatedAt: new Date().toISOString(),
+    stakePerLegUnits: 1,
+    legs,
+    totals: summarizePlayRecord(legs),
+  };
+  const out = path.join(publicDir, "play-record.json");
+  fs.writeFileSync(out, JSON.stringify(record, null, 2) + "\n");
+  const t = record.totals;
+  console.log(
+    `[nfl-grade-live] public play record → ${path.relative(process.cwd(), out)} · ` +
+      `${playRecordLabel(t)} · ${t.unitsPnl >= 0 ? "+" : ""}${t.unitsPnl}u at flat 1u`,
+  );
 }
 
 main();
