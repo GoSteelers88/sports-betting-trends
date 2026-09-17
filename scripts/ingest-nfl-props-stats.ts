@@ -44,6 +44,18 @@ function seasonAssetUrl(season: number): string {
 // fullSchedule() is driven by LOOP_SEASONS, not by this.
 const LIVE_SEASONS = [2026];
 
+// The HOLDOUT season. 2025 is deliberately absent from LOOP_SEASONS so the
+// walk-forward trainer can never touch it — that stays true. But a holdout has
+// to be GRADED, and grading prop picks needs 2025 box scores; without them
+// every prop in a 2025 validation run scores "no-data" and the run proves
+// nothing.
+//
+// Caching them cannot leak: buildPlayerContexts is gated to
+// `season === cursor.season && week < cursor.week` (nfl-loop.ts — "THE LEAKAGE
+// GATE (strict <)"), so a 2025 cursor never sees its own week and a 2024 cursor
+// never sees 2025 at all. Answers for the grader, never for the model.
+const HOLDOUT_SEASONS = [2025];
+
 const B = "\x1b[1m";
 const R = "\x1b[0m";
 const G = "\x1b[32m";
@@ -83,7 +95,7 @@ async function main() {
   const parts: string[] = [];
   const fetchedSeasons: number[] = [];
 
-  for (const season of [...LOOP_SEASONS, ...LIVE_SEASONS]) {
+  for (const season of [...LOOP_SEASONS, ...HOLDOUT_SEASONS, ...LIVE_SEASONS]) {
     const csv = await fetchSeason(season);
     if (csv == null) continue;
     // Ensure each season chunk ends with a newline so concatenation doesn't

@@ -65,13 +65,17 @@ const roiStr = (v: number): string =>
 const cursorLabel = (c: Cursor): string =>
   `${c.season} ${c.phase} wk${c.week}`;
 
-function cursorFile(vdir: string): string {
-  return path.join(vdir, "cursor.json");
+/** The props pass keeps its OWN cursor. The game holdout is a one-shot frozen
+ *  result (855 rows, every market failing its gate) and re-running it would
+ *  re-pick those weeks under a DIFFERENT doctrine and overwrite them. A holdout
+ *  you can silently redo is not a holdout. */
+function cursorFile(vdir: string, propsOnly = false): string {
+  return path.join(vdir, propsOnly ? "cursor-props.json" : "cursor.json");
 }
 
-function loadDone(vdir: string): Set<string> {
+function loadDone(vdir: string, propsOnly = false): Set<string> {
   try {
-    const raw = JSON.parse(fs.readFileSync(cursorFile(vdir), "utf8")) as {
+    const raw = JSON.parse(fs.readFileSync(cursorFile(vdir, propsOnly), "utf8")) as {
       done?: string[];
     };
     return new Set(raw.done ?? []);
@@ -80,14 +84,14 @@ function loadDone(vdir: string): Set<string> {
   }
 }
 
-function saveDone(vdir: string, done: Set<string>): void {
+function saveDone(vdir: string, done: Set<string>, propsOnly = false): void {
   fs.mkdirSync(vdir, { recursive: true });
-  const tmp = `${cursorFile(vdir)}.tmp`;
+  const tmp = `${cursorFile(vdir, propsOnly)}.tmp`;
   fs.writeFileSync(
     tmp,
     JSON.stringify({ season: VALIDATION_SEASON, done: [...done] }, null, 2),
   );
-  fs.renameSync(tmp, cursorFile(vdir));
+  fs.renameSync(tmp, cursorFile(vdir, propsOnly));
 }
 
 function printReport(vdir: string, mainDir: string): void {
@@ -141,7 +145,11 @@ function printReport(vdir: string, mainDir: string): void {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const withProps = args.includes("--props");
+  // --props-only: run ONLY the props layer, over its own cursor, leaving the
+  // completed game holdout frozen. The props block below depends solely on the
+  // blind week and the slate — never on the game picks — so it is separable.
+  const propsOnly = args.includes("--props-only");
+  const withProps = args.includes("--props") || propsOnly;
   const reportOnly = args.includes("--report");
 
   const mainDir = defaultStateDir();
@@ -170,11 +178,11 @@ async function main(): Promise<void> {
   );
 
   const weeks = validationWeeks(games);
-  const done = loadDone(vdir);
+  const done = loadDone(vdir, propsOnly);
   const todo = weeks.filter((w) => !done.has(`${w.phase}|${w.week}`));
   console.log(
     `  ${weeks.length} weeks in ${VALIDATION_SEASON}; ${done.size} already validated, ${todo.length} to run.` +
-      `  props ${withProps ? `${Y}ON${X}` : `${D}off (game markets only)${X}`}` +
+      `  props ${propsOnly ? `${Y}ONLY (game holdout frozen)${X}` : withProps ? `${Y}ON${X}` : `${D}off (game markets only)${X}`}` +
       `  cap $${cap.toFixed(2)}\n`,
   );
   if (todo.length === 0) {
@@ -183,7 +191,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  const pickFn = makeClaudePickFn();
+  const pickFn = propsOnly ? null : makeClaudePickFn();
   const propsFn = withProps ? makeClaudePropsPickFn() : null;
   const injuries = loadInjuries(mainDir);
   const playerStats = loadPlayerStats(mainDir);
@@ -206,32 +214,36 @@ async function main(): Promise<void> {
 
     // lessons deliberately EMPTY: week N+1 must not learn from week N.
     const blind = buildBlindWeek(games, cursor, "", injuries, playerStats);
-    let picks;
-    try {
-      picks = await pickFn(blind);
-    } catch (err) {
-      console.error(`${RED}  week failed — leaving it unvalidated:${X}`, err);
-      continue;
-    }
-    if (picks.length === 0) {
-      console.error(`${RED}  0 picks parsed — leaving week unvalidated.${X}`);
-      continue;
-    }
+    // Game markets: skipped entirely in --props-only so the completed holdout
+    // stays exactly as it was recorded.
+    if (pickFn) {
+      let picks;
+      try {
+        picks = await pickFn(blind);
+      } catch (err) {
+        console.error(`${RED}  week failed — leaving it unvalidated:${X}`, err);
+        continue;
+      }
+      if (picks.length === 0) {
+        console.error(`${RED}  0 picks parsed — leaving week unvalidated.${X}`);
+        continue;
+      }
 
-    const byId = new Map(slate.map((g) => [g.gameId, g]));
-    const graded: GradedRow[] = [];
-    for (const p of picks) {
-      const g = byId.get(p.gameId);
-      if (g) graded.push(...gradeGame(g, p));
+      const byId = new Map(slate.map((g) => [g.gameId, g]));
+      const graded: GradedRow[] = [];
+      for (const p of picks) {
+        const g = byId.get(p.gameId);
+        if (g) graded.push(...gradeGame(g, p));
+      }
+      const { added, replaced } = upsertGradedRows(vdir, graded);
+      const w = graded.filter((r) => r.result === "win").length;
+      const l = graded.filter((r) => r.result === "loss").length;
+      const pnl = graded.reduce((s, r) => s + r.pnlUnits, 0);
+      console.log(
+        `  picks ${picks.length}/${slate.length}  rows ${added} new/${replaced} replaced  ` +
+          `record ${B}${w}-${l}${X}  P&L ${pnl >= 0 ? G : RED}${pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}u${X}`,
+      );
     }
-    const { added, replaced } = upsertGradedRows(vdir, graded);
-    const w = graded.filter((r) => r.result === "win").length;
-    const l = graded.filter((r) => r.result === "loss").length;
-    const pnl = graded.reduce((s, r) => s + r.pnlUnits, 0);
-    console.log(
-      `  picks ${picks.length}/${slate.length}  rows ${added} new/${replaced} replaced  ` +
-        `record ${B}${w}-${l}${X}  P&L ${pnl >= 0 ? G : RED}${pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}u${X}`,
-    );
 
     if (propsFn) {
       try {
@@ -253,7 +265,7 @@ async function main(): Promise<void> {
 
     // NO reflect, NO lessons write, NO dream — the whole point.
     done.add(`${cursor.phase}|${cursor.week}`);
-    saveDone(vdir, done);
+    saveDone(vdir, done, propsOnly);
   }
 
   const finalSpend = spendTodayUsd() - startSpend;
