@@ -42,24 +42,27 @@ export function PropsDesk({
   const recordLine = `${record.wins}-${record.losses}${record.pushes > 0 ? `-${record.pushes}` : ""}`;
 
   return (
-    <section className="space-y-8">
+    <section className="receipts-section space-y-8">
       <SectionHeader
         id="props-desk"
-        index="08"
-        dense
-        label="THE PROPS DESK · LEG SOURCE"
-        title="Props, in brief"
-        subtitle="Props are judged on edge vs price — the de-vigged sharp prop line, not raw win rate — and weigh slate-scoped injuries before they ship. They're the leg source for the Exp. 4 parlay book, which stacks only the playable +EV legs across distinct games. Survivors, last night, the account, and the model's signals, on one page."
+        label="THE PROPS DESK · LEG SOURCE FOR THE PARLAY BOOK"
+        title="PROPS"
+        subtitle="Judged on edge vs the de-vigged sharp prop line, not raw win rate; slate-scoped injuries are weighed before a prop ships. Survivors, last night, the account and the model's signals — the leg source for the parlay paper book (Experiment 4)."
         status={picks.length > 0 ? `${picks.length} shipped tonight` : "No prop edge tonight"}
         statusTone={picks.length > 0 ? "win" : "mute"}
       />
 
+      {/* When nothing survived and nothing settled, one line says both. */}
+      {sorted.length === 0 && lastNight.picks.length === 0 && homeRunLikes.length === 0 ? (
+        <p className="prose">No prop survived today, and none settled in the last 36 hours.</p>
+      ) : (
+      <>
       {/* a — tonight's prop survivors */}
       <div>
         <p className="eyebrow mb-2">Tonight&rsquo;s prop survivors</p>
         {sorted.length === 0 ? (
           <p className="tag text-ink-3">
-            No prop pick survived today — the projector found no qualifying edge, or the critic killed every one
+            No prop survived today — no qualifying edge, or the critic killed every one
           </p>
         ) : (
           <div className="panel overflow-x-auto">
@@ -202,6 +205,8 @@ export function PropsDesk({
           <SettledTable picks={lastNight.picks} caption="Prop picks resolved in the last 36 hours" />
         )}
       </div>
+      </>
+      )}
 
       {/* c — the prop account, in a quad */}
       <div>
@@ -342,7 +347,7 @@ function SignalsTable({ signals }: { signals: PlayerProp[] }) {
                 <tr key={`${p.player}-${p.market}-${idx}`}>
                   <td className="min-w-0 max-w-[280px]">
                     <p className="text-sm text-ink font-medium leading-snug break-words">{p.player}</p>
-                    <p className="num text-[0.68rem] text-ink-2 leading-snug break-words">
+                    <p className="num text-[0.6875rem] text-ink-2 leading-snug break-words">
                       {p.team ?? "—"}
                       {p.opponent ? ` vs ${p.opponent}` : ""}
                     </p>
@@ -398,7 +403,7 @@ function Quad({
   tone: string;
 }) {
   return (
-    <div className="px-4 py-3">
+    <div className="px-3 py-2">
       <p className="eyebrow text-ink-3">{label}</p>
       <p className="num-display text-xl mt-1" style={{ color: tone }}>
         {value}

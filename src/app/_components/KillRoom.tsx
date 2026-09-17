@@ -5,7 +5,7 @@
 // bankroll guard (the funnel), the kill rate is the headline, and the
 // taxonomy + run log show what died and why. EVERY figure here is the
 // 14-day operational window — trial-to-date numbers are canonical in the
-// funding gate (Fol. 03) and are cross-referenced, not duplicated.
+// funding gate (/desk#deployment-gate) and are cross-referenced, not duplicated.
 
 import { useRef } from "react";
 import gsap from "gsap";
@@ -44,6 +44,8 @@ export function KillRoom({
   const totalKilled = raw - shipped; // grader + critic + bankroll combined
   const graderRejects = Math.max(0, raw - graderKept);
   const graderRejectPct = raw > 0 ? Math.round((graderRejects / raw) * 100) : null;
+  // A run that proposed nothing has nothing to prosecute; those rows are cut.
+  const runsWithIdeas = kills.recentRuns.filter(r => r.rawAnalystPicks > 0);
 
   const stages: Stage[] = [
     { key: "raw", short: "RAW", label: "Analyst proposed", hint: "LLM raw ideas", count: raw, color: "var(--ink-3)" },
@@ -76,13 +78,12 @@ export function KillRoom({
 
   if (pipeline.totalRunsLast14d === 0) {
     return (
-      <section>
+      <section className="receipts-section">
         <SectionHeader
           id="kill-room"
-          index="05"
-          label="THE KILL ROOM · 14D"
-          title="Reactor dark"
-          status="No runs · 14d"
+          label="LAST 14 DAYS · NO RUNS"
+          title="THE KILL ROOM"
+          status="Reactor dark"
           statusTone="mute"
         />
         <p className="tag text-ink-3 mt-4">Capital remains locked — awaiting the first agent transmission</p>
@@ -93,52 +94,20 @@ export function KillRoom({
   const totalCategorized = kills.categories.reduce((s, c) => s + c.examples, 0);
 
   return (
-    <section className="space-y-8">
+    <section className="receipts-section space-y-8">
       <SectionHeader
         id="kill-room"
-        index="05"
-        label="THE KILL ROOM · LAST 14 DAYS"
-        title="The critic prosecutes"
-        subtitle={`${pipeline.totalRunsLast14d} runs · ${raw} raw ideas tested against six tool calls and a devil's-advocate critic. Only survivors reach the book. All figures on this page: 14-day window. Trial-to-date numbers are canonical in the funding gate (Fol. 03).`}
+        label={`LAST 14 DAYS · ${pipeline.totalRunsLast14d} RUNS · ${raw} RAW IDEAS`}
+        title="THE KILL ROOM"
+        subtitle="Raw ideas are tested against six tool calls and a devil's-advocate critic; only survivors reach the book. Every figure here is the 14-day window — the trial-to-date numbers are canonical in the funding gate."
         status={`${killRate.toFixed(1)}% kill rate · 14d`}
-        statusTone={killRate >= 25 ? "loss" : "hold"}
+        statusTone="mute"
       />
 
-      {/* Kill-rate figure against the funnel — 5/7 split */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-        <div className="lg:col-span-5">
-          <p className="eyebrow mb-3">Critic kill rate · 14d</p>
-          <p
-            className="num-display"
-            style={{
-              fontSize: "clamp(4.5rem, 12vw, 9.5rem)",
-              color: killRate >= 25 ? "var(--loss)" : "var(--hold)",
-            }}
-          >
-            {killRate.toFixed(1)}
-            <span className="text-ink-3" style={{ fontSize: "0.45em" }}>%</span>
-          </p>
-          <p className="mt-4 text-sm text-ink-2 max-w-md leading-relaxed">
-            The desk killed{" "}
-            <span className="num font-semibold" style={{ color: "var(--loss)" }}>
-              {totalKilled}
-            </span>{" "}
-            of {raw} ideas in 14 days before they could touch the bankroll
-            ({kills.totalKilledLast7d} by the critic in the last 7).
-            {trialKillRate !== null && (
-              <>
-                {" "}Trial-to-date kill rate:{" "}
-                <span className="num font-semibold text-ink">
-                  {(trialKillRate * 100).toFixed(1)}%
-                </span>{" "}
-                — gated at ≥25% in Fol. 03.
-              </>
-            )}
-          </p>
-        </div>
-
-        {/* The funnel — 14d */}
-        <div ref={rootRef} className="lg:col-span-7 grid gap-3">
+      {/* The funnel — 14d. The 7.7% display figure that sat beside it is a
+          stat cell below, next to its canonical trial-to-date value. */}
+      <div>
+        <div ref={rootRef} className="grid gap-2">
           {stages.map((s, i) => {
             const widthPct = (s.count / maxCount) * 100;
             const prev = i === 0 ? null : stages[i - 1].count;
@@ -153,9 +122,9 @@ export function KillRoom({
                   <p className="eyebrow" style={{ color: s.color === "var(--ink-3)" ? "var(--ink-2)" : s.color }}>
                     {s.short}
                   </p>
-                  <p className="num text-[0.62rem] text-ink-3 truncate">{s.hint}</p>
+                  <p className="num text-[0.6875rem] text-ink-3 truncate">{s.hint}</p>
                 </div>
-                <div className="relative h-10 panel">
+                <div className="relative h-8 panel">
                   <div
                     data-bar
                     className="absolute inset-y-0 left-0"
@@ -173,7 +142,7 @@ export function KillRoom({
                     >
                       {s.count}
                     </span>
-                    <span className="ml-2.5 num text-[0.62rem] text-ink-2 hidden sm:inline uppercase tracking-widest">
+                    <span className="ml-2.5 num text-[0.6875rem] text-ink-2 hidden sm:inline uppercase tracking-widest">
                       {s.label}
                     </span>
                   </div>
@@ -193,11 +162,23 @@ export function KillRoom({
       </div>
 
       {/* Telemetry strip — one figure per fact, each labeled 14d */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 border border-rule divide-x divide-y sm:divide-y-0 divide-rule bg-paper-2">
+      <div className="grid grid-cols-3 lg:grid-cols-6 border border-rule divide-x divide-y lg:divide-y-0 divide-rule bg-paper-2">
+        <Cell
+          label="Kill rate · 14d"
+          value={`${killRate.toFixed(1)}%`}
+          sub={`${totalKilled} of ${raw} · ${kills.totalKilledLast7d} critic / 7d`}
+          tone="var(--ink)"
+        />
+        <Cell
+          label="Kill rate · trial"
+          value={trialKillRate !== null ? `${(trialKillRate * 100).toFixed(1)}%` : "—"}
+          sub="gate ≥25%"
+          tone="var(--ink)"
+        />
         <Cell
           label="Avg CLV · 14d"
           value={pipeline.avgClvProbPoints !== null ? `${pipeline.avgClvProbPoints > 0 ? "+" : ""}${pipeline.avgClvProbPoints}pp` : "—"}
-          sub={`n=${pipeline.clvSampleSize} · trial figure in Fol. 03`}
+          sub={`n=${pipeline.clvSampleSize} · trial figure at the gate`}
           tone={
             pipeline.avgClvProbPoints !== null && pipeline.avgClvProbPoints > 0
               ? "var(--win)"
@@ -221,7 +202,9 @@ export function KillRoom({
         />
       </div>
 
-      {/* Kill taxonomy — 14d */}
+      {/* Kill taxonomy — 14d. Renders only once a run has persisted a
+          category: six rows of zero, in red, were a table of nothing. */}
+      {totalCategorized > 0 && (
       <div className="panel">
         <header
           className="px-4 py-2.5 flex items-center justify-between"
@@ -245,7 +228,7 @@ export function KillRoom({
                 <div className="min-w-0">
                   <p className="text-sm text-ink font-medium">{c.label}</p>
                   {/* Wraps in full at narrow widths — never truncates mid-sentence */}
-                  <p className="num text-[0.7rem] text-ink-2 leading-snug break-words">{c.description}</p>
+                  <p className="num text-[0.75rem] text-ink-2 leading-snug break-words">{c.description}</p>
                 </div>
                 <span className="num-display text-xl" style={{ color: "var(--loss)" }}>
                   {c.examples}
@@ -265,17 +248,22 @@ export function KillRoom({
           estimated from the critic system prompt · schema extension in progress
         </p>
       </div>
+      )}
 
-      {/* Prosecution log */}
-      {kills.recentRuns.length > 0 && (
-        <div className="panel overflow-x-auto">
-          <header
-            className="px-4 py-2.5 flex items-center justify-between"
-            style={{ borderBottom: "3px double var(--rule-strong)" }}
-          >
-            <span className="eyebrow">Prosecution log · recent runs</span>
-            <span className="eyebrow text-ink-3">14d window</span>
-          </header>
+      {/* Prosecution log — folded; a run with no raw ideas is not a row. */}
+      {kills.recentRuns.length > 0 && runsWithIdeas.length === 0 ? (
+        <p className="prose">
+          No raw ideas in the last 14 days across {pipeline.totalRunsLast14d}{" "}
+          {pipeline.totalRunsLast14d === 1 ? "run" : "runs"}.
+        </p>
+      ) : kills.recentRuns.length > 0 ? (
+        <details className="group panel">
+          <summary className="px-4 py-2.5 cursor-pointer list-none flex items-baseline justify-between gap-3 hover:bg-paper-3/60 transition-colors">
+            <span className="eyebrow">Prosecution log · {runsWithIdeas.length} of {kills.recentRuns.length} recent runs proposed ideas · 14d</span>
+            <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+            <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+          </summary>
+          <div className="overflow-x-auto border-t border-rule">
           <table className="ledger-table">
             <caption className="sr-only">Recent agent runs and kill counts</caption>
             {/* No run-id column — a truncated hash is dead ink, and it
@@ -290,11 +278,11 @@ export function KillRoom({
               </tr>
             </thead>
             <tbody>
-              {kills.recentRuns.map(r => (
+              {runsWithIdeas.map(r => (
                 <tr key={r.runId}>
                   <td className="whitespace-nowrap">
                     <span className="tag">{r.league}</span>{" "}
-                    <span className="num text-[0.62rem] text-ink-3">{relTime(r.createdAt)}</span>
+                    <span className="num text-[0.6875rem] text-ink-3">{relTime(r.createdAt)}</span>
                   </td>
                   <td className="num text-xs text-ink text-right">{r.rawAnalystPicks}</td>
                   <td className="num text-xs text-right font-semibold" style={{ color: "var(--loss)" }}>
@@ -315,8 +303,9 @@ export function KillRoom({
               ))}
             </tbody>
           </table>
-        </div>
-      )}
+          </div>
+        </details>
+      ) : null}
     </section>
   );
 }
@@ -342,12 +331,12 @@ function Cell({
   tone: string;
 }) {
   return (
-    <div className="px-4 py-3.5">
+    <div className="px-3 py-2.5">
       <p className="eyebrow text-ink-3">{label}</p>
-      <p className="num-display text-2xl mt-1.5" style={{ color: tone }}>
+      <p className="num-display text-xl mt-1" style={{ color: tone }}>
         {value}
       </p>
-      {sub && <p className="eyebrow text-ink-3 mt-1">{sub}</p>}
+      {sub && <p className="eyebrow text-ink-3 mt-1 hidden sm:block">{sub}</p>}
     </div>
   );
 }

@@ -1,7 +1,9 @@
-// Ledger section heading — folio mark and eyebrow over a double rule,
-// Fraunces headline, optional status set as plain tracked smallcaps (the
-// bordered stamp is reserved for the three true-stamp moments). `dense`
-// renders the agate variant for back-of-book folios.
+// Section heading — the /nfl pattern, promoted to the whole site: a caps
+// serif title over a meta line, closed by a hairline. The meta carries the
+// count, the window and the status, so the old status tag and the folio
+// number are absorbed. `index` (the folio) is still accepted so callers need
+// not change, and is never rendered: the owner dropped folio numbers.
+// `subtitle` prints as prose under the head.
 
 export type StampTone = "win" | "loss" | "hold" | "blue" | "mute";
 
@@ -10,52 +12,42 @@ const TONE: Record<StampTone, string> = {
   loss: "var(--loss)",
   hold: "var(--hold)",
   blue: "var(--blue)",
-  mute: "var(--ink-3)",
+  mute: "var(--ink-2)",
 };
 
-export function SectionHeader({
-  id,
-  index,
-  label,
-  title,
-  subtitle,
-  status,
-  statusTone = "mute",
-  dense = false,
-}: {
+export function SectionHeader(props: {
   id: string;
-  index: string; // folio number — "04"
-  label: string; // tracked-out mono tag, e.g. "TONIGHT'S PLAY"
-  title: string; // serif headline
+  /** Folio number — accepted for compatibility, never rendered. */
+  index?: string;
+  /** Tracked-out meta line, e.g. "LAST 14 DAYS · 8 RUNS". */
+  label: string;
+  /** Caps serif title, e.g. "THE KILL ROOM". */
+  title: string;
   subtitle?: string;
   status?: string;
   statusTone?: StampTone;
+  /** Accepted for compatibility; one rhythm site-wide now. */
   dense?: boolean;
 }) {
+  const { id, label, title, subtitle, status, statusTone = "mute" } = props;
   return (
-    <header id={id} className={dense ? "pt-10 sm:pt-12" : "pt-14 sm:pt-20"}>
-      <div className="flex items-baseline justify-between gap-4 pb-2">
-        <p className="eyebrow">{label}</p>
-        <p className="folio shrink-0">Fol. {index}</p>
+    <header id={id} className="panel-head">
+      <div className="section-head">
+        <h2 className="headline section-title">{title}</h2>
+        <p className="eyebrow section-meta">
+          {label}
+          {status ? (
+            <>
+              {" · "}
+              <span style={{ color: TONE[statusTone] }}>{status}</span>
+            </>
+          ) : null}
+        </p>
       </div>
-      <div className="rule-double" />
-      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
-        <div className="min-w-0 max-w-3xl">
-          <h2 className={`headline text-ink ${dense ? "text-xl sm:text-2xl" : "text-3xl sm:text-5xl"}`}>
-            {title}
-          </h2>
-          {subtitle && (
-            <p className={`mt-2 leading-relaxed text-ink-2 max-w-2xl ${dense ? "text-xs" : "text-sm"}`}>
-              {subtitle}
-            </p>
-          )}
-        </div>
-        {status && (
-          <span className="tag shrink-0" style={{ color: TONE[statusTone] }}>
-            {status}
-          </span>
-        )}
-      </div>
+      {/* The explanatory line prints from 640px up; at phone widths the
+          operator pages are dense on purpose and the meta line carries the
+          identity. */}
+      {subtitle ? <p className="prose standfirst-block hidden sm:block">{subtitle}</p> : null}
     </header>
   );
 }

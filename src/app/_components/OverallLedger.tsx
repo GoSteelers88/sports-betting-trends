@@ -1,12 +1,19 @@
-// Folio 04 — the account. One oversized cumulative-units figure (counted
-// into place), a vertical stat rail, then the by-league table with in-scope
-// leagues (NBA/MLB/WNBA/NFL) first and legacy out-of-scope leagues demoted
-// below an agate rule. ROI prints only where the graded sample clears n=20 — display
-// type is not lent to noise.
+// The account — the honest record, trial to date: units on record, win rate,
+// ROI (games), streaks, the by-league table with in-scope leagues first and
+// legacy out-of-scope leagues demoted below an agate rule, best and worst.
+//
+// Condensed 2026-09-12: the oversized counted-up units figure and the "in red
+// ink" tag are gone (the verdict on "/" already states the trial's number);
+// the figures are rail-size and every one is the same field it was.
+//
+// Two ROIs on "/" on purpose, each labelled: the verdict prints
+// paperTrial.roi (the whole trial); this section prints
+// overallRecord.games.roi (games only). They are different quantities. ROI
+// prints only where the graded sample clears n=20 — display type is not lent
+// to noise.
 
 import type { OverallRecord } from "../_data/dashboard";
 import { SectionHeader } from "./SectionHeader";
-import { Tally } from "./motion";
 
 const ROI_MIN_N = 20;
 
@@ -35,16 +42,14 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
 
   if (totalPicks === 0) {
     return (
-      <section>
+      <section className="receipts-section">
         <SectionHeader
-          id="ledger"
-          index="04"
-          label="THE ACCOUNT · TRIAL TO DATE"
-          title="No game picks recorded"
+          id="account"
+          label="GAMES · TRIAL TO DATE"
+          title="THE ACCOUNT"
           status="Standby"
-          statusTone="mute"
         />
-        <p className="tag text-ink-3 mt-4">The agent has not shipped a game pick yet</p>
+        <p className="prose standfirst-block">The agent has not shipped a game pick yet.</p>
       </section>
     );
   }
@@ -61,66 +66,52 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
     .sort((a, b) => (b[1].pnl ?? 0) - (a[1].pnl ?? 0));
 
   return (
-    <section className="space-y-10">
+    <section className="receipts-section space-y-6">
       <SectionHeader
-        id="ledger"
-        index="04"
-        label="THE ACCOUNT · GAMES · TRIAL TO DATE"
-        title="The account, in units"
-        subtitle={`Since ${fmtDate(startDate)} · ${totalPicks} shipped · ${graded} graded · ${pending} pending.`}
-        status={pnl > 0 ? "In profit" : pnl < 0 ? "In red ink" : "Flat"}
-        statusTone={pnl > 0 ? "win" : pnl < 0 ? "loss" : "mute"}
+        id="account"
+        label={`GAMES · TRIAL TO DATE · SINCE ${fmtDate(startDate)} · ${totalPicks} SHIPPED · ${graded} GRADED · ${pending} PENDING`}
+        title="THE ACCOUNT"
       />
 
-      {/* The figure — 5/7 split, number dominates */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
-        <div className="lg:col-span-7">
-          <p className="eyebrow mb-3">Cumulative units · trial</p>
-          <Tally
-            value={pnl}
-            decimals={2}
-            signed
-            suffix="u"
-            className="num-display block"
-            style={{
-              color: pnlColor,
-              fontSize: "clamp(4.5rem, 13vw, 11rem)",
-            }}
-          />
-          <p className="mt-5 text-base text-ink-2 max-w-lg leading-relaxed">
-            <span className="num font-semibold" style={{ color: pnlColor }}>{wlRecord}</span>{" "}
-            record on <span className="num text-ink">{totalStake.toFixed(2)}u</span> staked
-            since the paper trial opened.
-          </p>
-        </div>
+      {/* The figure — rail-size, one line. */}
+      <p className="num account-line">
+        <span className="font-semibold" style={{ color: pnlColor }}>
+          {pnl > 0 ? "+" : ""}
+          {pnl.toFixed(2)}u
+        </span>
+        <span className="text-ink-2"> on a </span>
+        <span className="font-semibold text-ink">{wlRecord}</span>
+        <span className="text-ink-2"> record · </span>
+        <span className="text-ink">{totalStake.toFixed(2)}u</span>
+        <span className="text-ink-2"> staked</span>
+      </p>
 
-        <dl className="lg:col-span-5 lg:border-l lg:border-rule lg:pl-10 grid grid-cols-2 gap-x-8 gap-y-8">
-          <RailStat
-            label="Win rate"
-            value={winRate !== null ? `${(winRate * 100).toFixed(1)}%` : "—"}
-            tone={winRate !== null && winRate >= 0.55 ? "var(--win)" : winRate !== null && winRate >= 0.5 ? "var(--blue)" : "var(--ink-2)"}
-          />
-          <RailStat
-            label={graded >= ROI_MIN_N ? "ROI" : "ROI (n<20)"}
-            value={
-              graded >= ROI_MIN_N && roi !== null
-                ? `${roi > 0 ? "+" : ""}${(roi * 100).toFixed(1)}%`
-                : "—"
-            }
-            tone={
-              graded >= ROI_MIN_N && roi !== null
-                ? roi > 0 ? "var(--win)" : roi < 0 ? "var(--loss)" : "var(--ink-2)"
-                : "var(--ink-3)"
-            }
-          />
-          <RailStat
-            label="Streak"
-            value={currentStreak.length > 0 ? `${currentStreak.kind}${currentStreak.length}` : "—"}
-            tone={currentStreak.kind === "W" ? "var(--win)" : currentStreak.kind === "L" ? "var(--loss)" : "var(--ink-2)"}
-          />
-          <RailStat label="Peak · Trough" value={`W${longestWinStreak} · L${longestLossStreak}`} tone="var(--ink)" />
-        </dl>
-      </div>
+      <dl className="account-rail">
+        <RailStat
+          label="Win rate"
+          value={winRate !== null ? `${(winRate * 100).toFixed(1)}%` : "—"}
+          tone={winRate !== null && winRate >= 0.55 ? "var(--win)" : winRate !== null && winRate >= 0.5 ? "var(--blue)" : "var(--ink-2)"}
+        />
+        <RailStat
+          label={graded >= ROI_MIN_N ? "ROI · games" : "ROI · games (n<20)"}
+          value={
+            graded >= ROI_MIN_N && roi !== null
+              ? `${roi > 0 ? "+" : ""}${(roi * 100).toFixed(1)}%`
+              : "—"
+          }
+          tone={
+            graded >= ROI_MIN_N && roi !== null
+              ? roi > 0 ? "var(--win)" : roi < 0 ? "var(--loss)" : "var(--ink-2)"
+              : "var(--ink-3)"
+          }
+        />
+        <RailStat
+          label="Streak"
+          value={currentStreak.length > 0 ? `${currentStreak.kind}${currentStreak.length}` : "—"}
+          tone={currentStreak.kind === "W" ? "var(--win)" : currentStreak.kind === "L" ? "var(--loss)" : "var(--ink-2)"}
+        />
+        <RailStat label="Peak · trough" value={`W${longestWinStreak} · L${longestLossStreak}`} tone="var(--ink)" />
+      </dl>
 
       {/* By-league table + best/worst clippings */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -133,7 +124,7 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
                 <th scope="col">Record</th>
                 <th scope="col" className="text-right hidden sm:table-cell">Staked</th>
                 <th scope="col" className="text-right">Units</th>
-                <th scope="col" className="text-right">ROI</th>
+                <th scope="col" className="text-right hidden sm:table-cell">ROI</th>
               </tr>
             </thead>
             <tbody>
@@ -154,7 +145,7 @@ export function OverallLedger({ data }: { data: OverallRecord }) {
           </table>
         </div>
 
-        <div className="lg:col-span-4 grid grid-rows-2 gap-4">
+        <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
           <Clipping label="Best pick" pick={best} tone="var(--win)" />
           <Clipping label="Worst pick" pick={worst} tone="var(--loss)" />
         </div>
@@ -193,7 +184,7 @@ function LeagueRow({
         {lg.pnl.toFixed(2)}u
       </td>
       <td
-        className="num text-xs text-right"
+        className="num text-xs text-right hidden sm:table-cell"
         style={{
           color: showRoi
             ? lg.roi! > 0 ? "var(--win)" : lg.roi! < 0 ? "var(--loss)" : "var(--ink-3)"
@@ -217,9 +208,9 @@ function RailStat({
   tone: string;
 }) {
   return (
-    <div className="border-b border-rule pb-3">
-      <dt className="eyebrow mb-2">{label}</dt>
-      <dd className="num-display text-3xl sm:text-4xl" style={{ color: tone }}>
+    <div className="account-stat">
+      <dt className="eyebrow">{label}</dt>
+      <dd className="num account-stat-value" style={{ color: tone }}>
         {value}
       </dd>
     </div>

@@ -1,11 +1,12 @@
 "use client";
 
-// Equity curve for the de-vig +EV paper book — ink line on paper over the
-// dashed red $10k baseline. Data logic untouched.
+// Equity curve for the de-vig +EV paper book and the quant desk — a 1.5px
+// ink line on paper over the dashed $10k baseline. No area fill: decoration
+// under the data line was cut 2026-09-12. Data logic untouched.
 
 import {
-  Area,
-  AreaChart,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -16,13 +17,18 @@ import {
 export function DevigEquityCurve({
   data,
   baseline,
+  height = 140,
 }: {
   data: Array<{ ts: string; equityUsd: number }>;
   baseline: number;
+  height?: number;
 }) {
   if (!data || data.length < 2) {
     return (
-      <div className="flex h-[180px] items-center justify-center border border-dashed border-rule">
+      <div
+        className="flex items-center justify-center border border-dashed border-rule"
+        style={{ height }}
+      >
         <span className="eyebrow text-ink-3">Equity curve builds as bets settle</span>
       </div>
     );
@@ -38,15 +44,9 @@ export function DevigEquityCurve({
   const chart = data.map(d => ({ t: new Date(d.ts).getTime(), equity: d.equityUsd }));
 
   return (
-    <div className="h-[180px] w-full">
+    <div className="w-full" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chart} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
-          <defs>
-            <linearGradient id="dvEquity" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={lineColor} stopOpacity={0.18} />
-              <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
-            </linearGradient>
-          </defs>
+        <LineChart data={chart} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
           <XAxis
             dataKey="t"
             type="number"
@@ -54,18 +54,18 @@ export function DevigEquityCurve({
             tickFormatter={t =>
               new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" })
             }
-            tick={{ fill: "var(--ink-2)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+            tick={{ fill: "var(--ink-2)", fontSize: 11, fontFamily: "var(--font-mono)" }}
             stroke="var(--rule)"
             minTickGap={40}
           />
           <YAxis
             domain={[lo - pad, hi + pad]}
             tickFormatter={v => `$${(v / 1000).toFixed(1)}k`}
-            tick={{ fill: "var(--ink-2)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+            tick={{ fill: "var(--ink-2)", fontSize: 11, fontFamily: "var(--font-mono)" }}
             stroke="var(--rule)"
-            width={44}
+            width={46}
           />
-          <ReferenceLine y={baseline} stroke="var(--loss)" strokeDasharray="4 4" strokeOpacity={0.6} />
+          <ReferenceLine y={baseline} stroke="var(--ink-3)" strokeDasharray="4 4" strokeOpacity={0.8} />
           <Tooltip
             contentStyle={{
               background: "var(--paper-2)",
@@ -78,15 +78,15 @@ export function DevigEquityCurve({
             labelFormatter={t => new Date(t as number).toLocaleString()}
             formatter={v => [`$${Number(v).toFixed(2)}`, "Equity"]}
           />
-          <Area
+          <Line
             type="monotone"
             dataKey="equity"
             stroke={lineColor}
-            strokeWidth={2}
-            fill="url(#dvEquity)"
+            strokeWidth={1.5}
+            dot={false}
             isAnimationActive={false}
           />
-        </AreaChart>
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );

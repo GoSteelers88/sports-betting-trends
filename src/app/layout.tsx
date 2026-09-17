@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Archivo, IBM_Plex_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SiteHeader } from "./_components/SiteHeader";
 import "./globals.css";
 
 // Display face — Fraunces. A wonky, sharp editorial serif: the voice of a
@@ -72,6 +73,9 @@ export default function RootLayout({
       <body
         className={`${archivo.variable} ${fraunces.variable} ${plexMono.variable} antialiased`}
       >
+        {/* The one site header — data-free, identical on every route, mounted
+            OUTSIDE each page's <main> and outside /nfl's .receipts scope. */}
+        <SiteHeader />
         {children}
         {/* Web Analytics. Wired 2026-09-09: the site had NO instrumentation of
             any kind, so no redesign could be shown to have worked — on a site

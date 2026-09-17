@@ -45,11 +45,11 @@ export async function KalshiPaperTrail() {
       <header className="px-4 sm:px-5 py-3" style={{ borderBottom: "3px double var(--rule-strong)" }}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-display font-semibold text-lg text-ink leading-tight">
-            Exp. No. 1 — Kalshi favorite-longshot, $10k paper
+            Kalshi favorite-longshot <span className="eyebrow text-ink-3 ml-1">Exp. No. 1</span>
           </h3>
           <span className="tag" style={{ color: "var(--blue)" }}>Paper · Live</span>
         </div>
-        <p className="num text-[0.7rem] text-ink-2 leading-relaxed mt-1 max-w-3xl">
+        <p className="prose mt-1" style={{ fontSize: "0.875rem" }}>
           Buys heavily-favored contracts ({config.minAsk.toFixed(2)}–{config.maxAsk.toFixed(2)},
           ≤{config.maxHorizonDays}d, ex-{config.excludeCategories.join("/").toUpperCase()}) — the
           crowd underprices near-locks. Maker fills at the bid, held to settlement.
@@ -77,7 +77,13 @@ export async function KalshiPaperTrail() {
           reports which assumed fills verifiably traded through on the candle
           path, vs the adverse-selection backtest's 73.6% / 85.4% / 97.7%. */}
       {stats.fillTracking.confirmed + stats.fillTracking.missed > 0 && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-rule border-b border-rule">
+        <details className="group border-b border-rule">
+          <summary className="px-4 sm:px-5 py-2.5 cursor-pointer list-none flex items-baseline justify-between hover:bg-paper-3/60 transition-colors">
+            <span className="eyebrow">Fill verification · {stats.fillTracking.confirmed} of {stats.fillTracking.confirmed + stats.fillTracking.missed} settled fills verified</span>
+            <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+            <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+          </summary>
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-rule border-t border-rule">
           <Tile
             label="Verified fill rate"
             value={
@@ -118,18 +124,25 @@ export async function KalshiPaperTrail() {
             sub={`vs ${fmtUsd2(stats.realizedPnlUsd)} assumed${stats.fillTracking.pending > 0 ? ` · ${stats.fillTracking.pending} unchecked` : ""}`}
           />
         </div>
+        </details>
       )}
 
       {hasSettles ? (
         <>
           {/* Equity curve — only once real settles exist */}
-          {equityCurve.length >= 2 && (
-            <figure className="p-4 border-b border-rule">
-              <figcaption className="eyebrow mb-3">Equity curve</figcaption>
-              <KalshiEquityCurve data={equityCurve} baseline={stats.startingBankrollUsd} />
+          {closed.length >= 5 && equityCurve.length >= 2 && (
+            <figure className="px-2 pt-1.5 pb-0 border-b border-rule">
+              <figcaption className="eyebrow mb-0.5">Equity curve</figcaption>
+              <KalshiEquityCurve data={equityCurve} baseline={stats.startingBankrollUsd} height={104} />
             </figure>
           )}
-          <div className="overflow-x-auto border-b border-rule">
+          <details className="group border-b border-rule">
+            <summary className="px-4 sm:px-5 py-2.5 cursor-pointer list-none flex items-baseline justify-between hover:bg-paper-3/60 transition-colors">
+              <span className="eyebrow">{closed.length} settled · last {(closed[0]?.pnlUsd ?? 0) >= 0 ? "+" : ""}{fmtUsd2(closed[0]?.pnlUsd ?? 0)}</span>
+              <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+              <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+            </summary>
+          <div className="overflow-x-auto border-t border-rule">
             <table className="ledger-table">
               <caption className="sr-only">Recently settled Kalshi paper positions</caption>
               <thead>
@@ -149,14 +162,14 @@ export async function KalshiPaperTrail() {
                     <tr key={p.ticker}>
                       <td className="max-w-[340px] text-sm text-ink">
                         <span className="block leading-snug break-words line-clamp-2">{p.title}</span>
-                        <span className="num text-[0.65rem] text-ink-3 sm:hidden">
+                        <span className="num text-[0.6875rem] text-ink-3 sm:hidden">
                           entry {(p.entryPrice * 100).toFixed(0)}¢ · {fillNote}
                         </span>
                       </td>
                       <td className="num text-xs text-right text-ink-2 hidden sm:table-cell">
                         {(p.entryPrice * 100).toFixed(0)}¢
                         <span
-                          className="block text-[0.6rem]"
+                          className="block text-[0.6875rem]"
                           style={{ color: p.fill === "missed" ? "var(--hold)" : "var(--ink-3)" }}
                         >
                           {fillNote}
@@ -180,6 +193,7 @@ export async function KalshiPaperTrail() {
               </tbody>
             </table>
           </div>
+          </details>
         </>
       ) : (
         <p className="px-4 sm:px-5 py-3 border-b border-rule tag" style={{ color: "var(--hold)" }}>
@@ -196,7 +210,7 @@ export async function KalshiPaperTrail() {
             <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
           </summary>
           <div className="px-4 sm:px-5 py-3 border-b border-rule space-y-2">
-            <p className="num text-[0.7rem] text-ink-2 leading-relaxed">
+            <p className="num text-[0.75rem] text-ink-2 leading-relaxed">
               <span className="eyebrow text-ink-3">Fees · </span>
               {stats.diagnostics.fees.makerFeeRows} positions sit in maker-fee series; modeled
               maker fees on settles {fmtUsd2(stats.diagnostics.fees.makerFeesPaidUsd)} → realized
@@ -211,7 +225,7 @@ export async function KalshiPaperTrail() {
                 {fmtUsd2(stats.diagnostics.fees.realizedPnlNetFeesUsd)}
               </span>
             </p>
-            <p className="num text-[0.7rem] text-ink-2 leading-relaxed">
+            <p className="num text-[0.75rem] text-ink-2 leading-relaxed">
               <span className="eyebrow text-ink-3">Fill timing · </span>
               wins: median {stats.diagnostics.fillTimingByResult.wins.medianHours ?? "—"}h to fill,{" "}
               {stats.diagnostics.fillTimingByResult.wins.lateSharePct ?? "—"}% late-window (n=
@@ -222,7 +236,7 @@ export async function KalshiPaperTrail() {
               adverse-selection fingerprint.
             </p>
             {stats.diagnostics.takerCounterfactual.n > 0 ? (
-              <p className="num text-[0.7rem] text-ink-2 leading-relaxed">
+              <p className="num text-[0.75rem] text-ink-2 leading-relaxed">
                 <span className="eyebrow text-ink-3">Taker counterfactual · </span>
                 same {stats.diagnostics.takerCounterfactual.n} settles bought at the ask with taker
                 fees: {stats.diagnostics.takerCounterfactual.takerPnlUsd >= 0 ? "+" : ""}
@@ -231,7 +245,7 @@ export async function KalshiPaperTrail() {
                 {fmtUsd2(stats.diagnostics.takerCounterfactual.makerPnlSameSubsetUsd)}
               </p>
             ) : (
-              <p className="num text-[0.7rem] text-ink-3 leading-relaxed">
+              <p className="num text-[0.75rem] text-ink-3 leading-relaxed">
                 <span className="eyebrow">Taker counterfactual · </span>accrues from entries after
                 2026-06-10 (ask captured at entry)
               </p>
@@ -327,13 +341,6 @@ export async function KalshiPaperTrail() {
         </details>
       )}
 
-      <p className="eyebrow text-ink-3 leading-relaxed px-4 sm:px-5 py-2.5 border-t border-rule">
-        Simulated · not financial advice. Fills assume a resting limit order at the bid is filled
-        (maker); each assumed fill is then verified against the hourly candle path (ask-low or
-        trade-low ≤ bid). Backtest on 23,382 settled markets: only 73.6% of resting bids fill, and
-        filled favorites win 85.4% vs 97.7% for missed — realized maker EV ≈ 0. Edge basis:
-        Bürgi–Deng–Whelan (2026) &amp; Le (2026) — favorite-longshot bias.
-      </p>
     </article>
   );
 }
@@ -350,7 +357,7 @@ function Tile({
   tone?: string;
 }) {
   return (
-    <div className="px-4 py-3">
+    <div className="px-3 py-1.5">
       <p className="eyebrow text-ink-3">{label}</p>
       <p className="num-display text-xl mt-1" style={{ color: tone ?? "var(--ink)" }}>
         {value}

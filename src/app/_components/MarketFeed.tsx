@@ -9,7 +9,31 @@
 import { useMemo, useState } from "react";
 import type { SlateGame } from "../_data/dashboard";
 import { SectionHeader } from "./SectionHeader";
-import { fmtAmerican, honestLeague, isInScopeGame, type HonestLeague } from "./format";
+import { fmtAmerican, honestLeague, isInScopeGame, isValidAmerican, type HonestLeague } from "./format";
+
+type Row = SlateGame & { displayLeague: HonestLeague };
+
+/** Rows printed before the fold. The operator pays for density with scroll,
+ *  not with sixty-five rows on the first pass. */
+const ROW_CAP = 8;
+
+const matchKey = (g: SlateGame) => `${g.awayTeam}@${g.homeTeam}`;
+
+/** "Chicago White Sox" → "White Sox"; nicknames keep a 390px row to one line. */
+const TWO_WORD_NICKNAMES = new Set(["Sox", "Jays", "Blazers"]);
+function nickname(full: string): string {
+  const parts = full.trim().split(/\s+/);
+  if (parts.length < 2) return full;
+  const last = parts[parts.length - 1];
+  return TWO_WORD_NICKNAMES.has(last) ? parts.slice(-2).join(" ") : last;
+}
+
+/** "SAT" — enough to tell a doubleheader (same day) from a duplicate. */
+function fmtDay(iso: string): string {
+  return new Date(iso)
+    .toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "short" })
+    .toUpperCase();
+}
 
 function fmtTime(iso: string): string {
   return new Date(iso)
@@ -85,25 +109,31 @@ export function MarketFeed({ games }: { games: SlateGame[] }) {
   }, [scoped, league, picksOnly, sortBy]);
 
   const availableLeagues = Array.from(new Set(scoped.map(g => g.displayLeague)));
-  const leagueOrder: HonestLeague[] = ["NBA", "MLB", "WNBA", "NHL", "OTHER"];
+  const leagueOrder: HonestLeague[] = ["NBA", "MLB", "WNBA", "NFL", "NHL", "OTHER"];
+
+  // A matchup that appears twice is a doubleheader or a duplicate; the date
+  // beside the time lets a reader tell which.
+  const dated = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const g of filtered) counts.set(matchKey(g), (counts.get(matchKey(g)) ?? 0) + 1);
+    return new Set([...counts].filter(([, n]) => n > 1).map(([k]) => k));
+  }, [filtered]);
 
   if (games.length === 0) {
     return (
-      <section>
-        <SectionHeader id="market-feed" index="07" dense label="THE BOARD" title="Board dark" status="Off-slate" statusTone="mute" />
+      <section className="receipts-section">
+        <SectionHeader id="market-feed" label="CONSENSUS MEDIAN · OFF-SLATE" title="THE MARKET" status="Board dark" statusTone="mute" />
         <p className="tag text-ink-3 mt-3">No games scheduled — the board reopens with the next slate</p>
       </section>
     );
   }
 
   return (
-    <section className="space-y-4">
+    <section className="receipts-section space-y-4">
       <SectionHeader
         id="market-feed"
-        index="07"
-        dense
-        label="THE BOARD · CONSENSUS MEDIAN"
-        title={fullBoard ? "The full board" : "Tonight's desk slate"}
+        label={`CONSENSUS MEDIAN · ${fullBoard ? "THE FULL BOARD" : "THE DESK'S SLATE"}`}
+        title="THE MARKET"
         subtitle={
           fullBoard
             ? "Everything the odds feed carries tonight — including out-of-scope and non-league baseball, labeled honestly."
@@ -114,7 +144,7 @@ export function MarketFeed({ games }: { games: SlateGame[] }) {
       />
 
       {/* Filter rail */}
-      <div className="panel-dim p-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="panel-dim p-3 flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-2">
         <FilterGroup label="Scope">
           <FilterChip active={!fullBoard} onClick={() => { setFullBoard(false); setLeague("ALL"); }}>
             DESK
@@ -146,7 +176,7 @@ export function MarketFeed({ games }: { games: SlateGame[] }) {
           type="button"
           onClick={() => setPicksOnly(p => !p)}
           aria-pressed={picksOnly}
-          className={`ml-auto eyebrow px-2.5 py-1 border transition-colors ${
+          className={`eyebrow px-2 py-2 min-h-9 border transition-colors ${
             picksOnly
               ? "border-loss text-loss"
               : "border-rule text-ink-3 hover:text-ink hover:border-rule-strong"
@@ -157,35 +187,86 @@ export function MarketFeed({ games }: { games: SlateGame[] }) {
         </button>
       </div>
 
-      {/* The board */}
-      <div className="panel overflow-x-auto">
-        <table className="ledger-table agate">
-          <caption className="sr-only">Tonight&rsquo;s odds board</caption>
-          <thead>
-            <tr>
-              <th scope="col" className="hidden sm:table-cell">Time</th>
-              <th scope="col">Lg</th>
-              <th scope="col">Matchup</th>
-              <th scope="col" className="text-right hidden md:table-cell">ML (A)</th>
-              <th scope="col" className="text-right hidden md:table-cell">ML (H)</th>
-              <th scope="col" className="text-right hidden md:table-cell">Sprd</th>
-              {showModel && <th scope="col" className="text-right hidden sm:table-cell">Model</th>}
-              {showModel && <th scope="col" className="text-right hidden sm:table-cell">Mkt</th>}
-              {showEdge && (
-                <th scope="col" className="text-right" title="Model vs. market on the home side — bar bleeds toward the side the model leans">
-                  Edge · Δ
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(g => (
-              <BoardRow key={g.eventId} game={g} showModel={showModel} showEdge={showEdge} />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* The board — the first ROW_CAP rows print; the rest fold, counted. */}
+      <BoardTable
+        rows={filtered.slice(0, ROW_CAP)}
+        showModel={showModel}
+        showEdge={showEdge}
+        dated={dated}
+        caption="Tonight's odds board"
+      />
+      {filtered.length > ROW_CAP && (
+        <details className="group panel">
+          <summary className="px-4 py-2.5 cursor-pointer list-none flex items-baseline justify-between gap-3 hover:bg-paper-3/60 transition-colors">
+            <span className="eyebrow">Unfold {filtered.length - ROW_CAP} more</span>
+            <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+            <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+          </summary>
+          <div className="border-t border-rule">
+            <BoardTable
+              rows={filtered.slice(ROW_CAP)}
+              showModel={showModel}
+              showEdge={showEdge}
+              dated={dated}
+              caption="The remaining games"
+              bare
+            />
+          </div>
+        </details>
+      )}
     </section>
+  );
+}
+
+function BoardTable({
+  rows,
+  showModel,
+  showEdge,
+  dated,
+  caption,
+  bare = false,
+}: {
+  rows: Row[];
+  showModel: boolean;
+  showEdge: boolean;
+  dated: Set<string>;
+  caption: string;
+  bare?: boolean;
+}) {
+  return (
+    <div className={bare ? "overflow-x-auto" : "panel overflow-x-auto"}>
+      <table className="ledger-table agate">
+        <caption className="sr-only">{caption}</caption>
+        <thead>
+          <tr>
+            <th scope="col" className="hidden sm:table-cell">Time</th>
+            <th scope="col">Lg</th>
+            <th scope="col">Matchup</th>
+            <th scope="col" className="text-right hidden md:table-cell">ML (A)</th>
+            <th scope="col" className="text-right hidden md:table-cell">ML (H)</th>
+            <th scope="col" className="text-right hidden md:table-cell">Sprd</th>
+            {showModel && <th scope="col" className="text-right hidden sm:table-cell">Model</th>}
+            {showModel && <th scope="col" className="text-right hidden sm:table-cell">Mkt</th>}
+            {showEdge && (
+              <th scope="col" className="text-right" title="Model vs. market on the home side — bar bleeds toward the side the model leans">
+                Edge · Δ
+              </th>
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(g => (
+            <BoardRow
+              key={g.eventId}
+              game={g}
+              showModel={showModel}
+              showEdge={showEdge}
+              dated={dated.has(matchKey(g))}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -193,14 +274,22 @@ function BoardRow({
   game,
   showModel,
   showEdge,
+  dated,
 }: {
-  game: SlateGame & { displayLeague: HonestLeague };
+  game: Row;
   showModel: boolean;
   showEdge: boolean;
+  dated: boolean;
 }) {
   const c = game.consensus;
   const modelHome = game.modelHomeProb;
-  const marketHome = c.home?.impliedProb ?? null;
+  // A market probability needs a real price on BOTH sides; a feed glitch
+  // ("-1") used to render as a 2% market and a +58 pp disagreement.
+  const marketHome =
+    isValidAmerican(c.home?.american) && isValidAmerican(c.away?.american)
+      ? c.home?.impliedProb ?? null
+      : null;
+  const when = `${dated ? `${fmtDay(game.commenceTime)} ` : ""}${fmtTime(game.commenceTime)}`;
   const disagreement =
     modelHome !== null && marketHome !== null ? modelHome - marketHome : null;
   const edge = game.pick?.edge ?? null;
@@ -212,7 +301,7 @@ function BoardRow({
         background: game.hasPick ? "var(--win-wash)" : undefined,
       }}
     >
-      <td className="num text-xs text-ink-2 hidden sm:table-cell">{fmtTime(game.commenceTime)}</td>
+      <td className="num text-xs text-ink-2 hidden sm:table-cell whitespace-nowrap">{when}</td>
       <td>
         <span className="tag" style={game.displayLeague === "OTHER" ? { color: "var(--ink-3)" } : undefined}>
           {game.displayLeague}
@@ -221,17 +310,23 @@ function BoardRow({
       <td className="min-w-0 max-w-[340px]">
         {/* Two-line row — mobile folds time + prices in, nothing clips mid-word */}
         <p className="text-sm leading-snug break-words">
-          <span className="text-ink font-medium">{game.awayTeam}</span>{" "}
+          <span className="text-ink font-medium">
+            <span className="md:hidden">{nickname(game.awayTeam)}</span>
+            <span className="hidden md:inline">{game.awayTeam}</span>
+          </span>{" "}
           <span className="text-ink-3">@</span>{" "}
-          <span className="text-ink font-medium">{game.homeTeam}</span>
+          <span className="text-ink font-medium">
+            <span className="md:hidden">{nickname(game.homeTeam)}</span>
+            <span className="hidden md:inline">{game.homeTeam}</span>
+          </span>
         </p>
-        <p className="num text-[0.68rem] text-ink-2 leading-snug break-words md:hidden">
-          <span className="sm:hidden">{fmtTime(game.commenceTime)} · </span>
-          ML {fmtAmerican(c.away?.american)}/{fmtAmerican(c.home?.american)}
+        <p className="num text-[0.6875rem] text-ink-2 leading-snug break-words md:hidden">
+          <span className="sm:hidden">{when} · </span>
+          {fmtAmerican(c.away?.american)}/{fmtAmerican(c.home?.american)}
           {c.spread ? ` · SPRD ${c.spread.line > 0 ? "+" : ""}${c.spread.line}` : ""}
         </p>
         {game.pick && (
-          <p className="num text-[0.68rem] leading-snug break-words" style={{ color: "var(--win)" }}>
+          <p className="num text-[0.6875rem] leading-snug break-words" style={{ color: "var(--win)" }}>
             ▸ {game.pick.selection} @ {fmtAmerican(game.pick.oddsAmerican)} ·{" "}
             {(game.pick.edge * 100).toFixed(1)}%
           </p>
@@ -298,7 +393,7 @@ function EdgeMeter({
         {label}
       </span>
       <span
-        className="diverge shrink-0"
+        className="diverge shrink-0 !hidden sm:!block"
         role="img"
         aria-label={
           edge !== null
@@ -320,8 +415,8 @@ function EdgeMeter({
 
 function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="eyebrow text-ink-3 mr-0.5">{label}</span>
+    <div className="flex items-center gap-1.5" role="group" aria-label={label}>
+      <span className="eyebrow text-ink-3 mr-0.5 hidden sm:inline" aria-hidden="true">{label}</span>
       {children}
     </div>
   );
@@ -341,7 +436,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`eyebrow px-2 py-1 border transition-colors ${
+      className={`eyebrow px-2 py-2 min-h-9 border transition-colors ${
         active
           ? "border-rule-strong text-ink bg-paper-2"
           : "border-rule text-ink-3 hover:text-ink"

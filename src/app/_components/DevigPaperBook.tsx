@@ -38,11 +38,11 @@ export function DevigPaperBook() {
       <header className="px-4 sm:px-5 py-3" style={{ borderBottom: "3px double var(--rule-strong)" }}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-display font-semibold text-lg text-ink leading-tight">
-            Exp. No. 2 — De-vigged sharp +EV, $10k paper
+            De-vigged sharp +EV <span className="eyebrow text-ink-3 ml-1">Exp. No. 2</span>
           </h3>
           <span className="tag" style={{ color: "var(--blue)" }}>Paper · Live</span>
         </div>
-        <p className="num text-[0.7rem] text-ink-2 leading-relaxed mt-1 max-w-3xl">
+        <p className="prose mt-1" style={{ fontSize: "0.875rem" }}>
           Bets only when a soft book&rsquo;s price beats the de-vigged Pinnacle fair value by
           ≥{(config.evFloor * 100).toFixed(0)}% ({config.leagues.join("/")}) — the genuine retail
           edge. Best price at entry, {config.kellyMultiplier}× Kelly, settled on real results.
@@ -76,13 +76,19 @@ export function DevigPaperBook() {
 
       {hasSettles ? (
         <>
-          {equityCurve.length >= 2 && (
-            <figure className="p-4 border-b border-rule">
-              <figcaption className="eyebrow mb-3">Equity curve</figcaption>
-              <DevigEquityCurve data={equityCurve} baseline={stats.startingBankrollUsd} />
+          {settled.length >= 5 && equityCurve.length >= 2 && (
+            <figure className="px-2 pt-1.5 pb-0 border-b border-rule">
+              <figcaption className="eyebrow mb-0.5">Equity curve</figcaption>
+              <DevigEquityCurve data={equityCurve} baseline={stats.startingBankrollUsd} height={104} />
             </figure>
           )}
-          <div className="overflow-x-auto border-b border-rule">
+          <details className="group border-b border-rule">
+            <summary className="px-4 sm:px-5 py-2.5 cursor-pointer list-none flex items-baseline justify-between hover:bg-paper-3/60 transition-colors">
+              <span className="eyebrow">{settled.length} settled · last {(settled[0]?.pnlUsd ?? 0) >= 0 ? "+" : ""}{fmtUsd2(settled[0]?.pnlUsd ?? 0)}</span>
+              <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+              <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+            </summary>
+          <div className="overflow-x-auto border-t border-rule">
             <table className="ledger-table">
               <caption className="sr-only">Recently settled de-vig paper bets</caption>
               <thead>
@@ -104,7 +110,7 @@ export function DevigPaperBook() {
                         <span className="block leading-snug break-words line-clamp-2" title={b.finalScore ?? b.matchup}>
                           {b.team}
                         </span>
-                        <span className="num text-[0.65rem] text-ink-3 sm:hidden">{fmtOdds(b.oddsAmerican)}</span>
+                        <span className="num text-[0.6875rem] text-ink-3 sm:hidden">{fmtOdds(b.oddsAmerican)}</span>
                       </td>
                       <td className="num text-xs text-right text-ink-2 hidden sm:table-cell">
                         {fmtOdds(b.oddsAmerican)}
@@ -127,6 +133,7 @@ export function DevigPaperBook() {
               </tbody>
             </table>
           </div>
+          </details>
         </>
       ) : (
         <p className="px-4 sm:px-5 py-3 border-b border-rule tag" style={{ color: "var(--hold)" }}>
@@ -164,7 +171,7 @@ export function DevigPaperBook() {
                       <span className="block leading-snug break-words line-clamp-2" title={b.matchup}>
                         {b.team} <span className="eyebrow text-ink-3">@ {b.book}</span>
                       </span>
-                      <span className="num text-[0.65rem] text-ink-3 sm:hidden">
+                      <span className="num text-[0.6875rem] text-ink-3 sm:hidden">
                         {fmtOdds(b.oddsAmerican)} · {fmtUsd2(b.stakeUsd)} · {gameTime(b.commenceTime)}
                       </span>
                     </td>
@@ -193,12 +200,6 @@ export function DevigPaperBook() {
         </details>
       )}
 
-      <p className="eyebrow text-ink-3 leading-relaxed px-4 sm:px-5 py-2.5 border-t border-rule">
-        Simulated · not financial advice. Taker fills at the best soft-book price recorded at
-        entry, sized at quarter-Kelly on the de-vigged Pinnacle fair value. Edge basis: positive
-        EV vs the sharp closing line (Miller–Davidow). The companion CLV-proof harness measures
-        whether these entries beat the close.
-      </p>
     </article>
   );
 }
@@ -215,7 +216,7 @@ function Tile({
   tone?: string;
 }) {
   return (
-    <div className="px-4 py-3">
+    <div className="px-3 py-1.5">
       <p className="eyebrow text-ink-3">{label}</p>
       <p className="num-display text-xl mt-1" style={{ color: tone ?? "var(--ink)" }}>
         {value}

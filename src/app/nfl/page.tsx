@@ -54,7 +54,6 @@ import {
 } from "@/lib/nfl-receipts/receipts-view";
 import { parseExp5Research, type ResearchView } from "@/lib/nfl-receipts/exp5-view";
 import type { NflSlate } from "@/lib/nfl-receipts/site-slate";
-import { TABS, tabHref } from "@/lib/site-tabs";
 import { MarketNow } from "./_components/MarketNow";
 import { ResearchAppendix } from "./_components/ResearchAppendix";
 // ROLLBACK: delete this import and the <AskTheDesk scope="nfl" /> line below.
@@ -190,7 +189,6 @@ export default function NflReceiptsPage() {
   return (
     <div className="receipts">
       <MastheadStrip season={latest?.season ?? null} week={latest?.week ?? null} />
-      <ReceiptsNav hasResearch={hasResearch} />
 
       <main className="receipts-shell">
         <header className="receipts-head" id="top">
@@ -249,7 +247,12 @@ export default function NflReceiptsPage() {
 
         <ResearchAppendix research={research} />
 
-        <AskTheDesk scope="nfl" />
+        {/* The chat, in flow at the end of the page. The fixed tab covered the
+            GB@MIN PLAY stamp at 390 (measured 2026-09-12). scope="nfl" stays:
+            it pins the router to the receipts lane before slate matching. */}
+        <section className="receipts-section ask-section" id="ask">
+          <AskTheDesk scope="nfl" />
+        </section>
 
         <footer className="receipts-footer">
           <div className="rule-double" />
@@ -285,48 +288,9 @@ function MastheadStrip({ season, week }: { season: number | null; week: number |
   );
 }
 
-/* ─── The section rail ────────────────────────────────────────────
-   /nfl used to be a cul-de-sac: the only href on the page was an internal
-   anchor, so a reader who arrived here from a link had no way back into the
-   desk except the browser button. A masthead over a section rail is the
-   broadsheet convention and it keeps the three disclosure tokens above it
-   permanently on screen instead of trading them for navigation.
-
-   The tab links are real deep links now — the homepage reads its active tab
-   from the fragment (src/lib/site-tabs.ts), so /#props opens the props desk
-   and survives a refresh. Before that change every one of these would have
-   landed on "tonight".
-
-   It does not animate and it does not react to scroll, exactly like the strip
-   above it. Below 768px it scrolls sideways rather than wrapping: a nav rail
-   may scroll horizontally, content may not. */
-
-function ReceiptsNav({ hasResearch }: { hasResearch: boolean }) {
-  return (
-    <nav className="receipts-nav" aria-label="Site sections">
-      <div className="receipts-nav-inner">
-        <a className="eyebrow nav-home" href="/">
-          ↩ NateStacks
-        </a>
-        <span className="nav-sep" aria-hidden="true" />
-        {TABS.map((t) => (
-          <a key={t.id} className="eyebrow nav-link" href={tabHref(t.id)}>
-            {t.label}
-          </a>
-        ))}
-        <span className="nav-spacer" />
-        <a className="eyebrow nav-link is-current" href="#top" aria-current="page">
-          The receipts
-        </a>
-        {hasResearch && (
-          <a className="eyebrow nav-link" href="#research">
-            Research ↓
-          </a>
-        )}
-      </div>
-    </nav>
-  );
-}
+/* The section rail that used to sit under the strip is gone (2026-09-12):
+   the shared site header in layout.tsx is the way back into the desk, and
+   the "Part two" link in the header paragraph is the in-page jump. */
 
 function SectionHead({ title, meta }: { title: string; meta: string }) {
   return (

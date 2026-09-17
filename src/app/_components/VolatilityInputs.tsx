@@ -34,7 +34,7 @@ function InjuryGrid({ byLeague }: { byLeague: Record<string, Injury[]> }) {
               >
                 <div className="min-w-0">
                   <p className="truncate text-ink font-medium">{inj.player}</p>
-                  <p className="num text-[0.65rem] text-ink-2 truncate">
+                  <p className="num text-[0.6875rem] text-ink-2 truncate">
                     {inj.team}
                     {inj.position ? ` · ${inj.position}` : ""}
                     {inj.injuryType ? ` · ${inj.injuryType}` : ""}
@@ -80,13 +80,11 @@ export function VolatilityInputs({ wire }: { wire: InjuryWire }) {
   const totalRisks = slate.length + watch.length;
 
   return (
-    <section className="space-y-4">
+    <section className="receipts-section space-y-4">
       <SectionHeader
         id="volatility-inputs"
-        index="—"
-        dense
-        label="BACK OF BOOK · INJURY WIRE"
-        title={`${totalRisks} active risks`}
+        label={`${totalRisks} LISTED · ${slateLabel.toUpperCase()}`}
+        title="INJURY WIRE"
         subtitle={`Injuries for teams playing today — ${slateLabel} across ${
           wire.leaguesOnSlate.join(" · ") || "no leagues live"
         }. The same slate-scoped feed the agent's get_injuries tool weighs before any pick ships.`}
@@ -94,13 +92,8 @@ export function VolatilityInputs({ wire }: { wire: InjuryWire }) {
         statusTone="hold"
       />
 
-      {/* Plain-English "what we're doing" line, in the agate eyebrow voice. */}
-      {wire.explainer ? (
-        <p className="eyebrow text-ink-2" style={{ lineHeight: 1.5 }}>
-          {wire.explainer}
-        </p>
-      ) : null}
-
+      {/* The plain-English explainer rides inside the fold: the head already
+          says the count and the scope, and the wire stays collapsed. */}
       <details className="group panel-dim" open={slate.length === 0}>
         <summary className="p-3.5 cursor-pointer list-none flex items-center justify-between hover:border-rule-strong transition-colors">
           <span className="num text-sm text-ink">{summaryCounts}</span>
@@ -109,6 +102,12 @@ export function VolatilityInputs({ wire }: { wire: InjuryWire }) {
             <span className="hidden group-open:inline">− Collapse</span>
           </span>
         </summary>
+
+        {wire.explainer ? (
+          <p className="prose px-3.5 pt-3" style={{ fontSize: "0.8125rem" }}>
+            {wire.explainer}
+          </p>
+        ) : null}
 
         {slate.length > 0 ? (
           <>

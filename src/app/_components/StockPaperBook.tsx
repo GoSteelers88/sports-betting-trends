@@ -49,11 +49,11 @@ export async function StockPaperBook() {
       <header className="px-4 sm:px-5 py-3" style={{ borderBottom: "3px double var(--rule-strong)" }}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-display font-semibold text-lg text-ink leading-tight">
-            Exp. No. 3 — Post-earnings drift, $10k paper
+            Post-earnings drift <span className="eyebrow text-ink-3 ml-1">Exp. No. 3</span>
           </h3>
           <span className="tag" style={{ color: "var(--blue)" }}>Paper · Stocks</span>
         </div>
-        <p className="num text-[0.7rem] text-ink-2 leading-relaxed mt-1 max-w-3xl">
+        <p className="prose mt-1" style={{ fontSize: "0.875rem" }}>
           Pre-registered rule: long any EPS beat ≥ +{config.minSurprisePct}%
           ({fmtUsd(config.perPositionUsd)} each, max {config.maxConcurrent}), hold{" "}
           {config.holdCalendarDays}d, exit at market. Verdict metric is excess return vs SPY over
@@ -98,13 +98,19 @@ export async function StockPaperBook() {
 
       {hasSettles && (
         <>
-          {equityCurve.length >= 2 && (
-            <figure className="p-4 border-b border-rule">
-              <figcaption className="eyebrow mb-3">Equity curve (realized)</figcaption>
-              <KalshiEquityCurve data={equityCurve} baseline={stats.bookUsd} />
+          {closed.length >= 5 && equityCurve.length >= 2 && (
+            <figure className="px-2 pt-1.5 pb-0 border-b border-rule">
+              <figcaption className="eyebrow mb-0.5">Equity curve (realized)</figcaption>
+              <KalshiEquityCurve data={equityCurve} baseline={stats.bookUsd} height={104} />
             </figure>
           )}
-          <div className="overflow-x-auto border-b border-rule">
+          <details className="group border-b border-rule">
+            <summary className="px-4 sm:px-5 py-2.5 cursor-pointer list-none flex items-baseline justify-between hover:bg-paper-3/60 transition-colors">
+              <span className="eyebrow">{closed.length} settled · last {closed[0]?.symbol} {(closed[0]?.pnlUsd ?? 0) >= 0 ? "+" : ""}{fmtUsd2(closed[0]?.pnlUsd ?? 0)}</span>
+              <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+              <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+            </summary>
+          <div className="overflow-x-auto border-t border-rule">
             <table className="ledger-table">
               <caption className="sr-only">Recently settled PEAD paper positions</caption>
               <thead>
@@ -120,7 +126,7 @@ export async function StockPaperBook() {
                   <tr key={`${p.symbol}-${p.reportDate}`}>
                     <td className="text-sm text-ink">
                       <span className="num font-semibold">{p.symbol}</span>
-                      <span className="num text-[0.65rem] text-ink-3 block">rep. {p.reportDate}</span>
+                      <span className="num text-[0.6875rem] text-ink-3 block">rep. {p.reportDate}</span>
                     </td>
                     <td className="num text-xs text-right text-ink-2 hidden sm:table-cell">
                       +{p.surprisePct.toFixed(0)}%
@@ -148,6 +154,7 @@ export async function StockPaperBook() {
               </tbody>
             </table>
           </div>
+          </details>
         </>
       )}
 
@@ -182,7 +189,7 @@ export async function StockPaperBook() {
                     <tr key={`${p.symbol}-${p.reportDate}`}>
                       <td className="text-sm text-ink">
                         <span className="num font-semibold">{p.symbol}</span>
-                        <span className="num text-[0.65rem] text-ink-3 block">rep. {p.reportDate}</span>
+                        <span className="num text-[0.6875rem] text-ink-3 block">rep. {p.reportDate}</span>
                       </td>
                       <td className="num text-xs text-right text-ink-2 hidden sm:table-cell">
                         +{p.surprisePct.toFixed(0)}%
@@ -200,12 +207,6 @@ export async function StockPaperBook() {
         </details>
       )}
 
-      <p className="eyebrow text-ink-3 leading-relaxed px-4 sm:px-5 py-2.5 border-t border-rule">
-        Simulated on Alpaca paper · not financial advice. Taker market orders during regular hours;
-        paper fills carry no market impact, so results are an upper bound. Edge basis:
-        post-earnings-announcement drift (Bernard–Thomas 1989; Chan–Marsh 2024) — pre-registered
-        in PEAD_PAPER_SPEC.md, parameters frozen before the first order.
-      </p>
     </article>
   );
 }
@@ -222,7 +223,7 @@ function Tile({
   tone?: string;
 }) {
   return (
-    <div className="px-4 py-3">
+    <div className="px-3 py-1.5">
       <p className="eyebrow text-ink-3">{label}</p>
       <p className="num-display text-xl mt-1" style={{ color: tone ?? "var(--ink)" }}>
         {value}

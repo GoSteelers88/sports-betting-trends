@@ -23,6 +23,47 @@ export function fmtPct(n: number, digits = 1): string {
   return `${(n * 100).toFixed(digits)}%`;
 }
 
+// ─── Time furniture (moved here from CommandHeader, 2026-09-12) ─────────────
+
+/** "3D AGO" / "5H AGO" / "12M AGO" / "NOW" — an em-dash for nothing. */
+export function rel(iso: string | null | undefined, nowMs: number = Date.now()): string {
+  if (!iso) return "—";
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return "—";
+  const m = Math.floor((nowMs - t) / 60000);
+  if (m < 1) return "NOW";
+  if (m < 60) return `${m}M AGO`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}H AGO`;
+  return `${Math.floor(h / 24)}D AGO`;
+}
+
+/** "in 3h" / "in 25m" / "in 2d" / "now" — until a future instant. */
+export function relUntil(iso: string, nowMs: number = Date.now()): string {
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return "—";
+  const m = Math.round((t - nowMs) / 60000);
+  if (m <= 0) return "now";
+  if (m < 60) return `in ${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `in ${h}h`;
+  return `in ${Math.floor(h / 24)}d`;
+}
+
+const ET_CLOCK = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/New_York",
+  weekday: "short",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+/** "Sat 6:30 PM ET" — the next run, in the schedule's own timezone. */
+export function fmtEtClock(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return `${ET_CLOCK.format(d).replace(",", "")} ET`;
+}
+
 // ─── League honesty ─────────────────────────────────────────────────────────
 // The odds feed files are keyed by sport, not league — the "MLB" baseball
 // file also carries NCAA (and occasionally NPB/KBO/minor-league) games.

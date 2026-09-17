@@ -332,28 +332,29 @@ export function AskTheDesk({ scope = "default" }: AskTheDeskProps = {}) {
 
   return (
     <>
-      {/* ── 1. CLOSED AFFORDANCE — a restrained tab, bottom-right. No orb. ──── */}
+      {/* ── 1. CLOSED AFFORDANCE — in flow, where the page mounts it (the #ask
+             section at the end of the content), never fixed: the fixed tab
+             covered the GATE row on "/" and a PLAY stamp on /nfl at 390
+             (measured 2026-09-12). Bordered paper, no shadow, no dot. ──── */}
       {!open && (
         <button
           ref={launcherRef}
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Ask the desk — chat with The Sharp"
-          className="fixed bottom-4 right-4 z-[9995] group flex items-center gap-2 bg-paper-2 px-3.5 py-2.5 cursor-pointer transition-colors hover:bg-paper-3"
-          style={{ border: "1px solid var(--rule-strong)", boxShadow: "0 6px 20px rgba(31,27,22,0.14)" }}
+          className="ask-launcher group flex items-center justify-between gap-3 bg-paper-2 px-4 py-3 cursor-pointer transition-colors hover:bg-paper-3"
+          style={{ border: "1px solid var(--rule-strong)" }}
         >
-          <span
-            className="dot dot-pulse"
-            style={{ color: "var(--win)" }}
-            aria-hidden
-          />
           <span className="flex flex-col items-start leading-none">
-            <span className="eyebrow text-ink-3" style={{ fontSize: "0.55rem" }}>
+            <span className="eyebrow text-ink-3" style={{ fontSize: "0.6875rem" }}>
               The Sharp
             </span>
-            <span className="font-display font-semibold text-sm text-ink mt-0.5">
+            <span className="font-display font-semibold text-base text-ink mt-1">
               Ask the desk
             </span>
+          </span>
+          <span className="num text-ink-2" aria-hidden>
+            →
           </span>
         </button>
       )}

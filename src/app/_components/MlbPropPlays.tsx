@@ -32,13 +32,12 @@ export function MlbPropPlays({ board }: { board: MlbPropPlaysBoard }) {
   const modeled = board.modeledStats.length;
 
   return (
-    <section className="space-y-8">
+    <section className="receipts-section space-y-8">
       <SectionHeader
         id="mlb-prop-plays"
-        index="09"
         dense
-        label="MLB PROP PLAYS · BY STAT"
-        title="The ladders, by our model"
+        label="MLB PROP PLAYS · BY STAT · PRICED BY OUR MODEL"
+        title="MLB PROP LADDERS"
         subtitle="Every MLB-slate player's milestone ladder — 1+, 2+, 3+, 4+ — priced by OUR distribution model, not the book. Counts are fit with a recent-form-weighted, sample-shrunk Negative-Binomial (over-dispersed, so the tails aren't overconfident); each rung is the survival function P(stat ≥ k), monotone by construction. Where a sharp/soft line maps to a rung we overlay the de-vigged market prob, the model−market edge, and the best price — 🔥 marks a playable +EV rung. Rungs without a market still print the model number."
         status={`${modeled} stat${modeled === 1 ? "" : "s"} modeled${ageNote ? ` · ${ageNote}` : ""}`}
         statusTone={board.windowAgeHours !== null && board.windowAgeHours >= 48 ? "loss" : "blue"}
@@ -148,7 +147,7 @@ function LadderRow({ ladder, showEdgeCol }: { ladder: PlayerStatLadder; showEdge
           {ladder.hasPlayable && <span aria-hidden="true">🔥 </span>}
           {ladder.player}
         </p>
-        <p className="num text-[0.68rem] text-ink-2 leading-snug break-words">
+        <p className="num text-[0.6875rem] text-ink-2 leading-snug break-words">
           {ladder.team ?? "—"}
           {" · μ "}
           {ladder.mean.toFixed(2)}

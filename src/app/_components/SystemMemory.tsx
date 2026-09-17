@@ -5,7 +5,7 @@
 // Each rule is a numbered clause; click to read the Dream's reasoning.
 
 import { useState } from "react";
-import type { AgentMemorySummary } from "../_data/dashboard";
+import type { AgentMemoryRule, AgentMemorySummary } from "../_data/dashboard";
 import { SectionHeader } from "./SectionHeader";
 
 function rel(iso: string): string {
@@ -33,46 +33,51 @@ export function SystemMemory({ data }: { data: AgentMemorySummary }) {
 
   const filtered =
     scope === "ALL_SCOPES" ? data.rules : data.rules.filter(r => r.scope === scope);
+  const fresh = filtered.filter(r => r.isFresh);
+  const rest = filtered.filter(r => !r.isFresh);
   const scopes = ["ALL_SCOPES", ...Object.keys(data.byScope).sort()];
 
   return (
-    <section className="space-y-5">
+    <section className="receipts-section space-y-5">
       <SectionHeader
         id="system-memory"
-        index="—"
-        dense
-        label="BACK OF BOOK · HOUSE RULES"
-        title={`${data.totalActive} standing rules`}
+        label={`${data.totalActive} ACTIVE · WRITTEN BY THE WEEKLY DREAM`}
+        title="STANDING RULES"
         subtitle="Living constraints written by the weekly Dream agent. When picks fail in predictable ways, a new clause blocks the analyst from repeating the mistake."
         status={data.lastDreamAt ? `Dream ${rel(data.lastDreamAt)}` : "No dream yet"}
         statusTone="blue"
       />
 
+      {/* The operator's weekly memo — folded; the summary carries the news. */}
       {data.lastDreamNotes && (
-        <figure className="panel p-4" style={{ borderLeft: "3px solid var(--blue)" }}>
-          <figcaption className="eyebrow mb-2" style={{ color: "var(--blue)" }}>
-            Dream transcript
-            {data.lastDreamPicksReviewed !== null && (
-              <> · reviewed {data.lastDreamPicksReviewed} picks</>
-            )}
-            {data.lastDreamAddedRetired && (
-              <>
-                {" "}· +{data.lastDreamAddedRetired.added}/−{data.lastDreamAddedRetired.retired} rules
-              </>
-            )}
-          </figcaption>
-          <blockquote className="deck text-sm sm:text-base text-ink leading-relaxed">
-            {data.lastDreamNotes}
-          </blockquote>
-        </figure>
+        <details className="group panel" style={{ borderLeft: "3px solid var(--blue)" }}>
+          <summary className="px-4 py-2.5 cursor-pointer list-none flex items-baseline justify-between gap-3 hover:bg-paper-3/60 transition-colors">
+            <span className="eyebrow" style={{ color: "var(--blue)" }}>
+              Dream transcript
+              {data.lastDreamPicksReviewed !== null && (
+                <> · reviewed {data.lastDreamPicksReviewed} picks</>
+              )}
+              {data.lastDreamAddedRetired && (
+                <>
+                  {" "}· +{data.lastDreamAddedRetired.added}/−{data.lastDreamAddedRetired.retired} rules
+                </>
+              )}
+            </span>
+            <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+            <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+          </summary>
+          <blockquote className="prose px-4 pb-4 pt-1">{data.lastDreamNotes}</blockquote>
+        </details>
       )}
 
       {scopes.length > 1 && (
         <div className="flex flex-wrap gap-1.5">
           {scopes.map(s => {
             const active = scope === s;
+            // "ALL" is a real scope (rules for every league); the first chip
+            // is the unfiltered view and must not share its name.
             const label =
-              s === "ALL_SCOPES" ? `ALL (${data.rules.length})` : `${s} (${data.byScope[s]})`;
+              s === "ALL_SCOPES" ? `EVERY SCOPE (${data.rules.length})` : `${s} (${data.byScope[s]})`;
             return (
               <button
                 key={s}
@@ -95,61 +100,90 @@ export function SystemMemory({ data }: { data: AgentMemorySummary }) {
       {filtered.length === 0 ? (
         <p className="tag text-ink-3">No rules in this scope</p>
       ) : (
-        <ol className="panel">
-          {filtered.map((r, i) => {
-            const isOpen = openId === r.id;
-            const impact = ruleImpact(r.type, r.weight);
-            return (
-              <li key={r.id} className={i > 0 ? "border-t border-rule" : ""}>
-                <button
-                  type="button"
-                  onClick={() => setOpenId(isOpen ? null : r.id)}
-                  aria-expanded={isOpen}
-                  className="w-full text-left p-3.5 hover:bg-paper-3/60 transition-colors"
-                >
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="num text-xs text-ink-3">
-                      §{String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className="tag" style={{ color: impact.tone }}>
-                      {r.type}
-                    </span>
-                    <span className="eyebrow text-ink-3">{r.scope}</span>
-                    {r.isFresh && (
-                      <span className="tag" style={{ color: "var(--win)" }}>
-                        New
-                      </span>
-                    )}
-                    <span className="ml-auto eyebrow text-ink-3">
-                      {impact.label} · updated {rel(r.updatedAt)}
-                    </span>
-                  </div>
-                  <p className="font-display font-semibold text-base leading-snug text-ink">
-                    {r.rule}
-                  </p>
-                  <div className="mt-2.5 flex items-center gap-3">
-                    <div className="flex-1 meter" style={{ height: 3 }}>
-                      <div
-                        className="meter-fill"
-                        style={{ width: `${Math.round(r.weight * 100)}%`, background: impact.tone }}
-                      />
-                    </div>
-                    <span className="num text-xs text-ink-2">w={r.weight.toFixed(2)}</span>
-                  </div>
-                  {isOpen && (
-                    <p className="mt-3 pt-3 border-t border-rule text-sm text-ink-2 leading-relaxed">
-                      <span className="eyebrow mr-2" style={{ color: "var(--blue)" }}>
-                        Dream reasoning ▸
-                      </span>
-                      {r.reasoning}
-                    </p>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ol>
+        <>
+          {/* Two folds, both counted in their summaries: this week's new
+              rules, then the standing body. A four-character weight says
+              what the bar said. */}
+          {fresh.length > 0 && (
+            <details className="group panel">
+              <summary className="px-4 py-2.5 cursor-pointer list-none flex items-baseline justify-between gap-3 hover:bg-paper-3/60 transition-colors">
+                <span className="eyebrow">
+                  <span style={{ color: "var(--win)" }}>{fresh.length} new</span>{" "}
+                  {fresh.length === 1 ? "rule" : "rules"} this fortnight
+                </span>
+                <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+                <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+              </summary>
+              <ol className="border-t border-rule">
+                {fresh.map((r, i) => (
+                  <RuleRow key={r.id} r={r} n={i + 1} open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)} />
+                ))}
+              </ol>
+            </details>
+          )}
+          {rest.length > 0 && (
+            <details className="group panel">
+              <summary className="px-4 py-2.5 cursor-pointer list-none flex items-baseline justify-between gap-3 hover:bg-paper-3/60 transition-colors">
+                <span className="eyebrow">
+                  {rest.length} standing {rest.length === 1 ? "rule" : "rules"}
+                  {fresh.length > 0 ? ` beyond the ${fresh.length} new` : ""}
+                </span>
+                <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+                <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+              </summary>
+              <ol className="border-t border-rule">
+                {rest.map((r, i) => (
+                  <RuleRow key={r.id} r={r} n={fresh.length + i + 1} open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)} />
+                ))}
+              </ol>
+            </details>
+          )}
+        </>
       )}
     </section>
+  );
+}
+
+function RuleRow({
+  r,
+  n,
+  open,
+  onToggle,
+}: {
+  r: AgentMemoryRule;
+  n: number;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const impact = ruleImpact(r.type, r.weight);
+  return (
+    <li className={n > 1 ? "border-t border-rule" : ""}>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="w-full text-left px-4 py-2.5 hover:bg-paper-3/60 transition-colors"
+      >
+        <p className="eyebrow text-ink-3 flex flex-wrap gap-x-2 gap-y-0.5">
+          <span className="num">§{String(n).padStart(2, "0")}</span>
+          <span style={{ color: impact.tone }}>{r.type}</span>
+          <span>{r.scope}</span>
+          {r.isFresh && <span style={{ color: "var(--win)" }}>New</span>}
+          <span className="num">w {r.weight.toFixed(2)}</span>
+          <span>updated {rel(r.updatedAt)}</span>
+        </p>
+        <p className="prose mt-1" style={{ fontSize: "0.875rem" }}>
+          {r.rule}
+        </p>
+        {open && (
+          <p className="prose mt-2 pt-2 border-t border-rule" style={{ fontSize: "0.875rem" }}>
+            <span className="eyebrow mr-2" style={{ color: "var(--blue)" }}>
+              Dream reasoning ▸
+            </span>
+            {r.reasoning}
+          </p>
+        )}
+      </button>
+    </li>
   );
 }

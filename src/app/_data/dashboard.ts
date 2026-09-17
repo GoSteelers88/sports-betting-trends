@@ -60,6 +60,7 @@ export type SlatePick = {
   closingOddsAmerican: number | null;
   clvProbPoints: number | null;
   createdAt: string;
+  gameDate: string | null; // the game's start instant (ISO) — drives the today list's 4h live window and its "upcoming / in play" state
   // Prop-only structured fields (null for moneyline picks). UI uses these
   // to render prop-shaped headlines (player name + line + over/under).
   player: string | null;
@@ -650,7 +651,7 @@ function loadPlayerProps(): PlayerProp[] {
 // a wrong rule stamp degrades to null → the demoted panel hides. We assert the
 // rule stamp so a stray JSON can never masquerade as the live pre-registered
 // book in the panel.
-function loadParlayRetro(): ParlayRetro | null {
+export function loadParlayRetro(): ParlayRetro | null {
   const raw = readJson<Partial<ParlayRetro> | null>("parlay-retro.json", null);
   if (!raw || raw.rule !== "favorites-combinatorics-RETROSPECTIVE") return null;
   if (!Array.isArray(raw.equityCurve) || typeof raw.startingBankrollUsd !== "number") {
@@ -682,7 +683,7 @@ function loadParlayRetro(): ParlayRetro | null {
 // a wrong source stamp degrades to null → the card hides. The source stamp guard
 // ensures a stray JSON can never masquerade as the dry-run summary, and the
 // shape is validated field-by-field so a partial file never reaches the UI.
-function loadNflExp5(): NflExp5 | null {
+export function loadNflExp5(): NflExp5 | null {
   const raw = readJson<Partial<NflExp5> | null>("nfl-exp5.json", null);
   if (!raw || raw.source !== "nfl-quant-dryrun") return null;
   const rec = raw.record;
@@ -1014,6 +1015,7 @@ async function loadTodaysPicks(): Promise<{ games: SlatePick[]; props: SlatePick
     closingOddsAmerican: p.closingOddsAmerican ?? null,
     clvProbPoints: p.clvProbPoints ?? null,
     createdAt: p.createdAt.toISOString(),
+    gameDate: p.gameDate instanceof Date && Number.isFinite(p.gameDate.getTime()) ? p.gameDate.toISOString() : null,
     player: p.player ?? null,
     propType: p.propType ?? null,
     line: p.line ?? null,
@@ -1581,6 +1583,7 @@ async function loadLastNightLedger(): Promise<{ games: LastNightLedger; props: L
     closingOddsAmerican: p.closingOddsAmerican ?? null,
     clvProbPoints: p.clvProbPoints ?? null,
     createdAt: p.createdAt.toISOString(),
+    gameDate: p.gameDate instanceof Date && Number.isFinite(p.gameDate.getTime()) ? p.gameDate.toISOString() : null,
     player: p.player ?? null,
     propType: p.propType ?? null,
     line: p.line ?? null,

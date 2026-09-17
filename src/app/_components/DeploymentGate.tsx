@@ -38,15 +38,16 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
   const gatesMet = mlCriteria.filter(c => c.met).length;
 
   return (
-    <section className="space-y-6 relative">
-      {/* True stamp moment No. 2 — the seal. At narrow widths it stamps
-          in flow ABOVE the kicker on ink-free paper (same rotation, same
-          size); from sm up it seats over the rules as before. */}
-      <div className="sm:hidden flex justify-end -mb-10 pointer-events-none">
+    <section className="receipts-section space-y-6 relative">
+      {/* True stamp moment No. 2 — the seal, once, site-wide. Locked is a
+          hold, not a loss, so it seals in ochre until the gate clears. At
+          narrow widths it stamps in flow ABOVE the head on ink-free paper;
+          from sm up it seats over the rules as before. */}
+      <div className="sm:hidden flex justify-end mb-2 pointer-events-none">
         <StampIn>
           <span
             className="stamp-true"
-            style={{ color: mlReady ? "var(--win)" : "var(--loss)", transform: "rotate(-4deg)" }}
+            style={{ color: mlReady ? "var(--win)" : "var(--hold)", transform: "rotate(-4deg)" }}
           >
             Funding · {mlReady ? "Unlocked" : "Locked"}
           </span>
@@ -55,12 +56,11 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
 
       <SectionHeader
         id="deployment-gate"
-        index="03"
-        label="THE FUNDING GATE · TRIAL TO DATE"
-        title={mlReady ? "Terms satisfied" : "Real money stays locked"}
-        subtitle="Canonical trial-to-date numbers — every figure below covers the full paper trial since May 6. Capital cannot deploy until every gate on a track clears. ML and prop tracks are independent."
+        label={`TRIAL TO DATE · SINCE MAY 6 · ${mlReady ? "TERMS SATISFIED" : "REAL MONEY STAYS LOCKED"}`}
+        title="THE FUNDING GATE"
+        subtitle="Canonical trial-to-date numbers. Capital cannot deploy until every gate on a track clears; the ML and prop tracks are independent."
         status={`${gatesMet}/${mlCriteria.length} ML criteria clear`}
-        statusTone={mlReady ? "win" : "loss"}
+        statusTone={mlReady ? "win" : "hold"}
       />
 
       {/* The same seal, absolute over the rule at sm+ (crit-approved at 1280/1800) */}
@@ -68,7 +68,7 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
         <StampIn>
           <span
             className="stamp-true"
-            style={{ color: mlReady ? "var(--win)" : "var(--loss)", transform: "rotate(-4deg)" }}
+            style={{ color: mlReady ? "var(--win)" : "var(--hold)", transform: "rotate(-4deg)" }}
           >
             Funding · {mlReady ? "Unlocked" : "Locked"}
           </span>
@@ -76,12 +76,15 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
       </div>
 
       {/* Sample progress — ML only; prop sample reads on its own line item */}
-      <div className="panel p-5">
-        <div className="flex items-baseline justify-between mb-3">
-          <span className="eyebrow">ML sample progress · trial</span>
+      <div className="panel px-4 py-3">
+        <div className="flex items-baseline justify-between gap-3 mb-2">
+          <span className="eyebrow">ML sample · trial</span>
           <span className="num text-sm">
             <span className="text-ink font-semibold">{data.totalGraded}</span>
             <span className="text-ink-3"> / {TARGET_SAMPLE} graded</span>
+            <span className="text-ink-3 hidden sm:inline">
+              {remaining > 0 ? ` · ${remaining} remaining` : " · target met"}
+            </span>
           </span>
         </div>
         <div className="meter" style={{ height: 6 }}>
@@ -93,11 +96,6 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
             }}
           />
         </div>
-        <p className="eyebrow text-ink-3 mt-3">
-          {remaining > 0
-            ? `${remaining} graded picks remaining before ML can deploy`
-            : "ML sample target met"}
-        </p>
       </div>
 
       <GateTable
@@ -108,14 +106,30 @@ export function DeploymentGate({ data }: { data: PaperTrialData }) {
         anyMet={anyMet}
       />
 
+      {/* The prop track folds: n=4, and the ML track is the gate that matters
+          for Kalshi placement. The summary carries its count and state. */}
       {propCriteria.length > 0 && (
-        <GateTable
-          title="Prop track"
-          sub="Gates prop placement; validated by win rate, not CLV. Window: trial to date."
-          ready={propReady}
-          criteria={propCriteria}
-          anyMet={anyMet}
-        />
+        <details className="group panel">
+          <summary className="px-4 sm:px-5 py-2.5 cursor-pointer list-none flex items-baseline justify-between gap-3 hover:bg-paper-3/60 transition-colors">
+            <span className="eyebrow">
+              Prop track · {propCriteria.filter((c) => c.met).length}/{propCriteria.length} clear ·{" "}
+              <span style={{ color: propReady ? "var(--win)" : "var(--hold)" }}>
+                {propReady ? "unlocked" : "locked"}
+              </span>
+            </span>
+            <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+            <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+          </summary>
+          <div className="border-t border-rule">
+            <GateTable
+              title="Prop track"
+              sub="Gates prop placement; validated by win rate, not CLV. Window: trial to date."
+              ready={propReady}
+              criteria={propCriteria}
+              anyMet={anyMet}
+            />
+          </div>
+        </details>
       )}
     </section>
   );
@@ -138,18 +152,18 @@ function GateTable({
   return (
     <div className="panel">
       <header
-        className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
+        className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2.5"
         style={{ borderBottom: "3px double var(--rule-strong)" }}
       >
-        <div>
-          <h3 className="font-display font-semibold text-lg text-ink leading-tight">{title}</h3>
-          <p className="eyebrow text-ink-3 mt-0.5">{sub}</p>
+        <div className="min-w-0">
+          <h3 className="font-display font-semibold text-base text-ink leading-tight">{title}</h3>
+          <p className="eyebrow text-ink-3 mt-0.5 hidden sm:block">{sub}</p>
         </div>
         <div className="flex items-center gap-4">
           <span className="num text-sm text-ink-2">
             {passed}/{criteria.length} clear
           </span>
-          <span className="tag" style={{ color: ready ? "var(--win)" : "var(--loss)" }}>
+          <span className="tag" style={{ color: ready ? "var(--win)" : "var(--hold)" }}>
             {ready ? "Unlocked" : "Locked"}
           </span>
         </div>

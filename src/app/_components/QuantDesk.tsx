@@ -58,12 +58,6 @@ export function QuantDesk() {
             {railActive ? "Paper · Rail active" : "Paper · Live"}
           </span>
         </div>
-        <p className="num text-[0.7rem] text-ink-2 leading-relaxed mt-1 max-w-3xl">
-          A proprietary model makes fair probabilities; the desk bets ONLY where the market is
-          mispriced vs the model — edge = model − de-vigged market ≥ {(config.edgeFloor * 100).toFixed(0)}%,
-          on the sharp-favored side. {config.kellyMultiplier}× Kelly, ≤{(config.maxStakePctEquity * 100).toFixed(0)}%/bet,
-          {" "}with a {(config.maxDrawdown * 100).toFixed(0)}% drawdown rail. Judged by CLV, not wins.
-        </p>
       </header>
 
       {/* Stat strip — equity, CLV (headline), open, record */}
@@ -105,13 +99,19 @@ export function QuantDesk() {
 
       {hasSettles ? (
         <>
-          {equityCurve.length >= 2 && (
-            <figure className="p-4 border-b border-rule">
-              <figcaption className="eyebrow mb-3">Equity curve</figcaption>
-              <DevigEquityCurve data={equityCurve} baseline={stats.startingBankrollUsd} />
+          {settled.length >= 5 && equityCurve.length >= 2 && (
+            <figure className="px-2 pt-1.5 pb-0 border-b border-rule">
+              <figcaption className="eyebrow mb-0.5">Equity curve</figcaption>
+              <DevigEquityCurve data={equityCurve} baseline={stats.startingBankrollUsd} height={104} />
             </figure>
           )}
-          <div className="overflow-x-auto border-b border-rule">
+          <details className="group border-b border-rule">
+            <summary className="px-4 sm:px-5 py-2.5 cursor-pointer list-none flex items-baseline justify-between hover:bg-paper-3/60 transition-colors">
+              <span className="eyebrow">{settled.length} settled · last {(settled[0]?.pnlUsd ?? 0) >= 0 ? "+" : ""}{fmtUsd2(settled[0]?.pnlUsd ?? 0)}</span>
+              <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
+              <span className="eyebrow text-ink-3 hidden group-open:inline">− Fold</span>
+            </summary>
+          <div className="overflow-x-auto border-t border-rule">
             <table className="ledger-table">
               <caption className="sr-only">Recently settled quant-desk plays</caption>
               <thead>
@@ -134,7 +134,7 @@ export function QuantDesk() {
                         <span className="block leading-snug break-words line-clamp-2" title={b.finalScore ?? b.matchup}>
                           {b.selection}
                         </span>
-                        <span className="num text-[0.65rem] text-ink-3 sm:hidden">
+                        <span className="num text-[0.6875rem] text-ink-3 sm:hidden">
                           edge +{(b.edge * 100).toFixed(1)}% · {fmtOdds(b.priceAmerican)}
                         </span>
                       </td>
@@ -162,6 +162,7 @@ export function QuantDesk() {
               </tbody>
             </table>
           </div>
+          </details>
         </>
       ) : (
         <p className="px-4 sm:px-5 py-3 border-b border-rule tag" style={{ color: "var(--hold)" }}>
@@ -174,7 +175,7 @@ export function QuantDesk() {
 
       {/* Open plays — top model-vs-market mispricings */}
       {open.length > 0 && (
-        <details className="group" open={!hasSettles}>
+        <details className="group">
           <summary className="px-4 sm:px-5 py-2.5 cursor-pointer list-none flex items-baseline justify-between hover:bg-paper-3/60 transition-colors">
             <span className="eyebrow">Open plays · {open.length} · best edge first</span>
             <span className="eyebrow text-ink-3 group-open:hidden">+ Unfold</span>
@@ -200,7 +201,7 @@ export function QuantDesk() {
                         {b.selection} <span className="eyebrow text-ink-3">@ {b.book}</span>
                         {b.estimate && <span className="eyebrow text-ink-3"> · est</span>}
                       </span>
-                      <span className="num text-[0.65rem] text-ink-3 sm:hidden">
+                      <span className="num text-[0.6875rem] text-ink-3 sm:hidden">
                         {fmtOdds(b.priceAmerican)} · {fmtUsd2(b.stakeUsd)} · {gameTime(b.commenceTime)}
                       </span>
                     </td>
@@ -227,12 +228,6 @@ export function QuantDesk() {
         </details>
       )}
 
-      <p className="eyebrow text-ink-3 leading-relaxed px-4 sm:px-5 py-2.5 border-t border-rule">
-        Simulated · not financial advice. Model fair values are estimates, not gospel. Edge basis:
-        OUR model probability vs the de-vigged sharp line, taking the best soft price on the
-        sharp-favored side. Sized at quarter-Kelly with a drawdown rail; judged by closing-line value,
-        not wins. The desk places nothing real.
-      </p>
     </article>
   );
 }
@@ -249,7 +244,7 @@ function Tile({
   tone?: string;
 }) {
   return (
-    <div className="px-4 py-3">
+    <div className="px-3 py-1.5">
       <p className="eyebrow text-ink-3">{label}</p>
       <p className="num-display text-xl mt-1" style={{ color: tone ?? "var(--ink)" }}>{value}</p>
       {sub && <p className="eyebrow text-ink-3 mt-0.5">{sub}</p>}
