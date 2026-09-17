@@ -13,6 +13,7 @@ import {
   seedQuantDeskLearnings,
 } from "./memory";
 import { readQuantDeskForDream } from "@/lib/quant-desk/dream-input";
+import { buildSnapshotRecord } from "./snapshot-record";
 
 export type DreamResult = {
   dreamRunId: number;
@@ -37,6 +38,28 @@ You will receive:
 - A "marketModelComparison" of how the model-derived picks (ModelPickSnapshot)
   performed alongside the bot picks. If model picks consistently beat bot
   picks, surface that as a rule for the analyst to lean on those signals.
+- A "snapshotRecord" block: the SAME snapshot corpus broken out properly, and
+  the single largest body of graded evidence you have. It carries per-source and
+  per-market tallies (each with its own n), plus two calibration tables computed
+  in CODE, not by you: "edgeCalibration" buckets picks by the edge that was
+  claimed, "confidenceCalibration" by the confidence that was claimed, and each
+  bucket reports meanPredictedPct against realizedWinRatePct with the signed
+  gapPp between them. A NEGATIVE gapPp means the model was OPTIMISTIC in that
+  bucket by that many percentage points. "propsVsActual" compares each prop
+  pick's line against what the player actually did, with the margin signed in
+  the direction of the pick — a negative meanMarginVsLine means those picks
+  systematically landed on the wrong side of the number.
+  FIRST read "fieldQuality". If a field is marked usableForCalibration:false,
+  its calibration table is an ARTIFACT of an unset or constant column — the
+  finding is that the field is not being populated, and you must NOT write a
+  rule claiming the model is over- or under-confident from it. Say the field is
+  unset and move on to the tallies and propsVsActual, which are real.
+  Where a field IS usable, these tables outrank your own stored rules whenever
+  the two disagree: they are arithmetic over what happened, and your rules are
+  what you previously believed.
+  Cite the bucket and its n whenever you use one. Respect the sample sizes —
+  a bucket with n<30 is preliminary no matter how large the gap looks, and
+  per-bucket n is what matters, not the corpus total.
 - A "quantDesk" block: THE QUANT DESK (Benter/Benham/Bloom) — the MLB live paper
   book's equity + CLV (the HEADLINE metric), the private NFL dry-run record, the
   coverage-audit DATA-ACQUISITION BACKLOG (which missing stat would add the most
@@ -98,11 +121,21 @@ Return ONLY a JSON object with this exact shape, no markdown:
   "notes": "1-2 sentence summary of what changed and why (include a clause on the parlay book if it has settled parlays)"
 }`;
 
-export async function dream(): Promise<DreamResult> {
+export async function dream(opts: { model?: string } = {}): Promise<DreamResult> {
   const client = getAnthropic();
+  const model = opts.model ?? MODELS.dream;
 
+  // Fable thinks on every call and those tokens are drawn from max_tokens, so
+  // 4096 would leave the JSON body truncated mid-object (parseDreamOutput then
+  // throws and the whole consolidation fails). Same sizing the NFL
+  // walk-completion dream uses on Fable — see makeClaudeNflDreamFn.
+  const maxTokens = model === MODELS.dreamFable ? 24000 : 4096;
+
+  // Record the model that ACTUALLY produced these memories, not the default —
+  // otherwise a Fable run is filed under Opus and the memory set can no longer
+  // be traced to the model that wrote it.
   const dreamRun = await prisma.agentDreamRun.create({
-    data: { status: "running", modelId: MODELS.dream },
+    data: { status: "running", modelId: model },
   });
 
   try {
@@ -148,10 +181,29 @@ export async function dream(): Promise<DreamResult> {
       { runs: 0, rawAnalystPicks: 0, graderKept: 0, criticKilled: 0, criticWeakened: 0, bankrollDropped: 0, finalShipped: 0, parseFailedRuns: 0 }
     );
 
-    // Model snapshot performance across the same window
+    // Model snapshot performance across the same window. This is the corpus
+    // with actual statistical power (thousands of graded rows against ~a
+    // handful of AgentPicks), so it is handed over as a STRUCTURED RECORD —
+    // per-source/market tallies plus code-computed calibration tables — rather
+    // than the {total, wins, losses} triple it used to be reduced to.
     const modelSnapshots = await prisma.modelPickSnapshot.findMany({
       where: { createdAt: { gte: since }, result: { not: null } },
     });
+    const snapshotRecord = buildSnapshotRecord(
+      modelSnapshots.map(s => ({
+        source: s.source,
+        league: s.league,
+        market: s.market,
+        propType: s.propType,
+        selection: s.selection,
+        edge: s.edge,
+        confidence: s.confidence,
+        result: s.result,
+        line: s.line,
+        actualValue: s.actualValue,
+      })),
+      `last ${DREAM_LOOKBACK_DAYS}d of ModelPickSnapshot, graded rows only`
+    );
     const modelStats = modelSnapshots.reduce(
       (acc, s) => ({
         total: acc.total + 1,
@@ -191,6 +243,7 @@ export async function dream(): Promise<DreamResult> {
         })),
         pipelineRecord: runStats,
         marketModelComparison: modelStats,
+        snapshotRecord,
         parlayPerformance,
         quantDesk,
         recentPicks: picks.map(p => ({
@@ -215,12 +268,34 @@ export async function dream(): Promise<DreamResult> {
       2
     );
 
-    const response = await client.messages.create({
-      model: MODELS.dream,
-      max_tokens: 4096,
-      system: DREAM_SYSTEM,
-      messages: [{ role: "user", content: userPayload }],
-    });
+    // Streaming for both models keeps one code path and rides out Fable's long
+    // turns — the SDK refuses a non-streaming request whose max_tokens implies
+    // it could exceed 10 minutes, which Fable's 24000 does. Same shape as
+    // makeClaudeNflDreamFn in src/lib/nfl-dream.ts.
+    const response = await client.messages
+      .stream({
+        model,
+        max_tokens: maxTokens,
+        system: DREAM_SYSTEM,
+        messages: [{ role: "user", content: userPayload }],
+      })
+      .finalMessage();
+
+    // Fail loudly rather than parse a partial body: either of these yields text
+    // that looks like a dream with rules silently missing off the end.
+    if (response.stop_reason === "refusal") {
+      throw new Error(
+        `dream call refused by ${model} safety classifiers — memory set unchanged` +
+          (response.stop_details?.explanation
+            ? `: ${response.stop_details.explanation}`
+            : "")
+      );
+    }
+    if (response.stop_reason === "max_tokens") {
+      throw new Error(
+        `dream call truncated at max_tokens (${maxTokens}) on ${model} — memory set unchanged`
+      );
+    }
 
     let text = "";
     for (const block of response.content) {

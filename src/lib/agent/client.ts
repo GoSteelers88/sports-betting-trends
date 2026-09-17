@@ -13,6 +13,14 @@ export function getAnthropic(): Anthropic {
 export const MODELS = {
   analyst: "claude-sonnet-4-6",
   dream: "claude-opus-4-7",
+  // Opt-in model for the weekly memory consolidation (`npm run agent:dream --
+  // fable`). NOT the cron default: agent-dream.yml stays on MODELS.dream so the
+  // scheduled record keeps one model across weeks. Fable 5.1 notes this path
+  // depends on: thinking is ALWAYS on (never send a `thinking` param) and its
+  // tokens count against max_tokens, so the dream call sizes max_tokens up;
+  // sampling params (temperature/top_p/top_k) and assistant prefill are
+  // rejected; and stop_reason can be "refusal" — dream() guards all of it.
+  dreamFable: "claude-fable-5-1",
   // PEAD entry annotator — label-only classification of 0-3 rows/day;
   // never on the trading path, so the cheapest tier is appropriate.
   annotator: "claude-haiku-4-5",
