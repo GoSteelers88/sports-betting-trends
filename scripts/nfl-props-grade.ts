@@ -19,6 +19,7 @@ import {
 } from "../src/lib/nfl-loop";
 import { upsertLivePropRows, loadLivePropRows } from "../src/lib/nfl-props-live-store";
 import { impliedProb, type BestLine } from "../src/lib/nfl-props-live";
+import { writePublicPropBoard } from "../src/lib/nfl-props-public";
 
 const B = "\x1b[1m", R = "\x1b[0m", G = "\x1b[32m", Y = "\x1b[33m", D = "\x1b[2m";
 
@@ -93,6 +94,9 @@ async function main(): Promise<void> {
     const s = tally(rows), d = s.win + s.loss;
     console.log(`  ${stat.padEnd(9)} n=${String(rows.length).padStart(4)}  ${s.win}W-${s.loss}L-${s.push}P  ${s.nodata} no-data  hit ${d ? ((s.win / d) * 100).toFixed(1) + "%" : "—"}  ${s.units >= 0 ? "+" : ""}${s.units}u`);
   }
+  const pub = writePublicPropBoard(dir, season, week);
+  if (pub) console.log(`
+${G}public receipt updated${R} — ${pub.totals.settled} settled / ${pub.totals.pending} pending`);
   const all = loadLivePropRows(dir);
   console.log(`\n${D}live prop record now ${all.length} rows total${R}`);
 }

@@ -55,6 +55,8 @@ import {
 import { parseExp5Research, type ResearchView } from "@/lib/nfl-receipts/exp5-view";
 import type { NflSlate } from "@/lib/nfl-receipts/site-slate";
 import { MarketNow } from "./_components/MarketNow";
+import { PropMarket } from "./_components/PropMarket";
+import type { PublicPropBoard } from "@/lib/nfl-receipts/prop-board";
 import { ResearchAppendix } from "./_components/ResearchAppendix";
 // ROLLBACK: delete this import and the <AskTheDesk scope="nfl" /> line below.
 // Those two lines are the entire mount. The homepage panel is the SAME
@@ -123,6 +125,25 @@ function loadLedgerFile(): Ledger | null {
 interface LoadedBoard {
   board: PublishedBoard;
   hashes: ContentHashes;
+}
+
+/** The most recent published prop receipt, or null before one exists. Latest
+ *  week only: the page shows THIS week's market, not every week ever captured —
+ *  same reason prior boards collapse. */
+function loadLatestPropBoard(): PublicPropBoard | null {
+  if (!fs.existsSync(NFL_DIR)) return null;
+  const file = fs
+    .readdirSync(NFL_DIR)
+    .filter((f) => /^props-\d{4}-wk\d{2}\.json$/.test(f))
+    .sort()
+    .reverse()[0];
+  if (!file) return null;
+  try {
+    return JSON.parse(fs.readFileSync(path.join(NFL_DIR, file), "utf-8")) as PublicPropBoard;
+  } catch (err) {
+    console.error("[/nfl] prop receipt " + file + " present but unparseable", err);
+    return null;
+  }
 }
 
 function loadBoards(): LoadedBoard[] {
@@ -265,6 +286,8 @@ export default function NflReceiptsPage() {
         )}
 
         <MarketNow slate={slate} />
+
+        <PropMarket board={loadLatestPropBoard()} />
 
         <TheRules boards={boards.map((b) => b.board)} headlineData={h} />
 

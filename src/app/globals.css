@@ -2107,3 +2107,22 @@ button.card-source-link:hover {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
+
+/* The prop market reuses the prior-week disclosure, but that rhythm is tuned
+   for a section break BETWEEN PUBLISHED WEEKS — 2.5rem of air above each row.
+   Applied to a 16-game list it reads as sixteen sections rather than one list.
+   Tighten it here: a list wants a hairline between items, not a chapter break. */
+#props .prior-week {
+  margin-top: 0;
+  border-top: 1px solid var(--rule);
+}
+#props .prior-week:first-of-type {
+  border-top: 1px solid var(--rule-strong);
+}
+#props .prior-week > summary {
+  padding: 0.55rem 0;
+}
+/* The open game's table needs to breathe from its own summary, though. */
+#props .prior-week[open] > .panel {
+  margin-bottom: 1rem;
+}

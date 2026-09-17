@@ -23,6 +23,7 @@ import * as path from "node:path";
 import { defaultStateDir, loadGames, loadPlayerStats, gamesForCursor, type GameRow, type PlayerStatRow } from "../src/lib/nfl-loop";
 import { franchiseKey } from "../src/lib/nfl-receipts/teams";
 import { selectBestLines, NFL_PROP_MARKET_KEYS, type OddsEvent, type BestLine } from "../src/lib/nfl-props-live";
+import { writePublicPropBoard } from "../src/lib/nfl-props-public";
 
 const B = "\x1b[1m", R = "\x1b[0m", G = "\x1b[32m", Y = "\x1b[33m", D = "\x1b[2m", C = "\x1b[36m";
 
@@ -137,6 +138,8 @@ async function main(): Promise<void> {
     rows,
   }, null, 2));
   console.log(`\n${G}→ ${path.relative(process.cwd(), outPath)}${R}`);
+  const pub = writePublicPropBoard(dir, season, week);
+  if (pub) console.log(`${G}→ public receipt: data/processed/nfl-live/props-${season}-wk${String(week).padStart(2, "0")}.json${R} ${D}(${pub.totals.lines} lines)${R}`);
   console.log(`${D}next: grade it after the games with npm run nfl:props-grade -- ${season} ${week}${R}`);
 }
 
