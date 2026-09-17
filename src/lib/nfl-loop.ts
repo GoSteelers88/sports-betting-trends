@@ -1527,7 +1527,12 @@ export function parsePlayerStats(csvText: string): PlayerStatRow[] {
     const week = num(col("week"));
     const playerId = str(col("player_id"));
     const playerName = str(col("player_display_name"));
-    const team = str(col("recent_team"));
+    // nflverse renamed this column: the legacy `player_stats_<season>.csv` files
+    // (through 2024) use `recent_team`; the current-season `stats_player_week_
+    // <season>.csv` files under the `stats_player` release use `team`. Accept
+    // both — reading only the old name silently yields an EMPTY team on every
+    // 2025+ row, which makes actualStatKey() miss and every prop grade "no-data".
+    const team = str(col("recent_team")) || str(col("team"));
     if (season == null || week == null || !playerName) continue;
 
     out.push({

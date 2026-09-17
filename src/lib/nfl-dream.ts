@@ -220,6 +220,8 @@ export type NflDreamPayload = {
   // the rich structures the LLM reasons over (situational splits + calibration)
   statRecord: StatRecord;
   propRecord: PropStatRecord[];
+  /** Live-season market record, never merged into propRecord. */
+  livePropRecord?: PropStatRecord[];
   parlayStats: NflParlayStats;
   currentWeeklyMemo: string; // the rolling lessons-current.md (the per-week layer)
   /** Deterministic shrinkage gate (2026-08-15 research, rec 3): every
@@ -429,6 +431,11 @@ export type ConsolidateDeps = {
   dir: string;
   gameRows: GradedRow[];
   propRows: GradedPropRow[];
+  /** LIVE 2026 prop rows (live-props-graded.jsonl). Kept SEPARATE from propRows
+   *  — that is the backtest training corpus and must stay uncontaminated. These
+   *  are market best-lines that were actually on offer, graded against real box
+   *  scores; the dream sees them as their own labelled block. */
+  livePropRows?: GradedPropRow[];
   weeklyMemo?: string; // defaults to loadLessonsCurrent(dir)
   dreamFn: DreamFn;
   nowIso?: string;
@@ -448,6 +455,9 @@ export async function consolidateNflDream(deps: ConsolidateDeps): Promise<NflDre
   const nowIso = deps.nowIso ?? new Date().toISOString();
   const weeklyMemo = deps.weeklyMemo ?? loadLessonsCurrent(deps.dir);
   const payload = assembleNflDreamPayload(deps.gameRows, deps.propRows, weeklyMemo, nowIso);
+  if (deps.livePropRows?.length) {
+    payload.livePropRecord = computePropStatRecord(deps.livePropRows);
+  }
 
   const lessons = (await deps.dreamFn(payload)).trim();
 
@@ -538,6 +548,17 @@ export function dreamSystemPrompt(): string {
     "     profitable; where to be MORE selective. Name the n on each.",
     "  4. PROPS — per-stat guidance from the prop record (which stats, over/under",
     "     lean, sample size).",
+    "     TWO prop records arrive and they are NOT interchangeable. propRecordByStat",
+    "     is the 2019-2024 BACKTEST — model picks, one side per player/stat, the",
+    "     corpus the doctrine was built on. liveMarketPropRecordByStat is the LIVE",
+    "     2026 season: the BEST line actually on offer across US books, BOTH sides",
+    "     recorded, graded against real box scores. Because best-over sits at the",
+    "     lowest number available and best-under at the highest, both sides can win",
+    "     the same player/stat — so its win rate measures what LINE SHOPPING buys,",
+    "     NOT model skill, and it is not comparable to the backtest's. Never merge",
+    "     or average the two. Report them separately, say which you mean, and treat",
+    "     the live record as preliminary until a stat clears n>=30 decisive; early",
+    "     in a season it will be far below that and deserves observation, not rules.",
     "  5. PARLAYS — leg-selection guidance (favorite legs, distinct games, the +EV",
     "     floor) and the multiplication-math reality from constraint (c).",
     "",
@@ -561,6 +582,7 @@ export function dreamUserPrompt(payload: NflDreamPayload): string {
       baseRates: payload.statRecord.baseRates,
       calibration: payload.statRecord.calibration,
       propRecordByStat: payload.propRecord,
+      liveMarketPropRecordByStat: payload.livePropRecord ?? null,
       parlay: {
         config: {
           legsPerParlay: NFL_PARLAY_CONFIG.legsPerParlay,

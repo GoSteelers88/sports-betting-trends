@@ -77,10 +77,19 @@ async function main(): Promise<void> {
     `${D}(graded vs ~closing lines → optimistic upper bound; doctrine is directional, validate live)${R}`,
   );
 
+  const livePropRows = loadLivePropRows(dir);
+  if (livePropRows.length) {
+    const decisive = livePropRows.filter((r) => r.result === "win" || r.result === "loss").length;
+    console.log(
+      `${D}live 2026 market prop record: ${livePropRows.length} rows (${decisive} decisive) — separate block, never merged with the backtest${R}`,
+    );
+  }
+
   const result = await consolidateNflDream({
     dir,
     gameRows,
     propRows,
+    livePropRows,
     dreamFn: makeClaudeNflDreamFn(model),
   });
 

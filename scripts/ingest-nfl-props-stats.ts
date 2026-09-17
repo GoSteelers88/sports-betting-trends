@@ -21,12 +21,28 @@ import {
   LOOP_SEASONS,
 } from "../src/lib/nfl-loop";
 
-const RELEASE_BASE =
+// nflverse split these across two releases. Seasons through 2024 stayed as
+// per-season assets on the `player_stats` release; from 2025 the current-season
+// week-level files live on `stats_player` as stats_player_week_<season>.csv.
+// Pointing only at the legacy base 404s for every modern season — which is why
+// player_stats.csv held nothing past 2024 (verified 2026-09-17).
+const LEGACY_BASE =
   "https://github.com/nflverse/nflverse-data/releases/download/player_stats";
+const CURRENT_BASE =
+  "https://github.com/nflverse/nflverse-data/releases/download/stats_player";
 
 function seasonAssetUrl(season: number): string {
-  return `${RELEASE_BASE}/player_stats_${season}.csv`;
+  return season >= 2025
+    ? `${CURRENT_BASE}/stats_player_week_${season}.csv`
+    : `${LEGACY_BASE}/player_stats_${season}.csv`;
 }
+
+// Seasons fetched IN ADDITION to LOOP_SEASONS, so live props can be graded
+// against real box scores. LOOP_SEASONS is the walk-forward TRAINING window and
+// is deliberately left alone: 2025 is the held-out validation season and must
+// appear in neither list. A live season here is never walked by the backtest —
+// fullSchedule() is driven by LOOP_SEASONS, not by this.
+const LIVE_SEASONS = [2026];
 
 const B = "\x1b[1m";
 const R = "\x1b[0m";
@@ -67,7 +83,7 @@ async function main() {
   const parts: string[] = [];
   const fetchedSeasons: number[] = [];
 
-  for (const season of LOOP_SEASONS) {
+  for (const season of [...LOOP_SEASONS, ...LIVE_SEASONS]) {
     const csv = await fetchSeason(season);
     if (csv == null) continue;
     // Ensure each season chunk ends with a newline so concatenation doesn't

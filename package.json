@@ -104,7 +104,9 @@
     "nfl:grade-clv": "tsx scripts/nfl-grade-clv.ts",
     "nfl:notary": "tsx scripts/verify-notary.ts",
     "nfl:errata": "tsx scripts/nfl-errata.ts",
-    "cfb:closes": "tsx scripts/scrape-pinnacle.ts --leagues ncaaf --strict --archive data/processed/cfb-shadow/closes"
+    "cfb:closes": "tsx scripts/scrape-pinnacle.ts --leagues ncaaf --strict --archive data/processed/cfb-shadow/closes",
+    "nfl:props-week": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-props-week.ts",
+    "nfl:props-grade": "tsx scripts/nfl-props-grade.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",
