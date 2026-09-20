@@ -1,32 +1,20 @@
 {
-  "generatedAt": "2026-09-19T17:15:56.049Z",
+  "generatedAt": "2026-09-20T00:24:17.947Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 5,
+  "recordCount": 6,
   "errors": [],
   "data": {
-    "generatedAt": "2026-09-19T17:15:56.049Z",
+    "generatedAt": "2026-09-20T00:24:17.947Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 17,
-    "gameCount": 5,
+    "gameCount": 6,
     "results": [
-      {
-        "eventId": "fd_36026033",
-        "homeTeam": "Dallas Wings",
-        "awayTeam": "Phoenix Mercury",
-        "homeWinProb": 0.6897,
-        "awayWinProb": 0.3103,
-        "expectedMargin": 7.61,
-        "homeNetRtg": 11,
-        "awayNetRtg": -2.5714285714285716,
-        "calibrated": false,
-        "startTime": "2026-09-19T17:05:00.000Z"
-      },
       {
         "eventId": "fd_36026027",
         "homeTeam": "Atlanta Dream",
@@ -37,7 +25,7 @@
         "homeNetRtg": 5.375,
         "awayNetRtg": -8.833333333333334,
         "calibrated": false,
-        "startTime": "2026-09-19T23:00:00.000Z"
+        "startTime": "2026-09-19T23:06:00.000Z"
       },
       {
         "eventId": "fd_36026029",
@@ -64,6 +52,18 @@
         "startTime": "2026-09-20T17:00:00.000Z"
       },
       {
+        "eventId": "fd_36085989",
+        "homeTeam": "Toronto Tempo",
+        "awayTeam": "New York Liberty",
+        "homeWinProb": 0.3939,
+        "awayWinProb": 0.6061,
+        "expectedMargin": -4.11,
+        "homeNetRtg": -12.6,
+        "awayNetRtg": -0.14285714285714285,
+        "calibrated": false,
+        "startTime": "2026-09-20T19:00:00.000Z"
+      },
+      {
         "eventId": "fd_36085985",
         "homeTeam": "Indiana Fever",
         "awayTeam": "Washington Mystics",
@@ -74,6 +74,18 @@
         "awayNetRtg": 4.142857142857143,
         "calibrated": false,
         "startTime": "2026-09-20T20:00:00.000Z"
+      },
+      {
+        "eventId": "fd_36085991",
+        "homeTeam": "Los Angeles Sparks",
+        "awayTeam": "Portland Fire",
+        "homeWinProb": 0.516,
+        "awayWinProb": 0.484,
+        "expectedMargin": 0.61,
+        "homeNetRtg": -6.125,
+        "awayNetRtg": -4.142857142857143,
+        "calibrated": false,
+        "startTime": "2026-09-20T23:00:00.000Z"
       }
     ]
   }
