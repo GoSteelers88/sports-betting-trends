@@ -1,14 +1,10 @@
 {
-  "generatedAt": "2026-09-20T17:28:29.509Z",
+  "generatedAt": "2026-09-21T00:30:37.922Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 4,
+  "recordCount": 9,
   "errors": [
-    "unmodeled: New York Islanders @ New Jersey Devils (fd_36084536)",
-    "unmodeled: San Jose Sharks @ Anaheim Ducks (fd_36084537)",
-    "unmodeled: Nashville Predators @ Tampa Bay Lightning (fd_36084535)",
-    "unmodeled: Washington Capitals @ Boston Bruins (fd_36084554)",
     "unmodeled: Carolina Hurricanes @ Florida Panthers (fd_36084553)",
     "unmodeled: Utah Mammoth @ Colorado Avalanche (fd_36084555)",
     "unmodeled: Seattle Kraken @ Calgary Flames (fd_36084552)",
@@ -19,26 +15,21 @@
     "unmodeled: Buffalo Sabres @ Columbus Blue Jackets (bv_28275194)",
     "unmodeled: Philadelphia Flyers @ New Jersey Devils (bv_28275968)",
     "unmodeled: Tampa Bay Lightning @ New York Rangers (bv_28300180)",
-    "unmodeled: Minnesota Wild @ Nashville Predators (bv_28275189)",
     "unmodeled: Chicago Blackhawks @ Utah Mammoth (bv_28275770)",
     "unmodeled: Florida Panthers @ San Jose Sharks (bv_28275364)",
     "unmodeled: New York Rangers @ Detroit Red Wings (bv_28274978)",
-    "unmodeled: Boston Bruins @ Winnipeg Jets (bv_28762973)",
     "unmodeled: St. Louis Blues @ Dallas Stars (bv_28275176)",
-    "unmodeled: Chicago Blackhawks @ Buffalo Sabres (bv_28762971)",
-    "unmodeled: Washington Capitals @ Tampa Bay Lightning (bv_28762974)",
-    "unmodeled: New Jersey Devils @ New York Islanders (bv_28762972)",
-    "unmodeled: Boston Bruins @ Minnesota Wild (bv_28703574)"
+    "unmodeled: Chicago Blackhawks @ Buffalo Sabres (bv_28762971)"
   ],
   "data": {
-    "generatedAt": "2026-09-20T17:28:29.509Z",
+    "generatedAt": "2026-09-21T00:30:37.922Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
-    "teamCount": 10,
-    "gameCount": 28,
+    "teamCount": 18,
+    "gameCount": 24,
     "results": [
       {
         "eventId": "fd_36032532",
@@ -77,6 +68,18 @@
         "startTime": "2026-09-30T02:30:00.000Z"
       },
       {
+        "eventId": "bv_28275189",
+        "homeTeam": "Nashville Predators",
+        "awayTeam": "Minnesota Wild",
+        "homeWinProb": 0.4403,
+        "awayWinProb": 0.5597,
+        "expectedMargin": -0.8,
+        "homeNetRtg": -1,
+        "awayNetRtg": 1,
+        "calibrated": false,
+        "startTime": "2026-10-02T00:00:00.000Z"
+      },
+      {
         "eventId": "bv_28274418",
         "homeTeam": "Vancouver Canucks",
         "awayTeam": "Edmonton Oilers",
@@ -87,6 +90,54 @@
         "awayNetRtg": 3,
         "calibrated": false,
         "startTime": "2026-10-02T02:00:00.000Z"
+      },
+      {
+        "eventId": "bv_28762973",
+        "homeTeam": "Winnipeg Jets",
+        "awayTeam": "Boston Bruins",
+        "homeWinProb": 0.3682,
+        "awayWinProb": 0.6318,
+        "expectedMargin": -1.8,
+        "homeNetRtg": -3,
+        "awayNetRtg": 1,
+        "calibrated": false,
+        "startTime": "2026-10-03T00:00:00.000Z"
+      },
+      {
+        "eventId": "bv_28762974",
+        "homeTeam": "Tampa Bay Lightning",
+        "awayTeam": "Washington Capitals",
+        "homeWinProb": 0.589,
+        "awayWinProb": 0.411,
+        "expectedMargin": 1.2,
+        "homeNetRtg": 1,
+        "awayNetRtg": -1,
+        "calibrated": false,
+        "startTime": "2026-10-03T23:00:00.000Z"
+      },
+      {
+        "eventId": "bv_28762972",
+        "homeTeam": "New York Islanders",
+        "awayTeam": "New Jersey Devils",
+        "homeWinProb": 0.4403,
+        "awayWinProb": 0.5597,
+        "expectedMargin": -0.8,
+        "homeNetRtg": -1,
+        "awayNetRtg": 1,
+        "calibrated": false,
+        "startTime": "2026-10-03T23:30:00.000Z"
+      },
+      {
+        "eventId": "bv_28703574",
+        "homeTeam": "Minnesota Wild",
+        "awayTeam": "Boston Bruins",
+        "homeWinProb": 0.515,
+        "awayWinProb": 0.485,
+        "expectedMargin": 0.2,
+        "homeNetRtg": 1,
+        "awayNetRtg": 1,
+        "calibrated": false,
+        "startTime": "2026-10-04T00:00:00.000Z"
       }
     ]
   }
