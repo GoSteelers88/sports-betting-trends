@@ -156,7 +156,10 @@ try {
 
   # ONE path-scoped commit = the notary event; push with retries. MUST land.
   Write-Host "== commit + push receipts"
-  $receipts = @($boardRel, $snapRel, $ledgerRel) + $propRels
+  # play-record.json is rewritten by nfl:grade-live above and nothing else
+  # commits it: until 09-23 the public record sat at week 1 (1-1, 3 pending)
+  # while the settled local copy said 2-3.
+  $receipts = @($boardRel, $snapRel, $ledgerRel, "data/processed/nfl-live/play-record.json") + $propRels
   if (-not (Push-Paths $receipts "nfl: publish $Season week $Week board (immutable receipt)" 'master' $gitLog)) {
     throw "commit/push failed after 3 attempts - board is NOT public"
   }
