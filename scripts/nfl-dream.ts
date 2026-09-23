@@ -36,6 +36,7 @@ import {
   makeClaudeNflDreamFn,
   nflDoctrinePath,
 } from "../src/lib/nfl-dream";
+import { loadLivePropRows } from "../src/lib/nfl-props-live-store";
 import { MODELS } from "../src/lib/agent/client";
 import path from "node:path";
 
