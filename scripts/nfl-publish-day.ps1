@@ -51,7 +51,7 @@ function Get-EnvValue([string]$name) {
     if (Test-Path $f) {
       $line = Select-String -Path $f -Pattern "^$name=" | Select-Object -First 1
       if ($line) {
-        # .env values may be wrapped in quotes (DISCORD_WEBHOOK_URL is) —
+        # .env values may be wrapped in quotes (DISCORD_WEBHOOK_URL is) -
         # strip them or Invoke-RestMethod gets an unparseable URI.
         return ($line.Line -replace "^$name=", "").Trim().Trim('"').Trim("'")
       }
@@ -96,26 +96,26 @@ try {
   Run "refresh nflverse inputs" { npm run nfl:ingest }
   Run "refresh injuries" { npm run nfl:ingest-injuries }
   # 2026-09-10: the live-week inputs the backtest gets for free but a live
-  # board does not — ESPN injuries (nflverse week-N reports don't exist until
+  # board does not - ESPN injuries (nflverse week-N reports don't exist until
   # Wednesday; the board publishes Tuesday), kickoff weather forecasts, EPA
   # features, stadium geocodes. All free APIs, no credits. Non-fatal by
-  # design: the model board must still publish on a feed outage — the board
+  # design: the model board must still publish on a feed outage - the board
   # then records which inputs were missing (inputs.* coverage block).
   Write-Host "== refresh ESPN injuries (non-fatal)"
   npm run ingest:injuries
-  if ($LASTEXITCODE -ne 0) { Write-Host "ingest:injuries failed (non-fatal) — board will use whatever injuries-nfl.json holds" }
+  if ($LASTEXITCODE -ne 0) { Write-Host "ingest:injuries failed (non-fatal) - board will use whatever injuries-nfl.json holds" }
   # Grade LAST week's private model board into the live calibration record
-  # (live-graded.jsonl). Record only — the fit reads it solely behind
+  # (live-graded.jsonl). Record only - the fit reads it solely behind
   # --with-live-calibration on nfl-live-week.ts, which this runbook does NOT
   # pass. Non-fatal: a missing board or an unrefreshed spine just logs.
   if ($Week -gt 1) {
     Write-Host "== grade last week's live reads into live-graded.jsonl (non-fatal)"
     npm run nfl:grade-live -- $Season ($Week - 1)
-    if ($LASTEXITCODE -ne 0) { Write-Host "nfl:grade-live failed (non-fatal) — calibration record not updated this week" }
+    if ($LASTEXITCODE -ne 0) { Write-Host "nfl:grade-live failed (non-fatal) - calibration record not updated this week" }
   }
   Write-Host "== refresh live inputs: weather / EPA / stadiums / referees (non-fatal)"
   npm run nfl:ingest-live -- $Season $Week
-  if ($LASTEXITCODE -ne 0) { Write-Host "nfl:ingest-live failed (non-fatal) — board will record missing inputs" }
+  if ($LASTEXITCODE -ne 0) { Write-Host "nfl:ingest-live failed (non-fatal) - board will record missing inputs" }
   Run "regenerate model board (final doctrine)" {
     npx tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-live-week.ts $Season $Week --force
   }
