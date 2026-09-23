@@ -25,6 +25,7 @@
 $ErrorActionPreference = 'Stop'
 $repo = 'C:\Users\Nate\source\repos\GoSteelers88\sports-betting-trends'
 Set-Location $repo
+. (Join-Path $PSScriptRoot 'lib\cron-common.ps1')
 
 # Belt-and-suspenders: Task Scheduler launches with a reduced environment, so
 # make sure git + node tooling resolve even if a PATH entry is missing.
@@ -82,31 +83,16 @@ if ([string]::IsNullOrWhiteSpace($dirty)) {
   } else {
     $branch = git rev-parse --abbrev-ref HEAD
     Log "step 3/3: committing nfl-exp5.json on '$branch'"
-    git add -- data/processed/nfl-exp5.json
-    git commit -m ("chore(nfl-exp5): daily loop summary {0}" -f (Get-Date -Format 'yyyy-MM-dd')) *>&1 | Tee-Object -FilePath $log -Append
-    # Push with a pull-rebase-retry loop. The GitHub Actions crons (clv-proof,
-    # convergence, props-board, parlay, backup) push to master many times a day,
-    # so a bare `git push` from a machine that last fetched hours ago is
-    # near-guaranteed to be rejected non-fast-forward. Without this loop the
-    # push failed EVERY day from 2026-07-09 to 2026-07-27: 15 commits piled up
-    # locally, the public NFL card froze for 18 days, and the only symptom was a
-    # WARN line buried in this log. Mirrors the retry block in
-    # .github/workflows/parlay-paper.yml.
-    $pushed = $false
-    foreach ($attempt in 1..3) {
-      git pull --rebase --autostash origin $branch *>&1 | Tee-Object -FilePath $log -Append
-      if ($LASTEXITCODE -ne 0) {
-        Log "pull --rebase failed (attempt $attempt) -- aborting rebase, retrying"
-        git rebase --abort *>&1 | Out-Null
-        Start-Sleep -Seconds 5
-        continue
-      }
-      git push origin HEAD *>&1 | Tee-Object -FilePath $log -Append
-      if ($LASTEXITCODE -eq 0) { $pushed = $true; break }
-      Log "push failed (attempt $attempt) -- retrying"
-      Start-Sleep -Seconds 5
-    }
-    if (-not $pushed) { Log "WARN: git push failed after 3 attempts (commit is local; goes out on next run)"; exit 1 }
+    # Push-Paths (lib/cron-common.ps1): path-scoped commit, then pull-rebase +
+    # push with retries, auto-resolving conflicts ONLY on CI-bot-owned data
+    # files. The GitHub Actions crons push to master many times a day; this
+    # block has wedged twice - 07-09 -> 07-27 (non-fast-forward, 18 days) and
+    # 09-18 -> 09-23 (autostash left odds snapshots unmerged, every later pull
+    # refused). Both times the only symptom was a line in this log. Exit 1 here
+    # now reaches Discord via scripts/scheduled-task.ps1.
+    $msg = "chore(nfl-exp5): daily loop summary {0}" -f (Get-Date -Format 'yyyy-MM-dd')
+    $pushed = Push-Paths @('data/processed/nfl-exp5.json') $msg $branch { param($m) Log $m }
+    if (-not $pushed) { Log "FAIL: git push failed after 3 attempts (commit is local)"; exit 1 }
     if ($branch -ne 'master') { Log "NOTE: on '$branch', not master -- dashboard won't redeploy until merged." }
   }
 }

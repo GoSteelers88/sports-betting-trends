@@ -107,6 +107,7 @@
     "cfb:closes": "tsx scripts/scrape-pinnacle.ts --leagues ncaaf --strict --archive data/processed/cfb-shadow/closes",
     "nfl:props-week": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-props-week.ts",
     "nfl:props-grade": "tsx scripts/nfl-props-grade.ts",
+    "healthchecks:setup": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/healthchecks-setup.ts",
     "nfl:props-picks": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-props-picks.ts"
   },
   "dependencies": {

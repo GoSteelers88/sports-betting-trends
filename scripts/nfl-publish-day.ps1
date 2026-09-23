@@ -1,7 +1,12 @@
-# nfl-publish-day.ps1 - the Sept 8 week-1 publish, end to end, unattended.
-# Registered as one-time Windows scheduled task "NFL-Wk1-Publish" (Sept 8
-# 10:07 AM ET). Deterministic by design: every step is a script that hard-fails
-# loudly; no agent judgment mid-flow. Reports success/failure to Discord.
+# nfl-publish-day.ps1 - the weekly NFL publish, end to end, unattended.
+# Registered as Windows scheduled task "NFL-Weekly-Publish" (Tue 10:07 AM ET),
+# launched through scripts\scheduled-task.ps1 so that a crash - or a parse
+# error, which kills this file before its own try/catch - still alerts.
+# Deterministic by design: every step is a script that hard-fails loudly; no
+# agent judgment mid-flow. Reports success/failure to Discord.
+#
+# NOTE: ASCII only. The 09-22 run never started: an em-dash in a string made
+# PS 5.1 (which reads no-BOM UTF-8 as cp1252) fail to parse the file.
 #
 #   powershell -ExecutionPolicy Bypass -File scripts\nfl-publish-day.ps1 [-DryRun] [-Season 2026] [-Week 1]
 #
@@ -12,7 +17,9 @@
 #   4. publish (nfl-publish-board: real entry snapshot, kickoff gate, control
 #      arm, SHA256 registration; refuses if the board already exists - so a
 #      double-fire of this task is safe)
-#   5. ONE commit of board + snapshot + ledger, push (auto-deploys /nfl)
+#   4b. props (non-fatal): refresh box scores, grade weeks N-1 and N-2 (N-2
+#       mops up late box scores), capture week N's prop market
+#   5. ONE commit of board + snapshot + ledger + prop receipts, push (auto-deploys /nfl)
 #   6. notary with remote verification
 #   7. Discord: result + a drafted X post
 # A -DryRun stops after env checks and pings Discord so the wiring can be
@@ -45,31 +52,13 @@ $repo = "C:\Users\Nate\source\repos\GoSteelers88\sports-betting-trends"
 Set-Location $repo
 $log = Join-Path $repo ("publish-day-{0}.log" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
 Start-Transcript -Path $log | Out-Null
+. (Join-Path $PSScriptRoot 'lib\cron-common.ps1')
 
-function Get-EnvValue([string]$name) {
-  foreach ($f in @(".env.local", ".env")) {
-    if (Test-Path $f) {
-      $line = Select-String -Path $f -Pattern "^$name=" | Select-Object -First 1
-      if ($line) {
-        # .env values may be wrapped in quotes (DISCORD_WEBHOOK_URL is) -
-        # strip them or Invoke-RestMethod gets an unparseable URI.
-        return ($line.Line -replace "^$name=", "").Trim().Trim('"').Trim("'")
-      }
-    }
-  }
-  return $null
-}
-
-$webhook = Get-EnvValue "DISCORD_WEBHOOK_URL"
-function Notify([string]$msg) {
+function Notify([string]$msg, [switch]$Alert) {
   Write-Host "NOTIFY: $msg"
-  if ($webhook) {
-    try {
-      $body = @{ content = $msg } | ConvertTo-Json
-      Invoke-RestMethod -Uri $webhook -Method Post -ContentType "application/json" -Body $body | Out-Null
-    } catch { Write-Host "discord notify failed: $_" }
-  }
+  Send-Discord $msg -Alert:$Alert
 }
+$gitLog = { param($m) Write-Host $m }
 
 function Run([string]$desc, [scriptblock]$block) {
   Write-Host "== $desc"
@@ -84,15 +73,16 @@ try {
   }
 
   if ($DryRun) {
-    Run "git pull" { git pull --rebase --autostash origin master }
+    if (-not (Sync-Branch 'master' $gitLog)) { throw "git sync failed (see log)" }
     Notify "NFL publish-day DRY RUN ok: env keys present, repo current, Discord wiring live. Real runs fire Tuesdays 10:07 AM ET starting Sept 8."
     Stop-Transcript | Out-Null
     exit 0
   }
 
-  # --autostash: this tree is allowed to hold unrelated WIP; the receipt
-  # commit stages only its three files.
-  Run "git pull" { git pull --rebase --autostash origin master }
+  # This tree is allowed to hold unrelated WIP; the receipt commit is
+  # path-scoped. Sync-Branch auto-resolves conflicts only on CI-bot-owned data.
+  Write-Host "== git sync"
+  if (-not (Sync-Branch 'master' $gitLog)) { throw "git sync failed (see log)" }
   Run "refresh nflverse inputs" { npm run nfl:ingest }
   Run "refresh injuries" { npm run nfl:ingest-injuries }
   # 2026-09-10: the live-week inputs the backtest gets for free but a live
@@ -123,26 +113,53 @@ try {
     npx tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-publish-board.ts $Season $Week
   }
 
+  # 2026-09-23: props. Until today nothing scheduled any of this - the week 2
+  # market was captured and graded by hand ONCE, before kickoff, so all 476
+  # rows sat at no-data for a week and week 3 was never captured. Non-fatal:
+  # the model board is the product; props must never block it.
+  $propRels = @()
+  $propNote = ""
+  Write-Host "== props: refresh box scores (non-fatal)"
+  npm run nfl:ingest-props-stats
+  if ($LASTEXITCODE -ne 0) { $propNote += " props: BOX-SCORE REFRESH FAILED." }
+  foreach ($w in @(($Week - 1), ($Week - 2))) {
+    if ($w -lt 1) { continue }
+    if (-not (Test-Path ("data/private/nfl-loop/live-props/{0}-REG-wk{1}.json" -f $Season, $w))) { continue }
+    Write-Host "== props: grade week $w (non-fatal)"
+    npm run nfl:props-grade -- $Season $w
+    if ($LASTEXITCODE -ne 0) { $propNote += " props wk${w}: GRADE FAILED."; continue }
+    $rel = "data/processed/nfl-live/props-{0}-wk{1:d2}.json" -f $Season, $w
+    if (Test-Path $rel) {
+      $propRels += $rel
+      $pb = Get-Content $rel -Raw | ConvertFrom-Json
+      $propNote += " props wk${w}: $($pb.totals.settled) settled / $($pb.totals.pending) pending."
+      # A graded week with nothing settled is the exact silent failure above.
+      if ($w -eq ($Week - 1) -and $pb.totals.settled -eq 0) { $propNote += " WARN: 0 settled - box scores missing?" }
+    }
+  }
+  if (-not (Test-Path ("data/private/nfl-loop/live-props/{0}-REG-wk{1}.json" -f $Season, $Week))) {
+    Write-Host "== props: capture week $Week market (non-fatal, ~64 odds credits)"
+    npm run nfl:props-week -- $Season $Week
+    if ($LASTEXITCODE -ne 0) { $propNote += " props wk${Week}: CAPTURE FAILED." }
+  }
+  $relN = "data/processed/nfl-live/props-{0}-wk{1:d2}.json" -f $Season, $Week
+  if (Test-Path $relN) {
+    $propRels += $relN
+    $pn = Get-Content $relN -Raw | ConvertFrom-Json
+    $propNote += " props wk${Week}: $($pn.totals.lines) lines captured."
+  }
+
   $wk = "{0:d2}" -f $Week
   $boardRel = "data/processed/nfl-live/board-$Season-wk$wk.json"
   $snapRel = "data/processed/nfl-live/snapshots/entry-$Season-wk$wk.json"
   $ledgerRel = "data/processed/nfl-live/ledger.json"
 
-  Run "stage receipts" { git add $boardRel $snapRel $ledgerRel }
-  Run "commit (one commit = the notary event)" {
-    git commit -m "nfl: publish $Season week $Week board (immutable receipt)"
+  # ONE path-scoped commit = the notary event; push with retries. MUST land.
+  Write-Host "== commit + push receipts"
+  $receipts = @($boardRel, $snapRel, $ledgerRel) + $propRels
+  if (-not (Push-Paths $receipts "nfl: publish $Season week $Week board (immutable receipt)" 'master' $gitLog)) {
+    throw "commit/push failed after 3 attempts - board is NOT public"
   }
-  # push with rebase retries; MUST land or we fail loud
-  $pushed = $false
-  foreach ($i in 1..3) {
-    git pull --rebase --autostash origin master
-    if ($LASTEXITCODE -eq 0) {
-      git push origin master
-      if ($LASTEXITCODE -eq 0) { $pushed = $true; break }
-    }
-    Start-Sleep -Seconds 5
-  }
-  if (-not $pushed) { throw "push failed after 3 attempts - board is committed locally but NOT public" }
 
   Run "notary (remote-verified)" {
     npx tsx scripts/verify-notary.ts --require-remote
@@ -158,12 +175,12 @@ try {
     $legLines = ($plays | ForEach-Object { "$($_.selection) $($_.entryPriceAmerican)" }) -join "; "
     $xDraft = "NFL week $Week, 2026 board is live: $($plays.Count) play(s) - $legLines. Real entry prices, devigged CLV vs the sharp close, control arm, no ROI claims. Receipts: sports-betting-trends.vercel.app/nfl"
   }
-  Notify ("NFL WEEK $Week PUBLISHED ($sha): $($plays.Count) PLAY / $($board.legs.Count) legs, $($board.dropped.Count) dropped by kickoff gate. Notary verified vs origin/master. Site deploying now - verify /nfl, then post to X. Draft:`n$xDraft")
+  Notify ("NFL WEEK $Week PUBLISHED ($sha): $($plays.Count) PLAY / $($board.legs.Count) legs, $($board.dropped.Count) dropped by kickoff gate. Notary verified vs origin/master.$propNote Site deploying now - verify /nfl, then post to X. Draft:`n$xDraft")
   Stop-Transcript | Out-Null
   exit 0
 }
 catch {
-  Notify "NFL WEEK $Week PUBLISH FAILED: $_ - see $log. Boards unpublished until this is fixed; kickoff is Thu 8:20pm ET."
+  Notify "NFL WEEK $Week PUBLISH FAILED: $_ - see $log. Boards unpublished until this is fixed; kickoff is Thu 8:20pm ET." -Alert
   Stop-Transcript | Out-Null
   exit 1
 }

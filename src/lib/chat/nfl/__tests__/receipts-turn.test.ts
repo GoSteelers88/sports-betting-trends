@@ -96,12 +96,18 @@ function deps(runner: ReturnType<typeof stubRunner>["runner"]) {
 
 // ─── 1. The ZERO-MODEL-CALL path ─────────────────────────────────────────────
 
+// The index is built from the REAL published boards, so "an unpublished week"
+// has to be derived, not hardcoded: this said "week 3" and went red the moment
+// week 3 published (2026-09-23). The first week after the latest published one
+// is unpublished by construction.
+const nextUnpublishedWeek = Math.max(0, ...index.weeks.map((w) => w.week)) + 1;
+
 describe("unpublished week — a fixed answer with ZERO model calls", () => {
   const asks = [
-    "what do you like in week 3?",
+    `what do you like in week ${nextUnpublishedWeek}?`,
     "any plays next week?",
     "what about next Sunday?",
-    "give me your week 12 board",
+    `give me your week ${nextUnpublishedWeek + 1} board`,
   ];
   for (const q of asks) {
     it(`"${q}" never reaches the model`, async () => {
