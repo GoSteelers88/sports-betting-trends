@@ -117,8 +117,15 @@ function Push-Paths([string[]]$Paths, [string]$Message, [string]$Branch, [script
   git add -- @Paths 2>&1 | Out-Null
   $staged = @(git diff --cached --name-only -- @Paths | Where-Object { $_ })
   if ($staged.Count -gt 0) {
-    git commit -m $Message -- @Paths 2>&1 | ForEach-Object { Invoke-Log $Logger "  git: $_" }
-    if ($LASTEXITCODE -ne 0) { Invoke-Log $Logger "git commit failed"; return $false }
+    # Message goes through a file, never -m: Windows PowerShell 5.1 does not
+    # escape embedded double quotes when passing arguments to native programs,
+    # so a message containing "quoted text" is split into bogus git switches.
+    $msgFile = [System.IO.Path]::GetTempFileName()
+    [System.IO.File]::WriteAllText($msgFile, $Message, (New-Object System.Text.UTF8Encoding($false)))
+    git commit -F $msgFile -- @Paths 2>&1 | ForEach-Object { Invoke-Log $Logger "  git: $_" }
+    $commitCode = $LASTEXITCODE
+    Remove-Item $msgFile -ErrorAction SilentlyContinue
+    if ($commitCode -ne 0) { Invoke-Log $Logger "git commit failed"; return $false }
   }
   foreach ($attempt in 1..3) {
     if (Sync-Branch $Branch $Logger) {

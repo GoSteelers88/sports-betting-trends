@@ -238,33 +238,33 @@ const CURSOR: Cursor = { season: 2023, phase: "REG", week: 5 };
 
 describe("gradePropPick", () => {
   it("over wins when actualValue exceeds threshold by >= 0.5", () => {
-    const actualMap = new Map([["Patrick Mahomes|KC", makeStatRow({ passYds: 300 })]]);
+    const actualMap = new Map([[actualStatKey("Patrick Mahomes", "KC"), makeStatRow({ passYds: 300 })]]);
     const row = gradePropPick(makePick({ threshold: 250, side: "over" }), "game123", CURSOR, actualMap);
     expect(row.result).toBe("win");
     expect(row.actualValue).toBe(300);
   });
 
   it("over loses when actualValue is below threshold by >= 0.5", () => {
-    const actualMap = new Map([["Patrick Mahomes|KC", makeStatRow({ passYds: 200 })]]);
+    const actualMap = new Map([[actualStatKey("Patrick Mahomes", "KC"), makeStatRow({ passYds: 200 })]]);
     const row = gradePropPick(makePick({ threshold: 250, side: "over" }), "game123", CURSOR, actualMap);
     expect(row.result).toBe("loss");
   });
 
   it("under wins when actualValue is below threshold by >= 0.5", () => {
-    const actualMap = new Map([["Patrick Mahomes|KC", makeStatRow({ passYds: 200 })]]);
+    const actualMap = new Map([[actualStatKey("Patrick Mahomes", "KC"), makeStatRow({ passYds: 200 })]]);
     const row = gradePropPick(makePick({ threshold: 250, side: "under" }), "game123", CURSOR, actualMap);
     expect(row.result).toBe("win");
   });
 
   it("under loses when actualValue exceeds threshold by >= 0.5", () => {
-    const actualMap = new Map([["Patrick Mahomes|KC", makeStatRow({ passYds: 300 })]]);
+    const actualMap = new Map([[actualStatKey("Patrick Mahomes", "KC"), makeStatRow({ passYds: 300 })]]);
     const row = gradePropPick(makePick({ threshold: 250, side: "under" }), "game123", CURSOR, actualMap);
     expect(row.result).toBe("loss");
   });
 
   it("push when actualValue is within 0.5 of threshold (integer line)", () => {
     // threshold 50, actual 50.3 → diff 0.3 < 0.5 → push
-    const actualMap = new Map([["Patrick Mahomes|KC", makeStatRow({ passYds: 50.3 })]]);
+    const actualMap = new Map([[actualStatKey("Patrick Mahomes", "KC"), makeStatRow({ passYds: 50.3 })]]);
     const row = gradePropPick(makePick({ threshold: 50, side: "over" }), "game123", CURSOR, actualMap);
     expect(row.result).toBe("push");
   });
@@ -277,7 +277,7 @@ describe("gradePropPick", () => {
   });
 
   it("no-data when player's stat field is null in the actual row", () => {
-    const actualMap = new Map([["Patrick Mahomes|KC", makeStatRow({ passYds: null })]]);
+    const actualMap = new Map([[actualStatKey("Patrick Mahomes", "KC"), makeStatRow({ passYds: null })]]);
     const row = gradePropPick(makePick({ stat: "passYds" }), "game123", CURSOR, actualMap);
     expect(row.result).toBe("no-data");
   });
@@ -334,13 +334,13 @@ describe("gradePropPick", () => {
   });
 
   it("key format is gameId|player|stat", () => {
-    const actualMap = new Map([["Patrick Mahomes|KC", makeStatRow()]]);
+    const actualMap = new Map([[actualStatKey("Patrick Mahomes", "KC"), makeStatRow()]]);
     const row = gradePropPick(makePick({ stat: "passYds" }), "2023_05_DET_KC", CURSOR, actualMap);
     expect(row.key).toBe("2023_05_DET_KC|Patrick Mahomes|passYds");
   });
 
   it("carries the pick's rationale onto the graded row", () => {
-    const actualMap = new Map([["Patrick Mahomes|KC", makeStatRow({ passYds: 300 })]]);
+    const actualMap = new Map([[actualStatKey("Patrick Mahomes", "KC"), makeStatRow({ passYds: 300 })]]);
     const row = gradePropPick(
       makePick({ rationale: "Pace-up spot vs bottom-5 pass D; no injury flags" }),
       "game123",
@@ -358,7 +358,7 @@ describe("gradePropPick", () => {
   });
 
   it("half-line threshold (passTDs=1.5): over with 2 TDs → win (no push possible)", () => {
-    const actualMap = new Map([["Patrick Mahomes|KC", makeStatRow({ passTDs: 2 })]]);
+    const actualMap = new Map([[actualStatKey("Patrick Mahomes", "KC"), makeStatRow({ passTDs: 2 })]]);
     const row = gradePropPick(
       makePick({ stat: "passTDs", threshold: 1.5, side: "over" }),
       "game123",

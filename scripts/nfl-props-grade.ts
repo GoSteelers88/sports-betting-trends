@@ -14,7 +14,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-  defaultStateDir, loadPlayerStats, buildActualStatMap, gradePropPick,
+  defaultStateDir, loadPlayerStats, buildActualStatMap, gradePropPick, actualStatKey,
   type PropPick, type GradedPropRow,
 } from "../src/lib/nfl-loop";
 import { upsertLivePropRows, loadLivePropRows } from "../src/lib/nfl-props-live-store";
@@ -46,9 +46,18 @@ async function main(): Promise<void> {
     console.log(`${Y}no ${season} REG wk${week} box scores cached — run npm run nfl:ingest-props-stats (every row will grade no-data)${R}`);
   }
 
+  // A captured line whose team never resolved (the capture's name lookup
+  // missed, e.g. "Deebo Samuel" vs nflverse "Deebo Samuel Sr.") has team "".
+  // The player is in one of the two teams in the gameId (SEASON_WK_AWAY_HOME),
+  // so try both rather than grading a played game "no-data".
+  const teamFor = (r: { player: string; team: string; gameId: string }): string => {
+    if (r.team) return r.team;
+    return r.gameId.split("_").slice(2).find((t) => actuals.has(actualStatKey(r.player, t))) ?? "";
+  };
+
   const graded: GradedPropRow[] = board.rows.map((r) => {
     const pick: PropPick = {
-      player: r.player, team: r.team, position: r.position,
+      player: r.player, team: teamFor(r), position: r.position,
       stat: r.stat, threshold: r.point, side: r.side,
       confidence: impliedProb(r.priceAmerican),
       rationale: `best line ${r.side} ${r.point} @ ${r.priceAmerican >= 0 ? "+" : ""}${r.priceAmerican} (${r.book})`,

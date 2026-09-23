@@ -20,7 +20,7 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { defaultStateDir, loadGames, loadPlayerStats, gamesForCursor, type GameRow, type PlayerStatRow } from "../src/lib/nfl-loop";
+import { defaultStateDir, loadGames, loadPlayerStats, gamesForCursor, normalizePlayerName, type GameRow, type PlayerStatRow } from "../src/lib/nfl-loop";
 import { franchiseKey } from "../src/lib/nfl-receipts/teams";
 import { selectBestLines, NFL_PROP_MARKET_KEYS, type OddsEvent, type BestLine } from "../src/lib/nfl-props-live";
 import { writePublicPropBoard } from "../src/lib/nfl-props-public";
@@ -39,11 +39,12 @@ function buildResolver(stats: PlayerStatRow[], season: number) {
   const latest = new Map<string, { team: string; position: string; week: number }>();
   for (const r of stats) {
     if (r.season !== season) continue;
-    const cur = latest.get(r.playerName);
-    if (!cur || r.week > cur.week) latest.set(r.playerName, { team: r.team, position: r.position, week: r.week });
+    const k = normalizePlayerName(r.playerName);
+    const cur = latest.get(k);
+    if (!cur || r.week > cur.week) latest.set(k, { team: r.team, position: r.position, week: r.week });
   }
   return (player: string) => {
-    const hit = latest.get(player);
+    const hit = latest.get(normalizePlayerName(player));
     return hit ? { team: hit.team, position: hit.position } : null;
   };
 }

@@ -20,6 +20,9 @@ export function publicPropBoardPath(season: number, week: number): string {
   return path.join(process.cwd(), "data", "processed", "nfl-live", `props-${season}-wk${wk}.json`);
 }
 
+/** Fields nfl:props-picks writes into the public board; a re-grade must keep them. */
+export const PICK_FIELDS = ["picks", "rawViews", "picksGeneratedAt", "pickFloors"] as const;
+
 /** Build + write the public receipt for one week. Returns null when the private
  *  capture for that week does not exist. */
 export function writePublicPropBoard(
@@ -90,7 +93,17 @@ export function writePublicPropBoard(
   };
 
   const out = publicPropBoardPath(season, week);
+  // nfl:props-picks adds the model's picks to this same file AFTER capture.
+  // Re-grading rebuilds the board from the capture, so carry those fields
+  // over or every re-grade silently deletes a published receipt - which is
+  // what happened to week 2's 20 picks on 2026-09-23.
+  const carried: Record<string, unknown> = {};
+  if (fs.existsSync(out)) {
+    const prev = JSON.parse(fs.readFileSync(out, "utf8")) as Record<string, unknown>;
+    for (const k of PICK_FIELDS) if (prev[k] !== undefined) carried[k] = prev[k];
+  }
+  const written = { ...board, ...carried } as PublicPropBoard;
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, JSON.stringify(board, null, 2) + "\n");
-  return board;
+  fs.writeFileSync(out, JSON.stringify(written, null, 2) + "\n");
+  return written;
 }

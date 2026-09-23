@@ -2,7 +2,7 @@
   "season": 2026,
   "week": 2,
   "capturedAt": "2026-09-17T13:49:20.817Z",
-  "gradedAt": "2026-09-23T09:39:33.453Z",
+  "gradedAt": "2026-09-23T10:48:34.989Z",
   "games": 16,
   "lines": [
     {
@@ -1276,8 +1276,8 @@
       "priceAmerican": -125,
       "book": "fanatics",
       "booksOffering": 4,
-      "result": "no-data",
-      "actualValue": null
+      "result": "win",
+      "actualValue": 46
     },
     {
       "gameId": "2026_02_CLE_TB",
@@ -1290,8 +1290,8 @@
       "priceAmerican": -109,
       "book": "betonlineag",
       "booksOffering": 4,
-      "result": "no-data",
-      "actualValue": null
+      "result": "win",
+      "actualValue": 46
     },
     {
       "gameId": "2026_02_CLE_TB",
@@ -3880,8 +3880,8 @@
       "priceAmerican": -114,
       "book": "betonlineag",
       "booksOffering": 4,
-      "result": "no-data",
-      "actualValue": null
+      "result": "win",
+      "actualValue": 76
     },
     {
       "gameId": "2026_02_PIT_NE",
@@ -3894,8 +3894,8 @@
       "priceAmerican": -112,
       "book": "draftkings",
       "booksOffering": 4,
-      "result": "no-data",
-      "actualValue": null
+      "result": "loss",
+      "actualValue": 76
     },
     {
       "gameId": "2026_02_JAX_DEN",
@@ -4020,8 +4020,8 @@
       "priceAmerican": -114,
       "book": "draftkings",
       "booksOffering": 3,
-      "result": "no-data",
-      "actualValue": null
+      "result": "win",
+      "actualValue": 40
     },
     {
       "gameId": "2026_02_JAX_DEN",
@@ -4034,8 +4034,8 @@
       "priceAmerican": -110,
       "book": "draftkings",
       "booksOffering": 3,
-      "result": "no-data",
-      "actualValue": null
+      "result": "loss",
+      "actualValue": 40
     },
     {
       "gameId": "2026_02_JAX_DEN",
@@ -4692,8 +4692,8 @@
       "priceAmerican": -113,
       "book": "draftkings",
       "booksOffering": 4,
-      "result": "no-data",
-      "actualValue": null
+      "result": "loss",
+      "actualValue": 31
     },
     {
       "gameId": "2026_02_MIA_SF",
@@ -4706,8 +4706,8 @@
       "priceAmerican": -111,
       "book": "draftkings",
       "booksOffering": 4,
-      "result": "no-data",
-      "actualValue": null
+      "result": "win",
+      "actualValue": 31
     },
     {
       "gameId": "2026_02_MIA_SF",
@@ -6674,16 +6674,16 @@
     {
       "stat": "recYds",
       "n": 230,
-      "wins": 109,
-      "losses": 99,
+      "wins": 113,
+      "losses": 101,
       "pushes": 0,
-      "hitRatePct": 52.4
+      "hitRatePct": 52.8
     },
     {
       "stat": "rushYds",
       "n": 122,
-      "wins": 61,
-      "losses": 59,
+      "wins": 62,
+      "losses": 60,
       "pushes": 0,
       "hitRatePct": 50.8
     },
@@ -6706,10 +6706,499 @@
   ],
   "totals": {
     "lines": 476,
-    "settled": 452,
-    "pending": 24,
-    "wins": 235,
-    "losses": 217,
-    "hitRatePct": 52
+    "settled": 460,
+    "pending": 16,
+    "wins": 240,
+    "losses": 220,
+    "hitRatePct": 52.2
+  },
+  "picks": [
+    {
+      "gameId": "2026_02_CAR_ATL",
+      "matchup": "CAR @ ATL",
+      "player": "Bryce Young",
+      "team": "CAR",
+      "stat": "passYds",
+      "side": "under",
+      "point": 222.5,
+      "priceAmerican": -114,
+      "book": "betonlineag",
+      "confidence": 0.67,
+      "impliedProb": 0.5327102803738317,
+      "edge": 0.13728971962616832,
+      "rationale": "Season per-game avg (185.8) sits ~35yds below posted total with no trend of a sudden passing spike.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_CAR_ATL",
+      "matchup": "CAR @ ATL",
+      "player": "Bryce Young",
+      "team": "CAR",
+      "stat": "passTDs",
+      "side": "under",
+      "point": 1.5,
+      "priceAmerican": -149,
+      "book": "draftkings",
+      "confidence": 0.64,
+      "impliedProb": 0.5983935742971888,
+      "edge": 0.041606425702811256,
+      "rationale": "Avg 1.10 TD/gm implies high chance of 0-1 TDs, well under the 1.5 line.",
+      "verdict": "pass",
+      "passReason": "edge 4.2% < floor 5.0% vs the price on offer"
+    },
+    {
+      "gameId": "2026_02_CLE_TB",
+      "matchup": "CLE @ TB",
+      "player": "Deshaun Watson",
+      "team": "CLE",
+      "stat": "passYds",
+      "side": "over",
+      "point": 173.5,
+      "priceAmerican": -114,
+      "book": "betrivers",
+      "confidence": 0.7,
+      "impliedProb": 0.5327102803738317,
+      "edge": 0.16728971962616823,
+      "rationale": "Season avg (246) is ~67yds above the posted total, a large gap unexplained by matchup.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_CLE_TB",
+      "matchup": "CLE @ TB",
+      "player": "Deshaun Watson",
+      "team": "CLE",
+      "stat": "passTDs",
+      "side": "over",
+      "point": 0.5,
+      "priceAmerican": -189,
+      "book": "draftkings",
+      "confidence": 0.78,
+      "impliedProb": 0.6539792387543253,
+      "edge": 0.12602076124567474,
+      "rationale": "Avg 1.66 TD/gm gives high probability of at least 1 TD versus the 0.5 line.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_CLE_TB",
+      "matchup": "CLE @ TB",
+      "player": "Jerry Jeudy",
+      "team": "CLE",
+      "stat": "recYds",
+      "side": "over",
+      "point": 27.5,
+      "priceAmerican": -112,
+      "book": "draftkings",
+      "confidence": 0.72,
+      "impliedProb": 0.5283018867924528,
+      "edge": 0.19169811320754715,
+      "rationale": "Season avg (53.4) nearly double the posted line, reflecting his role as top CLE target.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_CIN_HOU",
+      "matchup": "CIN @ HOU",
+      "player": "Ja'Marr Chase",
+      "team": "CIN",
+      "stat": "recYds",
+      "side": "over",
+      "point": 74.5,
+      "priceAmerican": -115,
+      "book": "betrivers",
+      "confidence": 0.62,
+      "impliedProb": 0.5348837209302325,
+      "edge": 0.08511627906976749,
+      "rationale": "Season avg (86.5) exceeds even the higher under threshold, elite target share.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_CIN_HOU",
+      "matchup": "CIN @ HOU",
+      "player": "Tee Higgins",
+      "team": "CIN",
+      "stat": "recYds",
+      "side": "over",
+      "point": 50.5,
+      "priceAmerican": -113,
+      "book": "draftkings",
+      "confidence": 0.6,
+      "impliedProb": 0.5305164319248826,
+      "edge": 0.06948356807511735,
+      "rationale": "Avg (66.2) well above both posted thresholds, consistent target volume.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_CIN_HOU",
+      "matchup": "CIN @ HOU",
+      "player": "Mike Gesicki",
+      "team": "CIN",
+      "stat": "recYds",
+      "side": "over",
+      "point": 23.5,
+      "priceAmerican": -115,
+      "book": "draftkings",
+      "confidence": 0.58,
+      "impliedProb": 0.5348837209302325,
+      "edge": 0.04511627906976745,
+      "rationale": "Season avg (31.9) clears both posted numbers, steady red-zone role.",
+      "verdict": "pass",
+      "passReason": "edge 4.5% < floor 5.0% vs the price on offer"
+    },
+    {
+      "gameId": "2026_02_CIN_HOU",
+      "matchup": "CIN @ HOU",
+      "player": "Joe Burrow",
+      "team": "CIN",
+      "stat": "passYds",
+      "side": "over",
+      "point": 247.5,
+      "priceAmerican": -114,
+      "book": "betonlineag",
+      "confidence": 0.58,
+      "impliedProb": 0.5327102803738317,
+      "edge": 0.047289719626168236,
+      "rationale": "Avg (269) comfortably above both thresholds given pass-heavy CIN offense.",
+      "verdict": "pass",
+      "passReason": "edge 4.7% < floor 5.0% vs the price on offer"
+    },
+    {
+      "gameId": "2026_02_CLE_TB",
+      "matchup": "CLE @ TB",
+      "player": "Baker Mayfield",
+      "team": "TB",
+      "stat": "passYds",
+      "side": "over",
+      "point": 204.5,
+      "priceAmerican": -115,
+      "book": "betrivers",
+      "confidence": 0.58,
+      "impliedProb": 0.5348837209302325,
+      "edge": 0.04511627906976745,
+      "rationale": "Season avg (233.6) sits above both posted numbers, consistent volume passer.",
+      "verdict": "pass",
+      "passReason": "edge 4.5% < floor 5.0% vs the price on offer"
+    },
+    {
+      "gameId": "2026_02_CLE_TB",
+      "matchup": "CLE @ TB",
+      "player": "Cade Otton",
+      "team": "TB",
+      "stat": "recYds",
+      "side": "over",
+      "point": 26.5,
+      "priceAmerican": -114,
+      "book": "draftkings",
+      "confidence": 0.56,
+      "impliedProb": 0.5327102803738317,
+      "edge": 0.02728971962616833,
+      "rationale": "Avg (35.8) exceeds both thresholds, steady red-zone/TE role in TB offense.",
+      "verdict": "pass",
+      "passReason": "edge 2.7% < floor 5.0% vs the price on offer"
+    },
+    {
+      "gameId": "2026_02_CLE_TB",
+      "matchup": "CLE @ TB",
+      "player": "Harold Fannin Jr.",
+      "team": "CLE",
+      "stat": "recYds",
+      "side": "over",
+      "point": 35.5,
+      "priceAmerican": -109,
+      "book": "draftkings",
+      "confidence": 0.58,
+      "impliedProb": 0.5215311004784688,
+      "edge": 0.058468899521531115,
+      "rationale": "Rookie TE averaging 44.2 recYds, well above posted total, growing role.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_CIN_HOU",
+      "matchup": "CIN @ HOU",
+      "player": "David Montgomery",
+      "team": "HOU",
+      "stat": "rushYds",
+      "side": "under",
+      "point": 66.5,
+      "priceAmerican": -110,
+      "book": "draftkings",
+      "confidence": 0.57,
+      "impliedProb": 0.5238095238095238,
+      "edge": 0.046190476190476115,
+      "rationale": "Season avg (57.8) sits below both posted thresholds, shared backfield touches.",
+      "verdict": "pass",
+      "passReason": "edge 4.6% < floor 5.0% vs the price on offer"
+    },
+    {
+      "gameId": "2026_02_CIN_HOU",
+      "matchup": "CIN @ HOU",
+      "player": "Chase Brown",
+      "team": "CIN",
+      "stat": "rushYds",
+      "side": "under",
+      "point": 58.5,
+      "priceAmerican": -113,
+      "book": "draftkings",
+      "confidence": 0.55,
+      "impliedProb": 0.5305164319248826,
+      "edge": 0.01948356807511742,
+      "rationale": "Avg (51.0) below both posted numbers, indicating over-line optimism.",
+      "verdict": "pass",
+      "passReason": "edge 1.9% < floor 5.0% vs the price on offer"
+    },
+    {
+      "gameId": "2026_02_MIN_CHI",
+      "matchup": "MIN @ CHI",
+      "player": "Justin Jefferson",
+      "team": "MIN",
+      "stat": "recYds",
+      "side": "over",
+      "point": 74.5,
+      "priceAmerican": -114,
+      "book": "betrivers",
+      "confidence": 0.6,
+      "impliedProb": 0.5327102803738317,
+      "edge": 0.06728971962616825,
+      "rationale": "Season avg (89.5) well clear of both thresholds, elite target monopoly.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_GB_NYJ",
+      "matchup": "GB @ NYJ",
+      "player": "Jayden Reed",
+      "team": "GB",
+      "stat": "recYds",
+      "side": "over",
+      "point": 35.5,
+      "priceAmerican": -115,
+      "book": "betrivers",
+      "confidence": 0.58,
+      "impliedProb": 0.5348837209302325,
+      "edge": 0.04511627906976745,
+      "rationale": "Avg (46.5) exceeds both posted numbers, consistent WR2 role in GB.",
+      "verdict": "pass",
+      "passReason": "edge 4.5% < floor 5.0% vs the price on offer"
+    },
+    {
+      "gameId": "2026_02_GB_NYJ",
+      "matchup": "GB @ NYJ",
+      "player": "Jordan Love",
+      "team": "GB",
+      "stat": "passYds",
+      "side": "under",
+      "point": 257.5,
+      "priceAmerican": -112,
+      "book": "draftkings",
+      "confidence": 0.63,
+      "impliedProb": 0.5283018867924528,
+      "edge": 0.10169811320754718,
+      "rationale": "Season avg (208.4) far below both posted thresholds, run-first game script likely.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_IND_KC",
+      "matchup": "IND @ KC",
+      "player": "Daniel Jones",
+      "team": "IND",
+      "stat": "rushYds",
+      "side": "over",
+      "point": 8.5,
+      "priceAmerican": -108,
+      "book": "draftkings",
+      "confidence": 0.63,
+      "impliedProb": 0.5192307692307693,
+      "edge": 0.11076923076923073,
+      "rationale": "Mobile QB averaging 28.5 rush yds, well above the 8.5 line.",
+      "verdict": "play",
+      "passReason": null
+    },
+    {
+      "gameId": "2026_02_IND_KC",
+      "matchup": "IND @ KC",
+      "player": "Daniel Jones",
+      "team": "IND",
+      "stat": "passTDs",
+      "side": "under",
+      "point": 1.5,
+      "priceAmerican": -212,
+      "book": "draftkings",
+      "confidence": 0.6,
+      "impliedProb": 0.6794871794871795,
+      "edge": -0.07948717948717954,
+      "rationale": "Avg 1.07 TD/gm implies most games land at 0-1 TD, under the 1.5 line.",
+      "verdict": "pass",
+      "passReason": "edge -7.9% < floor 5.0% vs the price on offer"
+    },
+    {
+      "gameId": "2026_02_NYG_LA",
+      "matchup": "NYG @ LA",
+      "player": "Kyren Williams",
+      "team": "LA",
+      "stat": "rushYds",
+      "side": "over",
+      "point": 58.5,
+      "priceAmerican": -117,
+      "book": "betrivers",
+      "confidence": 0.58,
+      "impliedProb": 0.5391705069124424,
+      "edge": 0.04082949308755757,
+      "rationale": "Season avg (71.7) clears both posted thresholds, lead-back workload.",
+      "verdict": "pass",
+      "passReason": "edge 4.1% < floor 5.0% vs the price on offer"
+    }
+  ],
+  "rawViews": [
+    {
+      "player": "Bryce Young",
+      "stat": "passYds",
+      "side": "under",
+      "confidence": 0.67,
+      "rationale": "Season per-game avg (185.8) sits ~35yds below posted total with no trend of a sudden passing spike."
+    },
+    {
+      "player": "Bryce Young",
+      "stat": "passTDs",
+      "side": "under",
+      "confidence": 0.64,
+      "rationale": "Avg 1.10 TD/gm implies high chance of 0-1 TDs, well under the 1.5 line."
+    },
+    {
+      "player": "Deshaun Watson",
+      "stat": "passYds",
+      "side": "over",
+      "confidence": 0.7,
+      "rationale": "Season avg (246) is ~67yds above the posted total, a large gap unexplained by matchup."
+    },
+    {
+      "player": "Deshaun Watson",
+      "stat": "passTDs",
+      "side": "over",
+      "confidence": 0.78,
+      "rationale": "Avg 1.66 TD/gm gives high probability of at least 1 TD versus the 0.5 line."
+    },
+    {
+      "player": "Jerry Jeudy",
+      "stat": "recYds",
+      "side": "over",
+      "confidence": 0.72,
+      "rationale": "Season avg (53.4) nearly double the posted line, reflecting his role as top CLE target."
+    },
+    {
+      "player": "Ja'Marr Chase",
+      "stat": "recYds",
+      "side": "over",
+      "confidence": 0.62,
+      "rationale": "Season avg (86.5) exceeds even the higher under threshold, elite target share."
+    },
+    {
+      "player": "Tee Higgins",
+      "stat": "recYds",
+      "side": "over",
+      "confidence": 0.6,
+      "rationale": "Avg (66.2) well above both posted thresholds, consistent target volume."
+    },
+    {
+      "player": "Mike Gesicki",
+      "stat": "recYds",
+      "side": "over",
+      "confidence": 0.58,
+      "rationale": "Season avg (31.9) clears both posted numbers, steady red-zone role."
+    },
+    {
+      "player": "Joe Burrow",
+      "stat": "passYds",
+      "side": "over",
+      "confidence": 0.58,
+      "rationale": "Avg (269) comfortably above both thresholds given pass-heavy CIN offense."
+    },
+    {
+      "player": "Baker Mayfield",
+      "stat": "passYds",
+      "side": "over",
+      "confidence": 0.58,
+      "rationale": "Season avg (233.6) sits above both posted numbers, consistent volume passer."
+    },
+    {
+      "player": "Cade Otton",
+      "stat": "recYds",
+      "side": "over",
+      "confidence": 0.56,
+      "rationale": "Avg (35.8) exceeds both thresholds, steady red-zone/TE role in TB offense."
+    },
+    {
+      "player": "Harold Fannin Jr.",
+      "stat": "recYds",
+      "side": "over",
+      "confidence": 0.58,
+      "rationale": "Rookie TE averaging 44.2 recYds, well above posted total, growing role."
+    },
+    {
+      "player": "David Montgomery",
+      "stat": "rushYds",
+      "side": "under",
+      "confidence": 0.57,
+      "rationale": "Season avg (57.8) sits below both posted thresholds, shared backfield touches."
+    },
+    {
+      "player": "Chase Brown",
+      "stat": "rushYds",
+      "side": "under",
+      "confidence": 0.55,
+      "rationale": "Avg (51.0) below both posted numbers, indicating over-line optimism."
+    },
+    {
+      "player": "Justin Jefferson",
+      "stat": "recYds",
+      "side": "over",
+      "confidence": 0.6,
+      "rationale": "Season avg (89.5) well clear of both thresholds, elite target monopoly."
+    },
+    {
+      "player": "Jayden Reed",
+      "stat": "recYds",
+      "side": "over",
+      "confidence": 0.58,
+      "rationale": "Avg (46.5) exceeds both posted numbers, consistent WR2 role in GB."
+    },
+    {
+      "player": "Jordan Love",
+      "stat": "passYds",
+      "side": "under",
+      "confidence": 0.63,
+      "rationale": "Season avg (208.4) far below both posted thresholds, run-first game script likely."
+    },
+    {
+      "player": "Daniel Jones",
+      "stat": "rushYds",
+      "side": "over",
+      "confidence": 0.63,
+      "rationale": "Mobile QB averaging 28.5 rush yds, well above the 8.5 line."
+    },
+    {
+      "player": "Daniel Jones",
+      "stat": "passTDs",
+      "side": "under",
+      "confidence": 0.6,
+      "rationale": "Avg 1.07 TD/gm implies most games land at 0-1 TD, under the 1.5 line."
+    },
+    {
+      "player": "Kyren Williams",
+      "stat": "rushYds",
+      "side": "over",
+      "confidence": 0.58,
+      "rationale": "Season avg (71.7) clears both posted thresholds, lead-back workload."
+    }
+  ],
+  "picksGeneratedAt": "2026-09-17T17:32:28.617Z",
+  "pickFloors": {
+    "confidence": 0.55,
+    "edge": 0.05
   }
 }

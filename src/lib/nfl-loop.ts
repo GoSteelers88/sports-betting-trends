@@ -1790,8 +1790,24 @@ export function upsertGradedPropRows(
  *  Team disambiguates — both PlayerStatRow and PropPick carry the nflverse
  *  `recent_team` code. Normalized (trim+upper) so abbreviation casing can't
  *  split the key. */
+/** Canonical player name for matching across sources. Sportsbooks write
+ *  "Deebo Samuel" / "Brian Thomas Jr" where nflverse writes "Deebo Samuel Sr." /
+ *  "Brian Thomas Jr." - an exact match graded those lines "no-data" (week 2,
+ *  2026). Folds case, accents, periods/apostrophes and a trailing generational
+ *  suffix. Applied to BOTH sides of every lookup, so it can only add matches. */
+export function normalizePlayerName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[.'\u2019]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/ (jr|sr|ii|iii|iv|v)$/, "");
+}
+
 export function actualStatKey(player: string, team: string): string {
-  return `${player.trim()}|${team.trim().toUpperCase()}`;
+  return `${normalizePlayerName(player)}|${team.trim().toUpperCase()}`;
 }
 
 /** Build a `${playerName}|${team}` → PlayerStatRow map for EXACTLY the cursor
