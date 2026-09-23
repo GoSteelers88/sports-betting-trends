@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-22T22:23:26.243Z",
+  "fetchedAt": "2026-09-23T00:55:47.049Z",
   "league": "basketball_wnba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
@@ -7,7 +7,7 @@
   "sampleEvent": {
     "id": "fd_36094852",
     "sport_key": "basketball_wnba",
-    "commence_time": "2026-09-22T23:30:00.000Z",
+    "commence_time": "2026-09-22T23:33:00.000Z",
     "home_team": "Washington Mystics",
     "away_team": "Connecticut Sun"
   },
@@ -16,7 +16,7 @@
       "id": "fd_36094852",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
-      "commence_time": "2026-09-22T23:30:00.000Z",
+      "commence_time": "2026-09-22T23:33:00.000Z",
       "home_team": "Washington Mystics",
       "away_team": "Connecticut Sun",
       "bookmakers": [
@@ -29,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Connecticut Sun",
-                  "price": 1040
+                  "price": 1500
                 },
                 {
                   "name": "Washington Mystics",
-                  "price": -2500
+                  "price": -7000
                 }
               ]
             },
@@ -42,13 +42,13 @@
               "outcomes": [
                 {
                   "name": "Connecticut Sun",
-                  "price": -115,
-                  "point": 17.5
+                  "price": -112,
+                  "point": 13.5
                 },
                 {
                   "name": "Washington Mystics",
-                  "price": -105,
-                  "point": -17.5
+                  "price": -118,
+                  "point": -13.5
                 }
               ]
             },
@@ -57,72 +57,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
-                  "point": 159.5
+                  "price": -102,
+                  "point": 165.5
                 },
                 {
                   "name": "Under",
-                  "price": -105,
-                  "point": 159.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36094849",
-      "sport_key": "basketball_wnba",
-      "sport_title": "WNBA",
-      "commence_time": "2026-09-23T00:00:00.000Z",
-      "home_team": "Chicago Sky",
-      "away_team": "Toronto Tempo",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Toronto Tempo",
-                  "price": 176
-                },
-                {
-                  "name": "Chicago Sky",
-                  "price": -220
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Toronto Tempo",
-                  "price": -110,
-                  "point": 5.5
-                },
-                {
-                  "name": "Chicago Sky",
-                  "price": -110,
-                  "point": -5.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -105,
-                  "point": 181.5
-                },
-                {
-                  "name": "Under",
-                  "price": -115,
-                  "point": 181.5
+                  "price": -130,
+                  "point": 165.5
                 }
               ]
             }
@@ -134,7 +75,7 @@
       "id": "fd_36094858",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
-      "commence_time": "2026-09-23T00:00:00.000Z",
+      "commence_time": "2026-09-23T00:04:00.000Z",
       "home_team": "Indiana Fever",
       "away_team": "Minnesota Lynx",
       "bookmakers": [
@@ -147,11 +88,11 @@
               "outcomes": [
                 {
                   "name": "Minnesota Lynx",
-                  "price": -122
+                  "price": 3500
                 },
                 {
                   "name": "Indiana Fever",
-                  "price": 100
+                  "price": -50000
                 }
               ]
             },
@@ -160,13 +101,13 @@
               "outcomes": [
                 {
                   "name": "Minnesota Lynx",
-                  "price": -108,
-                  "point": -1.5
+                  "price": -122,
+                  "point": 21.5
                 },
                 {
                   "name": "Indiana Fever",
-                  "price": -112,
-                  "point": 1.5
+                  "price": -108,
+                  "point": -21.5
                 }
               ]
             },
@@ -175,13 +116,72 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -114,
-                  "point": 185.5
+                  "price": -108,
+                  "point": 179.5
+                },
+                {
+                  "name": "Under",
+                  "price": -122,
+                  "point": 179.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36094849",
+      "sport_key": "basketball_wnba",
+      "sport_title": "WNBA",
+      "commence_time": "2026-09-23T00:05:00.000Z",
+      "home_team": "Chicago Sky",
+      "away_team": "Toronto Tempo",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Toronto Tempo",
+                  "price": 140
+                },
+                {
+                  "name": "Chicago Sky",
+                  "price": -180
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Toronto Tempo",
+                  "price": -118,
+                  "point": 3.5
+                },
+                {
+                  "name": "Chicago Sky",
+                  "price": -112,
+                  "point": -3.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -125,
+                  "point": 177.5
                 },
                 {
                   "name": "Under",
                   "price": -106,
-                  "point": 185.5
+                  "point": 177.5
                 }
               ]
             }
@@ -219,13 +219,13 @@
               "outcomes": [
                 {
                   "name": "Golden State Valkyries",
-                  "price": -114,
-                  "point": -14.5
+                  "price": -104,
+                  "point": -15.5
                 },
                 {
                   "name": "Portland Fire",
-                  "price": -106,
-                  "point": 14.5
+                  "price": -118,
+                  "point": 15.5
                 }
               ]
             },
@@ -234,12 +234,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
+                  "price": -110,
                   "point": 157.5
                 },
                 {
                   "name": "Under",
-                  "price": -105,
+                  "price": -110,
                   "point": 157.5
                 }
               ]

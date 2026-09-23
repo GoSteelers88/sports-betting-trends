@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-09-22T18:05:31.199Z",
+  "generatedAt": "2026-09-23T00:56:36.357Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 29,
+  "recordCount": 30,
   "errors": [
     "unmodeled: St. Louis Blues @ Dallas Stars (bv_28275176)"
   ],
   "data": {
-    "generatedAt": "2026-09-22T18:05:31.199Z",
+    "generatedAt": "2026-09-23T00:56:36.357Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 30,
-    "gameCount": 30,
+    "gameCount": 31,
     "results": [
       {
         "eventId": "fd_36101146",
@@ -26,18 +26,6 @@
         "expectedMargin": 2.2,
         "homeNetRtg": 3,
         "awayNetRtg": -1,
-        "calibrated": false,
-        "startTime": "2026-09-22T23:00:00.000Z"
-      },
-      {
-        "eventId": "fd_36101149",
-        "homeTeam": "Carolina Hurricanes",
-        "awayTeam": "Florida Panthers",
-        "homeWinProb": 0.3015,
-        "awayWinProb": 0.6985,
-        "expectedMargin": -2.8,
-        "homeNetRtg": -3,
-        "awayNetRtg": 3,
         "calibrated": false,
         "startTime": "2026-09-22T23:00:00.000Z"
       },
@@ -54,18 +42,6 @@
         "startTime": "2026-09-22T23:00:00.000Z"
       },
       {
-        "eventId": "fd_36101156",
-        "homeTeam": "Boston Bruins",
-        "awayTeam": "Philadelphia Flyers",
-        "homeWinProb": 0.6593,
-        "awayWinProb": 0.3407,
-        "expectedMargin": 2.2,
-        "homeNetRtg": 1,
-        "awayNetRtg": -3,
-        "calibrated": false,
-        "startTime": "2026-09-22T23:00:00.000Z"
-      },
-      {
         "eventId": "fd_36101159",
         "homeTeam": "New York Rangers",
         "awayTeam": "New York Islanders",
@@ -78,6 +54,30 @@
         "startTime": "2026-09-22T23:00:00.000Z"
       },
       {
+        "eventId": "fd_36101149",
+        "homeTeam": "Carolina Hurricanes",
+        "awayTeam": "Florida Panthers",
+        "homeWinProb": 0.3015,
+        "awayWinProb": 0.6985,
+        "expectedMargin": -2.8,
+        "homeNetRtg": -3,
+        "awayNetRtg": 3,
+        "calibrated": false,
+        "startTime": "2026-09-22T23:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36101156",
+        "homeTeam": "Boston Bruins",
+        "awayTeam": "Philadelphia Flyers",
+        "homeWinProb": 0.6593,
+        "awayWinProb": 0.3407,
+        "expectedMargin": 2.2,
+        "homeNetRtg": 1,
+        "awayNetRtg": -3,
+        "calibrated": false,
+        "startTime": "2026-09-22T23:10:00.000Z"
+      },
+      {
         "eventId": "fd_36101160",
         "homeTeam": "Nashville Predators",
         "awayTeam": "Tampa Bay Lightning",
@@ -87,7 +87,7 @@
         "homeNetRtg": -1,
         "awayNetRtg": 1,
         "calibrated": false,
-        "startTime": "2026-09-23T00:00:00.000Z"
+        "startTime": "2026-09-23T00:10:00.000Z"
       },
       {
         "eventId": "fd_36101162",
@@ -99,7 +99,7 @@
         "homeNetRtg": 2,
         "awayNetRtg": 3,
         "calibrated": false,
-        "startTime": "2026-09-23T00:00:00.000Z"
+        "startTime": "2026-09-23T00:10:00.000Z"
       },
       {
         "eventId": "fd_36101163",
@@ -111,7 +111,19 @@
         "homeNetRtg": -2,
         "awayNetRtg": -2,
         "calibrated": false,
-        "startTime": "2026-09-23T01:00:00.000Z"
+        "startTime": "2026-09-23T01:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36101164",
+        "homeTeam": "Los Angeles Kings",
+        "awayTeam": "Utah Mammoth",
+        "homeWinProb": 0.5523,
+        "awayWinProb": 0.4477,
+        "expectedMargin": 0.7,
+        "homeNetRtg": -2,
+        "awayNetRtg": -3,
+        "calibrated": false,
+        "startTime": "2026-09-23T02:10:00.000Z"
       },
       {
         "eventId": "fd_36101165",
@@ -123,7 +135,7 @@
         "homeNetRtg": -4,
         "awayNetRtg": 2,
         "calibrated": false,
-        "startTime": "2026-09-23T02:00:00.000Z"
+        "startTime": "2026-09-23T02:10:00.000Z"
       },
       {
         "eventId": "fd_36032528",
