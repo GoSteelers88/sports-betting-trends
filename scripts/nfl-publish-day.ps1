@@ -106,6 +106,11 @@ try {
   Write-Host "== refresh live inputs: weather / EPA / stadiums / referees (non-fatal)"
   npm run nfl:ingest-live -- $Season $Week
   if ($LASTEXITCODE -ne 0) { Write-Host "nfl:ingest-live failed (non-fatal) - board will record missing inputs" }
+  # Snap counts BEFORE the board: its calibration fit keeps in-game exits (a
+  # starter who left hurt) out, and needs last week's snaps to see them.
+  Write-Host "== snap counts (non-fatal)"
+  npm run nfl:ingest-snaps
+  if ($LASTEXITCODE -ne 0) { Write-Host "nfl:ingest-snaps failed (non-fatal) - calibration uses cached snap counts" }
   Run "regenerate model board (final doctrine)" {
     npx tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-live-week.ts $Season $Week --force
   }

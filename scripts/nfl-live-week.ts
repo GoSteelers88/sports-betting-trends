@@ -58,6 +58,7 @@ import {
   fitBetaCalibration,
   kellyStakeFraction,
 } from "../src/lib/nfl-calibration";
+import { loadExitIndex, partitionByExit } from "../src/lib/nfl-injury-exits";
 import {
   americanToDecimal,
   expectedValue,
@@ -393,7 +394,12 @@ async function main(): Promise<void> {
   // not tightening-only, and per-market maps need >= 20 rows before they
   // leave the pooled fallback — inert for the first weeks regardless.
   const liveCal = process.argv.includes("--with-live-calibration") ? loadLiveGradedRows(dir) : [];
-  const gradedForCal = [...loadGradedRows(dir), ...liveCal].filter((r) => r.result !== "push");
+  // In-game exits (snap counts) are not evidence about the confidence the pick
+  // was made at - the starter it was made on left the game. Kept out of the fit.
+  const calExits = loadExitIndex(dir);
+  const calSplit = partitionByExit([...loadGradedRows(dir), ...liveCal], (r) => calExits.gameExits(r.gameId));
+  if (calSplit.excluded.length) console.log(`  ${D}calibration: ${calSplit.excluded.length} rows excluded as in-game QB exits${R}`);
+  const gradedForCal = calSplit.kept.filter((r) => r.result !== "push");
   console.log(
     `  ${D}calibration record: backtest ${gradedForCal.length - liveCal.filter((r) => r.result !== "push").length} rows` +
       (liveCal.length ? ` + live ${liveCal.filter((r) => r.result !== "push").length} rows (--with-live-calibration)` : " (live record NOT included — pass --with-live-calibration to add it)") +

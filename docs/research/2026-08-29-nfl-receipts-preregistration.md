@@ -161,3 +161,42 @@ the page is a checked-in constant with a test guarding it.
 **What is NOT amended.** §2 (n >= 150 or no verdict, permanently), §3 (benchmark
 chain), §4 (entry prices), and the verdict metric itself are untouched and
 remain frozen as of 2026-08-29.
+
+## Model-input notes (not amendments)
+
+These change what the model LEARNS from. None edits a frozen rule in §1-§8 -
+the verdict metric, sample-size rule, benchmarks, entry prices, control arm,
+statuses, immutability and kickoff discipline are untouched - so none voids the
+season. They are dated here so the change is visible, not silent.
+
+### Note 1 - 2026-09-23: in-game exits are kept out of the learning set
+
+**What changed.** The weekly dream (`scripts/nfl-dream.ts`) and the board's
+calibration fit (`scripts/nfl-live-week.ts`) now exclude rows where a starter
+left the game, detected from nflverse snap counts
+(`src/lib/nfl-injury-exits.ts`, ingested by `npm run nfl:ingest-snaps`).
+A game row is excluded when either team's QB exited; a prop row when the
+player exited or his team's QB did.
+
+**What did not change.** Every public record, receipt and CLV ledger still
+counts these rows exactly as they settled. Books settle a prop once the player
+has taken a snap; so does this site.
+
+**Why.** 2026 week 2: Jaxson Dart played 12% of NYG snaps (Jameis Winston 88%)
+and Jayden Daniels 55% of WAS snaps (Marcus Mariota 45%), after 100% each in
+week 1. Both games and every prop on those offenses were learned from as if
+the starter played the whole game.
+
+**Measured (2026-09-23, 2019-2026 snap data).** 82 QB exits (~4% of games) and
+358 skill-player exits. Excluded from learning: 183 of 4,794 backtest game
+rows (3.8%), 31 of 1,182 backtest prop rows (2.6%), 42 of 476 live 2026 prop
+rows (8.8%). The model's moneyline picks won 52.5% in exit games (n=61) vs
+67.1% elsewhere (n=1,532) - those rows were teaching "these spots lose" when
+the cause was the injury. The calibration map barely moves (raw 0.80 -> 0.905,
+was 0.907): this note does NOT address the calibration concerns raised the
+same day.
+
+**Known limits.** Precision over recall: an ambiguous row stays IN. Week-1
+exits are not detected (no same-season baseline). A starter who returns
+from injury and then leaves again inside one game is missed when his share
+stays >= 60%.

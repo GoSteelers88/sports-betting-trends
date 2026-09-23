@@ -41,6 +41,13 @@ Log "=== NFL Exp5 weekly dream START ==="
 # .env, but invoke tsx directly with --env-file for a stable, PATH-light launch.
 $ErrorActionPreference = 'Continue'
 
+# Snap counts first (non-fatal): the dream keeps in-game exits (a starter who
+# left hurt) out of what it learns from, and Monday night's game only lands in
+# the nflverse file after it is played. Without a refresh the newest week's
+# exits would be learned from as normal games.
+npx --no-install tsx scripts/ingest-nfl-snaps.ts *>&1 | Tee-Object -FilePath $log -Append
+if ($LASTEXITCODE -ne 0) { Log "WARN: nfl:ingest-snaps failed - dream runs on cached snap counts" }
+
 npx --no-install tsx --env-file=.env scripts/nfl-dream.ts *>&1 | Tee-Object -FilePath $log -Append
 if ($LASTEXITCODE -ne 0) { Log "FAIL: nfl:dream exit $LASTEXITCODE"; exit 1 }
 

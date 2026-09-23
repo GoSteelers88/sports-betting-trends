@@ -38,6 +38,7 @@ import {
 } from "../src/lib/nfl-dream";
 import { loadLivePropRows } from "../src/lib/nfl-props-live-store";
 import { MODELS } from "../src/lib/agent/client";
+import { loadExitIndex, loadSnapCounts, partitionByExit } from "../src/lib/nfl-injury-exits";
 import path from "node:path";
 
 const B = "\x1b[1m";
@@ -58,8 +59,17 @@ async function main(): Promise<void> {
   const model = isFinal ? MODELS.nflDreamFinal : MODELS.dream;
   const dir = defaultStateDir();
 
-  const gameRows = loadGradedRows(dir);
-  const propRows = loadGradedPropRows(dir);
+  // In-game exits (injury/ejection, from snap counts) stay OUT of what the
+  // dream learns from: a game the starter left is not evidence about the
+  // matchup the pick was made on. They still count in every public record.
+  const exits = loadExitIndex(dir);
+  const games = partitionByExit(loadGradedRows(dir), (r) => exits.gameExits(r.gameId));
+  const props = partitionByExit(loadGradedPropRows(dir), (r) => exits.propExits(r.gameId, r.player, r.team));
+  const gameRows = games.kept;
+  const propRows = props.kept;
+  if (loadSnapCounts(dir).length === 0) {
+    console.log(`${Y}no snap counts cached - in-game exits NOT excluded (run npm run nfl:ingest-snaps)${R}`);
+  }
 
   if (gameRows.length === 0) {
     console.log(
@@ -78,7 +88,12 @@ async function main(): Promise<void> {
     `${D}(graded vs ~closing lines → optimistic upper bound; doctrine is directional, validate live)${R}`,
   );
 
-  const livePropRows = loadLivePropRows(dir);
+  const liveProps = partitionByExit(loadLivePropRows(dir), (r) => exits.propExits(r.gameId, r.player, r.team));
+  const livePropRows = liveProps.kept;
+  console.log(
+    `${D}in-game exits excluded from learning: ${games.excluded.length} game rows, ${props.excluded.length} backtest prop rows, ` +
+      `${liveProps.excluded.length} live prop rows (${exits.exits.length} exits detected)${R}`,
+  );
   if (livePropRows.length) {
     const decisive = livePropRows.filter((r) => r.result === "win" || r.result === "loss").length;
     console.log(

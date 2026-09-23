@@ -89,6 +89,7 @@
     "nfl:ingest-live": "tsx scripts/ingest-nfl-live-inputs.ts",
     "nfl:grade-live": "tsx scripts/nfl-grade-live.ts",
     "nfl:ingest-props-stats": "tsx scripts/ingest-nfl-props-stats.ts",
+    "nfl:ingest-snaps": "tsx scripts/ingest-nfl-snaps.ts",
     "nfl:week": "tsx scripts/nfl-week.ts",
     "nfl:burst": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-week.ts burst",
     "nfl:seed": "tsx --env-file-if-exists=.env.local --env-file=.env scripts/nfl-week.ts seed",
