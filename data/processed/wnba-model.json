@@ -1,43 +1,91 @@
 {
-  "generatedAt": "2026-09-24T00:53:51.733Z",
+  "generatedAt": "2026-09-24T18:25:38.121Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 2,
+  "recordCount": 6,
   "errors": [],
   "data": {
-    "generatedAt": "2026-09-24T00:53:51.733Z",
+    "generatedAt": "2026-09-24T18:25:38.121Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 15,
-    "gameCount": 2,
+    "gameCount": 6,
     "results": [
       {
-        "eventId": "fd_36099123",
-        "homeTeam": "New York Liberty",
-        "awayTeam": "Atlanta Dream",
-        "homeWinProb": 0.4627,
-        "awayWinProb": 0.5373,
-        "expectedMargin": -1.43,
-        "homeNetRtg": 7.25,
-        "awayNetRtg": 13.75,
+        "eventId": "fd_36103517",
+        "homeTeam": "Connecticut Sun",
+        "awayTeam": "Toronto Tempo",
+        "homeWinProb": 0.5988,
+        "awayWinProb": 0.4012,
+        "expectedMargin": 3.81,
+        "homeNetRtg": -8.857142857142858,
+        "awayNetRtg": -14,
         "calibrated": false,
-        "startTime": "2026-09-24T00:08:00.000Z"
+        "startTime": "2026-09-24T23:00:00.000Z"
       },
       {
-        "eventId": "fd_36099130",
-        "homeTeam": "Seattle Storm",
-        "awayTeam": "Dallas Wings",
-        "homeWinProb": 0.5463,
-        "awayWinProb": 0.4537,
-        "expectedMargin": 1.77,
-        "homeNetRtg": -6.571428571428571,
-        "awayNetRtg": -7.166666666666667,
+        "eventId": "fd_36103520",
+        "homeTeam": "Washington Mystics",
+        "awayTeam": "Chicago Sky",
+        "homeWinProb": 0.7502,
+        "awayWinProb": 0.2498,
+        "expectedMargin": 10.48,
+        "homeNetRtg": 7.111111111111111,
+        "awayNetRtg": -12.833333333333334,
         "calibrated": false,
-        "startTime": "2026-09-24T02:00:00.000Z"
+        "startTime": "2026-09-24T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_36103518",
+        "homeTeam": "Minnesota Lynx",
+        "awayTeam": "Indiana Fever",
+        "homeWinProb": 0.481,
+        "awayWinProb": 0.519,
+        "expectedMargin": -0.72,
+        "homeNetRtg": 0.8571428571428571,
+        "awayNetRtg": 5.8,
+        "calibrated": false,
+        "startTime": "2026-09-25T00:00:00.000Z"
+      },
+      {
+        "eventId": "fd_36103525",
+        "homeTeam": "Los Angeles Sparks",
+        "awayTeam": "Golden State Valkyries",
+        "homeWinProb": 0.3928,
+        "awayWinProb": 0.6072,
+        "expectedMargin": -4.15,
+        "homeNetRtg": -3,
+        "awayNetRtg": 9.555555555555555,
+        "calibrated": false,
+        "startTime": "2026-09-25T02:00:00.000Z"
+      },
+      {
+        "eventId": "fd_36103527",
+        "homeTeam": "Phoenix Mercury",
+        "awayTeam": "Las Vegas Aces",
+        "homeWinProb": 0.5117,
+        "awayWinProb": 0.4883,
+        "expectedMargin": 0.45,
+        "homeNetRtg": 0.375,
+        "awayNetRtg": 2.7142857142857144,
+        "calibrated": false,
+        "startTime": "2026-09-25T02:00:00.000Z"
+      },
+      {
+        "eventId": "fd_36110251",
+        "homeTeam": "Minnesota Lynx",
+        "awayTeam": "New York Liberty",
+        "homeWinProb": 0.4963,
+        "awayWinProb": 0.5037,
+        "expectedMargin": -0.14,
+        "homeNetRtg": 0.8571428571428571,
+        "awayNetRtg": 4.5,
+        "calibrated": false,
+        "startTime": "2026-09-28T00:30:00.000Z"
       }
     ]
   }
