@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-09-24T18:25:47.953Z",
+  "generatedAt": "2026-09-25T00:48:56.432Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 28,
+  "recordCount": 30,
   "errors": [
     "unmodeled: Chicago Blackhawks @ St. Louis Blues (fd_36108719)",
     "unmodeled: St. Louis Blues @ Dallas Stars (bv_28275176)"
   ],
   "data": {
-    "generatedAt": "2026-09-24T18:25:47.953Z",
+    "generatedAt": "2026-09-25T00:48:56.432Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 30,
-    "gameCount": 30,
+    "gameCount": 32,
     "results": [
       {
         "eventId": "fd_36108711",
@@ -67,18 +67,6 @@
         "startTime": "2026-09-24T23:10:00.000Z"
       },
       {
-        "eventId": "fd_36108717",
-        "homeTeam": "Carolina Hurricanes",
-        "awayTeam": "Nashville Predators",
-        "homeWinProb": 0.589,
-        "awayWinProb": 0.411,
-        "expectedMargin": 1.2,
-        "homeNetRtg": 1,
-        "awayNetRtg": -1,
-        "calibrated": false,
-        "startTime": "2026-09-24T23:10:00.000Z"
-      },
-      {
         "eventId": "fd_36108718",
         "homeTeam": "New York Rangers",
         "awayTeam": "New Jersey Devils",
@@ -91,6 +79,18 @@
         "startTime": "2026-09-24T23:10:00.000Z"
       },
       {
+        "eventId": "fd_36108720",
+        "homeTeam": "Vancouver Canucks",
+        "awayTeam": "Edmonton Oilers",
+        "homeWinProb": 0.4037,
+        "awayWinProb": 0.5963,
+        "expectedMargin": -1.3,
+        "homeNetRtg": -2,
+        "awayNetRtg": 1,
+        "calibrated": false,
+        "startTime": "2026-09-25T01:10:00.000Z"
+      },
+      {
         "eventId": "fd_36112267",
         "homeTeam": "Seattle Kraken",
         "awayTeam": "Calgary Flames",
@@ -100,7 +100,31 @@
         "homeNetRtg": 2,
         "awayNetRtg": 0,
         "calibrated": false,
-        "startTime": "2026-09-25T01:40:00.000Z"
+        "startTime": "2026-09-25T01:50:00.000Z"
+      },
+      {
+        "eventId": "fd_36108722",
+        "homeTeam": "San Jose Sharks",
+        "awayTeam": "Anaheim Ducks",
+        "homeWinProb": 0.4219,
+        "awayWinProb": 0.5781,
+        "expectedMargin": -1.05,
+        "homeNetRtg": -1,
+        "awayNetRtg": 1.5,
+        "calibrated": false,
+        "startTime": "2026-09-25T02:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36114085",
+        "homeTeam": "Vegas Golden Knights",
+        "awayTeam": "Utah Mammoth",
+        "homeWinProb": 0.5708,
+        "awayWinProb": 0.4292,
+        "expectedMargin": 0.95,
+        "homeNetRtg": 1.5,
+        "awayNetRtg": 0,
+        "calibrated": false,
+        "startTime": "2026-09-25T02:10:00.000Z"
       },
       {
         "eventId": "fd_36032528",
