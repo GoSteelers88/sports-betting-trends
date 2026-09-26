@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-25T09:01:54.740Z",
+  "generatedAt": "2026-09-26T09:01:49.808Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,8 +95,8 @@
   ],
   "props": {
     "record": {
-      "wins": 672,
-      "losses": 400,
+      "wins": 670,
+      "losses": 402,
       "pushes": 7
     },
     "settled": 1079,
@@ -120,7 +120,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Career avg 74 recYds/gm, now KC's primary outside target with heavy target share (9.3/gm).",
+        "rationale": "Leads KC receivers with 74 yd/9.3 target season avg; likely primary outlet if KC forced into more passing due to game script.",
         "season": 2024,
         "week": 22
       },
@@ -131,7 +131,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Season avg 75 recYds/gm as PHI's top target in explosive passing attack, neutral dome conditions.",
+        "rationale": "Top target (75 yd season avg, 7.6 targets/gm) in a high-scoring PHI attack, dome conditions aid passing game.",
         "season": 2024,
         "week": 22
       },
@@ -142,7 +142,7 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Season avg 63.9 recYds/gm, consistent WR2 target share in high-powered PHI passing offense.",
+        "rationale": "Consistent secondary target (63.9 yd avg) benefiting from Brown drawing coverage attention in high-total dome game.",
         "season": 2024,
         "week": 22
       },
@@ -153,7 +153,7 @@
         "threshold": 250,
         "side": "under",
         "result": "win",
-        "rationale": "Run-heavy Eagles offense, Hurts avg only 193.6 ypg passing; Barkley workload limits pass volume.",
+        "rationale": "Run-first Eagles offense (season avg only 193.6 pass yds) with Barkley workload reducing passing volume vs KC's solid pass D (PA 369).",
         "season": 2024,
         "week": 22
       },
@@ -162,9 +162,9 @@
         "team": "KC",
         "stat": "passTDs",
         "threshold": 1.5,
-        "side": "over",
-        "result": "win",
-        "rationale": "Season avg 2.18 TD/gm, dome environment neutral, high-scoring offense (568 PF).",
+        "side": "under",
+        "result": "loss",
+        "rationale": "Elite Eagles pass rush/secondary likely limits scoring efficiency despite 2.18 season avg TD rate.",
         "season": 2024,
         "week": 22
       },
@@ -184,9 +184,9 @@
         "team": "KC",
         "stat": "passYds",
         "threshold": 250,
-        "side": "over",
-        "result": "win",
-        "rationale": "Dome, no wind, season avg 287 ypg; Super Bowl stage with elite receiving corps supports over.",
+        "side": "under",
+        "result": "loss",
+        "rationale": "Facing top-tier Eagles defense (PA 358/20g ≈17.9 ppg allowed); KC offense has trended below its 287 avg vs elite units this season.",
         "season": 2024,
         "week": 22
       }
