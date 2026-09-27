@@ -1,9 +1,9 @@
 {
-  "fetchedAt": "2026-09-26T22:08:51.982Z",
+  "fetchedAt": "2026-09-27T00:51:38.798Z",
   "league": "americanfootball_nfl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 29,
+  "eventCount": 30,
   "sampleEvent": {
     "id": "fd_36076206",
     "sport_key": "americanfootball_nfl",
@@ -78,13 +78,13 @@
               "outcomes": [
                 {
                   "name": "Carolina Panthers",
-                  "price": -105,
-                  "point": -2
+                  "price": -110,
+                  "point": -1.5
                 },
                 {
                   "name": "Cleveland Browns",
-                  "price": -115,
-                  "point": 2
+                  "price": -110,
+                  "point": 1.5
                 }
               ]
             },
@@ -93,11 +93,11 @@
               "outcomes": [
                 {
                   "name": "Carolina Panthers",
-                  "price": -130
+                  "price": -125
                 },
                 {
                   "name": "Cleveland Browns",
-                  "price": 110
+                  "price": 105
                 }
               ]
             },
@@ -214,13 +214,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
-                  "point": 48
+                  "price": -110,
+                  "point": 48.5
                 },
                 {
                   "name": "Under",
-                  "price": -105,
-                  "point": 48
+                  "price": -110,
+                  "point": 48.5
                 }
               ]
             }
@@ -957,11 +957,11 @@
               "outcomes": [
                 {
                   "name": "Tennessee Titans",
-                  "price": 120
+                  "price": 115
                 },
                 {
                   "name": "New York Giants",
-                  "price": -140
+                  "price": -135
                 }
               ]
             },
@@ -970,12 +970,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -105,
+                  "price": -110,
                   "point": 38
                 },
                 {
                   "name": "Under",
-                  "price": -115,
+                  "price": -110,
                   "point": 38
                 }
               ]
@@ -1005,7 +1005,7 @@
                 },
                 {
                   "name": "San Francisco 49ers",
-                  "price": -450
+                  "price": -460
                 }
               ]
             },
@@ -1014,13 +1014,13 @@
               "outcomes": [
                 {
                   "name": "Arizona Cardinals",
-                  "price": -110,
-                  "point": 8.5
+                  "price": -108,
+                  "point": 7.5
                 },
                 {
                   "name": "San Francisco 49ers",
-                  "price": -110,
-                  "point": -8.5
+                  "price": -112,
+                  "point": -7.5
                 }
               ]
             },
@@ -1050,13 +1050,13 @@
               "outcomes": [
                 {
                   "name": "Arizona Cardinals",
-                  "price": -110,
-                  "point": 8
+                  "price": -115,
+                  "point": 7.5
                 },
                 {
                   "name": "San Francisco 49ers",
-                  "price": -110,
-                  "point": -8
+                  "price": -105,
+                  "point": -7.5
                 }
               ]
             },
@@ -1065,11 +1065,11 @@
               "outcomes": [
                 {
                   "name": "Arizona Cardinals",
-                  "price": 295
+                  "price": 285
                 },
                 {
                   "name": "San Francisco 49ers",
-                  "price": -390
+                  "price": -370
                 }
               ]
             },
@@ -1294,12 +1294,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
+                  "price": -105,
                   "point": 53.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
+                  "price": -115,
                   "point": 53.5
                 }
               ]
@@ -1374,13 +1374,13 @@
               "outcomes": [
                 {
                   "name": "Las Vegas Raiders",
-                  "price": 100,
-                  "point": 3
+                  "price": -120,
+                  "point": 3.5
                 },
                 {
                   "name": "New Orleans Saints",
-                  "price": -120,
-                  "point": -3
+                  "price": 100,
+                  "point": -3.5
                 }
               ]
             },
@@ -2451,6 +2451,65 @@
                   "name": "Under",
                   "price": -104,
                   "point": 45.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36104927",
+      "sport_key": "americanfootball_nfl",
+      "sport_title": "NFL",
+      "commence_time": "2026-10-05T00:21:00.000Z",
+      "home_team": "Carolina Panthers",
+      "away_team": "Detroit Lions",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Detroit Lions",
+                  "price": -138
+                },
+                {
+                  "name": "Carolina Panthers",
+                  "price": 118
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Detroit Lions",
+                  "price": -110,
+                  "point": -2.5
+                },
+                {
+                  "name": "Carolina Panthers",
+                  "price": -110,
+                  "point": 2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 49.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 49.5
                 }
               ]
             }
