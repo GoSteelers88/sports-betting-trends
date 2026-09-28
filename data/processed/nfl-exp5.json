@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T09:01:53.220Z",
+  "generatedAt": "2026-09-28T09:01:41.816Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,8 +95,8 @@
   ],
   "props": {
     "record": {
-      "wins": 672,
-      "losses": 400,
+      "wins": 671,
+      "losses": 401,
       "pushes": 7
     },
     "settled": 1079,
@@ -118,9 +118,9 @@
         "team": "KC",
         "stat": "recYds",
         "threshold": 50,
-        "side": "under",
-        "result": "win",
-        "rationale": "PHI's top-ranked pass defense and shutdown corners project to cap Hopkins below his 74 yd season average.",
+        "side": "over",
+        "result": "loss",
+        "rationale": "Highest target share on KC (9.3 targets/gm), likely featured if KC trails and passes more in dome environment.",
         "season": 2024,
         "week": 22
       },
@@ -131,7 +131,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Brown averages 75 recYds on strong target share (7.5/gm); explosive downfield threat in a dome environment favors passing efficiency.",
+        "rationale": "Elite target volume (7.6/gm) and big-play ability vs a KC secondary that's average against elite WRs; PHI's high-powered offense (568 PF).",
         "season": 2024,
         "week": 22
       },
@@ -142,7 +142,7 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Smith's 63.9 yd average and consistent 7 targets/game usage support clearing 50 yds in a high-stakes offense-heavy environment.",
+        "rationale": "Consistent target share (7.0/gm) and season avg near 64 yds; dome conditions favor efficient passing offense.",
         "season": 2024,
         "week": 22
       },
@@ -153,7 +153,7 @@
         "threshold": 250,
         "side": "under",
         "result": "win",
-        "rationale": "Hurts averages just 193.6 pass yds, run-heavy scheme with Barkley dominant, elite Eagles run game reduces need to throw.",
+        "rationale": "Run-heavy PHI attack (Barkley) and Hurts' modest season avg (193.6 passYds) suggest under in this dominant rushing offense.",
         "season": 2024,
         "week": 22
       },
@@ -186,7 +186,7 @@
         "threshold": 250,
         "side": "under",
         "result": "loss",
-        "rationale": "Facing historically stingy PHI defense (358 PA/20g); elite pass rush likely limits down-field volume despite Mahomes' 287 avg.",
+        "rationale": "PHI allowed fewest points (358) with strong pass rush; expect game plan to lean on Barkley, limiting Mahomes' volume.",
         "season": 2024,
         "week": 22
       }
