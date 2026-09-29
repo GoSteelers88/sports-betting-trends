@@ -1,11 +1,11 @@
 {
-  "fetchedAt": "2026-09-29T19:26:56.036Z",
+  "fetchedAt": "2026-09-29T23:08:08.640Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 3,
+  "eventCount": 4,
   "sampleEvent": {
-    "id": "bv_31510579",
+    "id": "fd_36126313",
     "sport_key": "baseball_mlb",
     "commence_time": "2026-09-29T21:10:00.000Z",
     "home_team": "Houston Astros",
@@ -13,7 +13,7 @@
   },
   "events": [
     {
-      "id": "bv_31510579",
+      "id": "fd_36126313",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
       "commence_time": "2026-09-29T21:10:00.000Z",
@@ -21,34 +21,34 @@
       "away_team": "Chicago White Sox",
       "bookmakers": [
         {
-          "key": "bovada",
-          "title": "Bovada",
+          "key": "fanduel",
+          "title": "FanDuel",
           "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Chicago White Sox",
-                  "price": -195,
-                  "point": 1.5
-                },
-                {
-                  "name": "Houston Astros",
-                  "price": 165,
-                  "point": -1.5
-                }
-              ]
-            },
             {
               "key": "h2h",
               "outcomes": [
                 {
                   "name": "Chicago White Sox",
-                  "price": 104
+                  "price": -700
                 },
                 {
                   "name": "Houston Astros",
-                  "price": -124
+                  "price": 440
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Chicago White Sox",
+                  "price": -140,
+                  "point": -2.5
+                },
+                {
+                  "name": "Houston Astros",
+                  "price": 106,
+                  "point": 2.5
                 }
               ]
             },
@@ -57,13 +57,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -120,
-                  "point": 8
+                  "price": 102,
+                  "point": 10.5
                 },
                 {
                   "name": "Under",
-                  "price": 100,
-                  "point": 8
+                  "price": -136,
+                  "point": 10.5
                 }
               ]
             }
@@ -72,13 +72,62 @@
       ]
     },
     {
-      "id": "bv_31498385",
+      "id": "fd_36126005",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
-      "commence_time": "2026-09-30T00:10:00.000Z",
+      "commence_time": "2026-09-30T00:15:00.000Z",
       "home_team": "New York Yankees",
       "away_team": "Boston Red Sox",
       "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Boston Red Sox",
+                  "price": 112
+                },
+                {
+                  "name": "New York Yankees",
+                  "price": -132
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Boston Red Sox",
+                  "price": -215,
+                  "point": 1.5
+                },
+                {
+                  "name": "New York Yankees",
+                  "price": 176,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 104,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -128,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        },
         {
           "key": "bovada",
           "title": "Bovada",
@@ -88,12 +137,12 @@
               "outcomes": [
                 {
                   "name": "Boston Red Sox",
-                  "price": -200,
+                  "price": -210,
                   "point": 1.5
                 },
                 {
                   "name": "New York Yankees",
-                  "price": 170,
+                  "price": 175,
                   "point": -1.5
                 }
               ]
@@ -103,11 +152,11 @@
               "outcomes": [
                 {
                   "name": "Boston Red Sox",
-                  "price": 113
+                  "price": 114
                 },
                 {
                   "name": "New York Yankees",
-                  "price": -135
+                  "price": -136
                 }
               ]
             },
@@ -116,12 +165,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
+                  "price": -110,
                   "point": 6
                 },
                 {
                   "name": "Under",
-                  "price": -105,
+                  "price": -110,
                   "point": 6
                 }
               ]
@@ -131,7 +180,7 @@
       ]
     },
     {
-      "id": "bv_31507203",
+      "id": "fd_36126028",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
       "commence_time": "2026-09-30T02:10:00.000Z",
@@ -139,6 +188,55 @@
       "away_team": "Chicago Cubs",
       "bookmakers": [
         {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Chicago Cubs",
+                  "price": 112
+                },
+                {
+                  "name": "San Diego Padres",
+                  "price": -132
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Chicago Cubs",
+                  "price": -200,
+                  "point": 1.5
+                },
+                {
+                  "name": "San Diego Padres",
+                  "price": 164,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -102,
+                  "point": 7.5
+                },
+                {
+                  "name": "Under",
+                  "price": -120,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        },
+        {
           "key": "bovada",
           "title": "Bovada",
           "markets": [
@@ -162,11 +260,11 @@
               "outcomes": [
                 {
                   "name": "Chicago Cubs",
-                  "price": 108
+                  "price": 110
                 },
                 {
                   "name": "San Diego Padres",
-                  "price": -130
+                  "price": -132
                 }
               ]
             },
@@ -182,6 +280,114 @@
                   "name": "Under",
                   "price": -120,
                   "point": 7.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36126311",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-09-30T18:00:00.000Z",
+      "home_team": "Atlanta Braves",
+      "away_team": "Philadelphia Phillies",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Phillies",
+                  "price": -120
+                },
+                {
+                  "name": "Atlanta Braves",
+                  "price": 102
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Phillies",
+                  "price": 146,
+                  "point": -1.5
+                },
+                {
+                  "name": "Atlanta Braves",
+                  "price": -176,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 116,
+                  "point": 7.5
+                },
+                {
+                  "name": "Under",
+                  "price": -142,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Phillies",
+                  "price": 155,
+                  "point": -1.5
+                },
+                {
+                  "name": "Atlanta Braves",
+                  "price": -180,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Phillies",
+                  "price": -116
+                },
+                {
+                  "name": "Atlanta Braves",
+                  "price": -104
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 7
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
+                  "point": 7
                 }
               ]
             }

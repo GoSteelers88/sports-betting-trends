@@ -1,54 +1,54 @@
 {
-  "fetchedAt": "2026-09-29T19:26:55.921Z",
+  "fetchedAt": "2026-09-29T23:08:08.581Z",
   "league": "basketball_wnba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 4,
   "sampleEvent": {
-    "id": "bv_31417987",
+    "id": "fd_36116539",
     "sport_key": "basketball_wnba",
-    "commence_time": "2026-09-29T22:30:00.000Z",
+    "commence_time": "2026-09-29T22:38:00.000Z",
     "home_team": "Indiana Fever",
     "away_team": "Las Vegas Aces"
   },
   "events": [
     {
-      "id": "bv_31417987",
+      "id": "fd_36116539",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
-      "commence_time": "2026-09-29T22:30:00.000Z",
+      "commence_time": "2026-09-29T22:38:00.000Z",
       "home_team": "Indiana Fever",
       "away_team": "Las Vegas Aces",
       "bookmakers": [
         {
-          "key": "bovada",
-          "title": "Bovada",
+          "key": "fanduel",
+          "title": "FanDuel",
           "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Las Vegas Aces",
-                  "price": -110,
-                  "point": 1
-                },
-                {
-                  "name": "Indiana Fever",
-                  "price": -110,
-                  "point": -1
-                }
-              ]
-            },
             {
               "key": "h2h",
               "outcomes": [
                 {
                   "name": "Las Vegas Aces",
-                  "price": 100
+                  "price": -320
                 },
                 {
                   "name": "Indiana Fever",
-                  "price": -120
+                  "price": 235
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Las Vegas Aces",
+                  "price": -128,
+                  "point": -6.5
+                },
+                {
+                  "name": "Indiana Fever",
+                  "price": -104,
+                  "point": 6.5
                 }
               ]
             },
@@ -57,13 +57,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
-                  "point": 183.5
+                  "price": -130,
+                  "point": 181.5
                 },
                 {
                   "name": "Under",
-                  "price": -105,
-                  "point": 183.5
+                  "price": -102,
+                  "point": 181.5
                 }
               ]
             }
@@ -72,13 +72,62 @@
       ]
     },
     {
-      "id": "bv_31418377",
+      "id": "fd_36116541",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
       "commence_time": "2026-09-30T00:30:00.000Z",
       "home_team": "New York Liberty",
       "away_team": "Minnesota Lynx",
       "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Minnesota Lynx",
+                  "price": -160
+                },
+                {
+                  "name": "New York Liberty",
+                  "price": 130
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Minnesota Lynx",
+                  "price": -106,
+                  "point": -3.5
+                },
+                {
+                  "name": "New York Liberty",
+                  "price": -114,
+                  "point": 3.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -108,
+                  "point": 174.5
+                },
+                {
+                  "name": "Under",
+                  "price": -112,
+                  "point": 174.5
+                }
+              ]
+            }
+          ]
+        },
         {
           "key": "bovada",
           "title": "Bovada",
@@ -88,13 +137,13 @@
               "outcomes": [
                 {
                   "name": "Minnesota Lynx",
-                  "price": -105,
-                  "point": -4
+                  "price": -115,
+                  "point": -3.5
                 },
                 {
                   "name": "New York Liberty",
-                  "price": -115,
-                  "point": 4
+                  "price": -105,
+                  "point": 3.5
                 }
               ]
             },
@@ -131,7 +180,7 @@
       ]
     },
     {
-      "id": "bv_31418785",
+      "id": "fd_36116538",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
       "commence_time": "2026-09-30T23:00:00.000Z",
@@ -139,34 +188,34 @@
       "away_team": "Atlanta Dream",
       "bookmakers": [
         {
-          "key": "bovada",
-          "title": "Bovada",
+          "key": "fanduel",
+          "title": "FanDuel",
           "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Atlanta Dream",
-                  "price": -105,
-                  "point": -5
-                },
-                {
-                  "name": "Washington Mystics",
-                  "price": -115,
-                  "point": 5
-                }
-              ]
-            },
             {
               "key": "h2h",
               "outcomes": [
                 {
                   "name": "Atlanta Dream",
-                  "price": -185
+                  "price": -188
                 },
                 {
                   "name": "Washington Mystics",
-                  "price": 160
+                  "price": 152
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Atlanta Dream",
+                  "price": -108,
+                  "point": -4.5
+                },
+                {
+                  "name": "Washington Mystics",
+                  "price": -112,
+                  "point": 4.5
                 }
               ]
             },
@@ -176,12 +225,61 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 164.5
+                  "point": 165.5
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 164.5
+                  "point": 165.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Atlanta Dream",
+                  "price": -115,
+                  "point": -4
+                },
+                {
+                  "name": "Washington Mystics",
+                  "price": -105,
+                  "point": 4
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Atlanta Dream",
+                  "price": -175
+                },
+                {
+                  "name": "Washington Mystics",
+                  "price": 150
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 165.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 165.5
                 }
               ]
             }
@@ -190,13 +288,62 @@
       ]
     },
     {
-      "id": "bv_31418767",
+      "id": "fd_36116540",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
       "commence_time": "2026-10-01T01:00:00.000Z",
       "home_team": "Dallas Wings",
       "away_team": "Golden State Valkyries",
       "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -168
+                },
+                {
+                  "name": "Dallas Wings",
+                  "price": 136
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -118,
+                  "point": -3.5
+                },
+                {
+                  "name": "Dallas Wings",
+                  "price": -104,
+                  "point": 3.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -112,
+                  "point": 155.5
+                },
+                {
+                  "name": "Under",
+                  "price": -108,
+                  "point": 155.5
+                }
+              ]
+            }
+          ]
+        },
         {
           "key": "bovada",
           "title": "Bovada",
