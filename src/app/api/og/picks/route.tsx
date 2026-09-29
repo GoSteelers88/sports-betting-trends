@@ -350,10 +350,22 @@ export async function GET(req: NextRequest) {
             letterSpacing: 0.5,
           }}
         >
+          {/* Dots are drawn, not typed: Inter has no U+25CF, and next/og's
+              fallback-font fetch for it 400s from Google (runtime error
+              group on /api/og/picks, 2026-08-14 -> 09-29). */}
           <div style={{ display: "flex", gap: 14 }}>
-            <span style={{ color: COLORS.cyan }}>● analyst</span>
-            <span style={{ color: COLORS.violet }}>● critic</span>
-            <span style={{ color: COLORS.pink }}>● bankroll</span>
+            {(
+              [
+                [COLORS.cyan, "analyst"],
+                [COLORS.violet, "critic"],
+                [COLORS.pink, "bankroll"],
+              ] as const
+            ).map(([color, label]) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, color }}>
+                <div style={{ width: 10, height: 10, borderRadius: 5, background: color }} />
+                {label}
+              </div>
+            ))}
           </div>
           <div>not financial advice · entertainment only</div>
         </div>

@@ -64,7 +64,10 @@ const ALL_LEAGUES: Record<string, LeagueSpec> = {
   // archive was written. Coverage is enforced downstream instead:
   // nfl-capture-close.ts exits 1 when zero in-window legs get a close.
   nfl: { sportKey: "americanfootball_nfl", sportTitle: "NFL", leagueId: 889, strictMinMatchups: 1 },
-  ncaaf: { sportKey: "americanfootball_ncaaf", sportTitle: "NCAAF", leagueId: 880, strictMinMatchups: 20 },
+  // Same failure as NFL: the late-Saturday cfb-closes tick lists only the
+  // night games (4 on 2026-09-27) and a 20 floor threw them away every week.
+  // Null/0 still fails; a thin night slate is archived.
+  ncaaf: { sportKey: "americanfootball_ncaaf", sportTitle: "NCAAF", leagueId: 880, strictMinMatchups: 1 },
 };
 
 function parseArgs(): { leagues: LeagueSpec[]; strict: boolean; archiveDir: string | null } {
