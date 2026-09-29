@@ -104,3 +104,11 @@ data/private/
 
 # publish-day transcript logs (local only)
 publish-day-*.log
+
+# Local NFL board-build caches: regenerated every publish-day by
+# nfl:ingest-live and read only by nfl-live-week.ts. Tracking them left the
+# tree permanently dirty (every git sync went through autostash).
+data/processed/nfl-epa.json
+data/processed/nfl-officials.json
+data/processed/nfl-stadiums.json
+data/processed/nfl-weather.json

@@ -44,6 +44,23 @@ export const CHECKS: CheckSpec[] = [
     graceMin: 120,
     desc: "Task NFL-Weekly-Publish -> scripts/nfl-publish-day.ps1. Publishes the week's /nfl board. Kickoff is Thursday night - act same day.",
   },
+  {
+    // The task fires at several kickoff windows a week (plus planner-added
+    // one-offs); one cron can't express that, so this watches the Thursday
+    // TNF slot as a weekly sentinel. The other slots still ping and reset it.
+    slug: "nfl-closes",
+    name: "NFL close capture dispatch",
+    schedule: "0 20 * * 4",
+    graceMin: 60,
+    desc: "Task NFL-Closes-Dispatch -> scripts/nfl-close-dispatch.ps1. Fires nfl-closes.yml at T-20 before kickoffs. A miss = closes lost permanently.",
+  },
+  {
+    slug: "nfl-closes-plan",
+    name: "NFL close capture planner",
+    schedule: "30 5 * * *",
+    graceMin: 240,
+    desc: "Task NFL-Closes-Plan -> scripts/nfl-close-plan.ps1. Adds one-time dispatch triggers for kickoffs the weekly slots miss (Sat/holiday).",
+  },
 ];
 
 const API = "https://healthchecks.io/api/v3/checks/";

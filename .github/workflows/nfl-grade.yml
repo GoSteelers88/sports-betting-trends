@@ -88,6 +88,26 @@ jobs:
             exit 1
           fi
 
+      # Runs AFTER the ledger commit so grading still lands. 2026-09-29: the
+      # ledger reached 149 legs with ZERO closes (the capture cron fired 2-5h
+      # late) and every grading run was green. no_close is a permanent gap -
+      # it must be red, weekly, from the cloud (the capture trigger is a
+      # local PC task that can be asleep).
+      - name: Close-coverage alarm — any recent no_close fails the run
+        run: |
+          node -e '
+            const l = require("./data/processed/nfl-live/ledger.json");
+            const since = Date.now() - 8 * 86400e3;
+            const miss = l.rows.filter((r) => r.status === "no_close" && Date.parse(r.kickoffUtc) >= since);
+            const hit = l.rows.filter((r) => r.close && Date.parse(r.kickoffUtc) >= since).length;
+            console.log(`last 8 days: ${hit} legs with a close, ${miss.length} no_close`);
+            if (miss.length > 0) {
+              for (const r of miss) console.log(`  no_close  ${r.kickoffUtc}  ${r.matchup}  ${r.market} ${r.side}`);
+              console.log("::error::" + miss.length + " leg(s) kicked off with NO captured close - check the NFL-Closes-Dispatch task on the PC");
+              process.exit(1);
+            }
+          '
+
       - name: Heartbeat ping
         if: success()
         env:
