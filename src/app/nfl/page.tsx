@@ -52,7 +52,12 @@ import {
   modelResolution,
   type GameRow,
 } from "@/lib/nfl-receipts/receipts-view";
-import { parseExp5Research, type ResearchView } from "@/lib/nfl-receipts/exp5-view";
+import {
+  parseExp5Research,
+  PREREG_DOC,
+  PREREG_DOC_URL,
+  type ResearchView,
+} from "@/lib/nfl-receipts/exp5-view";
 import type { NflSlate } from "@/lib/nfl-receipts/site-slate";
 import { MarketNow } from "./_components/MarketNow";
 import { PropMarket } from "./_components/PropMarket";
@@ -289,7 +294,7 @@ export default function NflReceiptsPage() {
 
         <PropMarket board={loadLatestPropBoard()} />
 
-        <TheRules boards={boards.map((b) => b.board)} headlineData={h} />
+        <TheRules boards={boards.map((b) => b.board)} headlineData={h} ledger={ledger} />
 
         <TheLedger
           ledger={ledger}
@@ -764,9 +769,11 @@ function GameRowCells({ row }: { row: GameRow }) {
 function TheRules({
   boards,
   headlineData,
+  ledger,
 }: {
   boards: PublishedBoard[];
   headlineData: ReturnType<typeof headline> | null;
+  ledger: Ledger | null;
 }) {
   const s = headlineData?.play.byStatus;
   const controls = boards.reduce(
@@ -840,6 +847,8 @@ function TheRules({
           the run.
         </p>
 
+        <AmendmentTwo ledger={ledger} />
+
         <p className="prose">
           {controls === 2
             ? "Two control legs were drawn from the same snapshot at the same instant"
@@ -865,6 +874,51 @@ function TheRules({
         </p>
       </div>
     </section>
+  );
+}
+
+/* ─── Amendment 2 — dated, on the page, beside the rule it bends ────────── */
+
+const AMENDMENT_2_DATE = "2026-09-29";
+
+/** Counts are read from the ledger, never transcribed, so the note cannot
+ *  drift from what was actually recovered. */
+function AmendmentTwo({ ledger }: { ledger: Ledger | null }) {
+  const rows = ledger?.rows ?? [];
+  const recovered = rows.filter((r) => r.close?.backfilledAt);
+  const recoveredPlay = recovered.filter((r) => r.role === "play").length;
+  return (
+    <div className="amendment" id="amendment-2">
+      <p className="eyebrow amendment-head">Amendment 2 — {AMENDMENT_2_DATE}</p>
+      <p className="prose">
+        Our close-capture job ran on a scheduler that fired a median{" "}
+        <span className="num">159</span> minutes late, so every leg in weeks 1–3
+        kicked off with no close captured — and nothing flagged it. The fix is
+        live; the gap was ours, not the market&rsquo;s.
+      </p>
+      <p className="prose">
+        The rules say a close must come from a capture taken before kickoff. For
+        those weeks only, we recovered the <strong>tier-2</strong> close from The
+        Odds API&rsquo;s stored snapshots of lowvig and betonlineag: taken by the
+        vendor <span className="num">4.4</span> minutes before kickoff,{" "}
+        <strong>retrieved by us afterwards</strong>. That is the whole exception.{" "}
+        <span className="num">{recovered.length}</span>{" "}
+        {recovered.length === 1 ? "close was" : "closes were"} recovered (
+        <span className="num">{recoveredPlay}</span> on PLAY legs), each marked
+        as backfilled in the ledger with its snapshot committed beside the live
+        ones. No Pinnacle close was reconstructed, no moved point was
+        substituted, and a leg whose exact line was gone stays{" "}
+        <em>no close captured</em> — permanently.
+      </p>
+      <p className="prose">
+        No further backfill is permitted. The full text sits under its own date
+        in{" "}
+        <a href={PREREG_DOC_URL} className="num path" rel="noreferrer">
+          {`docs/research/${PREREG_DOC}`}
+        </a>
+        , with the original rules left standing above it.
+      </p>
+    </div>
   );
 }
 

@@ -162,6 +162,76 @@ the page is a checked-in constant with a test guarding it.
 chain), §4 (entry prices), and the verdict metric itself are untouched and
 remain frozen as of 2026-08-29.
 
+## Amendment 2 — 2026-09-29: missed tier-2 closes recovered from vendor history
+
+**Status: AMENDED 2026-09-29.** §3, §6 and §8 are not edited. This entry
+records one bounded exception to them, and the original text stands above,
+unchanged.
+
+**What went wrong.** The close-capture job was scheduled for 20 minutes before
+each kickoff cluster on GitHub Actions cron. Measured over its first 48
+scheduled runs (2026-08-30 → 09-29), cron fired a median **159 minutes late**
+(max 331); only 2 runs landed inside the 20-minute lead. The capture only
+records legs that have not kicked off, so every run arrived too late, and a
+strict floor on the Pinnacle scrape failed the rest. Result: across weeks 1–3,
+**128 legs with an entry price kicked off with no close captured** — 0 of 128.
+The failure was silent: every grading run stayed green. (Fixed 2026-09-29 —
+captures are now dispatched on time, and grading fails loudly on any recent
+`no_close`.)
+
+**What this permits, exactly.** A one-time backfill of the **tier-2 close
+only**, for those 128 legs, from The Odds API's stored historical snapshots of
+lowvig and betonlineag — the same two books, same priority, same exact-point
+derivation, and same verifier as a live tier-2 capture:
+
+- One snapshot per kickoff, requested at kickoff − 1 minute. Every snapshot
+  used was taken by the vendor **4.4 minutes before kickoff**, and every one was
+  checked to predate the vendor's own `commence_time` for that game (0
+  violations in 72).
+- The trimmed snapshot is committed under `data/processed/nfl-live/closes/` as
+  `oddsapi-tier2-historical-*.json`, with `fetchedAt` = the vendor's snapshot
+  instant and `retrievedAt` = when we fetched it. Every recovered close carries
+  `backfilledAt`, so no reader can mistake it for a live capture.
+- Tier 1 (Pinnacle) is **not** recovered — no history of it exists. Every
+  recovered close is tier 2 and flagged as such, as §3 already requires.
+
+**Outcome.** **72 of 128 recovered** (moneyline 51, total 9, ATS 12; PLAY 10,
+control 7, pass 55). **56 stay `no_close` permanently**: 54 because the leg's
+exact point was no longer offered at either book at the close (§4's
+exact-point discipline — never substituted with a moved point), and 2 because
+both books had pulled the moneyline. Of the 11 PLAY legs affected, 10 are
+recovered and 1 is not. Cost: 510 API credits.
+
+**Where this departs from the frozen text, stated plainly.**
+
+- §8 says closes are "only recorded from captures taken before kickoff". These
+  snapshots were **taken** before kickoff, by the vendor, but **retrieved by us
+  after** kickoff. That distinction is the whole of this amendment.
+- §6 says every leg "permanently occupies exactly one status". 47 recovered
+  legs (weeks 1–2) had already been graded `no_close`; they move to `graded`.
+  The other 25 recovered legs (24 in week 3, 1 in week 2) were still
+  `pending`.
+
+**Why.** `no_close` exists to register a close that *could not* be captured.
+These closes existed and were recorded, pre-kickoff, by an independent third
+party; the gap was our scheduler. Leaving 72 recoverable closes out would
+shrink coverage for a reason that says nothing about the model — and that is
+the silent-shrinking §6 was written to prevent. The recovered prices come from
+a source we do not control and cannot edit, which is the property the
+live-capture rule exists to guarantee.
+
+**What this still forbids.** Any backfill after this entry. From 2026-09-29
+on, a missed close is `no_close` permanently, as §6 says. No tier-1 close is
+ever reconstructed. No moved point is ever substituted.
+
+**How this is disclosed.** Reproduced on /nfl under THE RULES, dated
+"Amendment 2 — 2026-09-29", with the recovered and still-missing counts read
+live from the ledger.
+
+**What is NOT amended.** §2 (n >= 150 or no verdict, permanently), §3's
+benchmark chain and tier order, §4 (entry prices), §5 (control arm), and the
+verdict metric.
+
 ## Model-input notes (not amendments)
 
 These change what the model LEARNS from. None edits a frozen rule in §1-§8 -

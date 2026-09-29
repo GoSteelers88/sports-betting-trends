@@ -1,8 +1,10 @@
 name: NFL receipts — close capture
 
 # Captures sharp closing prices for pending /nfl board legs at each kickoff
-# cluster (threat T3: on the free Odds API tier a missed close is PERMANENTLY
-# unrecoverable — /odds drops completed events and backfill is forbidden).
+# cluster (threat T3: a missed close is PERMANENTLY lost — /odds drops
+# completed events, Pinnacle keeps no history, and pre-registration
+# Amendment 2 permitted one tier-2 backfill on 2026-09-29 and forbids any
+# further one).
 #
 # Tick times target T−20min before each cluster in EDT, with +1h twins so the
 # same clusters stay covered after the November DST flip (those land T−20

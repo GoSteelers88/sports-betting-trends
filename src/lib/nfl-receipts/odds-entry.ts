@@ -116,6 +116,33 @@ export async function fetchNflOdds(
   };
 }
 
+export interface HistoricalOddsSnapshot {
+  /** the vendor's snapshot instant (at or before the requested date) */
+  timestamp: string;
+  quotaRemaining: string;
+  events: OddsApiEvent[];
+}
+
+/** PAID (10 credits × markets × regions): the vendor's stored snapshot at or
+ *  before `dateIso`. Used ONLY by the Amendment 2 close backfill. */
+export async function fetchNflOddsHistorical(
+  apiKey: string,
+  dateIso: string,
+  opts: { markets?: string; bookmakers: string[] },
+): Promise<HistoricalOddsSnapshot> {
+  const url = new URL(`${BASE}/historical/sports/americanfootball_nfl/odds`);
+  url.searchParams.set("apiKey", apiKey);
+  url.searchParams.set("bookmakers", opts.bookmakers.join(","));
+  url.searchParams.set("markets", opts.markets ?? "h2h,spreads,totals");
+  url.searchParams.set("oddsFormat", "american");
+  url.searchParams.set("date", dateIso);
+  const { data, remaining } = await fetchJson(url);
+  const d = data as { timestamp?: string; data?: unknown };
+  if (typeof d.timestamp !== "string" || !Array.isArray(d.data))
+    throw new OddsApiError("historical: unexpected response shape", 200, null);
+  return { timestamp: d.timestamp, quotaRemaining: remaining, events: d.data as OddsApiEvent[] };
+}
+
 // ─── Price extraction (exact-point discipline, threat T12) ───────────────────
 
 export interface ExtractedPrice {

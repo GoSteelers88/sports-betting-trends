@@ -322,3 +322,48 @@ describe("registerBoard immutability", () => {
     expect(() => registerBoard(l, { ...rec, sha256: "bbb" })).toThrow(/immutable/);
   });
 });
+
+describe("Amendment 2 backfill (2026-09-29)", () => {
+  const backfilled = {
+    book: "lowvig",
+    tier: 2 as const,
+    sideAmerican: -190,
+    otherAmerican: 170,
+    capturedAt: "2019-12-31T17:55:36Z",
+    minutesBeforeKickoff: 4,
+    sourceFile: "data/processed/nfl-live/closes/oddsapi-tier2-historical-x.json",
+    backfilledAt: "2026-09-29T11:00:00Z",
+  };
+
+  it("a no_close leg that receives a backfilled close grades; one that does not stays no_close", () => {
+    const l = emptyLedger();
+    upsertRow(l, "hit", row({ legId: "hit", kickoffUtc: PAST }));
+    upsertRow(l, "miss", row({ legId: "miss", kickoffUtc: PAST }));
+    gradeRows(l, Date.now());
+    expect(l.rows.map((r) => r.status)).toEqual(["no_close", "no_close"]);
+
+    recordClose(l, "hit", backfilled);
+    gradeRows(l, Date.now());
+    const [hit, miss] = l.rows;
+    expect(hit.status).toBe("graded");
+    expect(hit.close?.backfilledAt).toBe(backfilled.backfilledAt);
+    expect(miss.status).toBe("no_close");
+  });
+
+  it("a later live tier-1 capture still replaces a backfilled tier-2 close", () => {
+    const l = emptyLedger();
+    upsertRow(l, "a", row({ legId: "a", kickoffUtc: PAST }));
+    recordClose(l, "a", backfilled);
+    recordClose(l, "a", {
+      book: "pinnacle",
+      tier: 1,
+      sideAmerican: -185,
+      otherAmerican: 165,
+      capturedAt: "2019-12-31T17:40:00Z",
+      minutesBeforeKickoff: 20,
+      sourceFile: "data/processed/nfl-live/closes/pinnacle-x.json",
+    });
+    expect(l.rows[0].close?.book).toBe("pinnacle");
+    expect(l.rows[0].close?.backfilledAt).toBeUndefined();
+  });
+});

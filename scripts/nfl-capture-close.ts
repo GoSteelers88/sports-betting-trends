@@ -1,8 +1,9 @@
 /**
  * nfl-capture-close.ts — capture sharp closing prices for every pending
  * ledger leg kicking off soon (threat T3: a missed close is PERMANENTLY
- * unrecoverable — the /odds endpoint drops completed events and backfill is
- * forbidden by ruling 4).
+ * lost — the /odds endpoint drops completed events, Pinnacle keeps no
+ * history, and pre-registration Amendment 2 allowed exactly one tier-2
+ * backfill (2026-09-29, scripts/nfl-backfill-closes.ts) and forbids another).
  *
  *   npx tsx --env-file-if-exists=.env.local --env-file=.env \
  *     scripts/nfl-capture-close.ts [--window-hours 3] [--no-oddsapi]

@@ -36,6 +36,10 @@ export interface CapturedClose {
   minutesBeforeKickoff: number;
   /** dated snapshot file the close was read from — recompute path for readers */
   sourceFile: string;
+  /** Set only on closes recovered under Amendment 2: the vendor snapshot was
+   *  taken pre-kickoff (capturedAt) but WE fetched it after kickoff, at this
+   *  instant. Absent = captured live. */
+  backfilledAt?: string;
 }
 
 export interface LedgerRow {
