@@ -51,15 +51,19 @@ type LeagueSpec = {
   sportTitle: string;
   leagueId: number;
   /** --strict floor: an in-season feed below this count is a broken scrape,
-   *  not a quiet week (NFL slates run 13–16 games and the matchups endpoint
-   *  lists upcoming weeks, so 14 is conservative — threat T15). */
+   *  not a quiet week (threat T15). */
   strictMinMatchups: number;
 };
 
 const ALL_LEAGUES: Record<string, LeagueSpec> = {
   nba: { sportKey: "basketball_nba", sportTitle: "NBA", leagueId: 487, strictMinMatchups: 4 },
   mlb: { sportKey: "baseball_mlb", sportTitle: "MLB", leagueId: 246, strictMinMatchups: 6 },
-  nfl: { sportKey: "americanfootball_nfl", sportTitle: "NFL", leagueId: 889, strictMinMatchups: 14 },
+  // NFL floor is 1, not a slate size: Pinnacle drops games at kickoff, so a
+  // Sunday-late / SNF / MNF tick legitimately lists 2–11 games (measured
+  // 2026-09-20..29). A 14 floor failed every one of those ticks BEFORE the
+  // archive was written. Coverage is enforced downstream instead:
+  // nfl-capture-close.ts exits 1 when zero in-window legs get a close.
+  nfl: { sportKey: "americanfootball_nfl", sportTitle: "NFL", leagueId: 889, strictMinMatchups: 1 },
   ncaaf: { sportKey: "americanfootball_ncaaf", sportTitle: "NCAAF", leagueId: 880, strictMinMatchups: 20 },
 };
 
