@@ -219,16 +219,16 @@ export async function GET(req: NextRequest) {
             }}
           >
             <span>
-              Day <span style={{ color: COLORS.fg, fontWeight: 600 }}>{day}</span> · CLV-gated paper trial
+              Day <span style={{ color: COLORS.fg, fontWeight: 600, margin: "0 6px" }}>{day}</span> · CLV-gated paper trial
             </span>
             <span style={{ color: COLORS.muted }}>·</span>
             <span>
-              <span style={{ color: COLORS.fg, fontWeight: 600 }}>{picks.length}</span> play
+              <span style={{ color: COLORS.fg, fontWeight: 600, marginRight: 6 }}>{picks.length}</span> play
               {picks.length === 1 ? "" : "s"}
             </span>
             <span style={{ color: COLORS.muted }}>·</span>
             <span>
-              <span style={{ color: COLORS.fg, fontWeight: 600 }}>{totalUnits.toFixed(1)}u</span> total
+              <span style={{ color: COLORS.fg, fontWeight: 600, marginRight: 6 }}>{totalUnits.toFixed(1)}u</span> total
             </span>
           </div>
         </div>
@@ -283,9 +283,11 @@ export async function GET(req: NextRequest) {
                       minWidth: 0,
                     }}
                   >
-                    <div style={{ fontSize: 26, fontWeight: 600 }}>
-                      {p.selection}
-                      {p.market === "moneyline" ? " ML" : ""}{" "}
+                    {/* Satori 500s on a <div> with more than one child and no
+                        display:flex — every card WITH picks failed this way
+                        while the empty-state card rendered (found 2026-09-29). */}
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 10, fontSize: 26, fontWeight: 600 }}>
+                      <span>{`${p.selection}${p.market === "moneyline" ? " ML" : ""}`}</span>
                       <span style={{ color: COLORS.muted, fontFamily: "Geist Mono", fontSize: 22 }}>
                         {fmtAmerican(p.oddsAmerican)}
                       </span>
@@ -326,10 +328,10 @@ export async function GET(req: NextRequest) {
                         fontFamily: "Geist Mono",
                       }}
                     >
-                      +{(p.edge * 100).toFixed(1)}%
+                      {`+${(p.edge * 100).toFixed(1)}%`}
                     </div>
                     <div style={{ fontSize: 16, color: COLORS.muted }}>
-                      {p.kellyStakeUnits.toFixed(1)}u · conf {p.confidence}
+                      {`${p.kellyStakeUnits.toFixed(1)}u · conf ${p.confidence}`}
                     </div>
                   </div>
                 </div>
