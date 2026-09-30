@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-29T09:02:23.108Z",
+  "generatedAt": "2026-09-30T09:01:40.085Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,8 +95,8 @@
   ],
   "props": {
     "record": {
-      "wins": 670,
-      "losses": 402,
+      "wins": 672,
+      "losses": 400,
       "pushes": 7
     },
     "settled": 1079,
@@ -109,7 +109,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Elite target volume (8.4/g) and 73 ypg career average; likely key safety valve for Mahomes in tough matchup.",
+        "rationale": "8.4 targets/gm and 73 recYds season avg, still Mahomes' top red-zone/possession option in a dome.",
         "season": 2024,
         "week": 22
       },
@@ -120,7 +120,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "High target share (9.3/g) and 74 ypg avg; likely featured in KC passing attack if game requires catching up.",
+        "rationale": "9.3 targets/gm, 74 recYds season avg, primary outside target share for KC in a big game.",
         "season": 2024,
         "week": 22
       },
@@ -131,7 +131,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "75 ypg career avg with strong target share (7.6/g); explosive play ability vs KC secondary in dome environment.",
+        "rationale": "75 recYds/gm season avg on 7.6 targets, top WR1 role in PHI's high-powered dome offense.",
         "season": 2024,
         "week": 22
       },
@@ -142,7 +142,7 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Consistent 63.9 ypg average with steady 7 targets/game; complements Brown in high-powered PHI passing attack.",
+        "rationale": "64 recYds/gm season avg on solid 7.0 targets, consistent secondary option in PHI's balanced passing attack.",
         "season": 2024,
         "week": 22
       },
@@ -153,7 +153,7 @@
         "threshold": 250,
         "side": "under",
         "result": "win",
-        "rationale": "Career avg only 193.6 ypg; Eagles run-heavy scheme with Barkley dominant, facing playoff-caliber KC defense limits volume passing need.",
+        "rationale": "Season avg only 193.6 passYds/gm; run-heavy PHI offense relies on Barkley and Hurts' legs more than the arm.",
         "season": 2024,
         "week": 22
       },
@@ -162,9 +162,9 @@
         "team": "KC",
         "stat": "passTDs",
         "threshold": 1.5,
-        "side": "under",
-        "result": "loss",
-        "rationale": "Elite Eagles pass rush/secondary likely limits scoring efficiency despite 2.18 season avg TD rate.",
+        "side": "over",
+        "result": "win",
+        "rationale": "Season avg 2.18 TD/gm, high-powered KC offense (568 PF) in a dome with no weather impact.",
         "season": 2024,
         "week": 22
       },
@@ -175,7 +175,7 @@
         "threshold": 75,
         "side": "under",
         "result": "win",
-        "rationale": "Career avg only 49.3 rush ypg in committee role, well below 75 threshold vs stout PHI run D.",
+        "rationale": "Season avg just 49 rushYds/gm in a committee backfield, well below the 75-yard threshold against a stout PHI front.",
         "season": 2024,
         "week": 22
       },
@@ -184,9 +184,9 @@
         "team": "KC",
         "stat": "passYds",
         "threshold": 250,
-        "side": "under",
-        "result": "loss",
-        "rationale": "Facing elite PHI defense (358 PA, ~18/g), tight dome game likely leans on balanced attack rather than high-volume passing.",
+        "side": "over",
+        "result": "win",
+        "rationale": "Season avg 287 ypg, dome game removes weather variance, elite volume vs a strong but beatable PHI secondary.",
         "season": 2024,
         "week": 22
       }
