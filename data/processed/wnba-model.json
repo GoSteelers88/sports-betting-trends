@@ -1,32 +1,20 @@
 {
-  "generatedAt": "2026-10-01T01:33:56.584Z",
+  "generatedAt": "2026-10-01T19:31:59.402Z",
   "source": "wnba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 3,
+  "recordCount": 4,
   "errors": [],
   "data": {
-    "generatedAt": "2026-10-01T01:33:56.584Z",
+    "generatedAt": "2026-10-01T19:31:59.402Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 15,
-    "gameCount": 3,
+    "gameCount": 4,
     "results": [
-      {
-        "eventId": "fd_36116540",
-        "homeTeam": "Dallas Wings",
-        "awayTeam": "Golden State Valkyries",
-        "homeWinProb": 0.5601,
-        "awayWinProb": 0.4399,
-        "expectedMargin": 2.3,
-        "homeNetRtg": 11.666666666666666,
-        "awayNetRtg": 9.88888888888889,
-        "calibrated": false,
-        "startTime": "2026-10-01T01:13:00.000Z"
-      },
       {
         "eventId": "fd_36127450",
         "homeTeam": "Las Vegas Aces",
@@ -38,6 +26,30 @@
         "awayNetRtg": -0.3,
         "calibrated": false,
         "startTime": "2026-10-02T01:00:00.000Z"
+      },
+      {
+        "eventId": "bv_31648563",
+        "homeTeam": "Golden State Valkyries",
+        "awayTeam": "Dallas Wings",
+        "homeWinProb": 0.744,
+        "awayWinProb": 0.256,
+        "expectedMargin": 10.16,
+        "homeNetRtg": 12.25,
+        "awayNetRtg": -7,
+        "calibrated": false,
+        "startTime": "2026-10-02T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_36135107",
+        "homeTeam": "Golden State Valkyries",
+        "awayTeam": "Dallas Wings",
+        "homeWinProb": 0.744,
+        "awayWinProb": 0.256,
+        "expectedMargin": 10.16,
+        "homeNetRtg": 12.25,
+        "awayNetRtg": -7,
+        "calibrated": false,
+        "startTime": "2026-10-03T01:00:00.000Z"
       },
       {
         "eventId": "fd_36138147",
