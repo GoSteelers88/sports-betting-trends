@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T09:01:40.085Z",
+  "generatedAt": "2026-10-01T09:59:04.282Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,8 +95,8 @@
   ],
   "props": {
     "record": {
-      "wins": 672,
-      "losses": 400,
+      "wins": 673,
+      "losses": 399,
       "pushes": 7
     },
     "settled": 1079,
@@ -107,9 +107,9 @@
         "team": "KC",
         "stat": "recYds",
         "threshold": 50,
-        "side": "over",
-        "result": "loss",
-        "rationale": "8.4 targets/gm and 73 recYds season avg, still Mahomes' top red-zone/possession option in a dome.",
+        "side": "under",
+        "result": "win",
+        "rationale": "PHI's strong defensive unit and likely focused coverage on Kelce in biggest game could limit vs tough matchup despite 73 yd season avg.",
         "season": 2024,
         "week": 22
       },
@@ -118,9 +118,9 @@
         "team": "KC",
         "stat": "recYds",
         "threshold": 50,
-        "side": "over",
-        "result": "loss",
-        "rationale": "9.3 targets/gm, 74 recYds season avg, primary outside target share for KC in a big game.",
+        "side": "under",
+        "result": "win",
+        "rationale": "Elite PHI secondary and lower-volume role (74 yd avg but inconsistent) vs top-tier defense suggests under in biggest stage matchup.",
         "season": 2024,
         "week": 22
       },
@@ -131,7 +131,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "75 recYds/gm season avg on 7.6 targets, top WR1 role in PHI's high-powered dome offense.",
+        "rationale": "75+ yd season avg target share, dome conditions favor passing, PHI's explosive offense (568 PF) should move ball through air.",
         "season": 2024,
         "week": 22
       },
@@ -142,7 +142,7 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "64 recYds/gm season avg on solid 7.0 targets, consistent secondary option in PHI's balanced passing attack.",
+        "rationale": "Consistent ~64 yd/gm season avg, dome boosts passing efficiency, high-powered PHI offense averaging 28+ ppg.",
         "season": 2024,
         "week": 22
       },
@@ -184,9 +184,9 @@
         "team": "KC",
         "stat": "passYds",
         "threshold": 250,
-        "side": "over",
-        "result": "win",
-        "rationale": "Season avg 287 ypg, dome game removes weather variance, elite volume vs a strong but beatable PHI secondary.",
+        "side": "under",
+        "result": "loss",
+        "rationale": "PHI allowed fewest points in league (358 PA, ~18/gm), elite pass rush/secondary likely limits KC aerial volume in SB.",
         "season": 2024,
         "week": 22
       }
