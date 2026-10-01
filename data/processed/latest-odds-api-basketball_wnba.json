@@ -1,9 +1,9 @@
 {
-  "fetchedAt": "2026-10-01T19:31:23.266Z",
+  "fetchedAt": "2026-10-01T23:22:43.250Z",
   "league": "basketball_wnba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 4,
+  "eventCount": 3,
   "sampleEvent": {
     "id": "fd_36127450",
     "sport_key": "basketball_wnba",
@@ -29,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Indiana Fever",
-                  "price": 152
+                  "price": 156
                 },
                 {
                   "name": "Las Vegas Aces",
-                  "price": -188
+                  "price": -194
                 }
               ]
             },
@@ -42,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "Indiana Fever",
-                  "price": -112,
+                  "price": -108,
                   "point": 4.5
                 },
                 {
                   "name": "Las Vegas Aces",
-                  "price": -108,
+                  "price": -112,
                   "point": -4.5
                 }
               ]
@@ -78,13 +78,13 @@
               "outcomes": [
                 {
                   "name": "Indiana Fever",
-                  "price": -120,
-                  "point": 5
+                  "price": -105,
+                  "point": 4.5
                 },
                 {
                   "name": "Las Vegas Aces",
-                  "price": 100,
-                  "point": -5
+                  "price": -115,
+                  "point": -4.5
                 }
               ]
             },
@@ -121,13 +121,62 @@
       ]
     },
     {
-      "id": "bv_31648563",
+      "id": "fd_36135107",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
-      "commence_time": "2026-10-02T23:00:00.000Z",
+      "commence_time": "2026-10-03T01:00:00.000Z",
       "home_team": "Golden State Valkyries",
       "away_team": "Dallas Wings",
       "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Dallas Wings",
+                  "price": 245
+                },
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -320
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Dallas Wings",
+                  "price": -106,
+                  "point": 7.5
+                },
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -114,
+                  "point": -7.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -115,
+                  "point": 157.5
+                },
+                {
+                  "name": "Under",
+                  "price": -105,
+                  "point": 157.5
+                }
+              ]
+            }
+          ]
+        },
         {
           "key": "bovada",
           "title": "Bovada",
@@ -137,12 +186,12 @@
               "outcomes": [
                 {
                   "name": "Dallas Wings",
-                  "price": -120,
+                  "price": -115,
                   "point": 8.5
                 },
                 {
                   "name": "Golden State Valkyries",
-                  "price": 100,
+                  "price": -105,
                   "point": -8.5
                 }
               ]
@@ -172,65 +221,6 @@
                   "name": "Under",
                   "price": -115,
                   "point": 158.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36135107",
-      "sport_key": "basketball_wnba",
-      "sport_title": "WNBA",
-      "commence_time": "2026-10-03T01:00:00.000Z",
-      "home_team": "Golden State Valkyries",
-      "away_team": "Dallas Wings",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Dallas Wings",
-                  "price": 235
-                },
-                {
-                  "name": "Golden State Valkyries",
-                  "price": -300
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Dallas Wings",
-                  "price": -110,
-                  "point": 7.5
-                },
-                {
-                  "name": "Golden State Valkyries",
-                  "price": -110,
-                  "point": -7.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -115,
-                  "point": 157.5
-                },
-                {
-                  "name": "Under",
-                  "price": -105,
-                  "point": 157.5
                 }
               ]
             }
