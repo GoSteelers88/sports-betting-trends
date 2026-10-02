@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T09:59:04.282Z",
+  "generatedAt": "2026-10-02T09:01:21.906Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,8 +95,8 @@
   ],
   "props": {
     "record": {
-      "wins": 673,
-      "losses": 399,
+      "wins": 672,
+      "losses": 400,
       "pushes": 7
     },
     "settled": 1079,
@@ -107,9 +107,9 @@
         "team": "KC",
         "stat": "recYds",
         "threshold": 50,
-        "side": "under",
-        "result": "win",
-        "rationale": "PHI's strong defensive unit and likely focused coverage on Kelce in biggest game could limit vs tough matchup despite 73 yd season avg.",
+        "side": "over",
+        "result": "loss",
+        "rationale": "73.2 recYds/game career avg and 8.4 targets/game, Mahomes' top safety valve especially if trailing in big game.",
         "season": 2024,
         "week": 22
       },
@@ -118,9 +118,9 @@
         "team": "KC",
         "stat": "recYds",
         "threshold": 50,
-        "side": "under",
-        "result": "win",
-        "rationale": "Elite PHI secondary and lower-volume role (74 yd avg but inconsistent) vs top-tier defense suggests under in biggest stage matchup.",
+        "side": "over",
+        "result": "loss",
+        "rationale": "74.1 recYds/game avg with elite 9.3 targets/game, likely featured heavily if KC needs to pass to keep pace.",
         "season": 2024,
         "week": 22
       },
@@ -131,7 +131,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "75+ yd season avg target share, dome conditions favor passing, PHI's explosive offense (568 PF) should move ball through air.",
+        "rationale": "75.1 recYds/game average with strong target share (7.6/game), top Eagles receiving option in favorable matchup.",
         "season": 2024,
         "week": 22
       },
@@ -142,7 +142,7 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Consistent ~64 yd/gm season avg, dome boosts passing efficiency, high-powered PHI offense averaging 28+ ppg.",
+        "rationale": "63.9 recYds/game average, consistent #2 target (7 targets/game) in explosive Eagles passing attack.",
         "season": 2024,
         "week": 22
       },
@@ -153,7 +153,7 @@
         "threshold": 250,
         "side": "under",
         "result": "win",
-        "rationale": "Season avg only 193.6 passYds/gm; run-heavy PHI offense relies on Barkley and Hurts' legs more than the arm.",
+        "rationale": "Hurts averages only 193.6 passYds; Eagles' run-heavy identity (Barkley workhorse) and strong defense should limit pass volume.",
         "season": 2024,
         "week": 22
       },
@@ -164,7 +164,7 @@
         "threshold": 1.5,
         "side": "over",
         "result": "win",
-        "rationale": "Season avg 2.18 TD/gm, high-powered KC offense (568 PF) in a dome with no weather impact.",
+        "rationale": "2.18 TD/game season avg, high-powered KC red zone offense in dome conditions.",
         "season": 2024,
         "week": 22
       },
@@ -184,9 +184,9 @@
         "team": "KC",
         "stat": "passYds",
         "threshold": 250,
-        "side": "under",
-        "result": "loss",
-        "rationale": "PHI allowed fewest points in league (358 PA, ~18/gm), elite pass rush/secondary likely limits KC aerial volume in SB.",
+        "side": "over",
+        "result": "win",
+        "rationale": "Elite volume passer (287 avg), dome neutralizes weather, needs to air it out vs stout Eagles pass rush/coverage in a close game script.",
         "season": 2024,
         "week": 22
       }
