@@ -1,47 +1,26 @@
 {
-  "generatedAt": "2026-10-02T19:15:31.597Z",
+  "generatedAt": "2026-10-03T01:26:50.468Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 16,
+  "recordCount": 15,
   "errors": [
-    "unmodeled: Away Goals @ Home Goals (bv_31713163)",
-    "unmodeled: New Hampshire Wildcats @ Quinnipiac Bobcats (fd_36140240)",
-    "unmodeled: RIT Tigers @ Niagara Purple Eagles (fd_36140243)",
-    "unmodeled: Ferris State Bulldogs @ Canisius Golden Griffins (fd_36140248)",
-    "unmodeled: Bowling Green Falcons @ Michigan Wolverines (fd_36140253)",
-    "unmodeled: Maine Black Bears @ Holy Cross Crusaders (fd_36140255)",
-    "unmodeled: Miami Ohio Redhawks @ Northern Michigan Wildcats (fd_36140244)",
-    "unmodeled: Minnesota Golden Gophers @ Michigan Tech Huskies (fd_36140246)",
-    "unmodeled: Liu Sharks @ Minnesota Duluth Bulldogs (fd_36140265)",
-    "unmodeled: Robert Morris Colonials @ Wisconsin Badgers (fd_36140268)",
     "unmodeled: St. Louis Blues @ Dallas Stars (fd_36110791)",
     "unmodeled: Denver Pioneers @ Alaska Anchorage Seawolves (fd_36140270)",
     "unmodeled: Boston University Terri @ Alaska Fairbanks Nanook (fd_36140271)",
+    "unmodeled: Union Granet Chargers @ Army Black Knights (fd_36140273)",
     "unmodeled: Dallas Stars @ Nashville Predators (fd_36144336)"
   ],
   "data": {
-    "generatedAt": "2026-10-02T19:15:31.597Z",
+    "generatedAt": "2026-10-03T01:26:50.468Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 30,
+    "gameCount": 20,
     "results": [
-      {
-        "eventId": "fd_36110748",
-        "homeTeam": "Detroit Red Wings",
-        "awayTeam": "New York Rangers",
-        "homeWinProb": 0.4838,
-        "awayWinProb": 0.5162,
-        "expectedMargin": -0.22,
-        "homeNetRtg": -0.5,
-        "awayNetRtg": 0.3333333333333333,
-        "calibrated": false,
-        "startTime": "2026-10-02T22:40:00.000Z"
-      },
       {
         "eventId": "fd_36140463",
         "homeTeam": "Carolina Hurricanes",
@@ -64,7 +43,7 @@
         "homeNetRtg": 0.5,
         "awayNetRtg": -1.5,
         "calibrated": false,
-        "startTime": "2026-10-03T00:10:00.000Z"
+        "startTime": "2026-10-03T00:20:00.000Z"
       },
       {
         "eventId": "fd_36140462",
