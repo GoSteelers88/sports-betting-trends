@@ -1,81 +1,22 @@
 {
-  "fetchedAt": "2026-10-03T01:26:09.594Z",
+  "fetchedAt": "2026-10-03T17:55:41.819Z",
   "league": "basketball_wnba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 2,
   "sampleEvent": {
-    "id": "fd_36135107",
+    "id": "fd_36138147",
     "sport_key": "basketball_wnba",
-    "commence_time": "2026-10-03T01:05:00.000Z",
-    "home_team": "Golden State Valkyries",
-    "away_team": "Dallas Wings"
+    "commence_time": "2026-10-04T20:00:00.000Z",
+    "home_team": "Atlanta Dream",
+    "away_team": "New York Liberty"
   },
   "events": [
-    {
-      "id": "fd_36135107",
-      "sport_key": "basketball_wnba",
-      "sport_title": "WNBA",
-      "commence_time": "2026-10-03T01:05:00.000Z",
-      "home_team": "Golden State Valkyries",
-      "away_team": "Dallas Wings",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Dallas Wings",
-                  "price": 158
-                },
-                {
-                  "name": "Golden State Valkyries",
-                  "price": -205
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Dallas Wings",
-                  "price": -114,
-                  "point": 4.5
-                },
-                {
-                  "name": "Golden State Valkyries",
-                  "price": -114,
-                  "point": -4.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -114,
-                  "point": 152.5
-                },
-                {
-                  "name": "Under",
-                  "price": -114,
-                  "point": 152.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_36138147",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
-      "commence_time": "2026-10-04T22:00:00.000Z",
+      "commence_time": "2026-10-04T20:00:00.000Z",
       "home_team": "Atlanta Dream",
       "away_team": "New York Liberty",
       "bookmakers": [
@@ -101,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "New York Liberty",
-                  "price": -110,
+                  "price": -108,
                   "point": 3.5
                 },
                 {
                   "name": "Atlanta Dream",
-                  "price": -110,
+                  "price": -112,
                   "point": -3.5
                 }
               ]
@@ -137,13 +78,13 @@
               "outcomes": [
                 {
                   "name": "New York Liberty",
-                  "price": -110,
-                  "point": 3.5
+                  "price": -115,
+                  "point": 4
                 },
                 {
                   "name": "Atlanta Dream",
-                  "price": -110,
-                  "point": -3.5
+                  "price": -105,
+                  "point": -4
                 }
               ]
             },
@@ -152,11 +93,11 @@
               "outcomes": [
                 {
                   "name": "New York Liberty",
-                  "price": 130
+                  "price": 145
                 },
                 {
                   "name": "Atlanta Dream",
-                  "price": -150
+                  "price": -170
                 }
               ]
             },
@@ -165,13 +106,121 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -105,
-                  "point": 173.5
+                  "price": -110,
+                  "point": 172.5
                 },
                 {
                   "name": "Under",
-                  "price": -115,
-                  "point": 173.5
+                  "price": -110,
+                  "point": 172.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36140532",
+      "sport_key": "basketball_wnba",
+      "sport_title": "WNBA",
+      "commence_time": "2026-10-04T20:00:00.000Z",
+      "home_team": "Golden State Valkyries",
+      "away_team": "Las Vegas Aces",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Las Vegas Aces",
+                  "price": -106
+                },
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -114
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Las Vegas Aces",
+                  "price": -120,
+                  "point": 1.5
+                },
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -102,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -106,
+                  "point": 161.5
+                },
+                {
+                  "name": "Under",
+                  "price": -114,
+                  "point": 161.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Las Vegas Aces",
+                  "price": -110,
+                  "point": -1.5
+                },
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -110,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Las Vegas Aces",
+                  "price": -120
+                },
+                {
+                  "name": "Golden State Valkyries",
+                  "price": 100
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 161.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 161.5
                 }
               ]
             }
