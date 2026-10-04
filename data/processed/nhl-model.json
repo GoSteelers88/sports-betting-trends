@@ -1,94 +1,23 @@
 {
-  "generatedAt": "2026-10-04T02:00:38.550Z",
+  "generatedAt": "2026-10-04T18:09:23.654Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 11,
+  "recordCount": 8,
   "errors": [
-    "unmodeled: Dallas Stars @ Nashville Predators (fd_36144336)"
+    "unmodeled: Minnesota Golden Gophers @ Michigan Tech Huskies (fd_36140246)",
+    "unmodeled: San Jose Sharks @ Dallas Stars (fd_36153423)"
   ],
   "data": {
-    "generatedAt": "2026-10-04T02:00:38.550Z",
+    "generatedAt": "2026-10-04T18:09:23.654Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 12,
+    "gameCount": 10,
     "results": [
-      {
-        "eventId": "fd_36134916",
-        "homeTeam": "Pittsburgh Penguins",
-        "awayTeam": "Montreal Canadiens",
-        "homeWinProb": 0.4775,
-        "awayWinProb": 0.5225,
-        "expectedMargin": -0.3,
-        "homeNetRtg": 0,
-        "awayNetRtg": 1,
-        "calibrated": false,
-        "startTime": "2026-10-03T23:19:17.000Z"
-      },
-      {
-        "eventId": "fd_36137950",
-        "homeTeam": "New York Islanders",
-        "awayTeam": "New Jersey Devils",
-        "homeWinProb": 0.334,
-        "awayWinProb": 0.666,
-        "expectedMargin": -2.3,
-        "homeNetRtg": -4,
-        "awayNetRtg": 1,
-        "calibrated": false,
-        "startTime": "2026-10-03T23:47:00.000Z"
-      },
-      {
-        "eventId": "fd_36127299",
-        "homeTeam": "Minnesota Wild",
-        "awayTeam": "Boston Bruins",
-        "homeWinProb": 0.5769,
-        "awayWinProb": 0.4231,
-        "expectedMargin": 1.03,
-        "homeNetRtg": 1,
-        "awayNetRtg": -0.6666666666666666,
-        "calibrated": false,
-        "startTime": "2026-10-04T00:20:00.000Z"
-      },
-      {
-        "eventId": "fd_36144332",
-        "homeTeam": "Colorado Avalanche",
-        "awayTeam": "St. Louis Blues",
-        "homeWinProb": 0.6704,
-        "awayWinProb": 0.3296,
-        "expectedMargin": 2.37,
-        "homeNetRtg": 3.3333333333333335,
-        "awayNetRtg": -1,
-        "calibrated": false,
-        "startTime": "2026-10-04T01:09:00.000Z"
-      },
-      {
-        "eventId": "fd_36144369",
-        "homeTeam": "San Jose Sharks",
-        "awayTeam": "Los Angeles Kings",
-        "homeWinProb": 0.6868,
-        "awayWinProb": 0.3132,
-        "expectedMargin": 2.62,
-        "homeNetRtg": 3.3333333333333335,
-        "awayNetRtg": -1.5,
-        "calibrated": false,
-        "startTime": "2026-10-04T02:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36144387",
-        "homeTeam": "Vancouver Canucks",
-        "awayTeam": "Calgary Flames",
-        "homeWinProb": 0.5646,
-        "awayWinProb": 0.4354,
-        "expectedMargin": 0.87,
-        "homeNetRtg": -0.6666666666666666,
-        "awayNetRtg": -2,
-        "calibrated": false,
-        "startTime": "2026-10-04T02:11:00.000Z"
-      },
       {
         "eventId": "fd_36148014",
         "homeTeam": "Detroit Red Wings",
@@ -117,11 +46,11 @@
         "eventId": "fd_36140107",
         "homeTeam": "Seattle Kraken",
         "awayTeam": "Calgary Flames",
-        "homeWinProb": 0.6422,
-        "awayWinProb": 0.3578,
-        "expectedMargin": 1.95,
+        "homeWinProb": 0.6536,
+        "awayWinProb": 0.3464,
+        "expectedMargin": 2.12,
         "homeNetRtg": 1.5,
-        "awayNetRtg": -2,
+        "awayNetRtg": -2.3333333333333335,
         "calibrated": false,
         "startTime": "2026-10-05T00:00:00.000Z"
       },
@@ -141,13 +70,49 @@
         "eventId": "fd_36148018",
         "homeTeam": "Vancouver Canucks",
         "awayTeam": "Vegas Golden Knights",
-        "homeWinProb": 0.4341,
-        "awayWinProb": 0.5659,
-        "expectedMargin": -0.88,
-        "homeNetRtg": -0.6666666666666666,
+        "homeWinProb": 0.4682,
+        "awayWinProb": 0.5318,
+        "expectedMargin": -0.42,
+        "homeNetRtg": 0.25,
         "awayNetRtg": 1.5,
         "calibrated": false,
         "startTime": "2026-10-05T01:00:00.000Z"
+      },
+      {
+        "eventId": "fd_36153411",
+        "homeTeam": "Tampa Bay Lightning",
+        "awayTeam": "Philadelphia Flyers",
+        "homeWinProb": 0.6248,
+        "awayWinProb": 0.3752,
+        "expectedMargin": 1.7,
+        "homeNetRtg": 0.3333333333333333,
+        "awayNetRtg": -2.6666666666666665,
+        "calibrated": false,
+        "startTime": "2026-10-05T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_36153413",
+        "homeTeam": "Boston Bruins",
+        "awayTeam": "Ottawa Senators",
+        "homeWinProb": 0.6732,
+        "awayWinProb": 0.3268,
+        "expectedMargin": 2.41,
+        "homeNetRtg": 2.6666666666666665,
+        "awayNetRtg": -1.75,
+        "calibrated": false,
+        "startTime": "2026-10-05T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_36153414",
+        "homeTeam": "Pittsburgh Penguins",
+        "awayTeam": "Winnipeg Jets",
+        "homeWinProb": 0.6365,
+        "awayWinProb": 0.3635,
+        "expectedMargin": 1.87,
+        "homeNetRtg": 0.3333333333333333,
+        "awayNetRtg": -3,
+        "calibrated": false,
+        "startTime": "2026-10-05T23:30:00.000Z"
       }
     ]
   }

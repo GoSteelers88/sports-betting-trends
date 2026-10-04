@@ -1,41 +1,57 @@
 {
-  "generatedAt": "2026-10-04T02:00:08.715Z",
+  "generatedAt": "2026-10-04T18:08:50.222Z",
   "ready": true,
-  "recordsIngested": 755,
-  "recordsCompleted": 755,
+  "recordsIngested": 759,
+  "recordsCompleted": 759,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 634,
+      "games": 636,
       "conferences": [
+        "NL Central",
+        "NL West",
         "AL Central",
         "Unknown",
-        "NL West",
         "NL East",
         "AL East",
-        "NL Central",
         "AL West"
       ],
-      "avgPoints": 4.4495268138801265,
+      "avgPoints": 4.443396226415095,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 3.1,
+      "recentAvgPoints": 2.5,
       "recentAvgYards": null,
-      "trendScore": 35,
-      "trendSignal": "down",
+      "trendScore": 52,
+      "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 634,
-        "rpg": 4.45,
-        "oppRpg": 4.45,
+        "games": 636,
+        "rpg": 4.44,
+        "oppRpg": 4.44,
         "hitsPerGame": 8.18,
         "errorsPerGame": 0.5,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Brewers": {
+          "games": 21,
+          "rpg": 5.71,
+          "oppRpg": 3.76,
+          "hitsPerGame": 9.1,
+          "errorsPerGame": 0.38,
+          "sos": null
+        },
+        "Padres": {
+          "games": 24,
+          "rpg": 5.79,
+          "oppRpg": 4.13,
+          "hitsPerGame": 10.08,
+          "errorsPerGame": 0.29,
+          "sos": null
+        },
         "Guardians": {
           "games": 21,
           "rpg": 4.81,
@@ -98,14 +114,6 @@
           "oppRpg": 3.36,
           "hitsPerGame": 6.59,
           "errorsPerGame": 0.36,
-          "sos": null
-        },
-        "Padres": {
-          "games": 23,
-          "rpg": 5.96,
-          "oppRpg": 4.17,
-          "hitsPerGame": 10.13,
-          "errorsPerGame": 0.26,
           "sos": null
         },
         "Cubs": {
@@ -212,14 +220,6 @@
           "errorsPerGame": 0.43,
           "sos": null
         },
-        "Brewers": {
-          "games": 20,
-          "rpg": 5.85,
-          "oppRpg": 3.85,
-          "hitsPerGame": 9.2,
-          "errorsPerGame": 0.4,
-          "sos": null
-        },
         "Cardinals": {
           "games": 20,
           "rpg": 4,
@@ -286,7 +286,7 @@
       ],
       "avgPoints": 117,
       "avgRebounds": 49,
-      "avgAssists": 29.5,
+      "avgAssists": 28,
       "avgYards": null,
       "recentAvgPoints": 117,
       "recentAvgYards": null,
@@ -471,40 +471,64 @@
     },
     {
       "league": "NFL",
-      "games": 98,
+      "games": 100,
       "conferences": [
+        "NFC East",
+        "AFC South",
         "AFC North",
         "NFC North",
-        "NFC East",
         "AFC West",
         "NFC West",
         "AFC East",
-        "NFC South",
-        "AFC South"
+        "NFC South"
       ],
-      "avgPoints": 22.908163265306122,
+      "avgPoints": 22.88,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
-      "recentAvgPoints": 22,
+      "recentAvgPoints": 22.4,
       "recentAvgYards": null,
-      "trendScore": 75,
-      "trendSignal": "up",
+      "trendScore": 26,
+      "trendSignal": "down",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 98,
-        "ppg": 22.91,
-        "oppPpg": 22.91,
-        "ypg": 330.3,
-        "oppYpg": 330.3,
+        "games": 100,
+        "ppg": 22.88,
+        "oppPpg": 22.88,
+        "ypg": 329.43,
+        "oppYpg": 329.43,
         "turnoverMargin": 0,
-        "thirdDownPct": 0.41,
+        "thirdDownPct": 0.4,
         "redZonePct": 0.6,
-        "avgTop": 30.24,
+        "avgTop": 30.23,
         "sos": 0.5
       },
       "teamAdvanced": {
+        "WSH": {
+          "games": 4,
+          "ppg": 22,
+          "oppPpg": 30.5,
+          "ypg": 336,
+          "oppYpg": 314.75,
+          "turnoverMargin": -0.75,
+          "thirdDownPct": 0.42,
+          "redZonePct": 0.8,
+          "avgTop": 28.6,
+          "sos": 0.6
+        },
+        "IND": {
+          "games": 4,
+          "ppg": 25.5,
+          "oppPpg": 26,
+          "ypg": 392.25,
+          "oppYpg": 284.25,
+          "turnoverMargin": 1.5,
+          "thirdDownPct": 0.29,
+          "redZonePct": 0.57,
+          "avgTop": 31.61,
+          "sos": 0.46
+        },
         "CLE": {
           "games": 4,
           "ppg": 20.25,
@@ -637,18 +661,6 @@
           "avgTop": 26.56,
           "sos": 0.42
         },
-        "IND": {
-          "games": 3,
-          "ppg": 24,
-          "oppPpg": 30.33,
-          "ypg": 417.33,
-          "oppYpg": 293.33,
-          "turnoverMargin": 1.67,
-          "thirdDownPct": 0.36,
-          "redZonePct": 0.67,
-          "avgTop": 32.37,
-          "sos": 0.51
-        },
         "HOU": {
           "games": 3,
           "ppg": 18,
@@ -720,18 +732,6 @@
           "redZonePct": 0.27,
           "avgTop": 29.22,
           "sos": 0.59
-        },
-        "WSH": {
-          "games": 3,
-          "ppg": 25,
-          "oppPpg": 30.67,
-          "ypg": 362.33,
-          "oppYpg": 314,
-          "turnoverMargin": -0.67,
-          "thirdDownPct": 0.47,
-          "redZonePct": 0.75,
-          "avgTop": 27.91,
-          "sos": 0.64
         },
         "SEA": {
           "games": 3,
@@ -894,6 +894,100 @@
   ],
   "latestByLeague": [
     {
+      "league": "NFL",
+      "conference": "NFC East",
+      "gameDate": "2026-10-04T00:00:00.000Z",
+      "team": "WSH",
+      "opponent": "IND",
+      "points": 13,
+      "opponentPoints": 30,
+      "rebounds": null,
+      "assists": null,
+      "yards": null,
+      "spread": 4.5,
+      "atsResult": "L",
+      "won": false,
+      "teamRank": null,
+      "opponentRank": null,
+      "bubbleStatus": null,
+      "autoBidStatus": null,
+      "fgm": null,
+      "fga": null,
+      "threepm": null,
+      "threepa": null,
+      "ftm": null,
+      "fta": null,
+      "offRebounds": null,
+      "defRebounds": null,
+      "steals": null,
+      "blocks": null,
+      "turnovers": null,
+      "passingYards": 129,
+      "rushingYards": 128,
+      "opponentYards": 317,
+      "turnoversFor": 1,
+      "turnoversAgainst": 2,
+      "thirdDownConv": 5,
+      "thirdDownAtt": 16,
+      "redZoneConv": 3,
+      "redZoneAtt": 3,
+      "timeOfPossession": 30.666666666666668,
+      "homeAway": "home",
+      "hits": null,
+      "errors": null,
+      "source": "espn-public-api",
+      "sourceEventId": "401872965",
+      "gameStatus": "Final",
+      "completionEvidence": "espn-status-completed"
+    },
+    {
+      "league": "MLB",
+      "conference": "NL Central",
+      "gameDate": "2026-10-04T00:00:00.000Z",
+      "team": "Brewers",
+      "opponent": "Padres",
+      "points": 3,
+      "opponentPoints": 2,
+      "rebounds": null,
+      "assists": null,
+      "yards": null,
+      "spread": -1.5,
+      "atsResult": "L",
+      "won": true,
+      "teamRank": null,
+      "opponentRank": null,
+      "bubbleStatus": null,
+      "autoBidStatus": null,
+      "fgm": null,
+      "fga": null,
+      "threepm": null,
+      "threepa": null,
+      "ftm": null,
+      "fta": null,
+      "offRebounds": null,
+      "defRebounds": null,
+      "steals": null,
+      "blocks": null,
+      "turnovers": null,
+      "passingYards": null,
+      "rushingYards": null,
+      "opponentYards": null,
+      "turnoversFor": null,
+      "turnoversAgainst": null,
+      "thirdDownConv": null,
+      "thirdDownAtt": null,
+      "redZoneConv": null,
+      "redZoneAtt": null,
+      "timeOfPossession": null,
+      "homeAway": "home",
+      "hits": 7,
+      "errors": 0,
+      "source": "espn-public-api",
+      "sourceEventId": "401908002",
+      "gameStatus": "Final",
+      "completionEvidence": "espn-status-completed"
+    },
+    {
       "league": "NBA",
       "conference": "Eastern",
       "gameDate": "2026-10-03T00:00:00.000Z",
@@ -902,7 +996,7 @@
       "points": 105,
       "opponentPoints": 129,
       "rebounds": 43,
-      "assists": 26,
+      "assists": 25,
       "yards": null,
       "spread": null,
       "atsResult": null,
@@ -937,100 +1031,6 @@
       "errors": null,
       "source": "espn-public-api",
       "sourceEventId": "401902644",
-      "gameStatus": "Final",
-      "completionEvidence": "espn-status-completed"
-    },
-    {
-      "league": "MLB",
-      "conference": "AL Central",
-      "gameDate": "2026-10-03T00:00:00.000Z",
-      "team": "Guardians",
-      "opponent": "White Sox",
-      "points": 0,
-      "opponentPoints": 3,
-      "rebounds": null,
-      "assists": null,
-      "yards": null,
-      "spread": -1.5,
-      "atsResult": "L",
-      "won": false,
-      "teamRank": null,
-      "opponentRank": null,
-      "bubbleStatus": null,
-      "autoBidStatus": null,
-      "fgm": null,
-      "fga": null,
-      "threepm": null,
-      "threepa": null,
-      "ftm": null,
-      "fta": null,
-      "offRebounds": null,
-      "defRebounds": null,
-      "steals": null,
-      "blocks": null,
-      "turnovers": null,
-      "passingYards": null,
-      "rushingYards": null,
-      "opponentYards": null,
-      "turnoversFor": null,
-      "turnoversAgainst": null,
-      "thirdDownConv": null,
-      "thirdDownAtt": null,
-      "redZoneConv": null,
-      "redZoneAtt": null,
-      "timeOfPossession": null,
-      "homeAway": "home",
-      "hits": 3,
-      "errors": 0,
-      "source": "espn-public-api",
-      "sourceEventId": "401907990",
-      "gameStatus": "Final",
-      "completionEvidence": "espn-status-completed"
-    },
-    {
-      "league": "NFL",
-      "conference": "AFC North",
-      "gameDate": "2026-10-02T00:00:00.000Z",
-      "team": "CLE",
-      "opponent": "PIT",
-      "points": 27,
-      "opponentPoints": 24,
-      "rebounds": null,
-      "assists": null,
-      "yards": null,
-      "spread": 2.5,
-      "atsResult": "W",
-      "won": true,
-      "teamRank": null,
-      "opponentRank": null,
-      "bubbleStatus": null,
-      "autoBidStatus": null,
-      "fgm": null,
-      "fga": null,
-      "threepm": null,
-      "threepa": null,
-      "ftm": null,
-      "fta": null,
-      "offRebounds": null,
-      "defRebounds": null,
-      "steals": null,
-      "blocks": null,
-      "turnovers": null,
-      "passingYards": 269,
-      "rushingYards": 92,
-      "opponentYards": 372,
-      "turnoversFor": 2,
-      "turnoversAgainst": 2,
-      "thirdDownConv": 4,
-      "thirdDownAtt": 13,
-      "redZoneConv": 2,
-      "redZoneAtt": 3,
-      "timeOfPossession": 31.183333333333334,
-      "homeAway": "home",
-      "hits": null,
-      "errors": null,
-      "source": "espn-public-api",
-      "sourceEventId": "401872964",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -1107,11 +1107,41 @@
     "SEC",
     "Unknown"
   ],
-  "bestBets": [],
+  "bestBets": [
+    {
+      "league": "MLB",
+      "conference": null,
+      "gameDate": "2026-10-05T00:00:00.000Z",
+      "matchup": "Atlanta Braves at Los Angeles Dodgers",
+      "pickTeam": "Los Angeles Dodgers",
+      "opponent": "Atlanta Braves",
+      "spread": -1.5,
+      "modelSpread": -1.4,
+      "line": "Los Angeles Dodgers -1.5",
+      "score": 60,
+      "confidence": 56,
+      "rationaleSignals": [
+        "Momentum edge +0.80 (last-10 trend proxy)",
+        "ATS edge +0.300",
+        "History sample Los Angeles Dodgers: 22 games (mapped Dodgers) vs Atlanta Braves: 25 games",
+        "Home court (+1 pt adjustment)",
+        "Rest: Los Angeles Dodgers 2d rest vs Atlanta Braves 2d rest",
+        "2 books: avg -1.5, variance 0 (tight consensus)",
+        "Net Rating edge: +2.5",
+        "Home SP: Blake Snell",
+        "MLB model: 61.4% win prob (calibrated)"
+      ],
+      "momentumEdge": 0.8,
+      "atsEdge": 0.3,
+      "mlbModelProb": 0.6138,
+      "mlbEdge": 0.0098,
+      "mlbCalibrated": true
+    }
+  ],
   "topBestBetsTarget": 5,
-  "topBestBetsDateEt": "2026-10-03",
+  "topBestBetsDateEt": "2026-10-04",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 0 eligible games found on 2026-10-03 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 1 eligible game found on 2026-10-04 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1288,6 +1318,22 @@
         "status": "Day-To-Day",
         "injuryType": "Knee",
         "returnDate": "2026-10-04"
+      },
+      {
+        "player": "Quenton Jackson",
+        "team": "Indiana Pacers",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-10-07"
+      },
+      {
+        "player": "T.J. McConnell",
+        "team": "Indiana Pacers",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Undisclosed",
+        "returnDate": "2026-10-07"
       },
       {
         "player": "Larry Nance Jr.",
@@ -1514,6 +1560,22 @@
         "returnDate": "2026-12-01"
       },
       {
+        "player": "Nate Bittle",
+        "team": "Toronto Raptors",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Foot",
+        "returnDate": "2026-10-10"
+      },
+      {
+        "player": "Alijah Martin",
+        "team": "Toronto Raptors",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-10"
+      },
+      {
         "player": "Trayce Jackson-Davis",
         "team": "Toronto Raptors",
         "position": "F",
@@ -1554,30 +1616,6 @@
         "returnDate": "2026-10-10"
       },
       {
-        "player": "Nate Bittle",
-        "team": "Toronto Raptors",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Foot",
-        "returnDate": "2026-10-03"
-      },
-      {
-        "player": "Alijah Martin",
-        "team": "Toronto Raptors",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-03"
-      },
-      {
-        "player": "Chucky Hepburn",
-        "team": "Toronto Raptors",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-03"
-      },
-      {
         "player": "Trey Alexander",
         "team": "Utah Jazz",
         "position": "G",
@@ -1612,6 +1650,38 @@
     ],
     "nfl": [
       {
+        "player": "Andrew Wingard",
+        "team": "Arizona Cardinals",
+        "position": "S",
+        "status": "Questionable",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-04"
+      },
+      {
+        "player": "Reggie Virgil",
+        "team": "Arizona Cardinals",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Carson Beck",
+        "team": "Arizona Cardinals",
+        "position": "QB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Cameron Robertson",
+        "team": "Arizona Cardinals",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Dadrion Taylor-Demerson",
         "team": "Arizona Cardinals",
         "position": "S",
@@ -1620,12 +1690,20 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Josh Sweat",
+        "player": "Starling Thomas V",
         "team": "Arizona Cardinals",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Groin",
-        "returnDate": "2026-10-04"
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Josh Fryar",
+        "team": "Arizona Cardinals",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Will Johnson",
@@ -1663,9 +1741,41 @@
         "player": "Chris Moore",
         "team": "Baltimore Ravens",
         "position": "WR",
-        "status": "Questionable",
+        "status": "Out",
         "injuryType": "Ankle",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Marlon Humphrey",
+        "team": "Baltimore Ravens",
+        "position": "CB",
+        "status": "Questionable",
+        "injuryType": "Calf",
         "returnDate": "2026-10-04"
+      },
+      {
+        "player": "Trey Hendrickson",
+        "team": "Baltimore Ravens",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Finger",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Joe Fagnano",
+        "team": "Baltimore Ravens",
+        "position": "QB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Aeneas Peebles",
+        "team": "Baltimore Ravens",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Ethan Pocic",
@@ -1680,72 +1790,72 @@
         "team": "Baltimore Ravens",
         "position": "G",
         "status": "Injured Reserve",
-        "injuryType": "Lower Leg",
+        "injuryType": "Ankle",
         "returnDate": "2026-12-13"
-      },
-      {
-        "player": "Ronnie Stanley",
-        "team": "Baltimore Ravens",
-        "position": "OT",
-        "status": "Questionable",
-        "injuryType": "Toe",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Zay Flowers",
-        "team": "Baltimore Ravens",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Trey Hendrickson",
-        "team": "Baltimore Ravens",
-        "position": "LB",
-        "status": "Out",
-        "injuryType": "Finger",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Ray Davis",
-        "team": "Buffalo Bills",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Christian Benford",
-        "team": "Buffalo Bills",
-        "position": "CB",
-        "status": "Questionable",
-        "injuryType": "Toe",
-        "returnDate": "2026-10-04"
       },
       {
         "player": "T.J. Sanders",
         "team": "Buffalo Bills",
         "position": "DT",
-        "status": "Doubtful",
-        "injuryType": "doubtful",
-        "returnDate": "2026-10-04"
+        "status": "Out",
+        "injuryType": "out",
+        "returnDate": "2026-10-12"
       },
       {
-        "player": "Sam Franklin Jr.",
-        "team": "Buffalo Bills",
-        "position": "S",
-        "status": "Questionable",
-        "injuryType": "Personal",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Jordan Hancock",
+        "player": "Christian Benford",
         "team": "Buffalo Bills",
         "position": "CB",
-        "status": "Injured Reserve",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-11-01"
+        "status": "Out",
+        "injuryType": "Toe",
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Ar'maj Reed-Adams",
+        "team": "Buffalo Bills",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Jalon Kilgore",
+        "team": "Buffalo Bills",
+        "position": "S",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Skyler Bell",
+        "team": "Buffalo Bills",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Jude Bowry",
+        "team": "Buffalo Bills",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Mike Danna",
+        "team": "Buffalo Bills",
+        "position": "DE",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Jalen Coker",
+        "team": "Carolina Panthers",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Quadriceps",
+        "returnDate": "2026-10-04"
       },
       {
         "player": "Xavier Legette",
@@ -1762,14 +1872,6 @@
         "status": "Out",
         "injuryType": "Elbow",
         "returnDate": "2026-10-18"
-      },
-      {
-        "player": "Jalen Coker",
-        "team": "Carolina Panthers",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Quadriceps",
-        "returnDate": "2026-10-04"
       },
       {
         "player": "Cam Jackson",
@@ -1804,18 +1906,10 @@
         "returnDate": "2026-11-15"
       },
       {
-        "player": "Braxton Jones",
-        "team": "Chicago Bears",
-        "position": "OT",
-        "status": "Injured Reserve",
-        "injuryType": "Knee",
-        "returnDate": "2026-11-02"
-      },
-      {
         "player": "Anthony Johnson Jr.",
         "team": "Chicago Bears",
         "position": "S",
-        "status": "Out",
+        "status": "Injured Reserve",
         "injuryType": "Undisclosed",
         "returnDate": "2026-10-18"
       },
@@ -1823,9 +1917,9 @@
         "player": "Cam Lewis",
         "team": "Chicago Bears",
         "position": "CB",
-        "status": "Doubtful",
-        "injuryType": "Leg",
-        "returnDate": "2026-10-04"
+        "status": "Out",
+        "injuryType": "Hip",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Caleb Williams",
@@ -1834,6 +1928,46 @@
         "status": "Out",
         "injuryType": "Hamstring",
         "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Ozzy Trapilo",
+        "team": "Chicago Bears",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Jamree Kromah",
+        "team": "Chicago Bears",
+        "position": "DE",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Jayden Loving",
+        "team": "Chicago Bears",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "James Lynch",
+        "team": "Chicago Bears",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Braxton Jones",
+        "team": "Chicago Bears",
+        "position": "OT",
+        "status": "Injured Reserve",
+        "injuryType": "Knee",
+        "returnDate": "2026-11-02"
       },
       {
         "player": "Kyler Gordon",
@@ -1860,12 +1994,52 @@
         "returnDate": "2026-10-11"
       },
       {
+        "player": "Ja'Marr Chase",
+        "team": "Cincinnati Bengals",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Head",
+        "returnDate": "2026-10-04"
+      },
+      {
+        "player": "Swayze Bozeman",
+        "team": "Cincinnati Bengals",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Groin",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "B.J. Hill",
+        "team": "Cincinnati Bengals",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Achilles",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Bryan Cook",
         "team": "Cincinnati Bengals",
         "position": "S",
-        "status": "Questionable",
+        "status": "Out",
         "injuryType": "Ankle",
-        "returnDate": "2026-10-04"
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Colbie Young",
+        "team": "Cincinnati Bengals",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Landon Robinson",
+        "team": "Cincinnati Bengals",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Kyle Dugger",
@@ -1876,20 +2050,12 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Swayze Bozeman",
+        "player": "Myles Hinton",
         "team": "Cincinnati Bengals",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Groin",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Dalton Risner",
-        "team": "Cincinnati Bengals",
-        "position": "G",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-04"
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Jalen Davis",
@@ -1898,22 +2064,6 @@
         "status": "Injured Reserve",
         "injuryType": "Hamstring",
         "returnDate": "2026-11-08"
-      },
-      {
-        "player": "B.J. Hill",
-        "team": "Cincinnati Bengals",
-        "position": "DT",
-        "status": "Questionable",
-        "injuryType": "Achilles",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Colbie Young",
-        "team": "Cincinnati Bengals",
-        "position": "WR",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-11"
       },
       {
         "player": "Mason Graham",
@@ -1964,12 +2114,20 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Cobie Durant",
+        "player": "Camden Brown",
         "team": "Dallas Cowboys",
-        "position": "CB",
+        "position": "WR",
         "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-10-11"
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-08"
+      },
+      {
+        "player": "Emari Demercado",
+        "team": "Dallas Cowboys",
+        "position": "RB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-08"
       },
       {
         "player": "DeMarvion Overshown",
@@ -1977,7 +2135,39 @@
         "position": "LB",
         "status": "Out",
         "injuryType": "Hamstring",
-        "returnDate": "2026-10-11"
+        "returnDate": "2026-10-08"
+      },
+      {
+        "player": "Ajani Cornelius",
+        "team": "Dallas Cowboys",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-08"
+      },
+      {
+        "player": "Cobie Durant",
+        "team": "Dallas Cowboys",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-10-08"
+      },
+      {
+        "player": "James Houston",
+        "team": "Dallas Cowboys",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-08"
+      },
+      {
+        "player": "Caelen Carson",
+        "team": "Dallas Cowboys",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-08"
       },
       {
         "player": "Jonathan Bullard",
@@ -2076,20 +2266,20 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Warren Brinson",
+        "player": "Chris Brooks",
         "team": "Green Bay Packers",
-        "position": "DT",
-        "status": "Injured Reserve",
-        "injuryType": "Calf",
-        "returnDate": "2026-10-29"
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-04"
       },
       {
-        "player": "Jager Burton",
+        "player": "Kevin Zeitler",
         "team": "Green Bay Packers",
-        "position": "C",
-        "status": "Questionable",
-        "injuryType": "Groin",
-        "returnDate": "2026-10-04"
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Jacob Monk",
@@ -2116,6 +2306,14 @@
         "returnDate": "2026-10-11"
       },
       {
+        "player": "Warren Brinson",
+        "team": "Green Bay Packers",
+        "position": "DT",
+        "status": "Injured Reserve",
+        "injuryType": "Calf",
+        "returnDate": "2026-10-29"
+      },
+      {
         "player": "Jayden Reed",
         "team": "Green Bay Packers",
         "position": "WR",
@@ -2140,20 +2338,28 @@
         "returnDate": "2026-10-18"
       },
       {
-        "player": "Jake Hansen",
+        "player": "Marlin Klein",
         "team": "Houston Texans",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-04"
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
-        "player": "British Brooks",
+        "player": "Nate Thomas",
         "team": "Houston Texans",
-        "position": "RB",
-        "status": "Injured Reserve",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-11-08"
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Febechi Nwaiwu",
+        "team": "Houston Texans",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Azeez Al-Shaair",
@@ -2164,20 +2370,20 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Jadeveon Clowney",
+        "player": "Chris Braswell",
         "team": "Houston Texans",
         "position": "DE",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-04"
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
-        "player": "Logan Hall",
+        "player": "British Brooks",
         "team": "Houston Texans",
-        "position": "DE",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-04"
+        "position": "RB",
+        "status": "Injured Reserve",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-11-08"
       },
       {
         "player": "M.J. Stewart",
@@ -2196,20 +2402,44 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Trent Brown",
-        "team": "Houston Texans",
-        "position": "OT",
-        "status": "Questionable",
-        "injuryType": "Illness",
-        "returnDate": "2026-10-04"
+        "player": "Riley Leonard",
+        "team": "Indianapolis Colts",
+        "position": "QB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
-        "player": "Ed Ingram",
-        "team": "Houston Texans",
+        "player": "Darius Slayton",
+        "team": "Indianapolis Colts",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Dalton Tucker",
+        "team": "Indianapolis Colts",
         "position": "G",
-        "status": "Questionable",
-        "injuryType": "Groin",
-        "returnDate": "2026-10-04"
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "DJ Giddens",
+        "team": "Indianapolis Colts",
+        "position": "RB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "George Gumbs Jr.",
+        "team": "Indianapolis Colts",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Keenan Allen",
@@ -2218,14 +2448,6 @@
         "status": "Out",
         "injuryType": "Groin",
         "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Mo Alie-Cox",
-        "team": "Indianapolis Colts",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Illness",
-        "returnDate": "2026-10-04"
       },
       {
         "player": "Alec Pierce",
@@ -2244,28 +2466,68 @@
         "returnDate": "2026-10-25"
       },
       {
-        "player": "Christian Braswell",
+        "player": "Caleb Ransaw",
         "team": "Jacksonville Jaguars",
-        "position": "CB",
+        "position": "S",
         "status": "Questionable",
         "injuryType": "Knee",
         "returnDate": "2026-10-04"
       },
       {
+        "player": "Christian Braswell",
+        "team": "Jacksonville Jaguars",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Montaric Brown",
         "team": "Jacksonville Jaguars",
         "position": "CB",
-        "status": "Questionable",
+        "status": "Out",
         "injuryType": "Hamstring",
-        "returnDate": "2026-10-04"
+        "returnDate": "2026-10-11"
       },
       {
-        "player": "Albert Regis",
+        "player": "CJ Williams",
         "team": "Jacksonville Jaguars",
-        "position": "DT",
-        "status": "Questionable",
-        "injuryType": "Elbow",
-        "returnDate": "2026-10-04"
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Wesley Williams",
+        "team": "Jacksonville Jaguars",
+        "position": "DE",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Jack Kiser",
+        "team": "Jacksonville Jaguars",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Daniel Faalele",
+        "team": "Jacksonville Jaguars",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Jalen Huskey",
+        "team": "Jacksonville Jaguars",
+        "position": "S",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Josh Simmons",
@@ -2289,7 +2551,7 @@
         "position": "G",
         "status": "Out",
         "injuryType": "Groin",
-        "returnDate": "2026-10-04"
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Jack Bech",
@@ -2298,6 +2560,14 @@
         "status": "Injured Reserve",
         "injuryType": "Forearm",
         "returnDate": "2026-11-01"
+      },
+      {
+        "player": "Ladd McConkey",
+        "team": "Los Angeles Chargers",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Foot",
+        "returnDate": "2026-10-04"
       },
       {
         "player": "Dalvin Tomlinson",
@@ -2356,14 +2626,6 @@
         "returnDate": "2026-10-04"
       },
       {
-        "player": "Ladd McConkey",
-        "team": "Los Angeles Chargers",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Foot",
-        "returnDate": "2026-10-04"
-      },
-      {
         "player": "Kayode Awosika",
         "team": "Los Angeles Chargers",
         "position": "G",
@@ -2380,6 +2642,22 @@
         "returnDate": "2026-11-01"
       },
       {
+        "player": "Ty Simpson",
+        "team": "Los Angeles Rams",
+        "position": "QB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Colby Parkinson",
+        "team": "Los Angeles Rams",
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Shoulder - AC Joint",
+        "returnDate": "2026-10-12"
+      },
+      {
         "player": "Jaylen Watson",
         "team": "Los Angeles Rams",
         "position": "CB",
@@ -2388,20 +2666,20 @@
         "returnDate": "2026-10-12"
       },
       {
-        "player": "Colby Parkinson",
+        "player": "Cam Lampkin",
         "team": "Los Angeles Rams",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Shoulder - AC Joint",
-        "returnDate": "2026-10-04"
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-12"
       },
       {
-        "player": "Terrance Ferguson",
+        "player": "Bill Murray",
         "team": "Los Angeles Rams",
-        "position": "TE",
-        "status": "Injured Reserve",
-        "injuryType": "Ankle",
-        "returnDate": "2026-11-01"
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-12"
       },
       {
         "player": "Aaron Donald",
@@ -2410,6 +2688,22 @@
         "status": "Out",
         "injuryType": "Back",
         "returnDate": "2026-10-12"
+      },
+      {
+        "player": "CJ Daniels",
+        "team": "Los Angeles Rams",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Terrance Ferguson",
+        "team": "Los Angeles Rams",
+        "position": "TE",
+        "status": "Injured Reserve",
+        "injuryType": "Ankle",
+        "returnDate": "2026-11-01"
       },
       {
         "player": "Myles Garrett",
@@ -2500,38 +2794,6 @@
         "returnDate": "2026-11-01"
       },
       {
-        "player": "Channing Canada",
-        "team": "New England Patriots",
-        "position": "CB",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Christian Elliss",
-        "team": "New England Patriots",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Chest",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Craig Woodson",
-        "team": "New England Patriots",
-        "position": "S",
-        "status": "Questionable",
-        "injuryType": "Shoulder",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Dre'Mont Jones",
-        "team": "New England Patriots",
-        "position": "DE",
-        "status": "Questionable",
-        "injuryType": "Shoulder",
-        "returnDate": "2026-10-04"
-      },
-      {
         "player": "Reggie Gilliam",
         "team": "New England Patriots",
         "position": "FB",
@@ -2540,19 +2802,27 @@
         "returnDate": "2026-10-04"
       },
       {
-        "player": "Eli Raridon",
+        "player": "Behren Morton",
         "team": "New England Patriots",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Thigh",
-        "returnDate": "2026-10-04"
+        "position": "QB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
-        "player": "Christian Barmore",
+        "player": "Channing Canada",
         "team": "New England Patriots",
-        "position": "DT",
+        "position": "CB",
         "status": "Out",
-        "injuryType": "Shoulder",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Dametrious Crownover",
+        "team": "New England Patriots",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
         "returnDate": "2026-10-11"
       },
       {
@@ -2564,12 +2834,20 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Morgan Moses",
+        "player": "Tanner Arkin",
         "team": "New England Patriots",
-        "position": "OT",
-        "status": "Questionable",
-        "injuryType": "Foot",
-        "returnDate": "2026-10-04"
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Christian Barmore",
+        "team": "New England Patriots",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Shoulder",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Greg Van Roten",
@@ -2596,14 +2874,6 @@
         "returnDate": "2026-10-22"
       },
       {
-        "player": "Dell Pettus",
-        "team": "New England Patriots",
-        "position": "S",
-        "status": "Injured Reserve",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-22"
-      },
-      {
         "player": "Anfernee Jennings",
         "team": "New Orleans Saints",
         "position": "LB",
@@ -2616,7 +2886,7 @@
         "team": "New Orleans Saints",
         "position": "LB",
         "status": "Questionable",
-        "injuryType": "Neck",
+        "injuryType": "Shoulder",
         "returnDate": "2026-10-05"
       },
       {
@@ -2668,6 +2938,62 @@
         "returnDate": "2026-11-29"
       },
       {
+        "player": "Ar'Darius Washington",
+        "team": "New York Giants",
+        "position": "S",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Thomas Fidone II",
+        "team": "New York Giants",
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Devin Singletary",
+        "team": "New York Giants",
+        "position": "RB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Jihad Ward",
+        "team": "New York Giants",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Nikko Reed",
+        "team": "New York Giants",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "J.C. Davis",
+        "team": "New York Giants",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Bobby Jamison-Travis",
+        "team": "New York Giants",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Jaxson Dart",
         "team": "New York Giants",
         "position": "QB",
@@ -2684,43 +3010,19 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Dylan Parham",
+        "player": "Kingsley Enagbare",
         "team": "New York Jets",
-        "position": "G",
+        "position": "LB",
         "status": "Out",
         "injuryType": "Knee",
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Kenyon Sadiq",
+        "player": "Nahshon Wright",
         "team": "New York Jets",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Back",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Adonai Mitchell",
-        "team": "New York Jets",
-        "position": "WR",
+        "position": "CB",
         "status": "Out",
-        "injuryType": "Finger",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Kiko Mauigoa",
-        "team": "New York Jets",
-        "position": "LB",
-        "status": "Out",
-        "injuryType": "Quadriceps",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Breece Hall",
-        "team": "New York Jets",
-        "position": "RB",
-        "status": "Out",
-        "injuryType": "Quadriceps",
+        "injuryType": "Coach's Decision",
         "returnDate": "2026-10-11"
       },
       {
@@ -2732,12 +3034,36 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Kingsley Enagbare",
+        "player": "Kiko Mauigoa",
         "team": "New York Jets",
         "position": "LB",
-        "status": "Questionable",
+        "status": "Out",
+        "injuryType": "Quadriceps",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Adonai Mitchell",
+        "team": "New York Jets",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Finger",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Dylan Parham",
+        "team": "New York Jets",
+        "position": "G",
+        "status": "Out",
         "injuryType": "Knee",
-        "returnDate": "2026-10-04"
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Breece Hall",
+        "team": "New York Jets",
+        "position": "RB",
+        "status": "Out",
+        "injuryType": "Quadriceps",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Arian Smith",
@@ -2756,6 +3082,30 @@
         "returnDate": "2026-11-08"
       },
       {
+        "player": "Saquon Barkley",
+        "team": "Philadelphia Eagles",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-10-04"
+      },
+      {
+        "player": "Lane Johnson",
+        "team": "Philadelphia Eagles",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Personal",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Cole Payton",
+        "team": "Philadelphia Eagles",
+        "position": "QB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Fred Johnson",
         "team": "Philadelphia Eagles",
         "position": "OT",
@@ -2769,6 +3119,14 @@
         "position": "S",
         "status": "Out",
         "injuryType": "Groin",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Dallas Goedert",
+        "team": "Philadelphia Eagles",
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Knee - MCL",
         "returnDate": "2026-10-11"
       },
       {
@@ -2788,14 +3146,6 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Dallas Goedert",
-        "team": "Philadelphia Eagles",
-        "position": "TE",
-        "status": "Out",
-        "injuryType": "Knee - MCL",
-        "returnDate": "2026-10-11"
-      },
-      {
         "player": "DeVonta Smith",
         "team": "Philadelphia Eagles",
         "position": "WR",
@@ -2807,7 +3157,7 @@
         "player": "Jamel Dean",
         "team": "Pittsburgh Steelers",
         "position": "CB",
-        "status": "Questionable",
+        "status": "Doubtful",
         "injuryType": "Ankle",
         "returnDate": "2026-10-11"
       },
@@ -2815,7 +3165,7 @@
         "player": "Derrick Harmon",
         "team": "Pittsburgh Steelers",
         "position": "DT",
-        "status": "Questionable",
+        "status": "Doubtful",
         "injuryType": "Foot",
         "returnDate": "2026-10-11"
       },
@@ -2868,6 +3218,14 @@
         "returnDate": "2026-10-11"
       },
       {
+        "player": "Mike Evans",
+        "team": "San Francisco 49ers",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Ribs",
+        "returnDate": "2026-10-04"
+      },
+      {
         "player": "Dre Greenlaw",
         "team": "San Francisco 49ers",
         "position": "LB",
@@ -2890,14 +3248,6 @@
         "status": "Injured Reserve",
         "injuryType": "Calf",
         "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Mike Evans",
-        "team": "San Francisco 49ers",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Ribs",
-        "returnDate": "2026-10-04"
       },
       {
         "player": "Mykel Williams",
@@ -2964,20 +3314,12 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "SirVocea Dennis",
+        "player": "Billy Schrauth",
         "team": "Tampa Bay Buccaneers",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Calf",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Benjamin Morrison",
-        "team": "Tampa Bay Buccaneers",
-        "position": "CB",
+        "position": "G",
         "status": "Out",
-        "injuryType": "Quadriceps",
-        "returnDate": "2026-10-11"
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-08"
       },
       {
         "player": "Ko Kieft",
@@ -2985,31 +3327,7 @@
         "position": "TE",
         "status": "Out",
         "injuryType": "Elbow",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Rueben Bain Jr.",
-        "team": "Tampa Bay Buccaneers",
-        "position": "LB",
-        "status": "Out",
-        "injuryType": "Groin",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Rakeem Nunez-Roches",
-        "team": "Tampa Bay Buccaneers",
-        "position": "DT",
-        "status": "Questionable",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-04"
-      },
-      {
-        "player": "Jalen McMillan",
-        "team": "Tampa Bay Buccaneers",
-        "position": "WR",
-        "status": "Injured Reserve",
-        "injuryType": "Knee - PCL",
-        "returnDate": "2026-11-22"
+        "returnDate": "2026-10-08"
       },
       {
         "player": "Baker Mayfield",
@@ -3020,28 +3338,92 @@
         "returnDate": "2026-10-25"
       },
       {
-        "player": "Garrett Dellinger",
-        "team": "Tennessee Titans",
+        "player": "Benjamin Morrison",
+        "team": "Tampa Bay Buccaneers",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Quadriceps",
+        "returnDate": "2026-10-08"
+      },
+      {
+        "player": "Luke Haggard",
+        "team": "Tampa Bay Buccaneers",
         "position": "G",
-        "status": "Questionable",
-        "injuryType": "Illness",
-        "returnDate": "2026-10-04"
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-08"
       },
       {
-        "player": "Kevin Winston Jr.",
-        "team": "Tennessee Titans",
-        "position": "S",
-        "status": "Questionable",
-        "injuryType": "Shoulder",
-        "returnDate": "2026-10-04"
+        "player": "Rueben Bain Jr.",
+        "team": "Tampa Bay Buccaneers",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Groin",
+        "returnDate": "2026-10-08"
       },
       {
-        "player": "Tyjae Spears",
+        "player": "DeMonte Capehart",
+        "team": "Tampa Bay Buccaneers",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-08"
+      },
+      {
+        "player": "Jalen McMillan",
+        "team": "Tampa Bay Buccaneers",
+        "position": "WR",
+        "status": "Injured Reserve",
+        "injuryType": "Knee - PCL",
+        "returnDate": "2026-11-22"
+      },
+      {
+        "player": "Michael Carter",
         "team": "Tennessee Titans",
         "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-04"
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Jaylon Jones",
+        "team": "Tennessee Titans",
+        "position": "CB",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Jackie Marshall",
+        "team": "Tennessee Titans",
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Drew Moss",
+        "team": "Tennessee Titans",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Kylen Granson",
+        "team": "Tennessee Titans",
+        "position": "TE",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Brandon Crenshaw-Dickson",
+        "team": "Tennessee Titans",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Jackson Slater",
@@ -3063,9 +3445,57 @@
         "player": "Terry McLaurin",
         "team": "Washington Commanders",
         "position": "WR",
-        "status": "Doubtful",
+        "status": "Out",
         "injuryType": "Hamstring",
-        "returnDate": "2026-10-04"
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Charles Omenihu",
+        "team": "Washington Commanders",
+        "position": "DE",
+        "status": "Questionable",
+        "injuryType": "Groin",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Jaylin Lane",
+        "team": "Washington Commanders",
+        "position": "WR",
+        "status": "Doubtful",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Marcus Mariota",
+        "team": "Washington Commanders",
+        "position": "QB",
+        "status": "Doubtful",
+        "injuryType": "Knee - MCL",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Tyler Owens",
+        "team": "Washington Commanders",
+        "position": "S",
+        "status": "Questionable",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Jeremy Reaves",
+        "team": "Washington Commanders",
+        "position": "S",
+        "status": "Questionable",
+        "injuryType": "Finger",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Luke McCaffrey",
+        "team": "Washington Commanders",
+        "position": "WR",
+        "status": "Out",
+        "injuryType": "Coach's Decision",
+        "returnDate": "2026-10-11"
       },
       {
         "player": "Rachaad White",
@@ -3076,19 +3506,11 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Jayden Daniels",
+        "player": "Javontae Jean-Baptiste",
         "team": "Washington Commanders",
-        "position": "QB",
+        "position": "LB",
         "status": "Out",
-        "injuryType": "Elbow",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Nick Cross",
-        "team": "Washington Commanders",
-        "position": "S",
-        "status": "Out",
-        "injuryType": "Illness",
+        "injuryType": "Coach's Decision",
         "returnDate": "2026-10-11"
       },
       {
@@ -3100,20 +3522,20 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Percy Butler",
+        "player": "Nick Cross",
         "team": "Washington Commanders",
         "position": "S",
-        "status": "Questionable",
-        "injuryType": "Concussion",
-        "returnDate": "2026-10-04"
+        "status": "Out",
+        "injuryType": "Illness",
+        "returnDate": "2026-10-11"
       },
       {
-        "player": "Leo Chenal",
+        "player": "Jayden Daniels",
         "team": "Washington Commanders",
-        "position": "LB",
-        "status": "Injured Reserve",
-        "injuryType": "Neck",
-        "returnDate": "2027-02-15"
+        "position": "QB",
+        "status": "Out",
+        "injuryType": "Elbow",
+        "returnDate": "2026-10-11"
       }
     ]
   }
