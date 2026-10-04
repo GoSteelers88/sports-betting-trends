@@ -1,23 +1,21 @@
 {
-  "generatedAt": "2026-10-03T17:56:23.189Z",
+  "generatedAt": "2026-10-04T02:00:38.550Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 17,
+  "recordCount": 11,
   "errors": [
-    "unmodeled: Union Granet Chargers @ Army Black Knights (fd_36140273)",
-    "unmodeled: Away Goals @ Home Goals (bv_31759563)",
     "unmodeled: Dallas Stars @ Nashville Predators (fd_36144336)"
   ],
   "data": {
-    "generatedAt": "2026-10-03T17:56:23.189Z",
+    "generatedAt": "2026-10-04T02:00:38.550Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 20,
+    "gameCount": 12,
     "results": [
       {
         "eventId": "fd_36134916",
@@ -29,79 +27,7 @@
         "homeNetRtg": 0,
         "awayNetRtg": 1,
         "calibrated": false,
-        "startTime": "2026-10-03T23:06:00.000Z"
-      },
-      {
-        "eventId": "fd_36143946",
-        "homeTeam": "Toronto Maple Leafs",
-        "awayTeam": "Ottawa Senators",
-        "homeWinProb": 0.6306,
-        "awayWinProb": 0.3694,
-        "expectedMargin": 1.78,
-        "homeNetRtg": 0.5,
-        "awayNetRtg": -2.6666666666666665,
-        "calibrated": false,
-        "startTime": "2026-10-03T23:07:00.000Z"
-      },
-      {
-        "eventId": "fd_36138389",
-        "homeTeam": "Tampa Bay Lightning",
-        "awayTeam": "Washington Capitals",
-        "homeWinProb": 0.4219,
-        "awayWinProb": 0.5781,
-        "expectedMargin": -1.05,
-        "homeNetRtg": -0.5,
-        "awayNetRtg": 2,
-        "calibrated": false,
-        "startTime": "2026-10-03T23:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36143886",
-        "homeTeam": "Edmonton Oilers",
-        "awayTeam": "Seattle Kraken",
-        "homeWinProb": 0.5025,
-        "awayWinProb": 0.4975,
-        "expectedMargin": 0.03,
-        "homeNetRtg": 1.6666666666666667,
-        "awayNetRtg": 2,
-        "calibrated": false,
-        "startTime": "2026-10-03T23:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36143940",
-        "homeTeam": "Philadelphia Flyers",
-        "awayTeam": "Carolina Hurricanes",
-        "homeWinProb": 0.3509,
-        "awayWinProb": 0.6491,
-        "expectedMargin": -2.05,
-        "homeNetRtg": -3,
-        "awayNetRtg": 1.5,
-        "calibrated": false,
-        "startTime": "2026-10-03T23:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36134912",
-        "homeTeam": "Buffalo Sabres",
-        "awayTeam": "Chicago Blackhawks",
-        "homeWinProb": 0.6508,
-        "awayWinProb": 0.3492,
-        "expectedMargin": 2.08,
-        "homeNetRtg": 1,
-        "awayNetRtg": -2.75,
-        "calibrated": false,
-        "startTime": "2026-10-03T23:12:00.000Z"
-      },
-      {
-        "eventId": "fd_36143868",
-        "homeTeam": "Columbus Blue Jackets",
-        "awayTeam": "Utah Mammoth",
-        "homeWinProb": 0.6248,
-        "awayWinProb": 0.3752,
-        "expectedMargin": 1.7,
-        "homeNetRtg": 2.6666666666666665,
-        "awayNetRtg": -0.3333333333333333,
-        "calibrated": false,
-        "startTime": "2026-10-03T23:13:00.000Z"
+        "startTime": "2026-10-03T23:19:17.000Z"
       },
       {
         "eventId": "fd_36137950",
@@ -113,7 +39,7 @@
         "homeNetRtg": -4,
         "awayNetRtg": 1,
         "calibrated": false,
-        "startTime": "2026-10-03T23:40:00.000Z"
+        "startTime": "2026-10-03T23:47:00.000Z"
       },
       {
         "eventId": "fd_36127299",
@@ -125,7 +51,7 @@
         "homeNetRtg": 1,
         "awayNetRtg": -0.6666666666666666,
         "calibrated": false,
-        "startTime": "2026-10-04T00:08:00.000Z"
+        "startTime": "2026-10-04T00:20:00.000Z"
       },
       {
         "eventId": "fd_36144332",
@@ -179,11 +105,11 @@
         "eventId": "fd_36148019",
         "homeTeam": "New York Rangers",
         "awayTeam": "Utah Mammoth",
-        "homeWinProb": 0.5769,
-        "awayWinProb": 0.4231,
-        "expectedMargin": 1.03,
+        "homeWinProb": 0.5461,
+        "awayWinProb": 0.4539,
+        "expectedMargin": 0.62,
         "homeNetRtg": 1.3333333333333333,
-        "awayNetRtg": -0.3333333333333333,
+        "awayNetRtg": 0.5,
         "calibrated": false,
         "startTime": "2026-10-04T22:00:00.000Z"
       },
