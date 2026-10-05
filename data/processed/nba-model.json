@@ -1,37 +1,51 @@
 {
-  "generatedAt": "2026-10-05T01:18:51.487Z",
+  "generatedAt": "2026-10-05T21:33:04.187Z",
   "source": "nba-efficiency-empirical",
-  "status": "no-data",
+  "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 0,
+  "recordCount": 1,
   "errors": [
     "unmodeled: Boston Celtics @ Detroit Pistons (fd_35928218)",
     "unmodeled: Philadelphia 76ers @ New York Knicks (fd_35928228)",
     "unmodeled: Oklahoma City Thunder @ San Antonio Spurs (fd_35928229)",
-    "unmodeled: Atlanta Hawks @ Orlando Magic (bv_29848365)",
-    "unmodeled: Milwaukee Bucks @ Washington Wizards (bv_29847192)",
+    "unmodeled: Atlanta Hawks @ Orlando Magic (fd_35937399)",
+    "unmodeled: Milwaukee Bucks @ Washington Wizards (fd_35937402)",
     "unmodeled: Minnesota Timberwolves @ Miami Heat (fd_35932897)",
-    "unmodeled: Charlotte Hornets @ Brooklyn Nets (bv_29844964)",
-    "unmodeled: Indiana Pacers @ New Orleans Pelicans (bv_29843989)",
-    "unmodeled: Utah Jazz @ Memphis Grizzlies (bv_29843976)",
-    "unmodeled: Dallas Mavericks @ Houston Rockets (bv_29843975)",
+    "unmodeled: Charlotte Hornets @ Brooklyn Nets (fd_35937400)",
+    "unmodeled: Chicago Bulls @ Toronto Raptors (fd_35937407)",
+    "unmodeled: Utah Jazz @ Memphis Grizzlies (fd_35937404)",
+    "unmodeled: Indiana Pacers @ New Orleans Pelicans (fd_35937408)",
+    "unmodeled: Dallas Mavericks @ Houston Rockets (fd_35937406)",
     "unmodeled: Golden State Warriors @ Los Angeles Lakers (fd_35932904)",
-    "unmodeled: Phoenix Suns @ Portland Trail Blazers (bv_29847191)",
-    "unmodeled: San Antonio Spurs @ New York Knicks (fd_35928396)",
-    "unmodeled: Miami Heat @ Boston Celtics (fd_35928397)",
-    "unmodeled: Philadelphia 76ers @ Los Angeles Lakers (fd_35928398)",
-    "unmodeled: Oklahoma City Thunder @ Minnesota Timberwolves (fd_35928399)",
-    "unmodeled: Denver Nuggets @ Golden State Warriors (fd_35928400)"
+    "unmodeled: Phoenix Suns @ Portland Trail Blazers (fd_35937401)",
+    "unmodeled: Sacramento Kings @ Los Angeles Clippers (fd_35937403)",
+    "unmodeled: San Antonio Spurs @ New York Knicks (bv_29471765)",
+    "unmodeled: Miami Heat @ Boston Celtics (bv_29472363)",
+    "unmodeled: Philadelphia 76ers @ Los Angeles Lakers (bv_29471766)",
+    "unmodeled: Oklahoma City Thunder @ Minnesota Timberwolves (bv_29471767)"
   ],
   "data": {
-    "generatedAt": "2026-10-05T01:18:51.487Z",
+    "generatedAt": "2026-10-05T21:33:04.187Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 2,
-    "gameCount": 17,
-    "results": []
+    "teamCount": 6,
+    "gameCount": 19,
+    "results": [
+      {
+        "eventId": "bv_29471768",
+        "homeTeam": "Golden State Warriors",
+        "awayTeam": "Denver Nuggets",
+        "homeWinProb": 0.6417,
+        "awayWinProb": 0.3583,
+        "expectedMargin": 5.55,
+        "homeNetRtg": -3,
+        "awayNetRtg": -12,
+        "calibrated": false,
+        "startTime": "2026-12-26T03:30:00.000Z"
+      }
+    ]
   }
 }
