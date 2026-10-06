@@ -1,9 +1,9 @@
 {
-  "fetchedAt": "2026-10-05T21:29:25.530Z",
+  "fetchedAt": "2026-10-06T00:55:46.273Z",
   "league": "americanfootball_nfl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 16,
+  "eventCount": 14,
   "sampleEvent": {
     "id": "fd_36104928",
     "sport_key": "americanfootball_nfl",
@@ -29,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Atlanta Falcons",
-                  "price": 100
+                  "price": -188
                 },
                 {
                   "name": "New Orleans Saints",
-                  "price": -118
+                  "price": 146
                 }
               ]
             },
@@ -42,13 +42,13 @@
               "outcomes": [
                 {
                   "name": "Atlanta Falcons",
-                  "price": -110,
-                  "point": 1.5
+                  "price": -106,
+                  "point": -3.5
                 },
                 {
                   "name": "New Orleans Saints",
-                  "price": -110,
-                  "point": -1.5
+                  "price": -125,
+                  "point": 3.5
                 }
               ]
             },
@@ -57,12 +57,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
+                  "price": -104,
                   "point": 47.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
+                  "price": -128,
                   "point": 47.5
                 }
               ]
@@ -88,11 +88,11 @@
               "outcomes": [
                 {
                   "name": "Tampa Bay Buccaneers",
-                  "price": 420
+                  "price": 400
                 },
                 {
                   "name": "Dallas Cowboys",
-                  "price": -560
+                  "price": -520
                 }
               ]
             },
@@ -101,12 +101,12 @@
               "outcomes": [
                 {
                   "name": "Tampa Bay Buccaneers",
-                  "price": -105,
+                  "price": -112,
                   "point": 9.5
                 },
                 {
                   "name": "Dallas Cowboys",
-                  "price": -115,
+                  "price": -108,
                   "point": -9.5
                 }
               ]
@@ -147,11 +147,11 @@
               "outcomes": [
                 {
                   "name": "Philadelphia Eagles",
-                  "price": 205
+                  "price": 225
                 },
                 {
                   "name": "Jacksonville Jaguars",
-                  "price": -250
+                  "price": -275
                 }
               ]
             },
@@ -160,13 +160,13 @@
               "outcomes": [
                 {
                   "name": "Philadelphia Eagles",
-                  "price": -105,
-                  "point": 5.5
+                  "price": -112,
+                  "point": 6.5
                 },
                 {
                   "name": "Jacksonville Jaguars",
-                  "price": -115,
-                  "point": -5.5
+                  "price": -108,
+                  "point": -6.5
                 }
               ]
             },
@@ -226,65 +226,6 @@
                   "name": "Miami Dolphins",
                   "price": -118,
                   "point": 7.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 42.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 42.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36132639",
-      "sport_key": "americanfootball_nfl",
-      "sport_title": "NFL",
-      "commence_time": "2026-10-11T17:01:00.000Z",
-      "home_team": "New Orleans Saints",
-      "away_team": "Minnesota Vikings",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Minnesota Vikings",
-                  "price": -118
-                },
-                {
-                  "name": "New Orleans Saints",
-                  "price": 100
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Minnesota Vikings",
-                  "price": -105,
-                  "point": -1.5
-                },
-                {
-                  "name": "New Orleans Saints",
-                  "price": -115,
-                  "point": 1.5
                 }
               ]
             },
@@ -831,65 +772,6 @@
                   "name": "Under",
                   "price": -105,
                   "point": 53.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36132648",
-      "sport_key": "americanfootball_nfl",
-      "sport_title": "NFL",
-      "commence_time": "2026-10-12T00:21:00.000Z",
-      "home_team": "Atlanta Falcons",
-      "away_team": "Baltimore Ravens",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Baltimore Ravens",
-                  "price": -164
-                },
-                {
-                  "name": "Atlanta Falcons",
-                  "price": 138
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Baltimore Ravens",
-                  "price": -112,
-                  "point": -3
-                },
-                {
-                  "name": "Atlanta Falcons",
-                  "price": -108,
-                  "point": 3
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -108,
-                  "point": 45.5
-                },
-                {
-                  "name": "Under",
-                  "price": -112,
-                  "point": 45.5
                 }
               ]
             }
