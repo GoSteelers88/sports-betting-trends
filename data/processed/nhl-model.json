@@ -1,59 +1,20 @@
 {
-  "generatedAt": "2026-10-05T21:30:21.293Z",
+  "generatedAt": "2026-10-06T02:31:46.358Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 12,
-  "errors": [
-    "unmodeled: Home Goals @ Away Goals (bv_31855363)",
-    "unmodeled: San Jose Sharks @ Dallas Stars (fd_36153423)"
-  ],
+  "recordCount": 9,
+  "errors": [],
   "data": {
-    "generatedAt": "2026-10-05T21:30:21.293Z",
+    "generatedAt": "2026-10-06T02:31:46.358Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 14,
+    "gameCount": 9,
     "results": [
-      {
-        "eventId": "fd_36153411",
-        "homeTeam": "Tampa Bay Lightning",
-        "awayTeam": "Philadelphia Flyers",
-        "homeWinProb": 0.6248,
-        "awayWinProb": 0.3752,
-        "expectedMargin": 1.7,
-        "homeNetRtg": 0.3333333333333333,
-        "awayNetRtg": -2.6666666666666665,
-        "calibrated": false,
-        "startTime": "2026-10-05T23:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36153413",
-        "homeTeam": "Boston Bruins",
-        "awayTeam": "Ottawa Senators",
-        "homeWinProb": 0.6732,
-        "awayWinProb": 0.3268,
-        "expectedMargin": 2.41,
-        "homeNetRtg": 2.6666666666666665,
-        "awayNetRtg": -1.75,
-        "calibrated": false,
-        "startTime": "2026-10-05T23:40:00.000Z"
-      },
-      {
-        "eventId": "fd_36153414",
-        "homeTeam": "Pittsburgh Penguins",
-        "awayTeam": "Winnipeg Jets",
-        "homeWinProb": 0.589,
-        "awayWinProb": 0.411,
-        "expectedMargin": 1.2,
-        "homeNetRtg": 0.3333333333333333,
-        "awayNetRtg": -1.6666666666666667,
-        "calibrated": false,
-        "startTime": "2026-10-05T23:40:00.000Z"
-      },
       {
         "eventId": "fd_36151153",
         "homeTeam": "Montreal Canadiens",

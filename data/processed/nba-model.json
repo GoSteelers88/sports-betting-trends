@@ -1,19 +1,17 @@
 {
-  "generatedAt": "2026-10-05T21:33:04.187Z",
+  "generatedAt": "2026-10-06T02:33:44.650Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 1,
+  "recordCount": 3,
   "errors": [
     "unmodeled: Boston Celtics @ Detroit Pistons (fd_35928218)",
-    "unmodeled: Philadelphia 76ers @ New York Knicks (fd_35928228)",
     "unmodeled: Oklahoma City Thunder @ San Antonio Spurs (fd_35928229)",
     "unmodeled: Atlanta Hawks @ Orlando Magic (fd_35937399)",
     "unmodeled: Milwaukee Bucks @ Washington Wizards (fd_35937402)",
     "unmodeled: Minnesota Timberwolves @ Miami Heat (fd_35932897)",
     "unmodeled: Charlotte Hornets @ Brooklyn Nets (fd_35937400)",
     "unmodeled: Chicago Bulls @ Toronto Raptors (fd_35937407)",
-    "unmodeled: Utah Jazz @ Memphis Grizzlies (fd_35937404)",
     "unmodeled: Indiana Pacers @ New Orleans Pelicans (fd_35937408)",
     "unmodeled: Dallas Mavericks @ Houston Rockets (fd_35937406)",
     "unmodeled: Golden State Warriors @ Los Angeles Lakers (fd_35932904)",
@@ -25,15 +23,39 @@
     "unmodeled: Oklahoma City Thunder @ Minnesota Timberwolves (bv_29471767)"
   ],
   "data": {
-    "generatedAt": "2026-10-05T21:33:04.187Z",
+    "generatedAt": "2026-10-06T02:33:44.650Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 6,
+    "teamCount": 12,
     "gameCount": 19,
     "results": [
+      {
+        "eventId": "fd_35928228",
+        "homeTeam": "New York Knicks",
+        "awayTeam": "Philadelphia 76ers",
+        "homeWinProb": 0.1175,
+        "awayWinProb": 0.8825,
+        "expectedMargin": -19.2,
+        "homeNetRtg": -23,
+        "awayNetRtg": 23,
+        "calibrated": false,
+        "startTime": "2026-10-20T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35937404",
+        "homeTeam": "Memphis Grizzlies",
+        "awayTeam": "Utah Jazz",
+        "homeWinProb": 0.5039,
+        "awayWinProb": 0.4961,
+        "expectedMargin": 0.15,
+        "homeNetRtg": 9,
+        "awayNetRtg": 12,
+        "calibrated": false,
+        "startTime": "2026-10-22T00:10:00.000Z"
+      },
       {
         "eventId": "bv_29471768",
         "homeTeam": "Golden State Warriors",
