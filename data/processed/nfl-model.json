@@ -1,35 +1,280 @@
 {
-  "generatedAt": "2026-10-06T02:37:33.428Z",
+  "generatedAt": "2026-10-06T19:31:10.409Z",
   "source": "nfl-live-board",
   "status": "ok",
-  "freshnessMins": 9387,
-  "recordCount": 1,
+  "freshnessMins": 320,
+  "recordCount": 15,
   "errors": [],
-  "boardFile": "board-2026-wk04.json",
-  "boardPublishedAt": "2026-09-29T14:10:32.246Z",
+  "boardFile": "board-2026-wk05.json",
+  "boardPublishedAt": "2026-10-06T14:11:26.604Z",
   "season": 2026,
-  "week": 4,
+  "week": 5,
   "data": {
-    "generatedAt": "2026-10-06T02:37:33.428Z",
-    "gameCount": 1,
+    "generatedAt": "2026-10-06T19:31:10.409Z",
+    "gameCount": 15,
     "results": [
       {
-        "eventId": "8bd90781e17e6d97df3941063cedae1e",
-        "homeTeam": "New Orleans Saints",
-        "awayTeam": "Atlanta Falcons",
-        "homeWinProb": 0.5786,
-        "awayWinProb": 0.4214,
+        "eventId": "259b5df9aa0d10257f56de78523495e0",
+        "homeTeam": "Dallas Cowboys",
+        "awayTeam": "Tampa Bay Buccaneers",
+        "homeWinProb": 0.8012,
+        "awayWinProb": 0.1988,
         "expectedMargin": null,
         "calibrated": true,
-        "startTime": "2026-10-06T00:15:00Z",
+        "startTime": "2026-10-09T00:15:00Z",
         "verdict": "PASS",
         "notes": [
-          "doctrine: PASS NO ML — edge -2.8% < floor 3.0%",
+          "doctrine: PASS DAL ML — edge 2.5% < floor 5.0%",
+          "probability pinned to the de-vigged (power) entry market — no playable edge by doctrine; do not manufacture one",
+          "model read for reference only: calibrated 93.4%",
+          "non-divisional (raised floor 5%)",
+          "2026 gate: calibrated edge 11.8% (raw-conf edge was 2.5%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "21b26266f3d78af02eb672e606275d95",
+        "homeTeam": "Jacksonville Jaguars",
+        "awayTeam": "Philadelphia Eagles",
+        "homeWinProb": 0.8883,
+        "awayWinProb": 0.1117,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T13:30:00Z",
+        "verdict": "PLAY",
+        "notes": [
+          "doctrine: PLAY JAX ML — calibrated 88.8%, edge vs entry 16.5%",
+          "non-divisional (raised floor 5%)",
+          "2026 gate: calibrated edge 16.5% (raw-conf edge was 5.7%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "2caea57b1e5cfbba1334cfbfd46f6771",
+        "homeTeam": "Green Bay Packers",
+        "awayTeam": "Chicago Bears",
+        "homeWinProb": 0.6141,
+        "awayWinProb": 0.3859,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T17:00:00Z",
+        "verdict": "PLAY",
+        "notes": [
+          "doctrine: PLAY GB ML — calibrated 61.4%, edge vs entry 20.7%",
+          "divisional (profit engine, floor 3%)",
+          "2026 gate: calibrated edge 20.7% (raw-conf edge was 12.3%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "c4647ca1201e6768501877267ca8251b",
+        "homeTeam": "Miami Dolphins",
+        "awayTeam": "Cincinnati Bengals",
+        "homeWinProb": 0.2402,
+        "awayWinProb": 0.7598,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T17:00:00Z",
+        "verdict": "PASS",
+        "notes": [
+          "doctrine: PASS CIN ML — edge 4.0% < floor 5.0%",
+          "probability pinned to the de-vigged (power) entry market — no playable edge by doctrine; do not manufacture one",
+          "model read for reference only: calibrated 90.4%",
+          "non-divisional (raised floor 5%)",
+          "2026 gate: calibrated edge 14.5% (raw-conf edge was 4.0%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "6b024bad1abb54f597225e4ab9b39d89",
+        "homeTeam": "New England Patriots",
+        "awayTeam": "Las Vegas Raiders",
+        "homeWinProb": 0.6391,
+        "awayWinProb": 0.3609,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T17:00:00Z",
+        "verdict": "PASS",
+        "notes": [
+          "doctrine: PASS NE ML — home-favorite 54–60% trap, no secondary edge",
+          "probability pinned to the de-vigged (power) entry market — no playable edge by doctrine; do not manufacture one",
+          "model read for reference only: calibrated 67.7%",
+          "non-divisional (raised floor 5%)",
+          "doctrine trap: home chalk in 54–60% band",
+          "2026 gate: calibrated edge 3.8% (raw-conf edge was -5.9%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "2cda9bf0fbe35a2735f0dd8aaafe9eff",
+        "homeTeam": "New Orleans Saints",
+        "awayTeam": "Minnesota Vikings",
+        "homeWinProb": 0.4818,
+        "awayWinProb": 0.5182,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T17:00:00Z",
+        "verdict": "PASS",
+        "notes": [
+          "doctrine: PASS MIN ML — edge 1.5% < floor 5.0%",
           "probability pinned to the de-vigged (power) entry market — no playable edge by doctrine; do not manufacture one",
           "model read for reference only: calibrated 65.2%",
+          "non-divisional (raised floor 5%)",
+          "dome environment (directional +)",
+          "2026 gate: calibrated edge 10.7% (raw-conf edge was 1.5%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "9db4ed15fe34fca1fb62f040cd244591",
+        "homeTeam": "New York Jets",
+        "awayTeam": "Cleveland Browns",
+        "homeWinProb": 0.5399,
+        "awayWinProb": 0.4601,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T17:00:00Z",
+        "verdict": "PASS",
+        "notes": [
+          "doctrine: PASS NYJ ML — home-favorite 54–60% trap, no secondary edge",
+          "probability pinned to the de-vigged (power) entry market — no playable edge by doctrine; do not manufacture one",
+          "model read for reference only: calibrated 67.7%",
+          "non-divisional (raised floor 5%)",
+          "doctrine trap: home chalk in 54–60% band",
+          "2026 gate: calibrated edge 13.2% (raw-conf edge was 3.5%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "448d7cf18c6db4c811ed82ded1b72867",
+        "homeTeam": "Pittsburgh Steelers",
+        "awayTeam": "Indianapolis Colts",
+        "homeWinProb": 0.5409,
+        "awayWinProb": 0.4591,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T17:00:00Z",
+        "verdict": "PASS",
+        "notes": [
+          "doctrine: PASS PIT ML — home-favorite 54–60% trap, no secondary edge",
+          "probability pinned to the de-vigged (power) entry market — no playable edge by doctrine; do not manufacture one",
+          "model read for reference only: calibrated 67.7%",
+          "non-divisional (raised floor 5%)",
+          "doctrine trap: home chalk in 54–60% band",
+          "2026 gate: calibrated edge 12.3% (raw-conf edge was 2.5%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "cc52bba56e74f5cddbe9011046181c3d",
+        "homeTeam": "Tennessee Titans",
+        "awayTeam": "Houston Texans",
+        "homeWinProb": 0.262,
+        "awayWinProb": 0.738,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T17:00:00Z",
+        "verdict": "PASS",
+        "notes": [
+          "doctrine: PASS HOU ML — edge 0.3% < floor 3.0%",
+          "probability pinned to the de-vigged (power) entry market — no playable edge by doctrine; do not manufacture one",
+          "model read for reference only: calibrated 87.1%",
+          "divisional (profit engine, floor 3%)",
+          "2026 gate: calibrated edge 11.4% (raw-conf edge was 0.3%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "fbffd0b7722fd81d68d5d62472dc80e8",
+        "homeTeam": "Washington Commanders",
+        "awayTeam": "New York Giants",
+        "homeWinProb": 0.1861,
+        "awayWinProb": 0.8139,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T17:00:00Z",
+        "verdict": "PLAY",
+        "notes": [
+          "doctrine: PLAY NYG ML — calibrated 81.4%, edge vs entry 41.4%",
+          "divisional (profit engine, floor 3%)",
+          "2026 gate: calibrated edge 41.4% (raw-conf edge was 30.0%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "d1d408fdfd272046fb517fe992a1c5a0",
+        "homeTeam": "Los Angeles Chargers",
+        "awayTeam": "Denver Broncos",
+        "homeWinProb": 0.3725,
+        "awayWinProb": 0.6275,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T20:05:00Z",
+        "verdict": "PASS",
+        "notes": [
+          "doctrine: PASS DEN ML — edge -2.0% < floor 3.0%",
+          "probability pinned to the de-vigged (power) entry market — no playable edge by doctrine; do not manufacture one",
+          "model read for reference only: calibrated 76.0%",
+          "haircut −4pp (60–70% band): 65.0% → 61.0%",
           "divisional (profit engine, floor 3%)",
           "dome environment (directional +)",
-          "2026 gate: calibrated edge 6.4% (raw-conf edge was -2.8%) — calibration transferred, raw edge did not"
+          "2026 gate: calibrated edge 13.0% (raw-conf edge was -2.0%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "f8e7f43f73aa983c5c99c189587f0118",
+        "homeTeam": "Arizona Cardinals",
+        "awayTeam": "Detroit Lions",
+        "homeWinProb": 0.1661,
+        "awayWinProb": 0.8339,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T20:25:00Z",
+        "verdict": "PLAY",
+        "notes": [
+          "doctrine: PLAY DET ML — calibrated 83.4%, edge vs entry 16.6%",
+          "non-divisional (raised floor 5%)",
+          "2026 gate: calibrated edge 16.6% (raw-conf edge was 5.2%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "8e5d515b10d8a5ffb324640ed60bcc55",
+        "homeTeam": "Seattle Seahawks",
+        "awayTeam": "San Francisco 49ers",
+        "homeWinProb": 0.3475,
+        "awayWinProb": 0.6525,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-11T20:25:00Z",
+        "verdict": "PLAY",
+        "notes": [
+          "doctrine: PLAY SF ML — calibrated 65.2%, edge vs entry 24.9%",
+          "divisional (profit engine, floor 3%)",
+          "2026 gate: calibrated edge 24.9% (raw-conf edge was 15.7%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "86457f91112732f21ad4bb7d37bd291c",
+        "homeTeam": "Atlanta Falcons",
+        "awayTeam": "Baltimore Ravens",
+        "homeWinProb": 0.373,
+        "awayWinProb": 0.627,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-12T00:20:00Z",
+        "verdict": "PLAY",
+        "notes": [
+          "doctrine: PLAY BAL ML — calibrated 62.7%, edge vs entry 19.9%",
+          "non-divisional (raised floor 5%)",
+          "2026 gate: calibrated edge 19.9% (raw-conf edge was 11.2%) — calibration transferred, raw edge did not"
+        ]
+      },
+      {
+        "eventId": "e6d00eedd87d367e510314bd8cab8f6f",
+        "homeTeam": "Los Angeles Rams",
+        "awayTeam": "Buffalo Bills",
+        "homeWinProb": 0.2981,
+        "awayWinProb": 0.7019,
+        "expectedMargin": null,
+        "calibrated": true,
+        "startTime": "2026-10-13T00:15:00Z",
+        "verdict": "PLAY",
+        "notes": [
+          "doctrine: PLAY BUF ML — calibrated 70.2%, edge vs entry 27.4%",
+          "haircut −4pp (60–70% band): 60.0% → 56.0%",
+          "non-divisional (raised floor 5%)",
+          "dome environment (directional +)",
+          "2026 gate: calibrated edge 27.4% (raw-conf edge was 13.2%) — calibration transferred, raw edge did not"
         ]
       }
     ]

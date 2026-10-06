@@ -1,19 +1,21 @@
 {
-  "generatedAt": "2026-10-06T02:31:46.358Z",
+  "generatedAt": "2026-10-06T19:31:09.842Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 9,
-  "errors": [],
+  "recordCount": 12,
+  "errors": [
+    "unmodeled: Away Goals @ Home Goals (bv_31897963)"
+  ],
   "data": {
-    "generatedAt": "2026-10-06T02:31:46.358Z",
+    "generatedAt": "2026-10-06T19:31:09.842Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 9,
+    "gameCount": 13,
     "results": [
       {
         "eventId": "fd_36151153",
@@ -25,7 +27,7 @@
         "homeNetRtg": 1.3333333333333333,
         "awayNetRtg": 1.3333333333333333,
         "calibrated": false,
-        "startTime": "2026-10-06T23:00:00.000Z"
+        "startTime": "2026-10-06T23:10:00.000Z"
       },
       {
         "eventId": "fd_36156599",
@@ -37,7 +39,7 @@
         "homeNetRtg": 1,
         "awayNetRtg": 0,
         "calibrated": false,
-        "startTime": "2026-10-06T23:00:00.000Z"
+        "startTime": "2026-10-06T23:10:00.000Z"
       },
       {
         "eventId": "fd_36156600",
@@ -49,19 +51,19 @@
         "homeNetRtg": 1,
         "awayNetRtg": 0.5,
         "calibrated": false,
-        "startTime": "2026-10-06T23:00:00.000Z"
+        "startTime": "2026-10-06T23:10:00.000Z"
       },
       {
         "eventId": "fd_36156601",
         "homeTeam": "Detroit Red Wings",
         "awayTeam": "Ottawa Senators",
-        "homeWinProb": 0.543,
-        "awayWinProb": 0.457,
-        "expectedMargin": 0.57,
+        "homeWinProb": 0.5075,
+        "awayWinProb": 0.4925,
+        "expectedMargin": 0.1,
         "homeNetRtg": -1,
-        "awayNetRtg": -1.75,
+        "awayNetRtg": -0.8,
         "calibrated": false,
-        "startTime": "2026-10-06T23:00:00.000Z"
+        "startTime": "2026-10-06T23:10:00.000Z"
       },
       {
         "eventId": "fd_36156602",
@@ -73,7 +75,7 @@
         "homeNetRtg": 0.2,
         "awayNetRtg": -1,
         "calibrated": false,
-        "startTime": "2026-10-06T23:00:00.000Z"
+        "startTime": "2026-10-06T23:10:00.000Z"
       },
       {
         "eventId": "fd_36156598",
@@ -85,7 +87,7 @@
         "homeNetRtg": 1.5,
         "awayNetRtg": -0.3333333333333333,
         "calibrated": false,
-        "startTime": "2026-10-06T23:30:00.000Z"
+        "startTime": "2026-10-06T23:40:00.000Z"
       },
       {
         "eventId": "fd_36151257",
@@ -97,7 +99,7 @@
         "homeNetRtg": 1,
         "awayNetRtg": -3,
         "calibrated": false,
-        "startTime": "2026-10-07T00:00:00.000Z"
+        "startTime": "2026-10-07T00:10:00.000Z"
       },
       {
         "eventId": "fd_36156596",
@@ -109,7 +111,7 @@
         "homeNetRtg": 2.6666666666666665,
         "awayNetRtg": 1.3333333333333333,
         "calibrated": false,
-        "startTime": "2026-10-07T01:40:00.000Z"
+        "startTime": "2026-10-07T01:50:00.000Z"
       },
       {
         "eventId": "fd_36151169",
@@ -121,7 +123,43 @@
         "homeNetRtg": -0.3333333333333333,
         "awayNetRtg": 0,
         "calibrated": false,
-        "startTime": "2026-10-07T02:00:00.000Z"
+        "startTime": "2026-10-07T02:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36151248",
+        "homeTeam": "Washington Capitals",
+        "awayTeam": "Pittsburgh Penguins",
+        "homeWinProb": 0.5275,
+        "awayWinProb": 0.4725,
+        "expectedMargin": 0.37,
+        "homeNetRtg": 2,
+        "awayNetRtg": 1.6666666666666667,
+        "calibrated": false,
+        "startTime": "2026-10-07T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_36160527",
+        "homeTeam": "Winnipeg Jets",
+        "awayTeam": "Colorado Avalanche",
+        "homeWinProb": 0.589,
+        "awayWinProb": 0.411,
+        "expectedMargin": 1.2,
+        "homeNetRtg": 0,
+        "awayNetRtg": -2,
+        "calibrated": false,
+        "startTime": "2026-10-07T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_36160539",
+        "homeTeam": "Anaheim Ducks",
+        "awayTeam": "Edmonton Oilers",
+        "homeWinProb": 0.515,
+        "awayWinProb": 0.485,
+        "expectedMargin": 0.2,
+        "homeNetRtg": 1.3333333333333333,
+        "awayNetRtg": 1.3333333333333333,
+        "calibrated": false,
+        "startTime": "2026-10-08T02:00:00.000Z"
       }
     ]
   }
