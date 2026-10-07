@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-07T01:51:47.262Z",
+  "generatedAt": "2026-10-07T20:01:34.533Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 8,
+  "recordCount": 9,
   "errors": [
     "unmodeled: Boston Celtics @ Detroit Pistons (fd_35928218)",
     "unmodeled: Oklahoma City Thunder @ San Antonio Spurs (fd_35928229)",
@@ -14,17 +14,16 @@
     "unmodeled: Dallas Mavericks @ Houston Rockets (fd_35937406)",
     "unmodeled: Phoenix Suns @ Portland Trail Blazers (fd_35937401)",
     "unmodeled: San Antonio Spurs @ New York Knicks (bv_29471765)",
-    "unmodeled: Miami Heat @ Boston Celtics (bv_29472363)",
-    "unmodeled: Oklahoma City Thunder @ Minnesota Timberwolves (bv_29471767)"
+    "unmodeled: Miami Heat @ Boston Celtics (bv_29472363)"
   ],
   "data": {
-    "generatedAt": "2026-10-07T01:51:47.262Z",
+    "generatedAt": "2026-10-07T20:01:34.533Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 18,
+    "teamCount": 20,
     "gameCount": 19,
     "results": [
       {
@@ -64,7 +63,7 @@
         "startTime": "2026-10-21T23:40:00.000Z"
       },
       {
-        "eventId": "fd_35937404",
+        "eventId": "bv_29843976",
         "homeTeam": "Memphis Grizzlies",
         "awayTeam": "Utah Jazz",
         "homeWinProb": 0.5039,
@@ -73,16 +72,16 @@
         "homeNetRtg": 9,
         "awayNetRtg": 12,
         "calibrated": false,
-        "startTime": "2026-10-22T00:10:00.000Z"
+        "startTime": "2026-10-22T00:00:00.000Z"
       },
       {
         "eventId": "fd_35932904",
         "homeTeam": "Los Angeles Lakers",
         "awayTeam": "Golden State Warriors",
-        "homeWinProb": 0.8074,
-        "awayWinProb": 0.1926,
-        "expectedMargin": 13.65,
-        "homeNetRtg": 24,
+        "homeWinProb": 0.5627,
+        "awayWinProb": 0.4373,
+        "expectedMargin": 2.4,
+        "homeNetRtg": -1,
         "awayNetRtg": -3,
         "calibrated": false,
         "startTime": "2026-10-22T02:00:00.000Z"
@@ -103,23 +102,35 @@
         "eventId": "bv_29471766",
         "homeTeam": "Los Angeles Lakers",
         "awayTeam": "Philadelphia 76ers",
-        "homeWinProb": 0.551,
-        "awayWinProb": 0.449,
-        "expectedMargin": 1.95,
-        "homeNetRtg": 24,
+        "homeWinProb": 0.2736,
+        "awayWinProb": 0.7264,
+        "expectedMargin": -9.3,
+        "homeNetRtg": -1,
         "awayNetRtg": 23,
         "calibrated": false,
         "startTime": "2026-12-25T22:00:00.000Z"
       },
       {
+        "eventId": "bv_29471767",
+        "homeTeam": "Minnesota Timberwolves",
+        "awayTeam": "Oklahoma City Thunder",
+        "homeWinProb": 0.7923,
+        "awayWinProb": 0.2077,
+        "expectedMargin": 12.75,
+        "homeNetRtg": 19,
+        "awayNetRtg": -6,
+        "calibrated": false,
+        "startTime": "2026-12-26T01:00:00.000Z"
+      },
+      {
         "eventId": "bv_29471768",
         "homeTeam": "Golden State Warriors",
         "awayTeam": "Denver Nuggets",
-        "homeWinProb": 0.6417,
-        "awayWinProb": 0.3583,
-        "expectedMargin": 5.55,
-        "homeNetRtg": -3,
-        "awayNetRtg": -12,
+        "homeWinProb": 0.704,
+        "awayWinProb": 0.296,
+        "expectedMargin": 8.25,
+        "homeNetRtg": 26,
+        "awayNetRtg": 11,
         "calibrated": false,
         "startTime": "2026-12-26T03:30:00.000Z"
       }
