@@ -1,15 +1,14 @@
 {
-  "generatedAt": "2026-10-06T19:32:54.031Z",
+  "generatedAt": "2026-10-07T01:51:47.262Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 7,
+  "recordCount": 8,
   "errors": [
     "unmodeled: Boston Celtics @ Detroit Pistons (fd_35928218)",
     "unmodeled: Oklahoma City Thunder @ San Antonio Spurs (fd_35928229)",
     "unmodeled: Atlanta Hawks @ Orlando Magic (fd_35937399)",
     "unmodeled: Milwaukee Bucks @ Washington Wizards (fd_35937402)",
-    "unmodeled: Charlotte Hornets @ Brooklyn Nets (fd_35937400)",
     "unmodeled: Chicago Bulls @ Toronto Raptors (fd_35937407)",
     "unmodeled: Indiana Pacers @ New Orleans Pelicans (fd_35937408)",
     "unmodeled: Dallas Mavericks @ Houston Rockets (fd_35937406)",
@@ -19,13 +18,13 @@
     "unmodeled: Oklahoma City Thunder @ Minnesota Timberwolves (bv_29471767)"
   ],
   "data": {
-    "generatedAt": "2026-10-06T19:32:54.031Z",
+    "generatedAt": "2026-10-07T01:51:47.262Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 16,
+    "teamCount": 18,
     "gameCount": 19,
     "results": [
       {
@@ -51,6 +50,18 @@
         "awayNetRtg": 19,
         "calibrated": false,
         "startTime": "2026-10-21T23:30:00.000Z"
+      },
+      {
+        "eventId": "fd_35937400",
+        "homeTeam": "Brooklyn Nets",
+        "awayTeam": "Charlotte Hornets",
+        "homeWinProb": 0.9668,
+        "awayWinProb": 0.0332,
+        "expectedMargin": 32.1,
+        "homeNetRtg": 34,
+        "awayNetRtg": -34,
+        "calibrated": false,
+        "startTime": "2026-10-21T23:40:00.000Z"
       },
       {
         "eventId": "fd_35937404",

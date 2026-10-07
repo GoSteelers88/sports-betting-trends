@@ -1,34 +1,20 @@
 {
-  "generatedAt": "2026-10-06T19:31:09.842Z",
+  "generatedAt": "2026-10-07T01:49:47.860Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 12,
-  "errors": [
-    "unmodeled: Away Goals @ Home Goals (bv_31897963)"
-  ],
+  "recordCount": 9,
+  "errors": [],
   "data": {
-    "generatedAt": "2026-10-06T19:31:09.842Z",
+    "generatedAt": "2026-10-07T01:49:47.860Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 13,
+    "gameCount": 9,
     "results": [
-      {
-        "eventId": "fd_36151153",
-        "homeTeam": "Montreal Canadiens",
-        "awayTeam": "Carolina Hurricanes",
-        "homeWinProb": 0.515,
-        "awayWinProb": 0.485,
-        "expectedMargin": 0.2,
-        "homeNetRtg": 1.3333333333333333,
-        "awayNetRtg": 1.3333333333333333,
-        "calibrated": false,
-        "startTime": "2026-10-06T23:10:00.000Z"
-      },
       {
         "eventId": "fd_36156599",
         "homeTeam": "New Jersey Devils",
@@ -42,40 +28,16 @@
         "startTime": "2026-10-06T23:10:00.000Z"
       },
       {
-        "eventId": "fd_36156600",
-        "homeTeam": "Buffalo Sabres",
-        "awayTeam": "Minnesota Wild",
-        "homeWinProb": 0.5337,
-        "awayWinProb": 0.4663,
-        "expectedMargin": 0.45,
-        "homeNetRtg": 1,
-        "awayNetRtg": 0.5,
+        "eventId": "fd_36151153",
+        "homeTeam": "Montreal Canadiens",
+        "awayTeam": "Carolina Hurricanes",
+        "homeWinProb": 0.515,
+        "awayWinProb": 0.485,
+        "expectedMargin": 0.2,
+        "homeNetRtg": 1.3333333333333333,
+        "awayNetRtg": 1.3333333333333333,
         "calibrated": false,
-        "startTime": "2026-10-06T23:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36156601",
-        "homeTeam": "Detroit Red Wings",
-        "awayTeam": "Ottawa Senators",
-        "homeWinProb": 0.5075,
-        "awayWinProb": 0.4925,
-        "expectedMargin": 0.1,
-        "homeNetRtg": -1,
-        "awayNetRtg": -0.8,
-        "calibrated": false,
-        "startTime": "2026-10-06T23:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36156602",
-        "homeTeam": "Toronto Maple Leafs",
-        "awayTeam": "Nashville Predators",
-        "homeWinProb": 0.5597,
-        "awayWinProb": 0.4403,
-        "expectedMargin": 0.8,
-        "homeNetRtg": 0.2,
-        "awayNetRtg": -1,
-        "calibrated": false,
-        "startTime": "2026-10-06T23:10:00.000Z"
+        "startTime": "2026-10-06T23:15:00.000Z"
       },
       {
         "eventId": "fd_36156598",
