@@ -1,29 +1,28 @@
 {
-  "generatedAt": "2026-10-07T20:01:34.533Z",
+  "generatedAt": "2026-10-08T02:19:22.373Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 9,
+  "recordCount": 10,
   "errors": [
     "unmodeled: Boston Celtics @ Detroit Pistons (fd_35928218)",
     "unmodeled: Oklahoma City Thunder @ San Antonio Spurs (fd_35928229)",
     "unmodeled: Atlanta Hawks @ Orlando Magic (fd_35937399)",
     "unmodeled: Milwaukee Bucks @ Washington Wizards (fd_35937402)",
     "unmodeled: Chicago Bulls @ Toronto Raptors (fd_35937407)",
-    "unmodeled: Indiana Pacers @ New Orleans Pelicans (fd_35937408)",
     "unmodeled: Dallas Mavericks @ Houston Rockets (fd_35937406)",
     "unmodeled: Phoenix Suns @ Portland Trail Blazers (fd_35937401)",
     "unmodeled: San Antonio Spurs @ New York Knicks (bv_29471765)",
     "unmodeled: Miami Heat @ Boston Celtics (bv_29472363)"
   ],
   "data": {
-    "generatedAt": "2026-10-07T20:01:34.533Z",
+    "generatedAt": "2026-10-08T02:19:22.373Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 20,
+    "teamCount": 21,
     "gameCount": 19,
     "results": [
       {
@@ -42,11 +41,11 @@
         "eventId": "fd_35932897",
         "homeTeam": "Miami Heat",
         "awayTeam": "Minnesota Timberwolves",
-        "homeWinProb": 0.5972,
-        "awayWinProb": 0.4028,
-        "expectedMargin": 3.75,
+        "homeWinProb": 0.7507,
+        "awayWinProb": 0.2493,
+        "expectedMargin": 10.5,
         "homeNetRtg": 24,
-        "awayNetRtg": 19,
+        "awayNetRtg": 4,
         "calibrated": false,
         "startTime": "2026-10-21T23:30:00.000Z"
       },
@@ -73,6 +72,18 @@
         "awayNetRtg": 12,
         "calibrated": false,
         "startTime": "2026-10-22T00:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35937408",
+        "homeTeam": "New Orleans Pelicans",
+        "awayTeam": "Indiana Pacers",
+        "homeWinProb": 0.4803,
+        "awayWinProb": 0.5197,
+        "expectedMargin": -0.75,
+        "homeNetRtg": 6,
+        "awayNetRtg": 11,
+        "calibrated": false,
+        "startTime": "2026-10-22T00:10:00.000Z"
       },
       {
         "eventId": "fd_35932904",
@@ -114,10 +125,10 @@
         "eventId": "bv_29471767",
         "homeTeam": "Minnesota Timberwolves",
         "awayTeam": "Oklahoma City Thunder",
-        "homeWinProb": 0.7923,
-        "awayWinProb": 0.2077,
-        "expectedMargin": 12.75,
-        "homeNetRtg": 19,
+        "homeWinProb": 0.6525,
+        "awayWinProb": 0.3475,
+        "expectedMargin": 6,
+        "homeNetRtg": 4,
         "awayNetRtg": -6,
         "calibrated": false,
         "startTime": "2026-12-26T01:00:00.000Z"

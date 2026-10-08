@@ -1,35 +1,22 @@
 {
-  "generatedAt": "2026-10-07T19:59:37.645Z",
+  "generatedAt": "2026-10-08T02:17:19.547Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 12,
+  "recordCount": 11,
   "errors": [
-    "unmodeled: Home Goals @ Away Goals (bv_31941163)",
     "unmodeled: Dallas Stars @ Buffalo Sabres (fd_36164616)"
   ],
   "data": {
-    "generatedAt": "2026-10-07T19:59:37.645Z",
+    "generatedAt": "2026-10-08T02:17:19.547Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 14,
+    "gameCount": 12,
     "results": [
-      {
-        "eventId": "fd_36151248",
-        "homeTeam": "Washington Capitals",
-        "awayTeam": "Pittsburgh Penguins",
-        "homeWinProb": 0.5275,
-        "awayWinProb": 0.4725,
-        "expectedMargin": 0.37,
-        "homeNetRtg": 2,
-        "awayNetRtg": 1.6666666666666667,
-        "calibrated": false,
-        "startTime": "2026-10-07T23:40:00.000Z"
-      },
       {
         "eventId": "fd_36160527",
         "homeTeam": "Winnipeg Jets",
