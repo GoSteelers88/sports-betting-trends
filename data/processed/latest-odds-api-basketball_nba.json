@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-08T02:16:29.537Z",
+  "fetchedAt": "2026-10-08T19:54:35.139Z",
   "league": "basketball_nba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
@@ -828,13 +828,62 @@
       ]
     },
     {
-      "id": "bv_29843976",
+      "id": "fd_35937404",
       "sport_key": "basketball_nba",
       "sport_title": "NBA",
-      "commence_time": "2026-10-22T00:00:00.000Z",
+      "commence_time": "2026-10-22T00:10:00.000Z",
       "home_team": "Memphis Grizzlies",
       "away_team": "Utah Jazz",
       "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Utah Jazz",
+                  "price": -134
+                },
+                {
+                  "name": "Memphis Grizzlies",
+                  "price": 114
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Utah Jazz",
+                  "price": -110,
+                  "point": -2.5
+                },
+                {
+                  "name": "Memphis Grizzlies",
+                  "price": -110,
+                  "point": 2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 243.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 243.5
+                }
+              ]
+            }
+          ]
+        },
         {
           "key": "bovada",
           "title": "Bovada",
@@ -873,12 +922,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 241.5
+                  "point": 242
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 241.5
+                  "point": 242
                 }
               ]
             }
@@ -1075,11 +1124,11 @@
               "outcomes": [
                 {
                   "name": "Dallas Mavericks",
-                  "price": 270
+                  "price": 265
                 },
                 {
                   "name": "Houston Rockets",
-                  "price": -340
+                  "price": -330
                 }
               ]
             },

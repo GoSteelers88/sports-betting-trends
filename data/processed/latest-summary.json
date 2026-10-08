@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-10-08T02:16:45.868Z",
+  "generatedAt": "2026-10-08T19:54:50.183Z",
   "ready": true,
-  "recordsIngested": 709,
-  "recordsCompleted": 709,
+  "recordsIngested": 720,
+  "recordsCompleted": 720,
   "recordsRejected": 0,
   "leagues": [
     {
       "league": "MLB",
-      "games": 540,
+      "games": 544,
       "conferences": [
+        "AL East",
+        "NL West",
+        "NL Central",
         "Unknown",
         "AL Central",
         "NL East",
-        "NL West",
-        "NL Central",
-        "AL East",
         "AL West"
       ],
-      "avgPoints": 4.433333333333334,
+      "avgPoints": 4.420955882352941,
       "avgRebounds": null,
       "avgAssists": null,
       "avgYards": null,
@@ -28,14 +28,46 @@
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 540,
-        "rpg": 4.43,
-        "oppRpg": 4.43,
-        "hitsPerGame": 8.16,
+        "games": 544,
+        "rpg": 4.42,
+        "oppRpg": 4.42,
+        "hitsPerGame": 8.15,
         "errorsPerGame": 0.52,
         "sos": 0.52
       },
       "teamAdvanced": {
+        "Yankees": {
+          "games": 22,
+          "rpg": 5.05,
+          "oppRpg": 3.68,
+          "hitsPerGame": 8,
+          "errorsPerGame": 0.77,
+          "sos": null
+        },
+        "Rays": {
+          "games": 21,
+          "rpg": 4.38,
+          "oppRpg": 2.57,
+          "hitsPerGame": 7.62,
+          "errorsPerGame": 0.29,
+          "sos": 0.52
+        },
+        "Padres": {
+          "games": 23,
+          "rpg": 5.83,
+          "oppRpg": 4.13,
+          "hitsPerGame": 10.09,
+          "errorsPerGame": 0.3,
+          "sos": null
+        },
+        "Brewers": {
+          "games": 20,
+          "rpg": 5.55,
+          "oppRpg": 3.2,
+          "hitsPerGame": 9.2,
+          "errorsPerGame": 0.6,
+          "sos": null
+        },
         "White Sox": {
           "games": 23,
           "rpg": 5.04,
@@ -66,38 +98,6 @@
           "oppRpg": 2.38,
           "hitsPerGame": 8.52,
           "errorsPerGame": 0.29,
-          "sos": null
-        },
-        "Padres": {
-          "games": 22,
-          "rpg": 6.05,
-          "oppRpg": 4.18,
-          "hitsPerGame": 10.41,
-          "errorsPerGame": 0.32,
-          "sos": null
-        },
-        "Brewers": {
-          "games": 19,
-          "rpg": 5.68,
-          "oppRpg": 3.32,
-          "hitsPerGame": 9.16,
-          "errorsPerGame": 0.58,
-          "sos": null
-        },
-        "Rays": {
-          "games": 20,
-          "rpg": 4.4,
-          "oppRpg": 2.55,
-          "hitsPerGame": 7.65,
-          "errorsPerGame": 0.25,
-          "sos": 0.52
-        },
-        "Yankees": {
-          "games": 21,
-          "rpg": 5.14,
-          "oppRpg": 3.67,
-          "hitsPerGame": 8.05,
-          "errorsPerGame": 0.81,
           "sos": null
         },
         "Phillies": {
@@ -280,23 +280,23 @@
     },
     {
       "league": "NBA",
-      "games": 20,
+      "games": 27,
       "conferences": [
-        "Eastern",
-        "Western"
+        "Western",
+        "Eastern"
       ],
-      "avgPoints": 112.15,
-      "avgRebounds": 43.9,
-      "avgAssists": 24.95,
+      "avgPoints": 114.85185185185185,
+      "avgRebounds": 44.111111111111114,
+      "avgAssists": 26.62962962962963,
       "avgYards": null,
-      "recentAvgPoints": 109,
+      "recentAvgPoints": 120.3,
       "recentAvgYards": null,
-      "trendScore": 77,
-      "trendSignal": "up",
+      "trendScore": 44,
+      "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 20,
+        "games": 27,
         "pace": null,
         "oRtg": null,
         "dRtg": null,
@@ -308,6 +308,90 @@
         "sos": null
       },
       "teamAdvanced": {
+        "Grizzlies": {
+          "games": 2,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Magic": {
+          "games": 1,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Thunder": {
+          "games": 2,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Bucks": {
+          "games": 2,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Bulls": {
+          "games": 1,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Suns": {
+          "games": 2,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Trail Blazers": {
+          "games": 1,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
         "Pacers": {
           "games": 1,
           "pace": null,
@@ -322,18 +406,6 @@
         },
         "Timberwolves": {
           "games": 2,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Thunder": {
-          "games": 1,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -392,18 +464,6 @@
           "ftRate": null,
           "sos": null
         },
-        "Bucks": {
-          "games": 1,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
         "Kings": {
           "games": 1,
           "pace": null,
@@ -428,31 +488,7 @@
           "ftRate": null,
           "sos": null
         },
-        "Grizzlies": {
-          "games": 1,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
         "Pistons": {
-          "games": 1,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Suns": {
           "games": 1,
           "pace": null,
           "oRtg": null,
@@ -1076,18 +1112,18 @@
   "latestByLeague": [
     {
       "league": "NBA",
-      "conference": "Eastern",
-      "gameDate": "2026-10-07T00:00:00.000Z",
-      "team": "Pacers",
-      "opponent": "Timberwolves",
-      "points": 123,
-      "opponentPoints": 112,
-      "rebounds": 43,
-      "assists": 39,
+      "conference": "Western",
+      "gameDate": "2026-10-08T00:00:00.000Z",
+      "team": "Grizzlies",
+      "opponent": "Magic",
+      "points": 118,
+      "opponentPoints": 122,
+      "rebounds": 40,
+      "assists": 31,
       "yards": null,
-      "spread": 2.5,
-      "atsResult": "W",
-      "won": true,
+      "spread": 1.5,
+      "atsResult": "L",
+      "won": false,
       "teamRank": null,
       "opponentRank": null,
       "bubbleStatus": null,
@@ -1098,11 +1134,11 @@
       "threepa": null,
       "ftm": null,
       "fta": null,
-      "offRebounds": 14,
-      "defRebounds": 26,
-      "steals": 10,
-      "blocks": 7,
-      "turnovers": 19,
+      "offRebounds": 15,
+      "defRebounds": 37,
+      "steals": 6,
+      "blocks": 4,
+      "turnovers": 14,
       "passingYards": null,
       "rushingYards": null,
       "opponentYards": null,
@@ -1117,18 +1153,18 @@
       "hits": null,
       "errors": null,
       "source": "espn-public-api",
-      "sourceEventId": "401914123",
+      "sourceEventId": "401898391",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
     {
       "league": "MLB",
-      "conference": "Unknown",
-      "gameDate": "2026-10-07T00:00:00.000Z",
-      "team": "White Sox",
-      "opponent": "Guardians",
+      "conference": "AL East",
+      "gameDate": "2026-10-08T00:00:00.000Z",
+      "team": "Yankees",
+      "opponent": "Rays",
       "points": 3,
-      "opponentPoints": 9,
+      "opponentPoints": 4,
       "rebounds": null,
       "assists": null,
       "yards": null,
@@ -1161,10 +1197,10 @@
       "redZoneAtt": null,
       "timeOfPossession": null,
       "homeAway": "home",
-      "hits": 6,
+      "hits": 7,
       "errors": 0,
       "source": "espn-public-api",
-      "sourceEventId": "401907992",
+      "sourceEventId": "401907987",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -1289,41 +1325,11 @@
     "Unknown",
     "Western"
   ],
-  "bestBets": [
-    {
-      "league": "MLB",
-      "conference": null,
-      "gameDate": "2026-10-08T00:15:00.000Z",
-      "matchup": "Tampa Bay Rays at New York Yankees",
-      "pickTeam": "New York Yankees",
-      "opponent": "Tampa Bay Rays",
-      "spread": 1.5,
-      "modelSpread": 1.4,
-      "line": "New York Yankees +1.5",
-      "score": 63,
-      "confidence": 59,
-      "rationaleSignals": [
-        "Momentum edge +0.00 (last-10 trend proxy)",
-        "ATS edge +0.200",
-        "History sample New York Yankees: 21 games (mapped Yankees) vs Tampa Bay Rays: 20 games",
-        "Home court (+1 pt adjustment)",
-        "Rest: New York Yankees 2d rest vs Tampa Bay Rays 2d rest",
-        "Net Rating edge: +0.2",
-        "Home SP: Max Fried",
-        "Away SP: Nick Martinez",
-        "MLB model: 63.2% win prob (calibrated) | Edge vs market: +24.5%"
-      ],
-      "momentumEdge": 0,
-      "atsEdge": 0.2,
-      "mlbModelProb": 0.6324,
-      "mlbEdge": 0.2448,
-      "mlbCalibrated": true
-    }
-  ],
+  "bestBets": [],
   "topBestBetsTarget": 5,
-  "topBestBetsDateEt": "2026-10-07",
+  "topBestBetsDateEt": "2026-10-08",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 1 eligible game found on 2026-10-07 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 0 eligible games found on 2026-10-08 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1379,7 +1385,7 @@
         "position": "F",
         "status": "Day-To-Day",
         "injuryType": "Back",
-        "returnDate": "2026-10-08"
+        "returnDate": "2026-10-12"
       },
       {
         "player": "Mikel Brown Jr.",
@@ -1387,7 +1393,23 @@
         "position": "G",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
-        "returnDate": "2026-10-08"
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Day'Ron Sharpe",
+        "team": "Brooklyn Nets",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Shoulder",
+        "returnDate": "2026-10-12"
+      },
+      {
+        "player": "Michael Porter Jr.",
+        "team": "Brooklyn Nets",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Wrist",
+        "returnDate": "2026-10-12"
       },
       {
         "player": "Brandon Miller",
@@ -1476,14 +1498,6 @@
         "status": "Day-To-Day",
         "injuryType": "Hamstring",
         "returnDate": "2026-10-08"
-      },
-      {
-        "player": "Morez Johnson Jr.",
-        "team": "Dallas Mavericks",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Lower Leg",
-        "returnDate": "2026-10-09"
       },
       {
         "player": "Santi Aldama",
@@ -1742,20 +1756,20 @@
         "returnDate": "2026-10-08"
       },
       {
+        "player": "Micah Peavy",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-09"
+      },
+      {
         "player": "Isaiah Stewart",
         "team": "Memphis Grizzlies",
         "position": "C",
         "status": "Day-To-Day",
         "injuryType": "Ankle",
         "returnDate": "2026-10-09"
-      },
-      {
-        "player": "Micah Peavy",
-        "team": "Memphis Grizzlies",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-07"
       },
       {
         "player": "Keshad Johnson",
@@ -1926,36 +1940,20 @@
         "returnDate": "2027-10-01"
       },
       {
-        "player": "Tyrese Maxey",
-        "team": "Philadelphia 76ers",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-08"
-      },
-      {
-        "player": "LeBron James",
-        "team": "Philadelphia 76ers",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-08"
-      },
-      {
-        "player": "Joel Embiid",
-        "team": "Philadelphia 76ers",
-        "position": "C",
-        "status": "Day-To-Day",
-        "injuryType": "Rest",
-        "returnDate": "2026-10-08"
-      },
-      {
         "player": "Tacko Fall",
         "team": "Philadelphia 76ers",
         "position": "C",
         "status": "Day-To-Day",
         "injuryType": "Hip",
         "returnDate": "2026-10-16"
+      },
+      {
+        "player": "Miles Bridges",
+        "team": "Phoenix Suns",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-10"
       },
       {
         "player": "Mark Williams",
@@ -1998,6 +1996,14 @@
         "returnDate": "2026-10-08"
       },
       {
+        "player": "Maliq Brown",
+        "team": "San Antonio Spurs",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Back",
+        "returnDate": "2026-10-10"
+      },
+      {
         "player": "Jayden Quaintance",
         "team": "San Antonio Spurs",
         "position": "F",
@@ -2012,14 +2018,6 @@
         "status": "Day-To-Day",
         "injuryType": "Calf",
         "returnDate": "2026-10-20"
-      },
-      {
-        "player": "David Jones Garcia",
-        "team": "San Antonio Spurs",
-        "position": "F",
-        "status": "Day-To-Day",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-08"
       },
       {
         "player": "Trayce Jackson-Davis",
@@ -2168,19 +2166,19 @@
         "returnDate": "2026-11-08"
       },
       {
-        "player": "Cameron Thomas",
+        "player": "Divine Deablo",
         "team": "Atlanta Falcons",
-        "position": "DE",
+        "position": "LB",
         "status": "Questionable",
-        "injuryType": "Shoulder",
+        "injuryType": "Hamstring",
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Michael Jerrell",
+        "player": "Samson Ebukam",
         "team": "Atlanta Falcons",
-        "position": "OT",
+        "position": "DE",
         "status": "Questionable",
-        "injuryType": "Ankle",
+        "injuryType": "Hamstring",
         "returnDate": "2026-10-11"
       },
       {
@@ -2211,6 +2209,14 @@
         "player": "Chris Moore",
         "team": "Baltimore Ravens",
         "position": "WR",
+        "status": "Questionable",
+        "injuryType": "questionable",
+        "returnDate": ""
+      },
+      {
+        "player": "Lamar Jackson",
+        "team": "Baltimore Ravens",
+        "position": "QB",
         "status": "Questionable",
         "injuryType": "Ankle",
         "returnDate": "2026-10-11"
@@ -2256,14 +2262,6 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Lamar Jackson",
-        "team": "Baltimore Ravens",
-        "position": "QB",
-        "status": "Questionable",
-        "injuryType": "Ankle",
-        "returnDate": "2026-10-11"
-      },
-      {
         "player": "Zay Flowers",
         "team": "Baltimore Ravens",
         "position": "WR",
@@ -2304,6 +2302,14 @@
         "returnDate": "2026-10-11"
       },
       {
+        "player": "DJ Moore",
+        "team": "Buffalo Bills",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Shoulder - AC Joint",
+        "returnDate": "2026-10-12"
+      },
+      {
         "player": "T.J. Sanders",
         "team": "Buffalo Bills",
         "position": "DT",
@@ -2317,14 +2323,6 @@
         "position": "CB",
         "status": "Questionable",
         "injuryType": "Toe",
-        "returnDate": "2026-10-12"
-      },
-      {
-        "player": "DJ Moore",
-        "team": "Buffalo Bills",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Shoulder",
         "returnDate": "2026-10-12"
       },
       {
@@ -2427,8 +2425,32 @@
         "player": "Anthony Johnson Jr.",
         "team": "Chicago Bears",
         "position": "S",
-        "status": "Out",
+        "status": "Injured Reserve",
         "injuryType": "Undisclosed",
+        "returnDate": "2026-10-18"
+      },
+      {
+        "player": "D'Andre Swift",
+        "team": "Chicago Bears",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Hip",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Kyle Monangai",
+        "team": "Chicago Bears",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Thumb",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Caleb Williams",
+        "team": "Chicago Bears",
+        "position": "QB",
+        "status": "Out",
+        "injuryType": "Hamstring",
         "returnDate": "2026-10-18"
       },
       {
@@ -2472,30 +2494,6 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "D'Andre Swift",
-        "team": "Chicago Bears",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Hip",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Kyle Monangai",
-        "team": "Chicago Bears",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Thumb",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Caleb Williams",
-        "team": "Chicago Bears",
-        "position": "QB",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-10-18"
-      },
-      {
         "player": "Braxton Jones",
         "team": "Chicago Bears",
         "position": "OT",
@@ -2504,19 +2502,27 @@
         "returnDate": "2026-11-02"
       },
       {
-        "player": "Colbie Young",
-        "team": "Cincinnati Bengals",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-11"
-      },
-      {
         "player": "Tee Higgins",
         "team": "Cincinnati Bengals",
         "position": "WR",
         "status": "Questionable",
         "injuryType": "Groin",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Ja'Marr Chase",
+        "team": "Cincinnati Bengals",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Concussion",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Colbie Young",
+        "team": "Cincinnati Bengals",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Knee",
         "returnDate": "2026-10-11"
       },
       {
@@ -2541,14 +2547,6 @@
         "position": "S",
         "status": "Questionable",
         "injuryType": "Hamstring",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Ja'Marr Chase",
-        "team": "Cincinnati Bengals",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Concussion",
         "returnDate": "2026-10-11"
       },
       {
@@ -2590,14 +2588,6 @@
         "status": "Injured Reserve",
         "injuryType": "Hamstring",
         "returnDate": "2026-11-08"
-      },
-      {
-        "player": "Elgton Jenkins",
-        "team": "Cleveland Browns",
-        "position": "C",
-        "status": "Questionable",
-        "injuryType": "Concussion",
-        "returnDate": "2026-10-11"
       },
       {
         "player": "Tylan Wallace",
@@ -2675,7 +2665,7 @@
         "player": "Tyler Smith",
         "team": "Dallas Cowboys",
         "position": "G",
-        "status": "Injured Reserve",
+        "status": "Questionable",
         "injuryType": "Thumb",
         "returnDate": "2026-10-08"
       },
@@ -3392,6 +3382,14 @@
         "returnDate": "2026-10-12"
       },
       {
+        "player": "Caleb Douglas",
+        "team": "Miami Dolphins",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Kenneth Grant",
         "team": "Miami Dolphins",
         "position": "DT",
@@ -3429,14 +3427,6 @@
         "position": "LS",
         "status": "Questionable",
         "injuryType": "Shoulder",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Caleb Douglas",
-        "team": "Miami Dolphins",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Ankle",
         "returnDate": "2026-10-11"
       },
       {
@@ -3560,6 +3550,14 @@
         "returnDate": "2027-01-17"
       },
       {
+        "player": "Mack Hollins",
+        "team": "New England Patriots",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Calf",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Craig Woodson",
         "team": "New England Patriots",
         "position": "S",
@@ -3622,14 +3620,6 @@
         "status": "Injured Reserve",
         "injuryType": "Ankle",
         "returnDate": "2026-10-22"
-      },
-      {
-        "player": "Mack Hollins",
-        "team": "New England Patriots",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Calf",
-        "returnDate": "2026-10-11"
       },
       {
         "player": "Rhamondre Stevenson",
@@ -3768,6 +3758,14 @@
         "returnDate": "2026-10-25"
       },
       {
+        "player": "Malik Nabers",
+        "team": "New York Giants",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Knee",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Chauncey Golston",
         "team": "New York Giants",
         "position": "DE",
@@ -3816,19 +3814,27 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Malik Nabers",
-        "team": "New York Giants",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-11"
-      },
-      {
         "player": "Jason Pinnock",
         "team": "New York Giants",
         "position": "S",
         "status": "Questionable",
         "injuryType": "Concussion",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Adonai Mitchell",
+        "team": "New York Jets",
+        "position": "WR",
+        "status": "Doubtful",
+        "injuryType": "Finger",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Breece Hall",
+        "team": "New York Jets",
+        "position": "RB",
+        "status": "Doubtful",
+        "injuryType": "Quadriceps",
         "returnDate": "2026-10-11"
       },
       {
@@ -3856,14 +3862,6 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Breece Hall",
-        "team": "New York Jets",
-        "position": "RB",
-        "status": "Doubtful",
-        "injuryType": "Quadriceps",
-        "returnDate": "2026-10-11"
-      },
-      {
         "player": "Kiko Mauigoa",
         "team": "New York Jets",
         "position": "LB",
@@ -3880,19 +3878,27 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Adonai Mitchell",
-        "team": "New York Jets",
-        "position": "WR",
-        "status": "Doubtful",
-        "injuryType": "Finger",
-        "returnDate": "2026-10-11"
-      },
-      {
         "player": "Jarvis Brownlee Jr.",
         "team": "New York Jets",
         "position": "CB",
         "status": "Questionable",
         "injuryType": "Concussion",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Saquon Barkley",
+        "team": "Philadelphia Eagles",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "DeVonta Smith",
+        "team": "Philadelphia Eagles",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Hamstring",
         "returnDate": "2026-10-11"
       },
       {
@@ -3952,22 +3958,6 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Saquon Barkley",
-        "team": "Philadelphia Eagles",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "DeVonta Smith",
-        "team": "Philadelphia Eagles",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-10-11"
-      },
-      {
         "player": "Dallas Goedert",
         "team": "Philadelphia Eagles",
         "position": "TE",
@@ -3992,12 +3982,20 @@
         "returnDate": "2026-10-11"
       },
       {
+        "player": "Rico Dowdle",
+        "team": "Pittsburgh Steelers",
+        "position": "RB",
+        "status": "Questionable",
+        "injuryType": "Toe",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Michael Pittman Jr.",
         "team": "Pittsburgh Steelers",
         "position": "WR",
-        "status": "Questionable",
+        "status": "Out",
         "injuryType": "Foot",
-        "returnDate": "2026-10-11"
+        "returnDate": "2026-10-18"
       },
       {
         "player": "Jalen Ramsey",
@@ -4005,14 +4003,6 @@
         "position": "CB",
         "status": "Questionable",
         "injuryType": "Wrist",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Rico Dowdle",
-        "team": "Pittsburgh Steelers",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Toe",
         "returnDate": "2026-10-11"
       },
       {
@@ -4256,6 +4246,22 @@
         "returnDate": "2026-11-01"
       },
       {
+        "player": "Terry McLaurin",
+        "team": "Washington Commanders",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-10-11"
+      },
+      {
+        "player": "Stefon Diggs",
+        "team": "Washington Commanders",
+        "position": "WR",
+        "status": "Questionable",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-10-11"
+      },
+      {
         "player": "Sonny Styles",
         "team": "Washington Commanders",
         "position": "LB",
@@ -4328,14 +4334,6 @@
         "returnDate": "2026-10-11"
       },
       {
-        "player": "Stefon Diggs",
-        "team": "Washington Commanders",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-10-11"
-      },
-      {
         "player": "Rachaad White",
         "team": "Washington Commanders",
         "position": "RB",
@@ -4349,14 +4347,6 @@
         "position": "RB",
         "status": "Questionable",
         "injuryType": "Groin",
-        "returnDate": "2026-10-11"
-      },
-      {
-        "player": "Terry McLaurin",
-        "team": "Washington Commanders",
-        "position": "WR",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
         "returnDate": "2026-10-11"
       },
       {

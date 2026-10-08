@@ -1,28 +1,25 @@
 {
-  "generatedAt": "2026-10-08T02:19:22.373Z",
+  "generatedAt": "2026-10-08T19:57:17.836Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 10,
+  "recordCount": 13,
   "errors": [
     "unmodeled: Boston Celtics @ Detroit Pistons (fd_35928218)",
     "unmodeled: Oklahoma City Thunder @ San Antonio Spurs (fd_35928229)",
-    "unmodeled: Atlanta Hawks @ Orlando Magic (fd_35937399)",
     "unmodeled: Milwaukee Bucks @ Washington Wizards (fd_35937402)",
-    "unmodeled: Chicago Bulls @ Toronto Raptors (fd_35937407)",
     "unmodeled: Dallas Mavericks @ Houston Rockets (fd_35937406)",
-    "unmodeled: Phoenix Suns @ Portland Trail Blazers (fd_35937401)",
     "unmodeled: San Antonio Spurs @ New York Knicks (bv_29471765)",
     "unmodeled: Miami Heat @ Boston Celtics (bv_29472363)"
   ],
   "data": {
-    "generatedAt": "2026-10-08T02:19:22.373Z",
+    "generatedAt": "2026-10-08T19:57:17.836Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 21,
+    "teamCount": 24,
     "gameCount": 19,
     "results": [
       {
@@ -36,6 +33,18 @@
         "awayNetRtg": 23,
         "calibrated": false,
         "startTime": "2026-10-20T23:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35937399",
+        "homeTeam": "Orlando Magic",
+        "awayTeam": "Atlanta Hawks",
+        "homeWinProb": 0.6839,
+        "awayWinProb": 0.3161,
+        "expectedMargin": 7.35,
+        "homeNetRtg": 4,
+        "awayNetRtg": -9,
+        "calibrated": false,
+        "startTime": "2026-10-21T23:10:00.000Z"
       },
       {
         "eventId": "fd_35932897",
@@ -62,16 +71,28 @@
         "startTime": "2026-10-21T23:40:00.000Z"
       },
       {
-        "eventId": "bv_29843976",
+        "eventId": "fd_35937407",
+        "homeTeam": "Toronto Raptors",
+        "awayTeam": "Chicago Bulls",
+        "homeWinProb": 0.2129,
+        "awayWinProb": 0.7871,
+        "expectedMargin": -12.45,
+        "homeNetRtg": -24,
+        "awayNetRtg": 7,
+        "calibrated": false,
+        "startTime": "2026-10-21T23:40:00.000Z"
+      },
+      {
+        "eventId": "fd_35937404",
         "homeTeam": "Memphis Grizzlies",
         "awayTeam": "Utah Jazz",
-        "homeWinProb": 0.5039,
-        "awayWinProb": 0.4961,
-        "expectedMargin": 0.15,
-        "homeNetRtg": 9,
+        "homeWinProb": 0.3547,
+        "awayWinProb": 0.6453,
+        "expectedMargin": -5.7,
+        "homeNetRtg": -4,
         "awayNetRtg": 12,
         "calibrated": false,
-        "startTime": "2026-10-22T00:00:00.000Z"
+        "startTime": "2026-10-22T00:10:00.000Z"
       },
       {
         "eventId": "fd_35937408",
@@ -89,13 +110,25 @@
         "eventId": "fd_35932904",
         "homeTeam": "Los Angeles Lakers",
         "awayTeam": "Golden State Warriors",
-        "homeWinProb": 0.5627,
-        "awayWinProb": 0.4373,
-        "expectedMargin": 2.4,
+        "homeWinProb": 0.5743,
+        "awayWinProb": 0.4257,
+        "expectedMargin": 2.85,
         "homeNetRtg": -1,
-        "awayNetRtg": -3,
+        "awayNetRtg": -4,
         "calibrated": false,
         "startTime": "2026-10-22T02:00:00.000Z"
+      },
+      {
+        "eventId": "fd_35937401",
+        "homeTeam": "Portland Trail Blazers",
+        "awayTeam": "Phoenix Suns",
+        "homeWinProb": 0.6471,
+        "awayWinProb": 0.3529,
+        "expectedMargin": 5.78,
+        "homeNetRtg": 5,
+        "awayNetRtg": -4.5,
+        "calibrated": false,
+        "startTime": "2026-10-22T02:10:00.000Z"
       },
       {
         "eventId": "fd_35937403",
@@ -125,11 +158,11 @@
         "eventId": "bv_29471767",
         "homeTeam": "Minnesota Timberwolves",
         "awayTeam": "Oklahoma City Thunder",
-        "homeWinProb": 0.6525,
-        "awayWinProb": 0.3475,
-        "expectedMargin": 6,
+        "homeWinProb": 0.6308,
+        "awayWinProb": 0.3692,
+        "expectedMargin": 5.1,
         "homeNetRtg": 4,
-        "awayNetRtg": -6,
+        "awayNetRtg": -4,
         "calibrated": false,
         "startTime": "2026-12-26T01:00:00.000Z"
       },
