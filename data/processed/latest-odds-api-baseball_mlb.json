@@ -1,24 +1,24 @@
 {
-  "fetchedAt": "2026-10-09T02:34:44.455Z",
+  "fetchedAt": "2026-10-09T19:31:22.178Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 2,
   "sampleEvent": {
-    "id": "fd_36164652",
+    "id": "fd_36167723",
     "sport_key": "baseball_mlb",
-    "commence_time": "2026-10-09T00:08:00.000Z",
-    "home_team": "Chicago White Sox",
-    "away_team": "Cleveland Guardians"
+    "commence_time": "2026-10-11T00:01:00.000Z",
+    "home_team": "Cleveland Guardians",
+    "away_team": "Chicago White Sox"
   },
   "events": [
     {
-      "id": "fd_36164652",
+      "id": "fd_36167723",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
-      "commence_time": "2026-10-09T00:08:00.000Z",
-      "home_team": "Chicago White Sox",
-      "away_team": "Cleveland Guardians",
+      "commence_time": "2026-10-11T00:01:00.000Z",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Chicago White Sox",
       "bookmakers": [
         {
           "key": "fanduel",
@@ -28,12 +28,12 @@
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Cleveland Guardians",
-                  "price": -7000
+                  "name": "Chicago White Sox",
+                  "price": 118
                 },
                 {
-                  "name": "Chicago White Sox",
-                  "price": 1500
+                  "name": "Cleveland Guardians",
+                  "price": -138
                 }
               ]
             },
@@ -41,14 +41,14 @@
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "Cleveland Guardians",
-                  "price": -180,
-                  "point": -4.5
+                  "name": "Chicago White Sox",
+                  "price": -192,
+                  "point": 1.5
                 },
                 {
-                  "name": "Chicago White Sox",
-                  "price": 134,
-                  "point": 4.5
+                  "name": "Cleveland Guardians",
+                  "price": 158,
+                  "point": -1.5
                 }
               ]
             },
@@ -57,13 +57,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -118,
-                  "point": 15.5
+                  "price": 110,
+                  "point": 7.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
-                  "point": 15.5
+                  "price": -134,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Chicago White Sox",
+                  "price": -185,
+                  "point": 1.5
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": 160,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Chicago White Sox",
+                  "price": 117
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": -140
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 7
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
+                  "point": 7
                 }
               ]
             }
@@ -88,11 +137,11 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Dodgers",
-                  "price": -102
+                  "price": -104
                 },
                 {
                   "name": "Milwaukee Brewers",
-                  "price": -116
+                  "price": -112
                 }
               ]
             },
@@ -101,12 +150,12 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Dodgers",
-                  "price": 184,
+                  "price": 172,
                   "point": -1.5
                 },
                 {
                   "name": "Milwaukee Brewers",
-                  "price": -225,
+                  "price": -210,
                   "point": 1.5
                 }
               ]
@@ -116,12 +165,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 104,
+                  "price": 106,
                   "point": 6.5
                 },
                 {
                   "name": "Under",
-                  "price": -128,
+                  "price": -130,
                   "point": 6.5
                 }
               ]
