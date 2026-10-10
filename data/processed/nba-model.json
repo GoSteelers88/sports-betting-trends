@@ -1,20 +1,32 @@
 {
-  "generatedAt": "2026-10-10T01:56:01.837Z",
+  "generatedAt": "2026-10-10T18:32:30.437Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 19,
+  "recordCount": 22,
   "errors": [],
   "data": {
-    "generatedAt": "2026-10-10T01:56:01.837Z",
+    "generatedAt": "2026-10-10T18:32:30.437Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 30,
-    "gameCount": 19,
+    "gameCount": 22,
     "results": [
+      {
+        "eventId": "bv_32078775",
+        "homeTeam": "Houston Rockets",
+        "awayTeam": "Dallas Mavericks",
+        "homeWinProb": 0.8651,
+        "awayWinProb": 0.1349,
+        "expectedMargin": 17.7,
+        "homeNetRtg": 18,
+        "awayNetRtg": -18,
+        "calibrated": false,
+        "startTime": "2026-10-11T10:00:00.000Z"
+      },
       {
         "eventId": "fd_35928218",
         "homeTeam": "Detroit Pistons",
@@ -103,11 +115,11 @@
         "eventId": "fd_35937407",
         "homeTeam": "Toronto Raptors",
         "awayTeam": "Chicago Bulls",
-        "homeWinProb": 0.2129,
-        "awayWinProb": 0.7871,
-        "expectedMargin": -12.45,
+        "homeWinProb": 0.2597,
+        "awayWinProb": 0.7403,
+        "expectedMargin": -9.97,
         "homeNetRtg": -24,
-        "awayNetRtg": 7,
+        "awayNetRtg": 1.5,
         "calibrated": false,
         "startTime": "2026-10-21T23:40:00.000Z"
       },
@@ -182,6 +194,30 @@
         "awayNetRtg": -4,
         "calibrated": false,
         "startTime": "2026-10-22T02:40:00.000Z"
+      },
+      {
+        "eventId": "fd_35937409",
+        "homeTeam": "Philadelphia 76ers",
+        "awayTeam": "Cleveland Cavaliers",
+        "homeWinProb": 0.8537,
+        "awayWinProb": 0.1463,
+        "expectedMargin": 16.8,
+        "homeNetRtg": 23,
+        "awayNetRtg": -11,
+        "calibrated": false,
+        "startTime": "2026-10-22T23:10:00.000Z"
+      },
+      {
+        "eventId": "fd_35937405",
+        "homeTeam": "Oklahoma City Thunder",
+        "awayTeam": "Denver Nuggets",
+        "homeWinProb": 0.3656,
+        "awayWinProb": 0.6344,
+        "expectedMargin": -5.25,
+        "homeNetRtg": -4,
+        "awayNetRtg": 11,
+        "calibrated": false,
+        "startTime": "2026-10-23T01:40:00.000Z"
       },
       {
         "eventId": "bv_29471765",

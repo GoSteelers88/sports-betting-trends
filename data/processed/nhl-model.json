@@ -1,34 +1,22 @@
 {
-  "generatedAt": "2026-10-10T01:56:24.967Z",
+  "generatedAt": "2026-10-10T18:32:52.978Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 14,
+  "recordCount": 16,
   "errors": [
     "unmodeled: Dallas Stars @ Pittsburgh Penguins (fd_36171822)"
   ],
   "data": {
-    "generatedAt": "2026-10-10T01:56:24.967Z",
+    "generatedAt": "2026-10-10T18:32:52.978Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 15,
+    "gameCount": 17,
     "results": [
-      {
-        "eventId": "fd_36165409",
-        "homeTeam": "Winnipeg Jets",
-        "awayTeam": "Anaheim Ducks",
-        "homeWinProb": 0.6786,
-        "awayWinProb": 0.3214,
-        "expectedMargin": 2.49,
-        "homeNetRtg": 0.25,
-        "awayNetRtg": -4.333333333333333,
-        "calibrated": false,
-        "startTime": "2026-10-10T00:15:00.000Z"
-      },
       {
         "eventId": "fd_36171828",
         "homeTeam": "Boston Bruins",
@@ -177,13 +165,49 @@
         "eventId": "fd_36171818",
         "homeTeam": "Calgary Flames",
         "awayTeam": "Anaheim Ducks",
-        "homeWinProb": 0.5921,
-        "awayWinProb": 0.4079,
-        "expectedMargin": 1.24,
+        "homeWinProb": 0.515,
+        "awayWinProb": 0.485,
+        "expectedMargin": 0.2,
         "homeNetRtg": -2.25,
-        "awayNetRtg": -4.333333333333333,
+        "awayNetRtg": -2.25,
         "calibrated": false,
         "startTime": "2026-10-11T02:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36172723",
+        "homeTeam": "Washington Capitals",
+        "awayTeam": "Seattle Kraken",
+        "homeWinProb": 0.5374,
+        "awayWinProb": 0.4626,
+        "expectedMargin": 0.5,
+        "homeNetRtg": 2,
+        "awayNetRtg": 1.4,
+        "calibrated": false,
+        "startTime": "2026-10-11T21:00:00.000Z"
+      },
+      {
+        "eventId": "fd_36172724",
+        "homeTeam": "New York Rangers",
+        "awayTeam": "Vancouver Canucks",
+        "homeWinProb": 0.6525,
+        "awayWinProb": 0.3475,
+        "expectedMargin": 2.1,
+        "homeNetRtg": 1.8,
+        "awayNetRtg": -2,
+        "calibrated": false,
+        "startTime": "2026-10-11T22:00:00.000Z"
+      },
+      {
+        "eventId": "fd_36172725",
+        "homeTeam": "Philadelphia Flyers",
+        "awayTeam": "Carolina Hurricanes",
+        "homeWinProb": 0.3682,
+        "awayWinProb": 0.6318,
+        "expectedMargin": -1.8,
+        "homeNetRtg": -2.5,
+        "awayNetRtg": 1.5,
+        "calibrated": false,
+        "startTime": "2026-10-11T23:00:00.000Z"
       }
     ]
   }
