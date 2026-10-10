@@ -1,59 +1,22 @@
 {
-  "generatedAt": "2026-10-09T19:32:01.868Z",
+  "generatedAt": "2026-10-10T01:56:24.967Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 17,
+  "recordCount": 14,
   "errors": [
-    "unmodeled: Away Goals @ Home Goals (bv_32033563)",
     "unmodeled: Dallas Stars @ Pittsburgh Penguins (fd_36171822)"
   ],
   "data": {
-    "generatedAt": "2026-10-09T19:32:01.868Z",
+    "generatedAt": "2026-10-10T01:56:24.967Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 19,
+    "gameCount": 15,
     "results": [
-      {
-        "eventId": "fd_36165406",
-        "homeTeam": "Washington Capitals",
-        "awayTeam": "New York Rangers",
-        "homeWinProb": 0.5616,
-        "awayWinProb": 0.4384,
-        "expectedMargin": 0.83,
-        "homeNetRtg": 2,
-        "awayNetRtg": 0.75,
-        "calibrated": false,
-        "startTime": "2026-10-09T23:09:00.000Z"
-      },
-      {
-        "eventId": "fd_36165407",
-        "homeTeam": "Detroit Red Wings",
-        "awayTeam": "Seattle Kraken",
-        "homeWinProb": 0.4626,
-        "awayWinProb": 0.5374,
-        "expectedMargin": -0.5,
-        "homeNetRtg": -0.4,
-        "awayNetRtg": 1,
-        "calibrated": false,
-        "startTime": "2026-10-09T23:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36165408",
-        "homeTeam": "Columbus Blue Jackets",
-        "awayTeam": "Pittsburgh Penguins",
-        "homeWinProb": 0.5337,
-        "awayWinProb": 0.4663,
-        "expectedMargin": 0.45,
-        "homeNetRtg": 1.25,
-        "awayNetRtg": 0.75,
-        "calibrated": false,
-        "startTime": "2026-10-09T23:10:00.000Z"
-      },
       {
         "eventId": "fd_36165409",
         "homeTeam": "Winnipeg Jets",
@@ -64,7 +27,7 @@
         "homeNetRtg": 0.25,
         "awayNetRtg": -4.333333333333333,
         "calibrated": false,
-        "startTime": "2026-10-10T00:10:00.000Z"
+        "startTime": "2026-10-10T00:15:00.000Z"
       },
       {
         "eventId": "fd_36171828",

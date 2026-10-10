@@ -1,20 +1,18 @@
 {
-  "generatedAt": "2026-10-09T19:31:40.976Z",
+  "generatedAt": "2026-10-10T01:56:01.837Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 18,
-  "errors": [
-    "unmodeled: Dallas Mavericks @ Houston Rockets (fd_35937406)"
-  ],
+  "recordCount": 19,
+  "errors": [],
   "data": {
-    "generatedAt": "2026-10-09T19:31:40.976Z",
+    "generatedAt": "2026-10-10T01:56:01.837Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 28,
+    "teamCount": 30,
     "gameCount": 19,
     "results": [
       {
@@ -136,6 +134,18 @@
         "awayNetRtg": 11,
         "calibrated": false,
         "startTime": "2026-10-22T00:10:00.000Z"
+      },
+      {
+        "eventId": "fd_35937406",
+        "homeTeam": "Houston Rockets",
+        "awayTeam": "Dallas Mavericks",
+        "homeWinProb": 0.8651,
+        "awayWinProb": 0.1349,
+        "expectedMargin": 17.7,
+        "homeNetRtg": 18,
+        "awayNetRtg": -18,
+        "calibrated": false,
+        "startTime": "2026-10-22T00:40:00.000Z"
       },
       {
         "eventId": "fd_35932904",
