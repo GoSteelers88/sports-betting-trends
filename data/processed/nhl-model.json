@@ -1,58 +1,20 @@
 {
-  "generatedAt": "2026-10-11T18:51:15.697Z",
+  "generatedAt": "2026-10-12T01:46:50.121Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 6,
-  "errors": [
-    "unmodeled: Away Goals @ Home Goals (bv_32123963)"
-  ],
+  "recordCount": 3,
+  "errors": [],
   "data": {
-    "generatedAt": "2026-10-11T18:51:15.697Z",
+    "generatedAt": "2026-10-12T01:46:50.121Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 7,
+    "gameCount": 3,
     "results": [
-      {
-        "eventId": "fd_36172723",
-        "homeTeam": "Washington Capitals",
-        "awayTeam": "Seattle Kraken",
-        "homeWinProb": 0.5374,
-        "awayWinProb": 0.4626,
-        "expectedMargin": 0.5,
-        "homeNetRtg": 2,
-        "awayNetRtg": 1.4,
-        "calibrated": false,
-        "startTime": "2026-10-11T21:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36172724",
-        "homeTeam": "New York Rangers",
-        "awayTeam": "Vancouver Canucks",
-        "homeWinProb": 0.6593,
-        "awayWinProb": 0.3407,
-        "expectedMargin": 2.2,
-        "homeNetRtg": 1.8,
-        "awayNetRtg": -2.2,
-        "calibrated": false,
-        "startTime": "2026-10-11T22:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36172725",
-        "homeTeam": "Philadelphia Flyers",
-        "awayTeam": "Carolina Hurricanes",
-        "homeWinProb": 0.3578,
-        "awayWinProb": 0.6422,
-        "expectedMargin": -1.95,
-        "homeNetRtg": -2.5,
-        "awayNetRtg": 1.8,
-        "calibrated": false,
-        "startTime": "2026-10-11T23:10:00.000Z"
-      },
       {
         "eventId": "fd_36172847",
         "homeTeam": "Buffalo Sabres",
