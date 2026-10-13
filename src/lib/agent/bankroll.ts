@@ -64,18 +64,24 @@ function pickIsRoadDog(p: GradedPick): boolean {
   return selectionMentionsTeam(p.selection, awayTeam);
 }
 
-function gameKey(p: GradedPick): string {
-  // Normalize separator + diacritics + punctuation so "Lakers vs Celtics",
-  // "Celtics @ Lakers", and "lakers vs celtics" all collapse. Also strips
-  // accents/apostrophes so "St. John's" matches "St Johns".
+// Normalize separator + diacritics + punctuation so "Lakers vs Celtics",
+// "Celtics @ Lakers", and "lakers vs celtics" all collapse. Also strips
+// accents/apostrophes so "St. John's" matches "St Johns". Exported for the
+// cross-run held-positions guard, which must agree with this one on what a
+// "game" is.
+export function matchupKey(matchup: string): string {
   const norm = normalizeForMatch(
-    p.matchup
+    matchup
       .replace(/\s+vs\.?\s+/i, " | ")
       .replace(/\s+@\s+/i, " | ")
   );
   const parts = norm.split(" | ");
   if (parts.length === 2) return parts.sort().join(" | ");
   return norm;
+}
+
+function gameKey(p: GradedPick): string {
+  return matchupKey(p.matchup);
 }
 
 export function applyBankrollGuard(picks: GradedPick[]): BankrollGuardResult {

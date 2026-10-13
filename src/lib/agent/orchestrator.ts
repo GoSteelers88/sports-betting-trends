@@ -17,6 +17,7 @@ import { runIngest, ALLOWED_SCRIPTS, type IngestScript, type IngestResult } from
 import { analyze, persistFinalPicks, type TraceStep } from "./analyst";
 import { critique, applyCritiqueToPicks, type CritiqueResult } from "./critic";
 import { applyBankrollGuard, type BankrollGuardResult } from "./bankroll";
+import { dropHeldGames } from "./held-positions";
 import { notifyPicks, notifyError } from "./notify";
 import type { GradedPick } from "./grader";
 import { isInScope, IN_SCOPE_LEAGUES, type AgentLeague } from "./tools";
@@ -355,13 +356,43 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
         }
       }
 
-      const guard = applyBankrollGuard(afterCritique.kept);
+      // Cross-run exposure: one game-line position per game across runs (see
+      // held-positions.ts). Runs BEFORE the bankroll guard so a dropped pick
+      // frees its slot under the daily cap and never reaches Discord.
+      // Fail-closed: if we can't read what we already hold, we can't prove a
+      // game-line pick isn't the other side of one — drop game lines, keep props.
+      let afterHeld: { kept: GradedPick[]; dropped: BankrollGuardResult["dropped"] };
+      try {
+        const held = await prisma.agentPick.findMany({
+          where: { league, market: { not: "prop" }, gameDate: { gte: new Date(Date.now() - 12 * 3600_000) } },
+          select: { id: true, matchup: true, market: true, selection: true, gameDate: true, eventId: true },
+        });
+        afterHeld = dropHeldGames(afterCritique.kept, held);
+      } catch (err) {
+        afterHeld = {
+          kept: afterCritique.kept.filter(p => p.market === "prop"),
+          dropped: afterCritique.kept
+            .filter(p => p.market !== "prop")
+            .map(p => ({ pick: p, reason: "held-positions lookup failed (fail-closed)" })),
+        };
+        await notifyError("heldPositions", err, { runId, league });
+      }
+      trace.push({
+        step: "held_positions",
+        detail: {
+          kept: afterHeld.kept.length,
+          dropped: afterHeld.dropped.map(d => ({ matchup: d.pick.matchup, selection: d.pick.selection, reason: d.reason })),
+        },
+        at: new Date().toISOString(),
+      });
+
+      const guard = applyBankrollGuard(afterHeld.kept);
       trace.push({
         step: "bankroll_guard",
         detail: { kept: guard.kept.length, dropped: guard.dropped.length, flags: guard.flags, totalUnits: guard.totalUnits },
         at: new Date().toISOString(),
       });
-      dropped = guard.dropped;
+      dropped = [...afterHeld.dropped, ...guard.dropped];
       flags = guard.flags;
       finalPicks = guard.kept;
     }

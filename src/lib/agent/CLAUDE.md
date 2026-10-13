@@ -86,7 +86,8 @@ All file-backed tools check staleness (`>6h` → returns a `stale` flag the anal
 
 - 5u/day cap.
 - ≤1 ML per game; ≤2 props per game; ≤1 prop per player.
-- Same-game dedup (per-run only — cross-run handled by `@@unique`).
+- Same-game dedup (per-run only).
+- Cross-run: `held-positions.ts` (`dropHeldGames`, called in the orchestrator just before the bankroll guard) allows ONE game-line position per game across runs. Same game = equal eventId, or same teams starting within 3h. Fail-closed on a DB read error (drops game lines, keeps props). `@@unique` alone never covered this: it allowed the opposite side (NBA Magic/Hawks, Grizzlies/Jazz) and a same-side double whose gameDate differed by 1 minute across feeds (NFL Packers bv_/fd_).
 - Road-dog cluster flag (≥3 road dogs same day).
 - On conflict, drops the lowest-edge / worst stake-ratio first.
 
