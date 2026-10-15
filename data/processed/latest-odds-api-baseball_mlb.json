@@ -1,76 +1,17 @@
 {
-  "fetchedAt": "2026-10-15T18:15:06.656Z",
+  "fetchedAt": "2026-10-15T22:37:59.429Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 2,
   "sampleEvent": {
-    "id": "fd_36188821",
+    "id": "fd_36192537",
     "sport_key": "baseball_mlb",
-    "commence_time": "2026-10-15T17:10:00.000Z",
-    "home_team": "Cleveland Guardians",
-    "away_team": "Tampa Bay Rays"
+    "commence_time": "2026-10-16T00:00:00.000Z",
+    "home_team": "Los Angeles Dodgers",
+    "away_team": "Milwaukee Brewers"
   },
   "events": [
-    {
-      "id": "fd_36188821",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-10-15T17:10:00.000Z",
-      "home_team": "Cleveland Guardians",
-      "away_team": "Tampa Bay Rays",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Tampa Bay Rays",
-                  "price": -158
-                },
-                {
-                  "name": "Cleveland Guardians",
-                  "price": 124
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Tampa Bay Rays",
-                  "price": 154,
-                  "point": -1.5
-                },
-                {
-                  "name": "Cleveland Guardians",
-                  "price": -210,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -162,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": 122,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_36192537",
       "sport_key": "baseball_mlb",
@@ -101,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "Milwaukee Brewers",
-                  "price": -166,
+                  "price": -182,
                   "point": 1.5
                 },
                 {
                   "name": "Los Angeles Dodgers",
-                  "price": 138,
+                  "price": 150,
                   "point": -1.5
                 }
               ]
@@ -116,12 +57,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
+                  "price": -122,
                   "point": 7.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
+                  "price": 100,
                   "point": 7.5
                 }
               ]
@@ -152,11 +93,11 @@
               "outcomes": [
                 {
                   "name": "Milwaukee Brewers",
-                  "price": 129
+                  "price": 128
                 },
                 {
                   "name": "Los Angeles Dodgers",
-                  "price": -154
+                  "price": -153
                 }
               ]
             },
@@ -165,13 +106,121 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -120,
-                  "point": 7.5
+                  "price": -105,
+                  "point": 8
                 },
                 {
                   "name": "Under",
-                  "price": 100,
-                  "point": 7.5
+                  "price": -115,
+                  "point": 8
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36196493",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-10-16T22:00:00.000Z",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Tampa Bay Rays",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": -116
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": -102
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": 172,
+                  "point": -1.5
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": -210,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -108,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -112,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": 170,
+                  "point": -1.5
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": -200,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": -111
+                },
+                {
+                  "name": "Cleveland Guardians",
+                  "price": -109
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 6.5
                 }
               ]
             }
