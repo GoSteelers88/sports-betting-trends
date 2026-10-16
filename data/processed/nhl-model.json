@@ -1,22 +1,19 @@
 {
-  "generatedAt": "2026-10-15T18:15:45.335Z",
+  "generatedAt": "2026-10-16T00:45:11.338Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
   "recordCount": 13,
-  "errors": [
-    "unmodeled: Robert Morris Colonials @ Miami Ohio Redhawks (fd_36196290)",
-    "unmodeled: Away Goals @ Home Goals (bv_32298163)"
-  ],
+  "errors": [],
   "data": {
-    "generatedAt": "2026-10-15T18:15:45.335Z",
+    "generatedAt": "2026-10-16T00:45:11.338Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 15,
+    "gameCount": 13,
     "results": [
       {
         "eventId": "fd_36172828",
@@ -41,18 +38,6 @@
         "awayNetRtg": -2,
         "calibrated": false,
         "startTime": "2026-10-15T23:08:00.000Z"
-      },
-      {
-        "eventId": "fd_36172826",
-        "homeTeam": "Detroit Red Wings",
-        "awayTeam": "Philadelphia Flyers",
-        "homeWinProb": 0.5821,
-        "awayWinProb": 0.4179,
-        "expectedMargin": 1.1,
-        "homeNetRtg": -0.8571428571428571,
-        "awayNetRtg": -2.6666666666666665,
-        "calibrated": false,
-        "startTime": "2026-10-15T23:09:00.000Z"
       },
       {
         "eventId": "fd_36172832",
@@ -89,6 +74,18 @@
         "awayNetRtg": 1.4285714285714286,
         "calibrated": false,
         "startTime": "2026-10-15T23:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36172826",
+        "homeTeam": "Detroit Red Wings",
+        "awayTeam": "Philadelphia Flyers",
+        "homeWinProb": 0.5821,
+        "awayWinProb": 0.4179,
+        "expectedMargin": 1.1,
+        "homeNetRtg": -0.8571428571428571,
+        "awayNetRtg": -2.6666666666666665,
+        "calibrated": false,
+        "startTime": "2026-10-15T23:40:00.000Z"
       },
       {
         "eventId": "fd_36172827",
