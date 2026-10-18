@@ -88,7 +88,7 @@ export function ageHoursFromData(data: unknown): number | null {
 }
 
 type OddsFile = { fetchedAt?: string; events?: unknown[] };
-type ModelFile = { generatedAt?: string; results?: unknown[]; data?: { results?: unknown[] } };
+type ModelFile = { generatedAt?: string; status?: string; results?: unknown[]; data?: { results?: unknown[] } };
 type InjuryFile = { fetchedAt?: string; players?: unknown[] };
 
 export function checkHealth(league: AgentLeague): DataHealth {
@@ -135,7 +135,10 @@ export function checkHealth(league: AgentLeague): DataHealth {
       reasons.push(`model file has no freshness metadata — treat as unknown age`);
     else if (modelAge > STALENESS_HOURS)
       reasons.push(`model file ${modelAge.toFixed(1)}h old`);
-    else if (modelCount === 0) reasons.push(`model has 0 games`);
+    // basketball-model.ts writes "insufficient-sample" when the ratings are
+    // current but no team has enough games yet (preseason, opening week).
+    // Re-ingesting can't fix that, so it isn't staleness.
+    else if (modelCount === 0 && model.status !== "insufficient-sample") reasons.push(`model has 0 games`);
 
     // Cross-check: model vs odds count mismatch
     if (modelCount && oddsCount && Math.abs(modelCount - oddsCount) > 4) {

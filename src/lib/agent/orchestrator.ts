@@ -18,9 +18,10 @@ import { analyze, persistFinalPicks, type TraceStep } from "./analyst";
 import { critique, applyCritiqueToPicks, type CritiqueResult } from "./critic";
 import { applyBankrollGuard, type BankrollGuardResult } from "./bankroll";
 import { dropHeldGames } from "./held-positions";
+import { dropUnmodeledGameLines } from "./model-grounded";
 import { notifyPicks, notifyError } from "./notify";
 import type { GradedPick } from "./grader";
-import { isInScope, IN_SCOPE_LEAGUES, type AgentLeague } from "./tools";
+import { isInScope, IN_SCOPE_LEAGUES, getModelProbabilities, type AgentLeague } from "./tools";
 import { getActiveMemoriesForScope } from "./memory";
 import { prisma } from "@/lib/prisma";
 
@@ -356,6 +357,28 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
         }
       }
 
+      // Model grounding (model-grounded.ts): an NBA/WNBA game-line pick must be
+      // on a game the model priced. Runs after the critic floor, so a rescued
+      // pick is checked too. A missing model file yields no games → fail-closed.
+      const grounded = dropUnmodeledGameLines(league, afterCritique.kept, getModelProbabilities(league).games);
+      trace.push({
+        step: "model_grounded",
+        detail: {
+          kept: grounded.kept.length,
+          dropped: grounded.dropped.map(d => ({ matchup: d.pick.matchup, selection: d.pick.selection, reason: d.reason })),
+        },
+        at: new Date().toISOString(),
+      });
+      if (grounded.dropped.length > 0) {
+        // The analyst was told these games had no model; a pick here means it
+        // priced one anyway. Worth hearing about.
+        await notifyError(
+          "modelGrounded",
+          `dropped ${grounded.dropped.length} ${league} game-line pick(s) on games the model did not price`,
+          { runId, league, picks: grounded.dropped.map(d => `${d.pick.matchup}: ${d.pick.selection}`) },
+        );
+      }
+
       // Cross-run exposure: one game-line position per game across runs (see
       // held-positions.ts). Runs BEFORE the bankroll guard so a dropped pick
       // frees its slot under the daily cap and never reaches Discord.
@@ -367,11 +390,11 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
           where: { league, market: { not: "prop" }, gameDate: { gte: new Date(Date.now() - 12 * 3600_000) } },
           select: { id: true, matchup: true, market: true, selection: true, gameDate: true, eventId: true },
         });
-        afterHeld = dropHeldGames(afterCritique.kept, held);
+        afterHeld = dropHeldGames(grounded.kept, held);
       } catch (err) {
         afterHeld = {
-          kept: afterCritique.kept.filter(p => p.market === "prop"),
-          dropped: afterCritique.kept
+          kept: grounded.kept.filter(p => p.market === "prop"),
+          dropped: grounded.kept
             .filter(p => p.market !== "prop")
             .map(p => ({ pick: p, reason: "held-positions lookup failed (fail-closed)" })),
         };
@@ -392,7 +415,7 @@ export async function orchestrate(league: AgentLeague): Promise<OrchestratorResu
         detail: { kept: guard.kept.length, dropped: guard.dropped.length, flags: guard.flags, totalUnits: guard.totalUnits },
         at: new Date().toISOString(),
       });
-      dropped = [...afterHeld.dropped, ...guard.dropped];
+      dropped = [...grounded.dropped, ...afterHeld.dropped, ...guard.dropped];
       flags = guard.flags;
       finalPicks = guard.kept;
     }

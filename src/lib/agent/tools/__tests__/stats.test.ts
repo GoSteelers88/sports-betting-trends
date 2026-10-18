@@ -87,6 +87,14 @@ describe("getStandings", () => {
 describe("getTeamEfficiency", () => {
   it("happy path: NBA returns teams sorted by netRtg desc", () => {
     const r = getTeamEfficiency("NBA");
+    // Runs against the live snapshot, which has no teams until each has 5
+    // regular-season games (preseason, offseason, opening week). Then the
+    // tool must say so instead of returning an empty list.
+    if (!r.available) {
+      expect(r.teams).toBeUndefined();
+      expect(r.note).toMatch(/no NBA efficiency numbers/);
+      return;
+    }
     expect(r.available).toBe(true);
     expect(Array.isArray(r.teams)).toBe(true);
     expect(r.teams!.length).toBeGreaterThan(1);

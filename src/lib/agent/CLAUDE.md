@@ -45,13 +45,14 @@ These are load-bearing. Don't relax them without explicit user buy-in.
 | Cross-run idempotency | `analyst.ts:368-376` | Prisma P2002 on `@@unique([league, gameDate, market, selection])` caught, counted as skipped, no throw. |
 | Critic floor safety net | `orchestrator.ts:324-356` | If critic kills ≥3 grader-kept picks on ≥3 raw, rescue top-edge pick at 0.5× (only if edge ≥6%). |
 | Grader edge tolerance band | `grader.ts:72-87` | Edges in `[5.5%, 6%)` → keep at 0.5× stake with warning. Below 5.5% → drop. |
+| Model grounding (NBA + WNBA) | `model-grounded.ts`, called in the orchestrator after the critic floor | A game-line pick must be on a game the basketball model priced (eventId, or same teams within 3h). Unreadable/missing model → no games → all NBA/WNBA game lines dropped + `notifyError`. The model leaves games unmodeled on purpose: < 5 counted games per team, > 10 days out, ratings > 36h old (`basketball-model.ts`). |
 
 ## Tool contracts (`tools/index.ts`)
 
 | Tool | Data source | Notes |
 |---|---|---|
 | `get_odds(league)` | `data/processed/latest-odds-api-*.json` | Consensus + bestPrice off-market. |
-| `get_model_probabilities(league)` | `data/processed/{nba,wnba,nhl,nfl,mlb}-model*.json` | Stale (>6h) status passed back in-band. NFL results carry `verdict` (PLAY/PASS) + doctrine `notes`; PASS games are pinned to the de-vigged market (`nfl-model-from-board.ts`). |
+| `get_model_probabilities(league)` | `data/processed/{nba,wnba,nhl,nfl,mlb}-model*.json` | Stale (>6h) status passed back in-band. NBA/WNBA: an empty slate carries a `note` saying why (status `insufficient-sample` in preseason/opening week — `health.ts` does not count that as stale). NFL results carry `verdict` (PLAY/PASS) + doctrine `notes`; PASS games are pinned to the de-vigged market (`nfl-model-from-board.ts`). |
 | `get_injuries(league)` | `data/processed/injuries-*.json` | |
 | `get_player_props(league)` | `data/processed/latest-player-props*.json` | NBA + MLB; absence ≠ error. |
 | `get_trend_summary(league)` | `data/processed/latest-summary.json` | Legacy heuristic best-bets. |

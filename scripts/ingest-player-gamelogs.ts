@@ -26,6 +26,7 @@ import {
   type EspnSummary,
   type PropGradingLeague,
 } from "../src/lib/prop-grading";
+import { isCountableEspnEvent } from "../src/lib/espn-season";
 
 type PerGameStats = { date: string; opponent: string | null; stats: Record<string, number> };
 
@@ -49,7 +50,11 @@ type GameLogFile = {
   players: Record<string, PlayerEntry>;          // key = normalized name
   teamsAllowed: Record<string, TeamAllowed>;     // key = team displayName
   leagueAverages: Record<string, number>;        // propType → mean across all player-games
+  gamesCounted: number;
+  gamesExcluded: number;     // completed preseason / untyped games skipped
 };
+
+type BuildStats = { scoreboardFailures: number };
 
 const DEFAULT_DAYS: Record<PropGradingLeague, number> = {
   NBA: 10,
@@ -74,7 +79,7 @@ function parseArgs(): { days?: number } {
 async function buildGameLog(
   league: PropGradingLeague,
   windowDays: number
-): Promise<GameLogFile> {
+): Promise<GameLogFile & BuildStats> {
   const now = new Date();
   const dates: string[] = [];
   for (let i = 0; i < windowDays; i++) {
@@ -84,11 +89,22 @@ async function buildGameLog(
 
   const seenEvents = new Set<string>();
   const events: Array<EspnEvent & { homeName: string; awayName: string }> = [];
+  let scoreboardFailures = 0;
+  let gamesExcluded = 0;
   for (const d of dates) {
     const board = await fetchJson<Espn>(`${SCOREBOARD[league]}?dates=${d}`);
+    if (board === null) scoreboardFailures++;
     for (const ev of board?.events ?? []) {
       if (seenEvents.has(ev.id)) continue;
       if (!ev.status?.type?.completed) continue;
+      // Preseason box scores are starters playing 15–20 minutes: a projection
+      // built on them is biased low for stars and high for the bench (see
+      // src/lib/espn-season.ts). Spring training is season type 1 too.
+      if (!isCountableEspnEvent(ev)) {
+        seenEvents.add(ev.id);
+        gamesExcluded++;
+        continue;
+      }
       const competitors = ev.competitions?.[0]?.competitors ?? [];
       const home = competitors.find(c => c.homeAway === "home")?.team?.displayName ?? "";
       const away = competitors.find(c => c.homeAway === "away")?.team?.displayName ?? "";
@@ -187,6 +203,9 @@ async function buildGameLog(
     players,
     teamsAllowed,
     leagueAverages,
+    gamesCounted: events.length,
+    gamesExcluded,
+    scoreboardFailures,
   };
 }
 
@@ -212,7 +231,12 @@ async function main() {
     // freshness gate (it would look "fresh but empty" instead of "stale"). So we
     // refuse the write, leave the last-known-good file in place, and flag a
     // failure so the cron exits non-zero and the heartbeat fires.
-    if (playerCount === 0) {
+    // ESPN answered and there was simply nothing countable (preseason,
+    // offseason, the days before an opener): write the empty file. Refusing
+    // here is what kept a preseason-only NBA log alive into the regular season.
+    const quietCalendar =
+      log.gamesCounted === 0 && log.scoreboardFailures <= windowDays / 2;
+    if (playerCount === 0 && !quietCalendar) {
       console.error(
         `[${league}] REFUSING to write — 0 players parsed (ESPN outage / rate-limit?). ` +
           `Leaving existing ${filename} untouched so stale data stays visibly stale.`,
@@ -222,12 +246,14 @@ async function main() {
     }
 
     // Atomic write (temp + rename) so a reader never catches a half-written file.
+    const { scoreboardFailures: _failures, ...file } = log;
     const tmp = `${out}.tmp`;
-    fs.writeFileSync(tmp, JSON.stringify(log, null, 2));
+    fs.writeFileSync(tmp, JSON.stringify(file, null, 2));
     fs.renameSync(tmp, out);
     successes++;
     console.log(
-      `[${league}] wrote ${out} — ${playerCount} players, ${teamCount} teams, ${Object.keys(log.leagueAverages).length} prop types`
+      `[${league}] wrote ${out} — ${playerCount} players, ${teamCount} teams, ${Object.keys(log.leagueAverages).length} prop types` +
+        ` (${log.gamesCounted} games counted, ${log.gamesExcluded} preseason/untyped skipped)`
     );
   }
   // Exit non-zero ONLY on a TOTAL wipeout (every league empty) — that's a real

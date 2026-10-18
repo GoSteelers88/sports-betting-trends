@@ -10,6 +10,7 @@ export type Espn = {
 export type EspnEvent = {
   id: string;
   date?: string;
+  season?: { type?: number; year?: number };
   status?: { type?: { completed?: boolean } };
   competitions?: Array<{
     competitors?: Array<{

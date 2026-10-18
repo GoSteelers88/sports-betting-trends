@@ -196,6 +196,7 @@ export type ModelView = {
   awayWinProb: number;
   expectedMargin?: number | null;
   notes?: string[];
+  startTime?: string | null;
 };
 
 export type Injury = {
@@ -377,6 +378,8 @@ export function getOdds(
 
 type NbaModelFile = {
   generatedAt?: string;
+  status?: string;
+  note?: string;
   data?: { results?: ModelView[] };
 };
 type MlbModelFile = {
@@ -388,6 +391,7 @@ export function getModelProbabilities(league: AgentLeague): {
   generatedAt: string | null;
   games: ModelView[];
   dataWarning?: string;
+  note?: string;
 } {
   const file = MODEL_FILE[league];
   if (!file) return { generatedAt: null, games: [] };
@@ -399,10 +403,19 @@ export function getModelProbabilities(league: AgentLeague): {
   if (league === "NBA" || league === "WNBA" || league === "NHL" || league === "NFL") {
     const loaded = loadJsonWithStatus<NbaModelFile>(file, {});
     const warn = dataWarning(file, loaded.status, loaded.ageMs);
+    const games = loaded.data.data?.results ?? [];
+    // An unmodeled game has no model probability, so it has no edge. The
+    // orchestrator drops NBA/WNBA game-line picks on unmodeled games in code
+    // (model-grounded.ts); this note tells the analyst before it spends a turn.
+    const note =
+      games.length === 0 && loaded.data.note
+        ? `${loaded.data.note} No model probability means no edge: do not make ${league} game-line picks on unmodeled games.`
+        : undefined;
     return {
       generatedAt: loaded.data.generatedAt ?? null,
-      games: loaded.data.data?.results ?? [],
+      games,
       ...(warn ? { dataWarning: warn } : {}),
+      ...(note ? { note } : {}),
     };
   }
 
