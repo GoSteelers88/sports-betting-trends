@@ -1,24 +1,24 @@
 {
-  "fetchedAt": "2026-10-18T21:45:05.646Z",
+  "fetchedAt": "2026-10-19T00:28:59.828Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 1,
   "sampleEvent": {
-    "id": "fd_36205376",
+    "id": "fd_36211484",
     "sport_key": "baseball_mlb",
-    "commence_time": "2026-10-18T21:10:00.000Z",
-    "home_team": "Cleveland Guardians",
-    "away_team": "Tampa Bay Rays"
+    "commence_time": "2026-10-20T00:10:00.000Z",
+    "home_team": "Tampa Bay Rays",
+    "away_team": "Cleveland Guardians"
   },
   "events": [
     {
-      "id": "fd_36205376",
+      "id": "fd_36211484",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
-      "commence_time": "2026-10-18T21:10:00.000Z",
-      "home_team": "Cleveland Guardians",
-      "away_team": "Tampa Bay Rays",
+      "commence_time": "2026-10-20T00:10:00.000Z",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Cleveland Guardians",
       "bookmakers": [
         {
           "key": "fanduel",
@@ -28,12 +28,12 @@
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Tampa Bay Rays",
-                  "price": -350
+                  "name": "Cleveland Guardians",
+                  "price": 118
                 },
                 {
-                  "name": "Cleveland Guardians",
-                  "price": 255
+                  "name": "Tampa Bay Rays",
+                  "price": -138
                 }
               ]
             },
@@ -41,14 +41,14 @@
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "Tampa Bay Rays",
-                  "price": 110,
-                  "point": -2.5
+                  "name": "Cleveland Guardians",
+                  "price": -220,
+                  "point": 1.5
                 },
                 {
-                  "name": "Cleveland Guardians",
-                  "price": -146,
-                  "point": 2.5
+                  "name": "Tampa Bay Rays",
+                  "price": 180,
+                  "point": -1.5
                 }
               ]
             },
@@ -57,13 +57,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 108,
-                  "point": 7.5
+                  "price": -110,
+                  "point": 6.5
                 },
                 {
                   "name": "Under",
-                  "price": -144,
-                  "point": 7.5
+                  "price": -110,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Cleveland Guardians",
+                  "price": -220,
+                  "point": 1.5
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": 180,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Cleveland Guardians",
+                  "price": 117
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": -140
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 6.5
                 }
               ]
             }
