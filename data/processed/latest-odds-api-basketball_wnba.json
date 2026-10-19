@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-19T19:51:35.380Z",
+  "fetchedAt": "2026-10-19T23:01:30.192Z",
   "league": "basketball_wnba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
@@ -42,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "Atlanta Dream",
-                  "price": -118,
+                  "price": -122,
                   "point": 2.5
                 },
                 {
                   "name": "Golden State Valkyries",
-                  "price": -104,
+                  "price": 100,
                   "point": -2.5
                 }
               ]
@@ -57,13 +57,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
+                  "price": -112,
                   "point": 152.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
+                  "price": -108,
                   "point": 152.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Atlanta Dream",
+                  "price": -110,
+                  "point": 1.5
+                },
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -110,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Atlanta Dream",
+                  "price": 105
+                },
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -125
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 153
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 153
                 }
               ]
             }
