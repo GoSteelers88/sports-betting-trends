@@ -1,54 +1,39 @@
 {
-  "fetchedAt": "2026-10-21T00:54:54.231Z",
+  "fetchedAt": "2026-10-21T18:34:38.250Z",
   "league": "icehockey_nhl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 13,
+  "eventCount": 15,
   "sampleEvent": {
-    "id": "fd_36214456",
+    "id": "bv_32574563",
     "sport_key": "icehockey_nhl",
-    "commence_time": "2026-10-20T23:08:00.000Z",
-    "home_team": "New Jersey Devils",
-    "away_team": "Colorado Avalanche"
+    "commence_time": "2026-10-21T23:37:00.000Z",
+    "home_team": "Home Goals",
+    "away_team": "Away Goals"
   },
   "events": [
     {
-      "id": "fd_36214456",
+      "id": "bv_32574563",
       "sport_key": "icehockey_nhl",
       "sport_title": "NHL",
-      "commence_time": "2026-10-20T23:08:00.000Z",
-      "home_team": "New Jersey Devils",
-      "away_team": "Colorado Avalanche",
+      "commence_time": "2026-10-21T23:37:00.000Z",
+      "home_team": "Home Goals",
+      "away_team": "Away Goals",
       "bookmakers": [
         {
-          "key": "fanduel",
-          "title": "FanDuel",
+          "key": "bovada",
+          "title": "Bovada",
           "markets": [
             {
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Colorado Avalanche",
-                  "price": 260
+                  "name": "Away Goals",
+                  "price": 125
                 },
                 {
-                  "name": "New Jersey Devils",
-                  "price": -360
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Colorado Avalanche",
-                  "price": -154,
-                  "point": 1.5
-                },
-                {
-                  "name": "New Jersey Devils",
-                  "price": 118,
-                  "point": -1.5
+                  "name": "Home Goals",
+                  "price": -145
                 }
               ]
             },
@@ -57,603 +42,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 120,
-                  "point": 5.5
-                },
-                {
-                  "name": "Under",
-                  "price": -156,
-                  "point": 5.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36214454",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-20T23:09:00.000Z",
-      "home_team": "New York Islanders",
-      "away_team": "Anaheim Ducks",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Anaheim Ducks",
-                  "price": 900
-                },
-                {
-                  "name": "New York Islanders",
-                  "price": -2500
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Anaheim Ducks",
-                  "price": 100,
-                  "point": 2.5
-                },
-                {
-                  "name": "New York Islanders",
                   "price": -130,
-                  "point": -2.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 116,
-                  "point": 6.5
+                  "point": 11.5
                 },
                 {
                   "name": "Under",
-                  "price": -152,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36214433",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-20T23:10:00.000Z",
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Toronto Maple Leafs",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Toronto Maple Leafs",
-                  "price": -20000
-                },
-                {
-                  "name": "Columbus Blue Jackets",
-                  "price": 3000
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Toronto Maple Leafs",
-                  "price": -188,
-                  "point": -3.5
-                },
-                {
-                  "name": "Columbus Blue Jackets",
-                  "price": 142,
-                  "point": 3.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 126,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": -165,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36214483",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-20T23:10:00.000Z",
-      "home_team": "Washington Capitals",
-      "away_team": "Los Angeles Kings",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Los Angeles Kings",
-                  "price": 116
-                },
-                {
-                  "name": "Washington Capitals",
-                  "price": -148
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Los Angeles Kings",
-                  "price": -420,
-                  "point": 1.5
-                },
-                {
-                  "name": "Washington Capitals",
-                  "price": 290,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -125,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": -104,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36214489",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-20T23:10:00.000Z",
-      "home_team": "Montreal Canadiens",
-      "away_team": "San Jose Sharks",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "San Jose Sharks",
-                  "price": 1000
-                },
-                {
-                  "name": "Montreal Canadiens",
-                  "price": -3000
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "San Jose Sharks",
-                  "price": 122,
-                  "point": 2.5
-                },
-                {
-                  "name": "Montreal Canadiens",
-                  "price": -160,
-                  "point": -2.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -102,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": -128,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36214462",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-21T00:10:00.000Z",
-      "home_team": "Dallas Stars",
-      "away_team": "Boston Bruins",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Boston Bruins",
-                  "price": -174
-                },
-                {
-                  "name": "Dallas Stars",
-                  "price": 136
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Boston Bruins",
-                  "price": 168,
-                  "point": -1.5
-                },
-                {
-                  "name": "Dallas Stars",
-                  "price": -225,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 136,
-                  "point": 5.5
-                },
-                {
-                  "name": "Under",
-                  "price": -178,
-                  "point": 5.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36214463",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-21T00:10:00.000Z",
-      "home_team": "St. Louis Blues",
-      "away_team": "Winnipeg Jets",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Winnipeg Jets",
-                  "price": 230
-                },
-                {
-                  "name": "St. Louis Blues",
-                  "price": -310
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Winnipeg Jets",
-                  "price": -120,
-                  "point": 1.5
-                },
-                {
-                  "name": "St. Louis Blues",
-                  "price": -108,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 142,
-                  "point": 5.5
-                },
-                {
-                  "name": "Under",
-                  "price": -188,
-                  "point": 5.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36214459",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-21T01:10:00.000Z",
-      "home_team": "Edmonton Oilers",
-      "away_team": "Minnesota Wild",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Minnesota Wild",
-                  "price": 108
-                },
-                {
-                  "name": "Edmonton Oilers",
-                  "price": -130
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Minnesota Wild",
-                  "price": -245,
-                  "point": 1.5
-                },
-                {
-                  "name": "Edmonton Oilers",
-                  "price": 194,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 100,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": -122,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36215632",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-21T01:45:00.000Z",
-      "home_team": "Seattle Kraken",
-      "away_team": "Detroit Red Wings",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Detroit Red Wings",
-                  "price": -120
-                },
-                {
-                  "name": "Seattle Kraken",
-                  "price": 100
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Detroit Red Wings",
-                  "price": 205,
-                  "point": -1.5
-                },
-                {
-                  "name": "Seattle Kraken",
-                  "price": -260,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -105,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": -115,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36214455",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-21T02:10:00.000Z",
-      "home_team": "Vancouver Canucks",
-      "away_team": "Carolina Hurricanes",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Carolina Hurricanes",
-                  "price": -300
-                },
-                {
-                  "name": "Vancouver Canucks",
-                  "price": 240
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Carolina Hurricanes",
-                  "price": -118,
-                  "point": -1.5
-                },
-                {
-                  "name": "Vancouver Canucks",
-                  "price": -104,
-                  "point": 1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -105,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": -115,
-                  "point": 6.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36214445",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-10-21T02:40:00.000Z",
-      "home_team": "Vegas Golden Knights",
-      "away_team": "Tampa Bay Lightning",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Tampa Bay Lightning",
-                  "price": -110
-                },
-                {
-                  "name": "Vegas Golden Knights",
-                  "price": -110
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Tampa Bay Lightning",
-                  "price": -260,
-                  "point": 1.5
-                },
-                {
-                  "name": "Vegas Golden Knights",
-                  "price": 205,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": 104,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": -128,
-                  "point": 6.5
+                  "price": 110,
+                  "point": 11.5
                 }
               ]
             }
@@ -665,7 +60,7 @@
       "id": "fd_36218441",
       "sport_key": "icehockey_nhl",
       "sport_title": "NHL",
-      "commence_time": "2026-10-21T23:30:00.000Z",
+      "commence_time": "2026-10-21T23:39:00.000Z",
       "home_team": "Ottawa Senators",
       "away_team": "Florida Panthers",
       "bookmakers": [
@@ -691,12 +86,641 @@
               "outcomes": [
                 {
                   "name": "Florida Panthers",
-                  "price": -265,
+                  "price": 220,
+                  "point": -1.5
+                },
+                {
+                  "name": "Ottawa Senators",
+                  "price": -280,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -118,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": -104,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Florida Panthers",
+                  "price": -280,
                   "point": 1.5
                 },
                 {
                   "name": "Ottawa Senators",
-                  "price": 210,
+                  "price": 230,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Florida Panthers",
+                  "price": -108
+                },
+                {
+                  "name": "Ottawa Senators",
+                  "price": -112
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36218442",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-21T23:40:00.000Z",
+      "home_team": "Buffalo Sabres",
+      "away_team": "Philadelphia Flyers",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Flyers",
+                  "price": 158
+                },
+                {
+                  "name": "Buffalo Sabres",
+                  "price": -192
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Flyers",
+                  "price": -170,
+                  "point": 1.5
+                },
+                {
+                  "name": "Buffalo Sabres",
+                  "price": 132,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -140,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": 114,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Flyers",
+                  "price": -165,
+                  "point": 1.5
+                },
+                {
+                  "name": "Buffalo Sabres",
+                  "price": 140,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Philadelphia Flyers",
+                  "price": 163
+                },
+                {
+                  "name": "Buffalo Sabres",
+                  "price": -190
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -112,
+                  "point": 6
+                },
+                {
+                  "name": "Under",
+                  "price": -108,
+                  "point": 6
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222219",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-22T23:00:00.000Z",
+      "home_team": "Boston Bruins",
+      "away_team": "Nashville Predators",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Nashville Predators",
+                  "price": 136
+                },
+                {
+                  "name": "Boston Bruins",
+                  "price": -164
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Nashville Predators",
+                  "price": -178,
+                  "point": 1.5
+                },
+                {
+                  "name": "Boston Bruins",
+                  "price": 144,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -130,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": 106,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222244",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-22T23:00:00.000Z",
+      "home_team": "New Jersey Devils",
+      "away_team": "Anaheim Ducks",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Anaheim Ducks",
+                  "price": 155
+                },
+                {
+                  "name": "New Jersey Devils",
+                  "price": -188
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Anaheim Ducks",
+                  "price": -142,
+                  "point": 1.5
+                },
+                {
+                  "name": "New Jersey Devils",
+                  "price": 116,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222251",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-22T23:00:00.000Z",
+      "home_team": "Ottawa Senators",
+      "away_team": "San Jose Sharks",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "San Jose Sharks",
+                  "price": 100
+                },
+                {
+                  "name": "Ottawa Senators",
+                  "price": -120
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "San Jose Sharks",
+                  "price": -230,
+                  "point": 1.5
+                },
+                {
+                  "name": "Ottawa Senators",
+                  "price": 186,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 108,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -132,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222255",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-22T23:00:00.000Z",
+      "home_team": "Pittsburgh Penguins",
+      "away_team": "Florida Panthers",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Florida Panthers",
+                  "price": -102
+                },
+                {
+                  "name": "Pittsburgh Penguins",
+                  "price": -118
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Florida Panthers",
+                  "price": -245,
+                  "point": 1.5
+                },
+                {
+                  "name": "Pittsburgh Penguins",
+                  "price": 194,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -130,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": 106,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222257",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-22T23:00:00.000Z",
+      "home_team": "Toronto Maple Leafs",
+      "away_team": "New York Rangers",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New York Rangers",
+                  "price": -110
+                },
+                {
+                  "name": "Toronto Maple Leafs",
+                  "price": -110
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New York Rangers",
+                  "price": -260,
+                  "point": 1.5
+                },
+                {
+                  "name": "Toronto Maple Leafs",
+                  "price": 205,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222223",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-22T23:30:00.000Z",
+      "home_team": "New York Islanders",
+      "away_team": "Los Angeles Kings",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Kings",
+                  "price": -102
+                },
+                {
+                  "name": "New York Islanders",
+                  "price": -118
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Kings",
+                  "price": -260,
+                  "point": 1.5
+                },
+                {
+                  "name": "New York Islanders",
+                  "price": 205,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -106,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": -114,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222242",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-23T00:00:00.000Z",
+      "home_team": "St. Louis Blues",
+      "away_team": "Vegas Golden Knights",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Vegas Golden Knights",
+                  "price": -122
+                },
+                {
+                  "name": "St. Louis Blues",
+                  "price": 102
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Vegas Golden Knights",
+                  "price": 194,
+                  "point": -1.5
+                },
+                {
+                  "name": "St. Louis Blues",
+                  "price": -245,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -140,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": 114,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222245",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-23T00:00:00.000Z",
+      "home_team": "Dallas Stars",
+      "away_team": "Winnipeg Jets",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Winnipeg Jets",
+                  "price": 168
+                },
+                {
+                  "name": "Dallas Stars",
+                  "price": -205
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Winnipeg Jets",
+                  "price": -142,
+                  "point": 1.5
+                },
+                {
+                  "name": "Dallas Stars",
+                  "price": 116,
                   "point": -1.5
                 }
               ]
@@ -721,12 +745,12 @@
       ]
     },
     {
-      "id": "fd_36218442",
+      "id": "fd_36222259",
       "sport_key": "icehockey_nhl",
       "sport_title": "NHL",
-      "commence_time": "2026-10-21T23:30:00.000Z",
-      "home_team": "Buffalo Sabres",
-      "away_team": "Philadelphia Flyers",
+      "commence_time": "2026-10-23T01:00:00.000Z",
+      "home_team": "Calgary Flames",
+      "away_team": "Minnesota Wild",
       "bookmakers": [
         {
           "key": "fanduel",
@@ -736,12 +760,12 @@
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Philadelphia Flyers",
-                  "price": 150
+                  "name": "Minnesota Wild",
+                  "price": -196
                 },
                 {
-                  "name": "Buffalo Sabres",
-                  "price": -182
+                  "name": "Calgary Flames",
+                  "price": 162
                 }
               ]
             },
@@ -749,13 +773,72 @@
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "Philadelphia Flyers",
+                  "name": "Minnesota Wild",
+                  "price": 124,
+                  "point": -1.5
+                },
+                {
+                  "name": "Calgary Flames",
                   "price": -152,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -128,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": 104,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222264",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-23T01:00:00.000Z",
+      "home_team": "Edmonton Oilers",
+      "away_team": "Carolina Hurricanes",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Carolina Hurricanes",
+                  "price": -110
+                },
+                {
+                  "name": "Edmonton Oilers",
+                  "price": -110
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Carolina Hurricanes",
+                  "price": -260,
                   "point": 1.5
                 },
                 {
-                  "name": "Buffalo Sabres",
-                  "price": 124,
+                  "name": "Edmonton Oilers",
+                  "price": 205,
                   "point": -1.5
                 }
               ]
@@ -765,13 +848,131 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -138,
-                  "point": 5.5
+                  "price": -118,
+                  "point": 6.5
                 },
                 {
                   "name": "Under",
-                  "price": 112,
-                  "point": 5.5
+                  "price": -104,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222236",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-23T02:00:00.000Z",
+      "home_team": "Vancouver Canucks",
+      "away_team": "Detroit Red Wings",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Detroit Red Wings",
+                  "price": -164
+                },
+                {
+                  "name": "Vancouver Canucks",
+                  "price": 136
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Detroit Red Wings",
+                  "price": 146,
+                  "point": -1.5
+                },
+                {
+                  "name": "Vancouver Canucks",
+                  "price": -180,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -102,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -120,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36222261",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-10-23T02:00:00.000Z",
+      "home_team": "Seattle Kraken",
+      "away_team": "Utah Mammoth",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Utah Mammoth",
+                  "price": -162
+                },
+                {
+                  "name": "Seattle Kraken",
+                  "price": 134
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Utah Mammoth",
+                  "price": 146,
+                  "point": -1.5
+                },
+                {
+                  "name": "Seattle Kraken",
+                  "price": -180,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 100,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -122,
+                  "point": 6.5
                 }
               ]
             }
