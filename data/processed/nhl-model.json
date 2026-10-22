@@ -1,35 +1,22 @@
 {
-  "generatedAt": "2026-10-21T18:35:22.629Z",
+  "generatedAt": "2026-10-22T00:54:34.202Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
   "recordCount": 13,
   "errors": [
-    "unmodeled: Away Goals @ Home Goals (bv_32574563)",
     "unmodeled: Winnipeg Jets @ Dallas Stars (fd_36222245)"
   ],
   "data": {
-    "generatedAt": "2026-10-21T18:35:22.629Z",
+    "generatedAt": "2026-10-22T00:54:34.202Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 15,
+    "gameCount": 14,
     "results": [
-      {
-        "eventId": "fd_36218441",
-        "homeTeam": "Ottawa Senators",
-        "awayTeam": "Florida Panthers",
-        "homeWinProb": 0.4822,
-        "awayWinProb": 0.5178,
-        "expectedMargin": -0.24,
-        "homeNetRtg": -0.5,
-        "awayNetRtg": 0.375,
-        "calibrated": false,
-        "startTime": "2026-10-21T23:39:00.000Z"
-      },
       {
         "eventId": "fd_36218442",
         "homeTeam": "Buffalo Sabres",
@@ -41,6 +28,18 @@
         "awayNetRtg": -2.4285714285714284,
         "calibrated": false,
         "startTime": "2026-10-21T23:40:00.000Z"
+      },
+      {
+        "eventId": "fd_36218441",
+        "homeTeam": "Ottawa Senators",
+        "awayTeam": "Florida Panthers",
+        "homeWinProb": 0.4822,
+        "awayWinProb": 0.5178,
+        "expectedMargin": -0.24,
+        "homeNetRtg": -0.5,
+        "awayNetRtg": 0.375,
+        "calibrated": false,
+        "startTime": "2026-10-21T23:46:00.000Z"
       },
       {
         "eventId": "fd_36222219",
