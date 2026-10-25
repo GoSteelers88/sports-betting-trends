@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-25T17:39:29.800Z",
+  "fetchedAt": "2026-10-25T21:59:54.782Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
@@ -42,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "Milwaukee Brewers",
-                  "price": 184,
+                  "price": 180,
                   "point": -1.5
                 },
                 {
                   "name": "Tampa Bay Rays",
-                  "price": -225,
+                  "price": -220,
                   "point": 1.5
                 }
               ]
@@ -64,6 +64,55 @@
                   "name": "Under",
                   "price": 124,
                   "point": 6.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Milwaukee Brewers",
+                  "price": -220,
+                  "point": 1.5
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": 180,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Milwaukee Brewers",
+                  "price": 101
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": -121
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -115,
+                  "point": 7
+                },
+                {
+                  "name": "Under",
+                  "price": -105,
+                  "point": 7
                 }
               ]
             }
