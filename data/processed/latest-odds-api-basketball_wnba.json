@@ -1,24 +1,24 @@
 {
-  "fetchedAt": "2026-10-27T01:37:48.755Z",
+  "fetchedAt": "2026-10-27T19:25:55.371Z",
   "league": "basketball_wnba",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 1,
   "sampleEvent": {
-    "id": "fd_36208861",
+    "id": "fd_36208862",
     "sport_key": "basketball_wnba",
-    "commence_time": "2026-10-27T00:12:00.000Z",
-    "home_team": "Golden State Valkyries",
-    "away_team": "Atlanta Dream"
+    "commence_time": "2026-10-29T16:30:00.000Z",
+    "home_team": "Atlanta Dream",
+    "away_team": "Golden State Valkyries"
   },
   "events": [
     {
-      "id": "fd_36208861",
+      "id": "fd_36208862",
       "sport_key": "basketball_wnba",
       "sport_title": "WNBA",
-      "commence_time": "2026-10-27T00:12:00.000Z",
-      "home_team": "Golden State Valkyries",
-      "away_team": "Atlanta Dream",
+      "commence_time": "2026-10-29T16:30:00.000Z",
+      "home_team": "Atlanta Dream",
+      "away_team": "Golden State Valkyries",
       "bookmakers": [
         {
           "key": "fanduel",
@@ -28,12 +28,12 @@
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Atlanta Dream",
-                  "price": 162
+                  "name": "Golden State Valkyries",
+                  "price": 156
                 },
                 {
-                  "name": "Golden State Valkyries",
-                  "price": -210
+                  "name": "Atlanta Dream",
+                  "price": -186
                 }
               ]
             },
@@ -41,14 +41,14 @@
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "Atlanta Dream",
-                  "price": -112,
-                  "point": 3.5
+                  "name": "Golden State Valkyries",
+                  "price": -115,
+                  "point": 4.5
                 },
                 {
-                  "name": "Golden State Valkyries",
-                  "price": -118,
-                  "point": -3.5
+                  "name": "Atlanta Dream",
+                  "price": -105,
+                  "point": -4.5
                 }
               ]
             },
@@ -57,13 +57,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -106,
-                  "point": 120.5
+                  "price": -104,
+                  "point": 147.5
                 },
                 {
                   "name": "Under",
-                  "price": -125,
-                  "point": 120.5
+                  "price": -118,
+                  "point": 147.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Golden State Valkyries",
+                  "price": -105,
+                  "point": 4
+                },
+                {
+                  "name": "Atlanta Dream",
+                  "price": -115,
+                  "point": -4
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Golden State Valkyries",
+                  "price": 155
+                },
+                {
+                  "name": "Atlanta Dream",
+                  "price": -180
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 147
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 147
                 }
               ]
             }
