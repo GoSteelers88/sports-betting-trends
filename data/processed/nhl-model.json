@@ -1,35 +1,22 @@
 {
-  "generatedAt": "2026-10-27T19:26:28.237Z",
+  "generatedAt": "2026-10-28T01:42:20.203Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 14,
+  "recordCount": 13,
   "errors": [
-    "unmodeled: Away Goals @ Home Goals (bv_32853963)",
     "unmodeled: New Jersey Devils @ Dallas Stars (fd_36230587)"
   ],
   "data": {
-    "generatedAt": "2026-10-27T19:26:28.237Z",
+    "generatedAt": "2026-10-28T01:42:20.203Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 16,
+    "gameCount": 14,
     "results": [
-      {
-        "eventId": "fd_36230581",
-        "homeTeam": "Philadelphia Flyers",
-        "awayTeam": "Columbus Blue Jackets",
-        "homeWinProb": 0.5119,
-        "awayWinProb": 0.4881,
-        "expectedMargin": 0.16,
-        "homeNetRtg": -1.3333333333333333,
-        "awayNetRtg": -1.25,
-        "calibrated": false,
-        "startTime": "2026-10-27T23:10:00.000Z"
-      },
       {
         "eventId": "fd_36230584",
         "homeTeam": "Carolina Hurricanes",
