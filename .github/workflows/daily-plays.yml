@@ -1,0 +1,70 @@
+name: Daily plays — post to #betting
+
+# Posts the front page's "today" list to #betting through its own webhook
+# (DISCORD_PLAYS_WEBHOOK_URL), right after each successful agent run so the
+# list includes the picks that run just made. The evening run only posts if
+# the plays changed since the morning post (state kept in the Actions cache).
+
+on:
+  workflow_run:
+    workflows: ["Agent — analyze slate"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Print the post in the log instead of sending it
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-plays
+  cancel-in-progress: false
+
+jobs:
+  post:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+      TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+      DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+      DISCORD_PLAYS_WEBHOOK_URL: ${{ secrets.DISCORD_PLAYS_WEBHOOK_URL }}
+    steps:
+      # Default branch HEAD: the agent run has already pushed its refreshed
+      # data files, so the board and odds snapshots match the live site.
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Restore last post
+        uses: actions/cache/restore@v4
+        with:
+          path: .daily-plays-state
+          key: daily-plays-state-${{ github.run_id }}
+          restore-keys: daily-plays-state-
+
+      - name: Post today's plays
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
+        run: npx tsx scripts/post-daily-plays.ts --state .daily-plays-state $DRY_RUN
+
+      - name: Remember this post
+        if: hashFiles('.daily-plays-state') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: .daily-plays-state
+          key: daily-plays-state-${{ github.run_id }}
