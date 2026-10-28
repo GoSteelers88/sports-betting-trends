@@ -1,22 +1,22 @@
 {
-  "fetchedAt": "2026-10-28T01:41:41.735Z",
+  "fetchedAt": "2026-10-28T19:31:11.645Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 1,
   "sampleEvent": {
-    "id": "fd_36219788",
+    "id": "fd_36219791",
     "sport_key": "baseball_mlb",
-    "commence_time": "2026-10-28T00:10:00.000Z",
+    "commence_time": "2026-10-29T00:00:00.000Z",
     "home_team": "Tampa Bay Rays",
     "away_team": "Milwaukee Brewers"
   },
   "events": [
     {
-      "id": "fd_36219788",
+      "id": "fd_36219791",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
-      "commence_time": "2026-10-28T00:10:00.000Z",
+      "commence_time": "2026-10-29T00:00:00.000Z",
       "home_team": "Tampa Bay Rays",
       "away_team": "Milwaukee Brewers",
       "bookmakers": [
@@ -29,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Milwaukee Brewers",
-                  "price": -136
+                  "price": -144
                 },
                 {
                   "name": "Tampa Bay Rays",
-                  "price": 106
+                  "price": 122
                 }
               ]
             },
@@ -42,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "Milwaukee Brewers",
-                  "price": 162,
+                  "price": 126,
                   "point": -1.5
                 },
                 {
                   "name": "Tampa Bay Rays",
-                  "price": -220,
+                  "price": -152,
                   "point": 1.5
                 }
               ]
@@ -57,13 +57,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -106,
-                  "point": 7.5
+                  "price": -108,
+                  "point": 6.5
                 },
                 {
                   "name": "Under",
-                  "price": -125,
-                  "point": 7.5
+                  "price": -112,
+                  "point": 6.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Milwaukee Brewers",
+                  "price": 125,
+                  "point": -1.5
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": -145,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Milwaukee Brewers",
+                  "price": -152
+                },
+                {
+                  "name": "Tampa Bay Rays",
+                  "price": 127
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -115,
+                  "point": 6.5
+                },
+                {
+                  "name": "Under",
+                  "price": -105,
+                  "point": 6.5
                 }
               ]
             }
