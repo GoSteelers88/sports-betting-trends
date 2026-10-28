@@ -34,7 +34,7 @@ describe("surprisePct", () => {
 });
 
 describe("qualifies", () => {
-  const base = { symbol: "ACME", date: "2026-06-09" };
+  const base = { symbol: "ACME", date: "2026-06-09", revenueEstimate: null, revenueActual: null };
 
   it("accepts beats at or above the threshold", () => {
     expect(qualifies({ ...base, epsEstimate: 1.0, epsActual: 1.2 }).ok).toBe(true); // +20%
