@@ -84,6 +84,12 @@ describe("R1 still blocks an INVENTED price or line", () => {
   it("blocks a spread nobody is offering", () => {
     expect(checkBoardRows("You want action? Play the Packers -3.", index).ok).toBe(false);
   });
+
+  // The wk05 board carries GB +3. A spread's sign picks the side, so that leg
+  // vouches for "Packers +3" and never for "Packers -3" above.
+  it("allows the board's own spread with its sign", () => {
+    expect(checkBoardRows("You want action? Play the Packers +3.", index).ok).toBe(true);
+  });
 });
 
 describe("board-row validator — PASSES a truthful report of the real PLAY", () => {

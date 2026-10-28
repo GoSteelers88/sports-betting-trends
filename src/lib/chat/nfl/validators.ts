@@ -257,6 +257,9 @@ interface ExplicitSelection {
   franchise: string | null;
   market: NamedMarket;
   point: number | null;
+  /** The spread exactly as written ("-3" → -3). A board leg records the line
+   *  for the team it names, so GB +3 and GB -3 are opposite bets. */
+  signedPoint: number | null;
 }
 
 const ABBR_OR_NAME = "[A-Za-z][A-Za-z0-9'. ]{1,24}?";
@@ -272,7 +275,9 @@ export function explicitSelections(sentence: string): ExplicitSelection[] {
     new RegExp(`(${ABBR_OR_NAME})\\s+(?:ML|moneyline|money line)\\b`, "gi")
   )) {
     const fr = resolveTrailingFranchise(m[1] ?? "");
-    if (fr) out.push({ raw: m[0], franchise: fr, market: "moneyline", point: null });
+    if (fr) {
+      out.push({ raw: m[0], franchise: fr, market: "moneyline", point: null, signedPoint: null });
+    }
   }
 
   // TEAM +N / TEAM -N  (a spread; a 3-digit signed number is a price, not a line)
@@ -286,6 +291,7 @@ export function explicitSelections(sentence: string): ExplicitSelection[] {
         franchise: fr,
         market: "ats",
         point: Math.abs(Number(m[2])),
+        signedPoint: Number(m[2]),
       });
     }
   }
@@ -310,6 +316,7 @@ export function explicitSelections(sentence: string): ExplicitSelection[] {
       franchise: null,
       market: "total",
       point: Number(m[2]),
+      signedPoint: null,
     });
   }
 
@@ -340,8 +347,9 @@ function legMatchesSelection(leg: BoardLegRef, sel: ExplicitSelection): boolean 
     return sel.point != null && leg.point === sel.point;
   }
   if (leg.selectionFranchise !== sel.franchise) return false;
-  if (sel.market === "ats" && sel.point != null) {
-    return leg.point != null && Math.abs(leg.point) === sel.point;
+  if (sel.market === "ats" && sel.signedPoint != null) {
+    // Signed: the wk05 board's "GB +3" must not vouch for "Packers -3".
+    return leg.point != null && leg.point === sel.signedPoint;
   }
   return true;
 }
