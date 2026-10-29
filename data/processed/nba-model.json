@@ -1,31 +1,50 @@
 {
-  "generatedAt": "2026-10-29T01:58:01.398Z",
+  "generatedAt": "2026-10-29T19:38:20.514Z",
   "source": "nba-efficiency-empirical",
-  "status": "insufficient-sample",
+  "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 0,
+  "recordCount": 2,
   "errors": [
-    "unmodeled: Orlando Magic @ Toronto Raptors (fd_36241283) — Toronto Raptors has 3 counted games (needs 5)",
-    "unmodeled: Denver Nuggets @ New Orleans Pelicans (fd_36241276) — New Orleans Pelicans has 3 counted games (needs 5)",
-    "unmodeled: New York Knicks @ Chicago Bulls (fd_36241278) — Chicago Bulls has 4 counted games (needs 5)",
-    "unmodeled: Golden State Warriors @ Minnesota Timberwolves (fd_36241280) — Minnesota Timberwolves has 4 counted games (needs 5)",
-    "unmodeled: Houston Rockets @ Milwaukee Bucks (fd_36241285) — Milwaukee Bucks has 4 counted games (needs 5)",
-    "unmodeled: San Antonio Spurs @ Utah Jazz (fd_36241286) — Utah Jazz has 4 counted games (needs 5)",
-    "unmodeled: Oklahoma City Thunder @ Dallas Mavericks (fd_36241277) — Dallas Mavericks has 4 counted games (needs 5)",
-    "unmodeled: Los Angeles Lakers @ Los Angeles Clippers (fd_36241282) — Los Angeles Clippers has 3 counted games (needs 5)",
-    "unmodeled: Sacramento Kings @ New Orleans Pelicans (fd_36245922) — New Orleans Pelicans has 3 counted games (needs 5)",
-    "unmodeled: Memphis Grizzlies @ Portland Trail Blazers (fd_36245924) — Portland Trail Blazers has 3 counted games (needs 5)"
+    "unmodeled: Sacramento Kings @ New Orleans Pelicans (fd_36245922) — New Orleans Pelicans has 4 counted games (needs 5)",
+    "unmodeled: Cleveland Cavaliers @ Atlanta Hawks (fd_36245923) — Cleveland Cavaliers has 4 counted games (needs 5)",
+    "unmodeled: Memphis Grizzlies @ Portland Trail Blazers (fd_36245924) — Portland Trail Blazers has 3 counted games (needs 5)",
+    "unmodeled: Orlando Magic @ Toronto Raptors (fd_36250107) — Toronto Raptors has 4 counted games (needs 5)",
+    "unmodeled: Detroit Pistons @ Brooklyn Nets (fd_36250112) — Brooklyn Nets has 4 counted games (needs 5)"
   ],
-  "note": "No game modeled: teams need 5 regular-season/playoff games before they get a rating, and games more than 10 days out are skipped.",
   "data": {
-    "generatedAt": "2026-10-29T01:58:01.398Z",
+    "generatedAt": "2026-10-29T19:38:20.514Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
-    "teamCount": 7,
-    "gameCount": 10,
-    "results": []
+    "teamCount": 18,
+    "gameCount": 7,
+    "results": [
+      {
+        "eventId": "fd_36250109",
+        "homeTeam": "Philadelphia 76ers",
+        "awayTeam": "New York Knicks",
+        "homeWinProb": 0.551,
+        "awayWinProb": 0.449,
+        "expectedMargin": 1.95,
+        "homeNetRtg": 2,
+        "awayNetRtg": 1,
+        "calibrated": false,
+        "startTime": "2026-10-30T23:40:00.000Z"
+      },
+      {
+        "eventId": "fd_36250114",
+        "homeTeam": "Golden State Warriors",
+        "awayTeam": "Los Angeles Lakers",
+        "homeWinProb": 0.3601,
+        "awayWinProb": 0.6399,
+        "expectedMargin": -5.47,
+        "homeNetRtg": -3,
+        "awayNetRtg": 12.5,
+        "calibrated": false,
+        "startTime": "2026-10-31T02:10:00.000Z"
+      }
+    ]
   }
 }
