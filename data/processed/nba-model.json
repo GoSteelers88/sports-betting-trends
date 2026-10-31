@@ -1,38 +1,27 @@
 {
-  "generatedAt": "2026-10-30T19:20:36.026Z",
+  "generatedAt": "2026-10-31T01:50:41.698Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 5,
+  "recordCount": 8,
   "errors": [
     "unmodeled: Orlando Magic @ Toronto Raptors (fd_36250107) — Toronto Raptors has 4 counted games (needs 5)",
     "unmodeled: Detroit Pistons @ Brooklyn Nets (fd_36250112) — Brooklyn Nets has 4 counted games (needs 5)",
     "unmodeled: Chicago Bulls @ Boston Celtics (fd_36250113) — Boston Celtics has 4 counted games (needs 5)",
     "unmodeled: Los Angeles Clippers @ Minnesota Timberwolves (fd_36250110) — Los Angeles Clippers has 4 counted games (needs 5)",
-    "unmodeled: Denver Nuggets @ Phoenix Suns (fd_36250115) — Phoenix Suns has 3 counted games (needs 5)"
+    "unmodeled: Denver Nuggets @ Phoenix Suns (fd_36250115) — Phoenix Suns has 3 counted games (needs 5)",
+    "unmodeled: Portland Trail Blazers @ Utah Jazz (fd_36253910) — Portland Trail Blazers has 4 counted games (needs 5)"
   ],
   "data": {
-    "generatedAt": "2026-10-30T19:20:36.026Z",
+    "generatedAt": "2026-10-31T01:50:41.698Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 22,
-    "gameCount": 10,
+    "gameCount": 14,
     "results": [
-      {
-        "eventId": "fd_36250108",
-        "homeTeam": "Washington Wizards",
-        "awayTeam": "Charlotte Hornets",
-        "homeWinProb": 0.5568,
-        "awayWinProb": 0.4432,
-        "expectedMargin": 2.17,
-        "homeNetRtg": 1,
-        "awayNetRtg": -0.5,
-        "calibrated": false,
-        "startTime": "2026-10-30T23:10:00.000Z"
-      },
       {
         "eventId": "fd_36250109",
         "homeTeam": "Philadelphia 76ers",
@@ -43,7 +32,7 @@
         "homeNetRtg": 2,
         "awayNetRtg": 1,
         "calibrated": false,
-        "startTime": "2026-10-30T23:40:00.000Z"
+        "startTime": "2026-10-30T23:43:00.000Z"
       },
       {
         "eventId": "fd_36250111",
@@ -55,7 +44,7 @@
         "homeNetRtg": -15.333333333333334,
         "awayNetRtg": 7.333333333333333,
         "calibrated": false,
-        "startTime": "2026-10-31T00:10:00.000Z"
+        "startTime": "2026-10-31T00:12:00.000Z"
       },
       {
         "eventId": "fd_36250116",
@@ -67,7 +56,7 @@
         "homeNetRtg": 4,
         "awayNetRtg": 14.333333333333334,
         "calibrated": false,
-        "startTime": "2026-10-31T00:10:00.000Z"
+        "startTime": "2026-10-31T00:12:00.000Z"
       },
       {
         "eventId": "fd_36250114",
@@ -80,6 +69,54 @@
         "awayNetRtg": 12.5,
         "calibrated": false,
         "startTime": "2026-10-31T02:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36253908",
+        "homeTeam": "New Orleans Pelicans",
+        "awayTeam": "Atlanta Hawks",
+        "homeWinProb": 0.3547,
+        "awayWinProb": 0.6453,
+        "expectedMargin": -5.7,
+        "homeNetRtg": -1.3333333333333333,
+        "awayNetRtg": 14.666666666666666,
+        "calibrated": false,
+        "startTime": "2026-10-31T23:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36253909",
+        "homeTeam": "Memphis Grizzlies",
+        "awayTeam": "Sacramento Kings",
+        "homeWinProb": 0.8919,
+        "awayWinProb": 0.1081,
+        "expectedMargin": 20.1,
+        "homeNetRtg": 20,
+        "awayNetRtg": -21.333333333333332,
+        "calibrated": false,
+        "startTime": "2026-11-01T00:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36253911",
+        "homeTeam": "San Antonio Spurs",
+        "awayTeam": "Minnesota Timberwolves",
+        "homeWinProb": 0.4066,
+        "awayWinProb": 0.5934,
+        "expectedMargin": -3.6,
+        "homeNetRtg": 3.6666666666666665,
+        "awayNetRtg": 15,
+        "calibrated": false,
+        "startTime": "2026-11-01T00:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36253912",
+        "homeTeam": "Milwaukee Bucks",
+        "awayTeam": "Cleveland Cavaliers",
+        "homeWinProb": 0.4823,
+        "awayWinProb": 0.5177,
+        "expectedMargin": -0.68,
+        "homeNetRtg": -10.333333333333334,
+        "awayNetRtg": -5.5,
+        "calibrated": false,
+        "startTime": "2026-11-01T00:10:00.000Z"
       }
     ]
   }
