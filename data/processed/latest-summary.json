@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-31T18:30:38.062Z",
+  "generatedAt": "2026-11-01T01:32:21.747Z",
   "ready": true,
-  "recordsIngested": 445,
-  "recordsCompleted": 445,
+  "recordsIngested": 448,
+  "recordsCompleted": 448,
   "recordsRejected": 0,
   "leagues": [
     {
@@ -103,23 +103,23 @@
     },
     {
       "league": "NBA",
-      "games": 244,
+      "games": 247,
       "conferences": [
-        "Eastern",
-        "Western"
+        "Western",
+        "Eastern"
       ],
-      "avgPoints": 114.7827868852459,
-      "avgRebounds": 44.64754098360656,
-      "avgAssists": 26.598360655737704,
+      "avgPoints": 114.70445344129554,
+      "avgRebounds": 44.59919028340081,
+      "avgAssists": 26.554655870445345,
       "avgYards": null,
-      "recentAvgPoints": 116.2,
+      "recentAvgPoints": 114.5,
       "recentAvgYards": null,
-      "trendScore": 83,
-      "trendSignal": "up",
+      "trendScore": 45,
+      "trendSignal": "flat",
       "confidence": 1,
       "ncaab": null,
       "advanced": {
-        "games": 244,
+        "games": 247,
         "pace": null,
         "oRtg": null,
         "dRtg": null,
@@ -131,6 +131,42 @@
         "sos": null
       },
       "teamAdvanced": {
+        "Trail Blazers": {
+          "games": 9,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "Hornets": {
+          "games": 11,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
+        "76ers": {
+          "games": 11,
+          "pace": null,
+          "oRtg": null,
+          "dRtg": null,
+          "netRating": null,
+          "tsPct": null,
+          "efgPct": null,
+          "toRate": null,
+          "ftRate": null,
+          "sos": null
+        },
         "Heat": {
           "games": 11,
           "pace": null,
@@ -251,18 +287,6 @@
           "ftRate": null,
           "sos": null
         },
-        "Hornets": {
-          "games": 10,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
         "Celtics": {
           "games": 9,
           "pace": null,
@@ -300,18 +324,6 @@
           "sos": null
         },
         "Pistons": {
-          "games": 10,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "76ers": {
           "games": 10,
           "pace": null,
           "oRtg": null,
@@ -373,18 +385,6 @@
         },
         "Kings": {
           "games": 10,
-          "pace": null,
-          "oRtg": null,
-          "dRtg": null,
-          "netRating": null,
-          "tsPct": null,
-          "efgPct": null,
-          "toRate": null,
-          "ftRate": null,
-          "sos": null
-        },
-        "Trail Blazers": {
-          "games": 8,
           "pace": null,
           "oRtg": null,
           "dRtg": null,
@@ -995,16 +995,16 @@
   "latestByLeague": [
     {
       "league": "NBA",
-      "conference": "Eastern",
+      "conference": "Western",
       "gameDate": "2026-10-31T00:00:00.000Z",
-      "team": "Heat",
-      "opponent": "Pacers",
-      "points": 145,
-      "opponentPoints": 125,
+      "team": "Trail Blazers",
+      "opponent": "Jazz",
+      "points": 112,
+      "opponentPoints": 90,
       "rebounds": 48,
-      "assists": 38,
+      "assists": 16,
       "yards": null,
-      "spread": -8.5,
+      "spread": -6.5,
       "atsResult": "W",
       "won": true,
       "teamRank": null,
@@ -1017,11 +1017,11 @@
       "threepa": null,
       "ftm": null,
       "fta": null,
-      "offRebounds": 14,
-      "defRebounds": 23,
-      "steals": 11,
-      "blocks": 1,
-      "turnovers": 13,
+      "offRebounds": 7,
+      "defRebounds": 30,
+      "steals": 12,
+      "blocks": 7,
+      "turnovers": 19,
       "passingYards": null,
       "rushingYards": null,
       "opponentYards": null,
@@ -1032,11 +1032,11 @@
       "redZoneConv": null,
       "redZoneAtt": null,
       "timeOfPossession": null,
-      "homeAway": "home",
+      "homeAway": "away",
       "hits": null,
       "errors": null,
       "source": "espn-public-api",
-      "sourceEventId": "401909282",
+      "sourceEventId": "401909896",
       "gameStatus": "Final",
       "completionEvidence": "espn-status-completed"
     },
@@ -1211,22 +1211,22 @@
     {
       "league": "NBA",
       "conference": null,
-      "gameDate": "2026-11-01T00:10:00.000Z",
+      "gameDate": "2026-11-01T00:11:00.000Z",
       "matchup": "Sacramento Kings at Memphis Grizzlies",
       "pickTeam": "Memphis Grizzlies",
       "opponent": "Sacramento Kings",
-      "spread": -9.5,
+      "spread": -11.5,
       "modelSpread": -20.1,
-      "line": "Memphis Grizzlies -9.5",
-      "score": 81,
-      "confidence": 78,
+      "line": "Memphis Grizzlies -11.5",
+      "score": 72,
+      "confidence": 68,
       "rationaleSignals": [
         "Momentum edge +1.78 (last-10 trend proxy)",
         "ATS edge +0.590",
         "History sample Memphis Grizzlies: 9 games (mapped Grizzlies) vs Sacramento Kings: 10 games",
         "Home court (+2.5 pt adjustment)",
         "Rest: Memphis Grizzlies 2d rest vs Sacramento Kings 2d rest",
-        "Market line -9.5, model estimate -20.1 (regression to mean)"
+        "Market line -11.5, model estimate -20.1 (regression to mean)"
       ],
       "momentumEdge": 1.78,
       "atsEdge": 0.59,
@@ -1241,22 +1241,21 @@
     {
       "league": "NBA",
       "conference": null,
-      "gameDate": "2026-11-01T00:40:00.000Z",
+      "gameDate": "2026-11-01T00:42:00.000Z",
       "matchup": "Oklahoma City Thunder at Houston Rockets",
       "pickTeam": "Houston Rockets",
       "opponent": "Oklahoma City Thunder",
-      "spread": -2.5,
+      "spread": -11.5,
       "modelSpread": -10.5,
-      "line": "Houston Rockets -2.5",
-      "score": 63,
-      "confidence": 58,
+      "line": "Houston Rockets -11.5",
+      "score": 62,
+      "confidence": 57,
       "rationaleSignals": [
         "Momentum edge +0.56 (last-10 trend proxy)",
         "ATS edge +0.380",
         "History sample Houston Rockets: 9 games (mapped Rockets) vs Oklahoma City Thunder: 10 games",
         "Home court (+2.5 pt adjustment)",
-        "Rest: Houston Rockets B2B vs Oklahoma City Thunder 3d rest",
-        "Market line -2.5, model estimate -10.5 (regression to mean)"
+        "Rest: Houston Rockets B2B vs Oklahoma City Thunder 3d rest"
       ],
       "momentumEdge": 0.56,
       "atsEdge": 0.38,
@@ -1267,41 +1266,12 @@
         "losses": 46,
         "coverPct": 43.9
       }
-    },
-    {
-      "league": "NBA",
-      "conference": null,
-      "gameDate": "2026-10-31T19:10:00.000Z",
-      "matchup": "Portland Trail Blazers at Utah Jazz",
-      "pickTeam": "Portland Trail Blazers",
-      "opponent": "Utah Jazz",
-      "spread": -7.5,
-      "modelSpread": -6.7,
-      "line": "Portland Trail Blazers -7.5",
-      "score": 61,
-      "confidence": 57,
-      "rationaleSignals": [
-        "Momentum edge +0.50 (last-10 trend proxy)",
-        "ATS edge unavailable (limited ATS sample)",
-        "History sample Portland Trail Blazers: 8 games (mapped Trail Blazers) vs Utah Jazz: 0 games",
-        "Away (+-2.5 pt adjustment)",
-        "Rest: Portland Trail Blazers 2d rest vs Utah Jazz ?"
-      ],
-      "momentumEdge": 0.5,
-      "atsEdge": null,
-      "mlbModelProb": null,
-      "mlbEdge": null,
-      "atsRecord": {
-        "wins": 44,
-        "losses": 38,
-        "coverPct": 53.7
-      }
     }
   ],
   "topBestBetsTarget": 5,
   "topBestBetsDateEt": "2026-10-31",
   "topBestBetsFallbackUsed": false,
-  "bestBetsNote": "Only 3 eligible games found on 2026-10-31 (America/New_York). Top 5 is not backfilled from other dates.",
+  "bestBetsNote": "Only 2 eligible games found on 2026-10-31 (America/New_York). Top 5 is not backfilled from other dates.",
   "bestBetModel": {
     "momentumWeight": 20,
     "atsWeight": 30,
@@ -1311,6 +1281,22 @@
   },
   "injuries": {
     "nba": [
+      {
+        "player": "Jalen Johnson",
+        "team": "Atlanta Hawks",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Ankle",
+        "returnDate": "2026-10-31"
+      },
+      {
+        "player": "Jock Landale",
+        "team": "Atlanta Hawks",
+        "position": "C",
+        "status": "Out",
+        "injuryType": "Hip",
+        "returnDate": "2026-11-02"
+      },
       {
         "player": "Mouhamed Gueye",
         "team": "Atlanta Hawks",
@@ -1328,12 +1314,28 @@
         "returnDate": "2027-07-01"
       },
       {
+        "player": "Mitchell Robinson",
+        "team": "Boston Celtics",
+        "position": "C",
+        "status": "Day-To-Day",
+        "injuryType": "Rest",
+        "returnDate": "2026-11-01"
+      },
+      {
         "player": "Devin Carter",
         "team": "Boston Celtics",
         "position": "G",
         "status": "Out",
         "injuryType": "Illness",
         "returnDate": "2026-11-08"
+      },
+      {
+        "player": "Mikel Brown Jr.",
+        "team": "Brooklyn Nets",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Rest",
+        "returnDate": "2026-11-02"
       },
       {
         "player": "Egor Demin",
@@ -1408,14 +1410,6 @@
         "returnDate": "2026-11-02"
       },
       {
-        "player": "Meleek Thomas",
-        "team": "Cleveland Cavaliers",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Foot",
-        "returnDate": "2026-10-31"
-      },
-      {
         "player": "Sergio de Larrea",
         "team": "Dallas Mavericks",
         "position": "F",
@@ -1488,6 +1482,30 @@
         "returnDate": "2026-11-09"
       },
       {
+        "player": "Gui Santos",
+        "team": "Golden State Warriors",
+        "position": "F",
+        "status": "Day-To-Day",
+        "injuryType": "Knee",
+        "returnDate": "2026-11-01"
+      },
+      {
+        "player": "Draymond Green",
+        "team": "Golden State Warriors",
+        "position": "F",
+        "status": "Out",
+        "injuryType": "Rest",
+        "returnDate": "2026-11-02"
+      },
+      {
+        "player": "Stephen Curry",
+        "team": "Golden State Warriors",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Rest",
+        "returnDate": "2026-11-02"
+      },
+      {
         "player": "Kristaps Porzingis",
         "team": "Golden State Warriors",
         "position": "C",
@@ -1536,6 +1554,22 @@
         "returnDate": "2026-11-02"
       },
       {
+        "player": "Ivica Zubac",
+        "team": "Indiana Pacers",
+        "position": "C",
+        "status": "Out",
+        "injuryType": "Ankle",
+        "returnDate": "2026-11-02"
+      },
+      {
+        "player": "Aaron Nesmith",
+        "team": "Indiana Pacers",
+        "position": "G",
+        "status": "Day-To-Day",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-11-01"
+      },
+      {
         "player": "Obi Toppin",
         "team": "Indiana Pacers",
         "position": "F",
@@ -1558,14 +1592,6 @@
         "status": "Out",
         "injuryType": "Knee",
         "returnDate": "2027-01-02"
-      },
-      {
-        "player": "Ivica Zubac",
-        "team": "Indiana Pacers",
-        "position": "C",
-        "status": "Out",
-        "injuryType": "Ankle",
-        "returnDate": "2026-11-01"
       },
       {
         "player": "Ben Sheppard",
@@ -1640,36 +1666,36 @@
         "returnDate": "2026-11-01"
       },
       {
-        "player": "Scotty Pippen Jr.",
-        "team": "Memphis Grizzlies",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Back",
-        "returnDate": "2026-10-31"
-      },
-      {
         "player": "Ty Jerome",
         "team": "Memphis Grizzlies",
         "position": "G",
-        "status": "Day-To-Day",
+        "status": "Out",
         "injuryType": "Back",
-        "returnDate": "2026-10-31"
+        "returnDate": "2026-11-02"
+      },
+      {
+        "player": "Scotty Pippen Jr.",
+        "team": "Memphis Grizzlies",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Back",
+        "returnDate": "2026-11-02"
       },
       {
         "player": "Quinten Post",
         "team": "Memphis Grizzlies",
         "position": "C",
-        "status": "Day-To-Day",
+        "status": "Out",
         "injuryType": "Ankle",
-        "returnDate": "2026-10-31"
+        "returnDate": "2026-11-02"
       },
       {
         "player": "Rudy Gobert",
         "team": "Minnesota Timberwolves",
         "position": "C",
-        "status": "Day-To-Day",
+        "status": "Out",
         "injuryType": "Back",
-        "returnDate": "2026-10-31"
+        "returnDate": "2026-11-02"
       },
       {
         "player": "Anthony Edwards",
@@ -1686,6 +1712,14 @@
         "status": "Out",
         "injuryType": "Achilles",
         "returnDate": "2027-04-02"
+      },
+      {
+        "player": "Dejounte Murray",
+        "team": "New Orleans Pelicans",
+        "position": "G",
+        "status": "Out",
+        "injuryType": "Personal",
+        "returnDate": "2026-11-02"
       },
       {
         "player": "Yves Missi",
@@ -1800,14 +1834,6 @@
         "returnDate": "2026-11-18"
       },
       {
-        "player": "Jabari Walker",
-        "team": "Philadelphia 76ers",
-        "position": "F",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-31"
-      },
-      {
         "player": "LeBron James",
         "team": "Philadelphia 76ers",
         "position": "F",
@@ -1816,28 +1842,12 @@
         "returnDate": "2026-11-02"
       },
       {
-        "player": "Tacko Fall",
-        "team": "Philadelphia 76ers",
-        "position": "C",
-        "status": "Out",
-        "injuryType": "Quadriceps",
-        "returnDate": "2026-10-31"
-      },
-      {
         "player": "Joel Embiid",
         "team": "Philadelphia 76ers",
         "position": "C",
         "status": "Out",
         "injuryType": "Foot",
         "returnDate": "2026-11-02"
-      },
-      {
-        "player": "Jaylen Brown",
-        "team": "Philadelphia 76ers",
-        "position": "G",
-        "status": "Day-To-Day",
-        "injuryType": "Knee",
-        "returnDate": "2026-10-31"
       },
       {
         "player": "Dominick Barlow",
@@ -2058,12 +2068,20 @@
         "returnDate": "2026-11-08"
       },
       {
-        "player": "Anterio Thompson",
+        "player": "Billy Bowman Jr.",
         "team": "Atlanta Falcons",
-        "position": "DT",
+        "position": "CB",
         "status": "Out",
-        "injuryType": "Undisclosed",
-        "returnDate": "2027-02-15"
+        "injuryType": "Hamstring",
+        "returnDate": "2026-11-08"
+      },
+      {
+        "player": "Divine Deablo",
+        "team": "Atlanta Falcons",
+        "position": "LB",
+        "status": "Out",
+        "injuryType": "Forearm",
+        "returnDate": "2026-11-08"
       },
       {
         "player": "Beaux Collins",
@@ -2071,15 +2089,15 @@
         "position": "WR",
         "status": "Injured Reserve",
         "injuryType": "Hip",
-        "returnDate": "2026-11-01"
+        "returnDate": "2026-11-08"
       },
       {
-        "player": "Divine Deablo",
+        "player": "Anterio Thompson",
         "team": "Atlanta Falcons",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Forearm",
-        "returnDate": "2026-11-01"
+        "position": "DT",
+        "status": "Out",
+        "injuryType": "Undisclosed",
+        "returnDate": "2027-02-15"
       },
       {
         "player": "Olamide Zaccheaus",
@@ -2122,11 +2140,11 @@
         "returnDate": "2026-11-01"
       },
       {
-        "player": "Billy Bowman Jr.",
-        "team": "Atlanta Falcons",
+        "player": "T.J. Tampa",
+        "team": "Baltimore Ravens",
         "position": "CB",
         "status": "Questionable",
-        "injuryType": "Hamstring",
+        "injuryType": "Knee",
         "returnDate": "2026-11-01"
       },
       {
@@ -2152,14 +2170,6 @@
         "status": "Out",
         "injuryType": "Knee",
         "returnDate": "2026-11-05"
-      },
-      {
-        "player": "T.J. Tampa",
-        "team": "Baltimore Ravens",
-        "position": "CB",
-        "status": "Injured Reserve",
-        "injuryType": "Knee",
-        "returnDate": "2026-11-01"
       },
       {
         "player": "Tavius Robinson",
@@ -2314,12 +2324,12 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "Anthony Johnson Jr.",
+        "player": "D'Marco Jackson",
         "team": "Chicago Bears",
-        "position": "S",
-        "status": "Out",
-        "injuryType": "Undisclosed",
-        "returnDate": "2026-11-08"
+        "position": "LB",
+        "status": "Questionable",
+        "injuryType": "Ankle",
+        "returnDate": "2026-11-02"
       },
       {
         "player": "Kyle Monangai",
@@ -2330,36 +2340,12 @@
         "returnDate": "2026-11-08"
       },
       {
-        "player": "Colston Loveland",
-        "team": "Chicago Bears",
-        "position": "TE",
-        "status": "Questionable",
-        "injuryType": "Neck",
-        "returnDate": "2026-11-02"
-      },
-      {
-        "player": "D'Marco Jackson",
-        "team": "Chicago Bears",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Ankle",
-        "returnDate": "2026-11-02"
-      },
-      {
         "player": "Coby Bryant",
         "team": "Chicago Bears",
         "position": "S",
         "status": "Injured Reserve",
         "injuryType": "Knee",
         "returnDate": "2026-12-19"
-      },
-      {
-        "player": "Jack Sanborn",
-        "team": "Chicago Bears",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Concussion",
-        "returnDate": "2026-11-02"
       },
       {
         "player": "Cole Kmet",
@@ -2498,6 +2484,14 @@
         "returnDate": "2026-11-01"
       },
       {
+        "player": "RJ Harvey",
+        "team": "Denver Broncos",
+        "position": "RB",
+        "status": "Injured Reserve",
+        "injuryType": "Knee",
+        "returnDate": "2026-12-06"
+      },
+      {
         "player": "Zach Allen",
         "team": "Denver Broncos",
         "position": "DE",
@@ -2520,14 +2514,6 @@
         "status": "Questionable",
         "injuryType": "Hamstring",
         "returnDate": "2026-11-01"
-      },
-      {
-        "player": "RJ Harvey",
-        "team": "Denver Broncos",
-        "position": "RB",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-11-08"
       },
       {
         "player": "Jaylen Waddle",
@@ -2778,28 +2764,20 @@
         "returnDate": "2027-02-15"
       },
       {
-        "player": "L'Jarius Sneed",
-        "team": "Kansas City Chiefs",
-        "position": "CB",
-        "status": "Questionable",
-        "injuryType": "Knee",
-        "returnDate": "2026-11-01"
-      },
-      {
         "player": "Mansoor Delane",
         "team": "Kansas City Chiefs",
         "position": "CB",
-        "status": "Questionable",
+        "status": "Out",
         "injuryType": "Shoulder",
-        "returnDate": "2026-11-01"
+        "returnDate": "2026-11-08"
       },
       {
-        "player": "R Mason Thomas",
+        "player": "L'Jarius Sneed",
         "team": "Kansas City Chiefs",
-        "position": "DE",
-        "status": "Questionable",
-        "injuryType": "Personal",
-        "returnDate": "2026-11-01"
+        "position": "CB",
+        "status": "Injured Reserve",
+        "injuryType": "Knee",
+        "returnDate": "2026-11-26"
       },
       {
         "player": "Omarr Norman-Lott",
@@ -2818,20 +2796,12 @@
         "returnDate": "2026-11-22"
       },
       {
-        "player": "Jack Bech",
-        "team": "Las Vegas Raiders",
-        "position": "WR",
-        "status": "Injured Reserve",
-        "injuryType": "Forearm",
-        "returnDate": "2026-11-01"
-      },
-      {
         "player": "Patrick Johnson",
         "team": "Las Vegas Raiders",
         "position": "DE",
-        "status": "Out",
+        "status": "Injured Reserve",
         "injuryType": "Neck",
-        "returnDate": "2026-11-08"
+        "returnDate": "2026-11-29"
       },
       {
         "player": "Carter Runyon",
@@ -2848,6 +2818,14 @@
         "status": "Questionable",
         "injuryType": "Back",
         "returnDate": "2026-11-01"
+      },
+      {
+        "player": "Derwin James Jr.",
+        "team": "Los Angeles Chargers",
+        "position": "S",
+        "status": "Injured Reserve",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-11-29"
       },
       {
         "player": "Kayode Awosika",
@@ -2872,14 +2850,6 @@
         "status": "Questionable",
         "injuryType": "Hamstring",
         "returnDate": "2026-11-01"
-      },
-      {
-        "player": "Derwin James Jr.",
-        "team": "Los Angeles Chargers",
-        "position": "S",
-        "status": "Out",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-11-08"
       },
       {
         "player": "Brenen Thompson",
@@ -3130,6 +3100,14 @@
         "returnDate": "2027-02-15"
       },
       {
+        "player": "T'Vondre Sweat",
+        "team": "New York Jets",
+        "position": "DT",
+        "status": "Injured Reserve",
+        "injuryType": "Knee",
+        "returnDate": "2026-11-29"
+      },
+      {
         "player": "Max Mitchell",
         "team": "New York Jets",
         "position": "OT",
@@ -3144,14 +3122,6 @@
         "status": "Doubtful",
         "injuryType": "Groin",
         "returnDate": "2026-11-01"
-      },
-      {
-        "player": "T'Vondre Sweat",
-        "team": "New York Jets",
-        "position": "DT",
-        "status": "Out",
-        "injuryType": "Knee",
-        "returnDate": "2026-11-08"
       },
       {
         "player": "Joseph Ossai",
@@ -3346,28 +3316,36 @@
         "returnDate": "2026-11-08"
       },
       {
-        "player": "Byron Murphy II",
+        "player": "Velus Jones Jr.",
         "team": "Seattle Seahawks",
-        "position": "DT",
-        "status": "Questionable",
-        "injuryType": "Back",
-        "returnDate": "2026-11-01"
+        "position": "RB",
+        "status": "Out",
+        "injuryType": "Hamstring",
+        "returnDate": "2026-11-08"
       },
       {
-        "player": "Drew Lock",
+        "player": "Uchenna Nwosu",
         "team": "Seattle Seahawks",
-        "position": "QB",
-        "status": "Questionable",
-        "injuryType": "Elbow",
+        "position": "LB",
+        "status": "Doubtful",
+        "injuryType": "Ankle",
         "returnDate": "2026-11-02"
+      },
+      {
+        "player": "Charles Cross",
+        "team": "Seattle Seahawks",
+        "position": "OT",
+        "status": "Out",
+        "injuryType": "Ankle",
+        "returnDate": "2026-11-08"
       },
       {
         "player": "Rashid Shaheed",
         "team": "Seattle Seahawks",
         "position": "WR",
-        "status": "Questionable",
+        "status": "Out",
         "injuryType": "Knee",
-        "returnDate": "2026-11-02"
+        "returnDate": "2026-11-08"
       },
       {
         "player": "Jadarian Price",
@@ -3378,11 +3356,11 @@
         "returnDate": "2026-11-02"
       },
       {
-        "player": "Zach Charbonnet",
+        "player": "Drew Lock",
         "team": "Seattle Seahawks",
-        "position": "RB",
+        "position": "QB",
         "status": "Questionable",
-        "injuryType": "Knee - ACL",
+        "injuryType": "Elbow",
         "returnDate": "2026-11-02"
       },
       {
@@ -3394,35 +3372,11 @@
         "returnDate": "2026-11-01"
       },
       {
-        "player": "Velus Jones Jr.",
-        "team": "Seattle Seahawks",
-        "position": "RB",
-        "status": "Questionable",
-        "injuryType": "Hamstring",
-        "returnDate": "2026-11-02"
-      },
-      {
-        "player": "Tyrice Knight",
-        "team": "Seattle Seahawks",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Hip",
-        "returnDate": "2026-11-02"
-      },
-      {
         "player": "Anthony Bradford",
         "team": "Seattle Seahawks",
         "position": "G",
         "status": "Questionable",
         "injuryType": "Knee",
-        "returnDate": "2026-11-02"
-      },
-      {
-        "player": "Uchenna Nwosu",
-        "team": "Seattle Seahawks",
-        "position": "LB",
-        "status": "Questionable",
-        "injuryType": "Ankle",
         "returnDate": "2026-11-02"
       },
       {
@@ -3432,14 +3386,6 @@
         "status": "Questionable",
         "injuryType": "Toe",
         "returnDate": "2026-11-01"
-      },
-      {
-        "player": "Charles Cross",
-        "team": "Seattle Seahawks",
-        "position": "OT",
-        "status": "Doubtful",
-        "injuryType": "Ankle",
-        "returnDate": "2026-11-02"
       },
       {
         "player": "Luke Goedeke",
@@ -3538,20 +3484,20 @@
         "returnDate": "2026-11-15"
       },
       {
+        "player": "Jer'Zhan Newton",
+        "team": "Washington Commanders",
+        "position": "DT",
+        "status": "Injured Reserve",
+        "injuryType": "Pectoral",
+        "returnDate": "2026-11-08"
+      },
+      {
         "player": "Daron Payne",
         "team": "Washington Commanders",
         "position": "DT",
         "status": "Out",
         "injuryType": "Foot",
         "returnDate": "2027-02-15"
-      },
-      {
-        "player": "Jer'Zhan Newton",
-        "team": "Washington Commanders",
-        "position": "DT",
-        "status": "Injured Reserve",
-        "injuryType": "Pectoral",
-        "returnDate": "2026-11-01"
       },
       {
         "player": "Javon Kinlaw",
