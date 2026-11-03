@@ -25,7 +25,8 @@ Set-Location $repo
 $taskName = 'NFL-Closes-Dispatch'
 $horizonDays = 9
 
-# Local (ET) weekly slots - Task Scheduler applies DST itself.
+# Local (ET) weekly slots. Task Scheduler applies DST only because the
+# triggers below are written with no UTC offset - see the StartBoundary note.
 $weekly = @(
   @('Thursday', '20:00'),  # TNF 8:15
   @('Sunday',   '09:10'),  # international 9:30
@@ -96,8 +97,16 @@ $oneOffs = @($oneOffs | Sort-Object -Unique)
 
 $triggers = @()
 foreach ($s in $weekly) {
-  $triggers += New-ScheduledTaskTrigger -Weekly -DaysOfWeek $s[0] -At ([DateTime]::ParseExact("2026-09-01 $($s[1])", 'yyyy-MM-dd HH:mm', [Globalization.CultureInfo]::InvariantCulture))
+  $at = [DateTime]::ParseExact("2026-09-01 $($s[1])", 'yyyy-MM-dd HH:mm', [Globalization.CultureInfo]::InvariantCulture)
+  $trig = New-ScheduledTaskTrigger -Weekly -DaysOfWeek $s[0] -At $at
+  # The cmdlet writes StartBoundary as UTC ("2026-09-02T00:00:00Z"), which
+  # pins the slot to UTC: after DST ended on 2026-11-01 every slot fired an
+  # hour early (T-80 instead of T-20). A boundary with no offset is local
+  # wall-clock time, so Task Scheduler applies DST itself.
+  $trig.StartBoundary = $at.ToString("yyyy-MM-dd'T'HH:mm:ss")
+  $triggers += $trig
 }
+# One-offs stay UTC-pinned on purpose: each is a single instant (kickoff - 20m).
 foreach ($t in $oneOffs) { $triggers += New-ScheduledTaskTrigger -Once -At $t }
 
 Write-Host ("{0} pending kickoffs in {1}d -> {2} weekly + {3} one-time triggers" -f $kickoffs.Count, $horizonDays, $weekly.Count, $oneOffs.Count)
