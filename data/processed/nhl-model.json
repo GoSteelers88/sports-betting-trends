@@ -1,47 +1,22 @@
 {
-  "generatedAt": "2026-11-02T22:46:39.535Z",
+  "generatedAt": "2026-11-03T03:43:47.795Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 14,
+  "recordCount": 12,
   "errors": [
-    "unmodeled: Away Goals @ Home Goals (bv_33128363)",
     "unmodeled: Dallas Stars @ Washington Capitals (fd_36260037)"
   ],
   "data": {
-    "generatedAt": "2026-11-02T22:46:39.535Z",
+    "generatedAt": "2026-11-03T03:43:47.795Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 16,
+    "gameCount": 13,
     "results": [
-      {
-        "eventId": "fd_36260029",
-        "homeTeam": "Florida Panthers",
-        "awayTeam": "Detroit Red Wings",
-        "homeWinProb": 0.5594,
-        "awayWinProb": 0.4406,
-        "expectedMargin": 0.8,
-        "homeNetRtg": 1.3333333333333333,
-        "awayNetRtg": 0.14285714285714285,
-        "calibrated": false,
-        "startTime": "2026-11-03T00:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36260031",
-        "homeTeam": "Boston Bruins",
-        "awayTeam": "Vegas Golden Knights",
-        "homeWinProb": 0.5911,
-        "awayWinProb": 0.4089,
-        "expectedMargin": 1.23,
-        "homeNetRtg": 2.5555555555555554,
-        "awayNetRtg": 0.5,
-        "calibrated": false,
-        "startTime": "2026-11-03T00:10:00.000Z"
-      },
       {
         "eventId": "fd_36260032",
         "homeTeam": "Chicago Blackhawks",
@@ -130,11 +105,11 @@
         "eventId": "fd_36260043",
         "homeTeam": "Tampa Bay Lightning",
         "awayTeam": "Detroit Red Wings",
-        "homeWinProb": 0.5563,
-        "awayWinProb": 0.4437,
-        "expectedMargin": 0.75,
+        "homeWinProb": 0.5477,
+        "awayWinProb": 0.4523,
+        "expectedMargin": 0.64,
         "homeNetRtg": 1.25,
-        "awayNetRtg": 0.14285714285714285,
+        "awayNetRtg": 0.375,
         "calibrated": false,
         "startTime": "2026-11-04T00:00:00.000Z"
       },
@@ -142,11 +117,11 @@
         "eventId": "fd_36260045",
         "homeTeam": "Pittsburgh Penguins",
         "awayTeam": "Vegas Golden Knights",
-        "homeWinProb": 0.5177,
-        "awayWinProb": 0.4823,
-        "expectedMargin": 0.24,
+        "homeWinProb": 0.5239,
+        "awayWinProb": 0.4761,
+        "expectedMargin": 0.32,
         "homeNetRtg": 0.5714285714285714,
-        "awayNetRtg": 0.5,
+        "awayNetRtg": 0.3333333333333333,
         "calibrated": false,
         "startTime": "2026-11-04T00:00:00.000Z"
       },
