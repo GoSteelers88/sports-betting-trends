@@ -77,6 +77,20 @@ function Resolve-GeneratedConflicts([scriptblock]$Logger) {
   return $true
 }
 
+# Put CI-owned files a local job rewrote back to the committed version, so the
+# shared checkout isn't left holding them (publish-day left every league's
+# injuries-*.json modified each Tuesday). Same rule as above: a file a human last committed is
+# never touched. Returns the number of files restored.
+function Restore-BotOwned([string[]]$Paths, [scriptblock]$Logger) {
+  $ErrorActionPreference = 'Continue'  # git writes progress to stderr; gate on $LASTEXITCODE
+  $dirty = @(git diff --name-only -- @Paths 2>$null | Where-Object { $_ -and (Test-BotOwned $_) })
+  if ($dirty.Count -eq 0) { return 0 }
+  git checkout HEAD -- @dirty 2>&1 | Out-Null
+  if ($LASTEXITCODE -ne 0) { Invoke-Log $Logger ("git checkout HEAD failed restoring: " + ($dirty -join ', ')); return 0 }
+  Invoke-Log $Logger ("restored CI-owned files to the committed version: " + ($dirty -join ', '))
+  return $dirty.Count
+}
+
 # Pull origin/$Branch into the current checkout. Returns $true on success.
 # Handles the two ways the shared checkout wedged in the past:
 #   1. unmerged generated files left over from an earlier run

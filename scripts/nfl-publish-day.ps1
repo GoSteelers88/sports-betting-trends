@@ -173,6 +173,11 @@ try {
     npx tsx scripts/verify-notary.ts --require-remote
   }
 
+  # ingest:injuries rewrote every league's ESPN snapshot. The CI bot owns
+  # and commits those twice a day and the board has already read them, so put
+  # them back rather than leave them modified in the shared tree.
+  Restore-BotOwned @('data/processed/injuries-*.json') $gitLog | Out-Null
+
   # Compose the result + a drafted X post from the published board.
   $board = Get-Content $boardRel -Raw | ConvertFrom-Json
   $plays = @($board.legs | Where-Object { $_.role -eq "play" })
