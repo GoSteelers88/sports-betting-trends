@@ -1,34 +1,35 @@
 {
-  "generatedAt": "2026-11-04T20:49:29.802Z",
+  "generatedAt": "2026-11-05T02:47:00.356Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
   "recordCount": 14,
   "errors": [
-    "unmodeled: Dallas Stars @ Columbus Blue Jackets (fd_36260067)"
+    "unmodeled: Dallas Stars @ Columbus Blue Jackets (fd_36260067)",
+    "unmodeled: Vermont Catamounts @ Boston College Eagles (fd_36273454)",
+    "unmodeled: Connecticut Huskies @ Providence Friars (fd_36273456)",
+    "unmodeled: Wisconsin Badgers @ Minnesota Golden Gophers (fd_36273461)",
+    "unmodeled: Union Granet Chargers @ Clarkson Golden Knights (fd_36273463)",
+    "unmodeled: Brown Bears @ Harvard Crimson (fd_36273467)",
+    "unmodeled: Quinnipiac Bobcats @ Cornell Big Red (fd_36273473)",
+    "unmodeled: Boston University Terri @ Michigan State Spartans (fd_36273484)",
+    "unmodeled: Holy Cross Crusaders @ Merrimack Warriors (fd_36273489)",
+    "unmodeled: RIT Tigers @ Bentley Falcons (fd_36273495)",
+    "unmodeled: Canisius Golden Griffins @ Sacred Heart Pioneers (fd_36273496)",
+    "unmodeled: Yale Bulldogs @ Dartmouth Big Green (fd_36273497)",
+    "unmodeled: Notre Dame Fighting Iri @ Penn State Nittany Lion (fd_36281425)",
+    "unmodeled: Minnesota State Mankato @ Northern Michigan Wildc (fd_36273514)"
   ],
   "data": {
-    "generatedAt": "2026-11-04T20:49:29.802Z",
+    "generatedAt": "2026-11-05T02:47:00.356Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 15,
+    "gameCount": 28,
     "results": [
-      {
-        "eventId": "fd_36260052",
-        "homeTeam": "Buffalo Sabres",
-        "awayTeam": "Ottawa Senators",
-        "homeWinProb": 0.5452,
-        "awayWinProb": 0.4548,
-        "expectedMargin": 0.6,
-        "homeNetRtg": 0.14285714285714285,
-        "awayNetRtg": -0.6666666666666666,
-        "calibrated": false,
-        "startTime": "2026-11-05T00:39:00.000Z"
-      },
       {
         "eventId": "fd_36260053",
         "homeTeam": "Florida Panthers",
@@ -40,6 +41,18 @@
         "awayNetRtg": -2.375,
         "calibrated": false,
         "startTime": "2026-11-05T00:40:00.000Z"
+      },
+      {
+        "eventId": "fd_36260052",
+        "homeTeam": "Buffalo Sabres",
+        "awayTeam": "Ottawa Senators",
+        "homeWinProb": 0.5452,
+        "awayWinProb": 0.4548,
+        "expectedMargin": 0.6,
+        "homeNetRtg": 0.14285714285714285,
+        "awayNetRtg": -0.6666666666666666,
+        "calibrated": false,
+        "startTime": "2026-11-05T00:50:00.000Z"
       },
       {
         "eventId": "fd_36260054",

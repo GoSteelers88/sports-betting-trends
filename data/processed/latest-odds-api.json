@@ -1,76 +1,17 @@
 {
-  "fetchedAt": "2026-11-05T00:29:16.450Z",
+  "fetchedAt": "2026-11-05T02:49:40.153Z",
   "leagues": "basketball_nba,basketball_wnba,baseball_mlb,icehockey_nhl,americanfootball_nfl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 55,
+  "eventCount": 57,
   "sampleEvent": {
-    "id": "fd_36266784",
+    "id": "fd_36266779",
     "sport_key": "basketball_nba",
-    "commence_time": "2026-11-05T00:12:00.000Z",
-    "home_team": "Washington Wizards",
-    "away_team": "Atlanta Hawks"
+    "commence_time": "2026-11-05T00:13:00.000Z",
+    "home_team": "Detroit Pistons",
+    "away_team": "Philadelphia 76ers"
   },
   "events": [
-    {
-      "id": "fd_36266784",
-      "sport_key": "basketball_nba",
-      "sport_title": "NBA",
-      "commence_time": "2026-11-05T00:12:00.000Z",
-      "home_team": "Washington Wizards",
-      "away_team": "Atlanta Hawks",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Atlanta Hawks",
-                  "price": 100
-                },
-                {
-                  "name": "Washington Wizards",
-                  "price": -128
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Atlanta Hawks",
-                  "price": -114,
-                  "point": 1.5
-                },
-                {
-                  "name": "Washington Wizards",
-                  "price": -114,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -128,
-                  "point": 238.5
-                },
-                {
-                  "name": "Under",
-                  "price": -104,
-                  "point": 238.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_36266779",
       "sport_key": "basketball_nba",
@@ -88,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Philadelphia 76ers",
-                  "price": 120
+                  "price": -100000
                 },
                 {
                   "name": "Detroit Pistons",
-                  "price": -154
+                  "price": 10000
                 }
               ]
             },
@@ -101,13 +42,13 @@
               "outcomes": [
                 {
                   "name": "Philadelphia 76ers",
-                  "price": -125,
-                  "point": 3.5
+                  "price": -128,
+                  "point": -5.5
                 },
                 {
                   "name": "Detroit Pistons",
-                  "price": -106,
-                  "point": -3.5
+                  "price": -104,
+                  "point": 5.5
                 }
               ]
             },
@@ -116,121 +57,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -114,
-                  "point": 216.5
+                  "price": -146,
+                  "point": 214.5
                 },
                 {
                   "name": "Under",
-                  "price": -114,
-                  "point": 216.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36266776",
-      "sport_key": "basketball_nba",
-      "sport_title": "NBA",
-      "commence_time": "2026-11-05T00:40:00.000Z",
-      "home_team": "New York Knicks",
-      "away_team": "Chicago Bulls",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Chicago Bulls",
-                  "price": 440
-                },
-                {
-                  "name": "New York Knicks",
-                  "price": -590
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Chicago Bulls",
-                  "price": -105,
-                  "point": 11.5
-                },
-                {
-                  "name": "New York Knicks",
-                  "price": -115,
-                  "point": -11.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -105,
-                  "point": 234.5
-                },
-                {
-                  "name": "Under",
-                  "price": -115,
-                  "point": 234.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Chicago Bulls",
-                  "price": -110,
-                  "point": 11.5
-                },
-                {
-                  "name": "New York Knicks",
-                  "price": -110,
-                  "point": -11.5
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Chicago Bulls",
-                  "price": 400
-                },
-                {
-                  "name": "New York Knicks",
-                  "price": -575
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 234
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 234
+                  "price": 110,
+                  "point": 214.5
                 }
               ]
             }
@@ -255,11 +88,11 @@
               "outcomes": [
                 {
                   "name": "Milwaukee Bucks",
-                  "price": 450
+                  "price": 1700
                 },
                 {
                   "name": "Boston Celtics",
-                  "price": -600
+                  "price": -10000
                 }
               ]
             },
@@ -268,13 +101,13 @@
               "outcomes": [
                 {
                   "name": "Milwaukee Bucks",
-                  "price": -115,
-                  "point": 12.5
+                  "price": -122,
+                  "point": 6.5
                 },
                 {
                   "name": "Boston Celtics",
-                  "price": -105,
-                  "point": -12.5
+                  "price": -108,
+                  "point": -6.5
                 }
               ]
             },
@@ -283,47 +116,57 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -105,
-                  "point": 222.5
+                  "price": -106,
+                  "point": 216.5
                 },
                 {
                   "name": "Under",
-                  "price": -115,
-                  "point": 222.5
+                  "price": -125,
+                  "point": 216.5
                 }
               ]
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "id": "fd_36266776",
+      "sport_key": "basketball_nba",
+      "sport_title": "NBA",
+      "commence_time": "2026-11-05T00:41:00.000Z",
+      "home_team": "New York Knicks",
+      "away_team": "Chicago Bulls",
+      "bookmakers": [
         {
-          "key": "bovada",
-          "title": "Bovada",
+          "key": "fanduel",
+          "title": "FanDuel",
           "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Milwaukee Bucks",
-                  "price": -110,
-                  "point": 12
-                },
-                {
-                  "name": "Boston Celtics",
-                  "price": -110,
-                  "point": -12
-                }
-              ]
-            },
             {
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Milwaukee Bucks",
-                  "price": 430
+                  "name": "Chicago Bulls",
+                  "price": 10000
                 },
                 {
-                  "name": "Boston Celtics",
-                  "price": -625
+                  "name": "New York Knicks",
+                  "price": -100000
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Chicago Bulls",
+                  "price": -114,
+                  "point": 34.5
+                },
+                {
+                  "name": "New York Knicks",
+                  "price": -114,
+                  "point": -34.5
                 }
               ]
             },
@@ -332,13 +175,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
-                  "point": 222.5
+                  "price": -102,
+                  "point": 244.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
-                  "point": 222.5
+                  "price": -130,
+                  "point": 244.5
                 }
               ]
             }
@@ -350,7 +193,7 @@
       "id": "fd_36266781",
       "sport_key": "basketball_nba",
       "sport_title": "NBA",
-      "commence_time": "2026-11-05T00:40:00.000Z",
+      "commence_time": "2026-11-05T00:41:00.000Z",
       "home_team": "Brooklyn Nets",
       "away_team": "Charlotte Hornets",
       "bookmakers": [
@@ -363,11 +206,11 @@
               "outcomes": [
                 {
                   "name": "Charlotte Hornets",
-                  "price": -166
+                  "price": 122
                 },
                 {
                   "name": "Brooklyn Nets",
-                  "price": 140
+                  "price": -156
                 }
               ]
             },
@@ -376,62 +219,13 @@
               "outcomes": [
                 {
                   "name": "Charlotte Hornets",
-                  "price": -115,
-                  "point": -3.5
+                  "price": -138,
+                  "point": 2.5
                 },
                 {
                   "name": "Brooklyn Nets",
-                  "price": -105,
-                  "point": 3.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -118,
-                  "point": 212.5
-                },
-                {
-                  "name": "Under",
-                  "price": -104,
-                  "point": 212.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Charlotte Hornets",
-                  "price": -110,
-                  "point": -4
-                },
-                {
-                  "name": "Brooklyn Nets",
-                  "price": -110,
-                  "point": 4
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Charlotte Hornets",
-                  "price": -170
-                },
-                {
-                  "name": "Brooklyn Nets",
-                  "price": 145
+                  "price": 104,
+                  "point": -2.5
                 }
               ]
             },
@@ -441,120 +235,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 213
+                  "point": 216.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
-                  "point": 213
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36266773",
-      "sport_key": "basketball_nba",
-      "sport_title": "NBA",
-      "commence_time": "2026-11-05T01:10:00.000Z",
-      "home_team": "Oklahoma City Thunder",
-      "away_team": "Cleveland Cavaliers",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Cleveland Cavaliers",
-                  "price": 144
-                },
-                {
-                  "name": "Oklahoma City Thunder",
-                  "price": -172
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Cleveland Cavaliers",
-                  "price": -110,
-                  "point": 3.5
-                },
-                {
-                  "name": "Oklahoma City Thunder",
-                  "price": -110,
-                  "point": -3.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 226.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 226.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Cleveland Cavaliers",
-                  "price": -110,
-                  "point": 3.5
-                },
-                {
-                  "name": "Oklahoma City Thunder",
-                  "price": -110,
-                  "point": -3.5
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Cleveland Cavaliers",
-                  "price": 135
-                },
-                {
-                  "name": "Oklahoma City Thunder",
-                  "price": -160
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 226.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 226.5
+                  "price": -120,
+                  "point": 216.5
                 }
               ]
             }
@@ -566,7 +252,7 @@
       "id": "fd_36266777",
       "sport_key": "basketball_nba",
       "sport_title": "NBA",
-      "commence_time": "2026-11-05T01:10:00.000Z",
+      "commence_time": "2026-11-05T01:11:00.000Z",
       "home_team": "New Orleans Pelicans",
       "away_team": "Utah Jazz",
       "bookmakers": [
@@ -579,11 +265,11 @@
               "outcomes": [
                 {
                   "name": "Utah Jazz",
-                  "price": 164
+                  "price": -172
                 },
                 {
                   "name": "New Orleans Pelicans",
-                  "price": -196
+                  "price": 134
                 }
               ]
             },
@@ -593,12 +279,12 @@
                 {
                   "name": "Utah Jazz",
                   "price": -108,
-                  "point": 4.5
+                  "point": -3.5
                 },
                 {
                   "name": "New Orleans Pelicans",
-                  "price": -112,
-                  "point": -4.5
+                  "price": -122,
+                  "point": 3.5
                 }
               ]
             },
@@ -607,47 +293,57 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -108,
-                  "point": 232.5
+                  "price": -144,
+                  "point": 202.5
                 },
                 {
                   "name": "Under",
-                  "price": -112,
-                  "point": 232.5
+                  "price": 108,
+                  "point": 202.5
                 }
               ]
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "id": "fd_36266773",
+      "sport_key": "basketball_nba",
+      "sport_title": "NBA",
+      "commence_time": "2026-11-05T01:12:00.000Z",
+      "home_team": "Oklahoma City Thunder",
+      "away_team": "Cleveland Cavaliers",
+      "bookmakers": [
         {
-          "key": "bovada",
-          "title": "Bovada",
+          "key": "fanduel",
+          "title": "FanDuel",
           "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Utah Jazz",
-                  "price": -115,
-                  "point": 5
-                },
-                {
-                  "name": "New Orleans Pelicans",
-                  "price": -105,
-                  "point": -5
-                }
-              ]
-            },
             {
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "Utah Jazz",
-                  "price": 170
+                  "name": "Cleveland Cavaliers",
+                  "price": 1000
                 },
                 {
-                  "name": "New Orleans Pelicans",
-                  "price": -200
+                  "name": "Oklahoma City Thunder",
+                  "price": -3000
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Cleveland Cavaliers",
+                  "price": 102,
+                  "point": 11.5
+                },
+                {
+                  "name": "Oklahoma City Thunder",
+                  "price": -136,
+                  "point": -11.5
                 }
               ]
             },
@@ -656,13 +352,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
-                  "point": 232
+                  "price": -106,
+                  "point": 219.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
-                  "point": 232
+                  "price": -125,
+                  "point": 219.5
                 }
               ]
             }
@@ -674,7 +370,7 @@
       "id": "fd_36266785",
       "sport_key": "basketball_nba",
       "sport_title": "NBA",
-      "commence_time": "2026-11-05T01:10:00.000Z",
+      "commence_time": "2026-11-05T01:13:00.000Z",
       "home_team": "Memphis Grizzlies",
       "away_team": "Indiana Pacers",
       "bookmakers": [
@@ -687,11 +383,11 @@
               "outcomes": [
                 {
                   "name": "Indiana Pacers",
-                  "price": 190
+                  "price": 280
                 },
                 {
                   "name": "Memphis Grizzlies",
-                  "price": -230
+                  "price": -390
                 }
               ]
             },
@@ -700,13 +396,13 @@
               "outcomes": [
                 {
                   "name": "Indiana Pacers",
-                  "price": -105,
-                  "point": 5.5
+                  "price": -104,
+                  "point": 6.5
                 },
                 {
                   "name": "Memphis Grizzlies",
-                  "price": -115,
-                  "point": -5.5
+                  "price": -128,
+                  "point": -6.5
                 }
               ]
             },
@@ -715,62 +411,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
-                  "point": 228.5
+                  "price": -138,
+                  "point": 220.5
                 },
                 {
                   "name": "Under",
-                  "price": -105,
-                  "point": 228.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Indiana Pacers",
-                  "price": -110,
-                  "point": 6
-                },
-                {
-                  "name": "Memphis Grizzlies",
-                  "price": -110,
-                  "point": -6
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Indiana Pacers",
-                  "price": 190
-                },
-                {
-                  "name": "Memphis Grizzlies",
-                  "price": -230
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 228.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 228.5
+                  "price": 104,
+                  "point": 220.5
                 }
               ]
             }
@@ -782,7 +429,7 @@
       "id": "fd_36266782",
       "sport_key": "basketball_nba",
       "sport_title": "NBA",
-      "commence_time": "2026-11-05T01:40:00.000Z",
+      "commence_time": "2026-11-05T01:42:00.000Z",
       "home_team": "Houston Rockets",
       "away_team": "Minnesota Timberwolves",
       "bookmakers": [
@@ -795,11 +442,11 @@
               "outcomes": [
                 {
                   "name": "Minnesota Timberwolves",
-                  "price": 220
+                  "price": 190
                 },
                 {
                   "name": "Houston Rockets",
-                  "price": -270
+                  "price": -250
                 }
               ]
             },
@@ -808,62 +455,13 @@
               "outcomes": [
                 {
                   "name": "Minnesota Timberwolves",
-                  "price": -110,
-                  "point": 7.5
+                  "price": -125,
+                  "point": 5.5
                 },
                 {
                   "name": "Houston Rockets",
-                  "price": -110,
-                  "point": -7.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
                   "price": -106,
-                  "point": 218.5
-                },
-                {
-                  "name": "Under",
-                  "price": -114,
-                  "point": 218.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Minnesota Timberwolves",
-                  "price": -115,
-                  "point": 7.5
-                },
-                {
-                  "name": "Houston Rockets",
-                  "price": -105,
-                  "point": -7.5
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Minnesota Timberwolves",
-                  "price": 225
-                },
-                {
-                  "name": "Houston Rockets",
-                  "price": -275
+                  "point": -5.5
                 }
               ]
             },
@@ -872,13 +470,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
-                  "point": 219
+                  "price": -112,
+                  "point": 227.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
-                  "point": 219
+                  "price": -118,
+                  "point": 227.5
                 }
               ]
             }
@@ -890,7 +488,7 @@
       "id": "fd_36266775",
       "sport_key": "basketball_nba",
       "sport_title": "NBA",
-      "commence_time": "2026-11-05T02:10:00.000Z",
+      "commence_time": "2026-11-05T02:11:00.000Z",
       "home_team": "Phoenix Suns",
       "away_team": "Portland Trail Blazers",
       "bookmakers": [
@@ -903,11 +501,11 @@
               "outcomes": [
                 {
                   "name": "Portland Trail Blazers",
-                  "price": -142
+                  "price": -184
                 },
                 {
                   "name": "Phoenix Suns",
-                  "price": 120
+                  "price": 142
                 }
               ]
             },
@@ -916,13 +514,13 @@
               "outcomes": [
                 {
                   "name": "Portland Trail Blazers",
-                  "price": -115,
-                  "point": -2.5
+                  "price": -106,
+                  "point": -4.5
                 },
                 {
                   "name": "Phoenix Suns",
-                  "price": -105,
-                  "point": 2.5
+                  "price": -125,
+                  "point": 4.5
                 }
               ]
             },
@@ -931,62 +529,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -108,
-                  "point": 228.5
+                  "price": -114,
+                  "point": 236.5
                 },
                 {
                   "name": "Under",
-                  "price": -112,
-                  "point": 228.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Portland Trail Blazers",
-                  "price": -105,
-                  "point": -3
-                },
-                {
-                  "name": "Phoenix Suns",
-                  "price": -115,
-                  "point": 3
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Portland Trail Blazers",
-                  "price": -150
-                },
-                {
-                  "name": "Phoenix Suns",
-                  "price": 130
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 228
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 228
+                  "price": -114,
+                  "point": 236.5
                 }
               ]
             }
@@ -998,7 +547,7 @@
       "id": "fd_36266780",
       "sport_key": "basketball_nba",
       "sport_title": "NBA",
-      "commence_time": "2026-11-05T02:10:00.000Z",
+      "commence_time": "2026-11-05T02:12:00.000Z",
       "home_team": "Denver Nuggets",
       "away_team": "Toronto Raptors",
       "bookmakers": [
@@ -1011,11 +560,11 @@
               "outcomes": [
                 {
                   "name": "Toronto Raptors",
-                  "price": 160
+                  "price": 130
                 },
                 {
                   "name": "Denver Nuggets",
-                  "price": -190
+                  "price": -166
                 }
               ]
             },
@@ -1024,13 +573,13 @@
               "outcomes": [
                 {
                   "name": "Toronto Raptors",
-                  "price": -108,
-                  "point": 4.5
+                  "price": 112,
+                  "point": 1.5
                 },
                 {
                   "name": "Denver Nuggets",
-                  "price": -112,
-                  "point": -4.5
+                  "price": -148,
+                  "point": -1.5
                 }
               ]
             },
@@ -1039,62 +588,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -105,
-                  "point": 231.5
+                  "price": -125,
+                  "point": 245.5
                 },
                 {
                   "name": "Under",
-                  "price": -115,
-                  "point": 231.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Toronto Raptors",
-                  "price": -115,
-                  "point": 5
-                },
-                {
-                  "name": "Denver Nuggets",
-                  "price": -105,
-                  "point": -5
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Toronto Raptors",
-                  "price": 160
-                },
-                {
-                  "name": "Denver Nuggets",
-                  "price": -185
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 232
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 232
+                  "price": -106,
+                  "point": 245.5
                 }
               ]
             }
@@ -1106,7 +606,7 @@
       "id": "fd_36266774",
       "sport_key": "basketball_nba",
       "sport_title": "NBA",
-      "commence_time": "2026-11-05T02:40:00.000Z",
+      "commence_time": "2026-11-05T02:48:00.000Z",
       "home_team": "San Antonio Spurs",
       "away_team": "Dallas Mavericks",
       "bookmakers": [
@@ -1119,11 +619,11 @@
               "outcomes": [
                 {
                   "name": "Dallas Mavericks",
-                  "price": 420
+                  "price": 450
                 },
                 {
                   "name": "San Antonio Spurs",
-                  "price": -560
+                  "price": -720
                 }
               ]
             },
@@ -1137,7 +637,7 @@
                 },
                 {
                   "name": "San Antonio Spurs",
-                  "price": -104,
+                  "price": -112,
                   "point": -12.5
                 }
               ]
@@ -1147,62 +647,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -114,
-                  "point": 226.5
+                  "price": 108,
+                  "point": 227.5
                 },
                 {
                   "name": "Under",
-                  "price": -106,
-                  "point": 226.5
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "key": "bovada",
-          "title": "Bovada",
-          "markets": [
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Dallas Mavericks",
-                  "price": -110,
-                  "point": 12.5
-                },
-                {
-                  "name": "San Antonio Spurs",
-                  "price": -110,
-                  "point": -12.5
-                }
-              ]
-            },
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Dallas Mavericks",
-                  "price": 450
-                },
-                {
-                  "name": "San Antonio Spurs",
-                  "price": -650
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -110,
-                  "point": 226.5
-                },
-                {
-                  "name": "Under",
-                  "price": -110,
-                  "point": 226.5
+                  "price": -144,
+                  "point": 227.5
                 }
               ]
             }
@@ -1276,13 +727,13 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Lakers",
-                  "price": -105,
-                  "point": -12.5
+                  "price": -110,
+                  "point": -12
                 },
                 {
                   "name": "Sacramento Kings",
-                  "price": -115,
-                  "point": 12.5
+                  "price": -110,
+                  "point": 12
                 }
               ]
             },
@@ -1291,11 +742,11 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Lakers",
-                  "price": -625
+                  "price": -600
                 },
                 {
                   "name": "Sacramento Kings",
-                  "price": 430
+                  "price": 425
                 }
               ]
             },
@@ -1305,12 +756,12 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 233
+                  "point": 233.5
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 233
+                  "point": 233.5
                 }
               ]
             }
@@ -1335,11 +786,11 @@
               "outcomes": [
                 {
                   "name": "Miami Heat",
-                  "price": -205
+                  "price": -215
                 },
                 {
                   "name": "Los Angeles Clippers",
-                  "price": 172
+                  "price": 180
                 }
               ]
             },
@@ -1348,12 +799,12 @@
               "outcomes": [
                 {
                   "name": "Miami Heat",
-                  "price": -110,
+                  "price": -118,
                   "point": -5.5
                 },
                 {
                   "name": "Los Angeles Clippers",
-                  "price": -110,
+                  "price": -104,
                   "point": 5.5
                 }
               ]
@@ -1385,12 +836,12 @@
                 {
                   "name": "Miami Heat",
                   "price": -105,
-                  "point": -6
+                  "point": -6.5
                 },
                 {
                   "name": "Los Angeles Clippers",
                   "price": -115,
-                  "point": 6
+                  "point": 6.5
                 }
               ]
             },
@@ -1399,11 +850,11 @@
               "outcomes": [
                 {
                   "name": "Miami Heat",
-                  "price": -210
+                  "price": -225
                 },
                 {
                   "name": "Los Angeles Clippers",
-                  "price": 175
+                  "price": 185
                 }
               ]
             },
@@ -1419,65 +870,6 @@
                   "name": "Under",
                   "price": -110,
                   "point": 233
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36260052",
-      "sport_key": "icehockey_nhl",
-      "sport_title": "NHL",
-      "commence_time": "2026-11-05T00:39:00.000Z",
-      "home_team": "Buffalo Sabres",
-      "away_team": "Ottawa Senators",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Ottawa Senators",
-                  "price": 106
-                },
-                {
-                  "name": "Buffalo Sabres",
-                  "price": -128
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Ottawa Senators",
-                  "price": -235,
-                  "point": 1.5
-                },
-                {
-                  "name": "Buffalo Sabres",
-                  "price": 186,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -130,
-                  "point": 6.5
-                },
-                {
-                  "name": "Under",
-                  "price": 106,
-                  "point": 6.5
                 }
               ]
             }
@@ -1502,11 +894,11 @@
               "outcomes": [
                 {
                   "name": "Chicago Blackhawks",
-                  "price": 205
+                  "price": 1400
                 },
                 {
                   "name": "Florida Panthers",
-                  "price": -255
+                  "price": -6000
                 }
               ]
             },
@@ -1515,12 +907,71 @@
               "outcomes": [
                 {
                   "name": "Chicago Blackhawks",
-                  "price": -122,
-                  "point": 1.5
+                  "price": 138,
+                  "point": 2.5
                 },
                 {
                   "name": "Florida Panthers",
-                  "price": 100,
+                  "price": -182,
+                  "point": -2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": -108,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36260052",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-11-05T00:50:00.000Z",
+      "home_team": "Buffalo Sabres",
+      "away_team": "Ottawa Senators",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Ottawa Senators",
+                  "price": 440
+                },
+                {
+                  "name": "Buffalo Sabres",
+                  "price": -700
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Ottawa Senators",
+                  "price": -110,
+                  "point": 1.5
+                },
+                {
+                  "name": "Buffalo Sabres",
+                  "price": -118,
                   "point": -1.5
                 }
               ]
@@ -1530,13 +981,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -134,
-                  "point": 5.5
+                  "price": -280,
+                  "point": 2.5
                 },
                 {
                   "name": "Under",
-                  "price": 110,
-                  "point": 5.5
+                  "price": 205,
+                  "point": 2.5
                 }
               ]
             }
@@ -1561,11 +1012,11 @@
               "outcomes": [
                 {
                   "name": "Calgary Flames",
-                  "price": 108
+                  "price": 114
                 },
                 {
                   "name": "Seattle Kraken",
-                  "price": -130
+                  "price": -134
                 }
               ]
             },
@@ -1574,7 +1025,7 @@
               "outcomes": [
                 {
                   "name": "Calgary Flames",
-                  "price": -225,
+                  "price": -220,
                   "point": 1.5
                 },
                 {
@@ -1589,12 +1040,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": 102,
+                  "price": 100,
                   "point": 6.5
                 },
                 {
                   "name": "Under",
-                  "price": -124,
+                  "price": -122,
                   "point": 6.5
                 }
               ]
@@ -1620,11 +1071,11 @@
               "outcomes": [
                 {
                   "name": "San Jose Sharks",
-                  "price": 136
+                  "price": 146
                 },
                 {
                   "name": "Los Angeles Kings",
-                  "price": -164
+                  "price": -176
                 }
               ]
             },
@@ -1633,12 +1084,12 @@
               "outcomes": [
                 {
                   "name": "San Jose Sharks",
-                  "price": -178,
+                  "price": -168,
                   "point": 1.5
                 },
                 {
                   "name": "Los Angeles Kings",
-                  "price": 142,
+                  "price": 136,
                   "point": -1.5
                 }
               ]
@@ -1810,12 +1261,12 @@
               "outcomes": [
                 {
                   "name": "St. Louis Blues",
-                  "price": -150,
+                  "price": -168,
                   "point": 1.5
                 },
                 {
                   "name": "New Jersey Devils",
-                  "price": 122,
+                  "price": 136,
                   "point": -1.5
                 }
               ]
@@ -2033,11 +1484,11 @@
               "outcomes": [
                 {
                   "name": "Boston Bruins",
-                  "price": -115
+                  "price": -110
                 },
                 {
                   "name": "Pittsburgh Penguins",
-                  "price": -104
+                  "price": -110
                 }
               ]
             },
@@ -2046,13 +1497,13 @@
               "outcomes": [
                 {
                   "name": "Boston Bruins",
-                  "price": 198,
-                  "point": -1.5
+                  "price": -265,
+                  "point": 1.5
                 },
                 {
                   "name": "Pittsburgh Penguins",
-                  "price": -250,
-                  "point": 1.5
+                  "price": 210,
+                  "point": -1.5
                 }
               ]
             },
@@ -2061,12 +1512,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -108,
+                  "price": -110,
                   "point": 6.5
                 },
                 {
                   "name": "Under",
-                  "price": -112,
+                  "price": -110,
                   "point": 6.5
                 }
               ]
@@ -2105,12 +1556,12 @@
               "outcomes": [
                 {
                   "name": "Vancouver Canucks",
-                  "price": -124,
+                  "price": -130,
                   "point": 1.5
                 },
                 {
                   "name": "Winnipeg Jets",
-                  "price": 102,
+                  "price": 106,
                   "point": -1.5
                 }
               ]
@@ -2120,12 +1571,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -104,
+                  "price": -105,
                   "point": 6.5
                 },
                 {
                   "name": "Under",
-                  "price": -118,
+                  "price": -115,
                   "point": 6.5
                 }
               ]
@@ -2902,6 +2353,65 @@
       ]
     },
     {
+      "id": "fd_36273497",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-11-07T00:00:00.000Z",
+      "home_team": "Dartmouth Big Green",
+      "away_team": "Yale Bulldogs",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Yale Bulldogs",
+                  "price": 400
+                },
+                {
+                  "name": "Dartmouth Big Green",
+                  "price": -650
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Yale Bulldogs",
+                  "price": -112,
+                  "point": 2.5
+                },
+                {
+                  "name": "Dartmouth Big Green",
+                  "price": -112,
+                  "point": -2.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -124,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": -108,
+                  "point": 5.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "fd_36281425",
       "sport_key": "icehockey_nhl",
       "sport_title": "NHL",
@@ -2953,6 +2463,65 @@
                   "name": "Under",
                   "price": -132,
                   "point": 6.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36273514",
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "commence_time": "2026-11-07T00:07:00.000Z",
+      "home_team": "Northern Michigan Wildc",
+      "away_team": "Minnesota State Mankato",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Minnesota State Mankato Mavericks",
+                  "price": -340
+                },
+                {
+                  "name": "Northern Michigan Wildcats",
+                  "price": 235
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Minnesota State Mankato Mavericks",
+                  "price": -112,
+                  "point": -1.5
+                },
+                {
+                  "name": "Northern Michigan Wildcats",
+                  "price": -116,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": 106,
+                  "point": 5.5
+                },
+                {
+                  "name": "Under",
+                  "price": -138,
+                  "point": 5.5
                 }
               ]
             }
@@ -3095,11 +2664,11 @@
               "outcomes": [
                 {
                   "name": "Denver Broncos",
-                  "price": -144
+                  "price": -142
                 },
                 {
                   "name": "Carolina Panthers",
-                  "price": 122
+                  "price": 120
                 }
               ]
             },
@@ -3272,11 +2841,11 @@
               "outcomes": [
                 {
                   "name": "New York Jets",
-                  "price": 430
+                  "price": 420
                 },
                 {
                   "name": "Kansas City Chiefs",
-                  "price": -590
+                  "price": -560
                 }
               ]
             },
@@ -3508,11 +3077,11 @@
               "outcomes": [
                 {
                   "name": "Houston Texans",
-                  "price": -230
+                  "price": -235
                 },
                 {
                   "name": "Los Angeles Chargers",
-                  "price": 190
+                  "price": 194
                 }
               ]
             },
@@ -3685,11 +3254,11 @@
               "outcomes": [
                 {
                   "name": "Arizona Cardinals",
-                  "price": 320
+                  "price": 310
                 },
                 {
                   "name": "Seattle Seahawks",
-                  "price": -405
+                  "price": -400
                 }
               ]
             },
@@ -3713,13 +3282,13 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -105,
-                  "point": 40.5
+                  "price": -114,
+                  "point": 39.5
                 },
                 {
                   "name": "Under",
-                  "price": -115,
-                  "point": 40.5
+                  "price": -106,
+                  "point": 39.5
                 }
               ]
             }
@@ -3837,6 +3406,65 @@
                 {
                   "name": "Under",
                   "price": -110,
+                  "point": 45.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36275757",
+      "sport_key": "americanfootball_nfl",
+      "sport_title": "NFL",
+      "commence_time": "2026-11-13T01:16:00.000Z",
+      "home_team": "New York Giants",
+      "away_team": "Washington Commanders",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Washington Commanders",
+                  "price": 102
+                },
+                {
+                  "name": "New York Giants",
+                  "price": -120
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Washington Commanders",
+                  "price": -112,
+                  "point": 1.5
+                },
+                {
+                  "name": "New York Giants",
+                  "price": -108,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -105,
+                  "point": 45.5
+                },
+                {
+                  "name": "Under",
+                  "price": -115,
                   "point": 45.5
                 }
               ]
