@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-05T12:31:14.480Z",
+  "generatedAt": "2026-11-06T15:34:00.474Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,8 +95,8 @@
   ],
   "props": {
     "record": {
-      "wins": 672,
-      "losses": 400,
+      "wins": 671,
+      "losses": 401,
       "pushes": 7
     },
     "settled": 1079,
@@ -109,7 +109,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Elite target share (8.4/gm) and 73 yd season avg well clear of 50 threshold; dome neutralizes weather.",
+        "rationale": "Elite target volume (8.4/gm) and 73.2 avg recYds; reliable safety valve for Mahomes even vs tough defense.",
         "season": 2024,
         "week": 22
       },
@@ -120,7 +120,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Season avg 74 recYds on 9.3 targets/gm; sizable margin over 50 threshold despite tough PHI secondary.",
+        "rationale": "Leads KC in targets (9.3/gm) and recYds (74 avg); likely top target in a close Super Bowl script.",
         "season": 2024,
         "week": 22
       },
@@ -131,7 +131,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Season avg 75 recYds on 7.5 targets/gm comfortably clears 50 threshold in a high-powered PHI passing attack.",
+        "rationale": "Elite target share (75 recYds avg) as PHI's top WR; expect heavy volume in Super Bowl vs KC secondary.",
         "season": 2024,
         "week": 22
       },
@@ -142,7 +142,7 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Season avg 64 recYds on consistent 7 targets/gm, modestly above the 50 yard threshold.",
+        "rationale": "Consistent WR2 production (63.9 avg) in high-powered PHI offense (568 PF) against KC in dome.",
         "season": 2024,
         "week": 22
       },
@@ -153,7 +153,7 @@
         "threshold": 250,
         "side": "under",
         "result": "win",
-        "rationale": "Run-heavy PHI scheme caps Hurts' passing volume; season avg only 194 yds, far below 250 threshold.",
+        "rationale": "Hurts averages only 193.5 pass yds; PHI leans on run-heavy, tush-push offense, limiting pass volume vs KC's tough D.",
         "season": 2024,
         "week": 22
       },
@@ -184,9 +184,9 @@
         "team": "KC",
         "stat": "passYds",
         "threshold": 250,
-        "side": "over",
-        "result": "win",
-        "rationale": "Dome game removes weather variance; season avg 287 yds vs threshold 250, elite volume passer in Super Bowl spot.",
+        "side": "under",
+        "result": "loss",
+        "rationale": "PHI's elite defense (358 PA, best in league) likely limits KC's passing volume despite Mahomes' high season average.",
         "season": 2024,
         "week": 22
       }
