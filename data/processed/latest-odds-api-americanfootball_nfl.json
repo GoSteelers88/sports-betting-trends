@@ -1,76 +1,17 @@
 {
-  "fetchedAt": "2026-11-10T02:21:47.304Z",
+  "fetchedAt": "2026-11-11T00:12:59.197Z",
   "league": "americanfootball_nfl",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 15,
+  "eventCount": 14,
   "sampleEvent": {
-    "id": "fd_36244880",
+    "id": "fd_36275757",
     "sport_key": "americanfootball_nfl",
-    "commence_time": "2026-11-10T01:16:00.000Z",
-    "home_team": "Minnesota Vikings",
-    "away_team": "Buffalo Bills"
+    "commence_time": "2026-11-13T01:16:00.000Z",
+    "home_team": "New York Giants",
+    "away_team": "Washington Commanders"
   },
   "events": [
-    {
-      "id": "fd_36244880",
-      "sport_key": "americanfootball_nfl",
-      "sport_title": "NFL",
-      "commence_time": "2026-11-10T01:16:00.000Z",
-      "home_team": "Minnesota Vikings",
-      "away_team": "Buffalo Bills",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Buffalo Bills",
-                  "price": -235
-                },
-                {
-                  "name": "Minnesota Vikings",
-                  "price": 180
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Buffalo Bills",
-                  "price": -122,
-                  "point": -3.5
-                },
-                {
-                  "name": "Minnesota Vikings",
-                  "price": -108,
-                  "point": 3.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -102,
-                  "point": 30.5
-                },
-                {
-                  "name": "Under",
-                  "price": -130,
-                  "point": 30.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "fd_36275757",
       "sport_key": "americanfootball_nfl",
@@ -88,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Washington Commanders",
-                  "price": 106
+                  "price": 110
                 },
                 {
                   "name": "New York Giants",
-                  "price": -124
+                  "price": -130
                 }
               ]
             },
@@ -101,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "Washington Commanders",
-                  "price": -110,
+                  "price": -105,
                   "point": 1.5
                 },
                 {
                   "name": "New York Giants",
-                  "price": -110,
+                  "price": -115,
                   "point": -1.5
                 }
               ]
@@ -116,13 +57,62 @@
               "outcomes": [
                 {
                   "name": "Over",
+                  "price": 100,
+                  "point": 41.5
+                },
+                {
+                  "name": "Under",
+                  "price": -120,
+                  "point": 41.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Washington Commanders",
+                  "price": -112,
+                  "point": 2.5
+                },
+                {
+                  "name": "New York Giants",
+                  "price": -108,
+                  "point": -2.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Washington Commanders",
+                  "price": 107
+                },
+                {
+                  "name": "New York Giants",
+                  "price": -127
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
                   "price": -110,
-                  "point": 42.5
+                  "point": 41
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 42.5
+                  "point": 41
                 }
               ]
             }
@@ -147,11 +137,11 @@
               "outcomes": [
                 {
                   "name": "New England Patriots",
-                  "price": 130
+                  "price": 128
                 },
                 {
                   "name": "Detroit Lions",
-                  "price": -154
+                  "price": -152
                 }
               ]
             },
@@ -175,13 +165,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -115,
-                  "point": 50.5
+                  "price": -105,
+                  "point": 51.5
                 },
                 {
                   "name": "Under",
+                  "price": -115,
+                  "point": 51.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "New England Patriots",
+                  "price": -115,
+                  "point": 3
+                },
+                {
+                  "name": "Detroit Lions",
                   "price": -105,
-                  "point": 50.5
+                  "point": -3
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "New England Patriots",
+                  "price": 135
+                },
+                {
+                  "name": "Detroit Lions",
+                  "price": -160
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -108,
+                  "point": 51
+                },
+                {
+                  "name": "Under",
+                  "price": -112,
+                  "point": 51
                 }
               ]
             }
@@ -206,11 +245,11 @@
               "outcomes": [
                 {
                   "name": "Minnesota Vikings",
-                  "price": 150
+                  "price": 144
                 },
                 {
                   "name": "Green Bay Packers",
-                  "price": -178
+                  "price": -172
                 }
               ]
             },
@@ -234,12 +273,61 @@
               "outcomes": [
                 {
                   "name": "Over",
+                  "price": -105,
+                  "point": 42.5
+                },
+                {
+                  "name": "Under",
                   "price": -115,
+                  "point": 42.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Minnesota Vikings",
+                  "price": -112,
+                  "point": 3.5
+                },
+                {
+                  "name": "Green Bay Packers",
+                  "price": -108,
+                  "point": -3.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Minnesota Vikings",
+                  "price": 155
+                },
+                {
+                  "name": "Green Bay Packers",
+                  "price": -180
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
                   "point": 41.5
                 },
                 {
                   "name": "Under",
-                  "price": -105,
+                  "price": -110,
                   "point": 41.5
                 }
               ]
@@ -265,11 +353,11 @@
               "outcomes": [
                 {
                   "name": "Kansas City Chiefs",
-                  "price": -178
+                  "price": -180
                 },
                 {
                   "name": "Atlanta Falcons",
-                  "price": 150
+                  "price": 152
                 }
               ]
             },
@@ -278,12 +366,12 @@
               "outcomes": [
                 {
                   "name": "Kansas City Chiefs",
-                  "price": 100,
+                  "price": -105,
                   "point": -3.5
                 },
                 {
                   "name": "Atlanta Falcons",
-                  "price": -120,
+                  "price": -115,
                   "point": 3.5
                 }
               ]
@@ -300,6 +388,55 @@
                   "name": "Under",
                   "price": -115,
                   "point": 45.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Kansas City Chiefs",
+                  "price": -120,
+                  "point": -3
+                },
+                {
+                  "name": "Atlanta Falcons",
+                  "price": 100,
+                  "point": 3
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Kansas City Chiefs",
+                  "price": -178
+                },
+                {
+                  "name": "Atlanta Falcons",
+                  "price": 153
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -115,
+                  "point": 45
+                },
+                {
+                  "name": "Under",
+                  "price": -105,
+                  "point": 45
                 }
               ]
             }
@@ -363,6 +500,55 @@
               ]
             }
           ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Houston Texans",
+                  "price": -112,
+                  "point": -4.5
+                },
+                {
+                  "name": "Cleveland Browns",
+                  "price": -108,
+                  "point": 4.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Houston Texans",
+                  "price": -230
+                },
+                {
+                  "name": "Cleveland Browns",
+                  "price": 190
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 40
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 40
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -383,11 +569,11 @@
               "outcomes": [
                 {
                   "name": "Miami Dolphins",
-                  "price": 116
+                  "price": 158
                 },
                 {
                   "name": "Indianapolis Colts",
-                  "price": -136
+                  "price": -188
                 }
               ]
             },
@@ -396,13 +582,13 @@
               "outcomes": [
                 {
                   "name": "Miami Dolphins",
-                  "price": -110,
-                  "point": 2.5
+                  "price": -115,
+                  "point": 3.5
                 },
                 {
                   "name": "Indianapolis Colts",
-                  "price": -110,
-                  "point": -2.5
+                  "price": -105,
+                  "point": -3.5
                 }
               ]
             },
@@ -412,12 +598,61 @@
                 {
                   "name": "Over",
                   "price": -115,
-                  "point": 40.5
+                  "point": 37.5
                 },
                 {
                   "name": "Under",
                   "price": -105,
-                  "point": 40.5
+                  "point": 37.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Miami Dolphins",
+                  "price": -108,
+                  "point": 3.5
+                },
+                {
+                  "name": "Indianapolis Colts",
+                  "price": -112,
+                  "point": -3.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Miami Dolphins",
+                  "price": 170
+                },
+                {
+                  "name": "Indianapolis Colts",
+                  "price": -200
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 38.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 38.5
                 }
               ]
             }
@@ -446,7 +681,7 @@
                 },
                 {
                   "name": "Tennessee Titans",
-                  "price": 440
+                  "price": 430
                 }
               ]
             },
@@ -470,13 +705,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
+                  "price": -105,
                   "point": 46.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
+                  "price": -115,
                   "point": 46.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Jacksonville Jaguars",
+                  "price": -112,
+                  "point": -10.5
+                },
+                {
+                  "name": "Tennessee Titans",
+                  "price": -108,
+                  "point": 10.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Jacksonville Jaguars",
+                  "price": -575
+                },
+                {
+                  "name": "Tennessee Titans",
+                  "price": 425
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -112,
+                  "point": 46
+                },
+                {
+                  "name": "Under",
+                  "price": -108,
+                  "point": 46
                 }
               ]
             }
@@ -501,11 +785,11 @@
               "outcomes": [
                 {
                   "name": "Buffalo Bills",
-                  "price": -430
+                  "price": -450
                 },
                 {
                   "name": "New York Jets",
-                  "price": 340
+                  "price": 350
                 }
               ]
             },
@@ -514,12 +798,12 @@
               "outcomes": [
                 {
                   "name": "Buffalo Bills",
-                  "price": -105,
+                  "price": -110,
                   "point": -7.5
                 },
                 {
                   "name": "New York Jets",
-                  "price": -115,
+                  "price": -110,
                   "point": 7.5
                 }
               ]
@@ -529,13 +813,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -105,
-                  "point": 51.5
+                  "price": -115,
+                  "point": 50.5
                 },
                 {
                   "name": "Under",
-                  "price": -115,
-                  "point": 51.5
+                  "price": -105,
+                  "point": 50.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Buffalo Bills",
+                  "price": -112,
+                  "point": -8
+                },
+                {
+                  "name": "New York Jets",
+                  "price": -108,
+                  "point": 8
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Buffalo Bills",
+                  "price": -440
+                },
+                {
+                  "name": "New York Jets",
+                  "price": 340
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 51
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 51
                 }
               ]
             }
@@ -560,11 +893,11 @@
               "outcomes": [
                 {
                   "name": "Carolina Panthers",
-                  "price": -104
+                  "price": 118
                 },
                 {
                   "name": "New Orleans Saints",
-                  "price": -112
+                  "price": -138
                 }
               ]
             },
@@ -573,13 +906,13 @@
               "outcomes": [
                 {
                   "name": "Carolina Panthers",
-                  "price": -120,
-                  "point": 1.5
+                  "price": -110,
+                  "point": 2.5
                 },
                 {
                   "name": "New Orleans Saints",
-                  "price": 100,
-                  "point": -1.5
+                  "price": -110,
+                  "point": -2.5
                 }
               ]
             },
@@ -588,13 +921,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -120,
-                  "point": 47.5
+                  "price": -110,
+                  "point": 48.5
                 },
                 {
                   "name": "Under",
-                  "price": 100,
-                  "point": 47.5
+                  "price": -110,
+                  "point": 48.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Carolina Panthers",
+                  "price": -108,
+                  "point": 2
+                },
+                {
+                  "name": "New Orleans Saints",
+                  "price": -112,
+                  "point": -2
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Carolina Panthers",
+                  "price": 115
+                },
+                {
+                  "name": "New Orleans Saints",
+                  "price": -135
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -108,
+                  "point": 49
+                },
+                {
+                  "name": "Under",
+                  "price": -112,
+                  "point": 49
                 }
               ]
             }
@@ -619,11 +1001,11 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Rams",
-                  "price": -460
+                  "price": -430
                 },
                 {
                   "name": "Arizona Cardinals",
-                  "price": 360
+                  "price": 340
                 }
               ]
             },
@@ -632,13 +1014,13 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Rams",
-                  "price": -115,
-                  "point": -8.5
+                  "price": -110,
+                  "point": -9.5
                 },
                 {
                   "name": "Arizona Cardinals",
-                  "price": -105,
-                  "point": 8.5
+                  "price": -110,
+                  "point": 9.5
                 }
               ]
             },
@@ -647,13 +1029,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
-                  "point": 40.5
+                  "price": -105,
+                  "point": 39.5
                 },
                 {
                   "name": "Under",
+                  "price": -115,
+                  "point": 39.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Rams",
                   "price": -110,
-                  "point": 40.5
+                  "point": -9
+                },
+                {
+                  "name": "Arizona Cardinals",
+                  "price": -110,
+                  "point": 9
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Rams",
+                  "price": -440
+                },
+                {
+                  "name": "Arizona Cardinals",
+                  "price": 340
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -115,
+                  "point": 39
+                },
+                {
+                  "name": "Under",
+                  "price": -105,
+                  "point": 39
                 }
               ]
             }
@@ -678,11 +1109,11 @@
               "outcomes": [
                 {
                   "name": "Seattle Seahawks",
-                  "price": -180
+                  "price": -300
                 },
                 {
                   "name": "Las Vegas Raiders",
-                  "price": 152
+                  "price": 245
                 }
               ]
             },
@@ -691,13 +1122,13 @@
               "outcomes": [
                 {
                   "name": "Seattle Seahawks",
-                  "price": -105,
-                  "point": -3.5
+                  "price": -110,
+                  "point": -6.5
                 },
                 {
                   "name": "Las Vegas Raiders",
-                  "price": -115,
-                  "point": 3.5
+                  "price": -110,
+                  "point": 6.5
                 }
               ]
             },
@@ -706,13 +1137,62 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -105,
-                  "point": 43.5
+                  "price": -110,
+                  "point": 40.5
                 },
                 {
                   "name": "Under",
-                  "price": -115,
-                  "point": 43.5
+                  "price": -110,
+                  "point": 40.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Seattle Seahawks",
+                  "price": -108,
+                  "point": -6.5
+                },
+                {
+                  "name": "Las Vegas Raiders",
+                  "price": -112,
+                  "point": 6.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Seattle Seahawks",
+                  "price": -280
+                },
+                {
+                  "name": "Las Vegas Raiders",
+                  "price": 230
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 40.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 40.5
                 }
               ]
             }
@@ -737,11 +1217,11 @@
               "outcomes": [
                 {
                   "name": "San Francisco 49ers",
-                  "price": -215
+                  "price": -205
                 },
                 {
                   "name": "Dallas Cowboys",
-                  "price": 180
+                  "price": 172
                 }
               ]
             },
@@ -776,6 +1256,55 @@
               ]
             }
           ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "San Francisco 49ers",
+                  "price": -108,
+                  "point": -4
+                },
+                {
+                  "name": "Dallas Cowboys",
+                  "price": -112,
+                  "point": 4
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "San Francisco 49ers",
+                  "price": -210
+                },
+                {
+                  "name": "Dallas Cowboys",
+                  "price": 175
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 55.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 55.5
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -796,11 +1325,11 @@
               "outcomes": [
                 {
                   "name": "Pittsburgh Steelers",
-                  "price": 166
+                  "price": 164
                 },
                 {
                   "name": "Cincinnati Bengals",
-                  "price": -198
+                  "price": -196
                 }
               ]
             },
@@ -825,12 +1354,61 @@
                 {
                   "name": "Over",
                   "price": -110,
-                  "point": 48.5
+                  "point": 49.5
                 },
                 {
                   "name": "Under",
                   "price": -110,
-                  "point": 48.5
+                  "point": 49.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Pittsburgh Steelers",
+                  "price": -117,
+                  "point": 3.5
+                },
+                {
+                  "name": "Cincinnati Bengals",
+                  "price": -103,
+                  "point": -3.5
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Pittsburgh Steelers",
+                  "price": 158
+                },
+                {
+                  "name": "Cincinnati Bengals",
+                  "price": -183
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 49
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
+                  "point": 49
                 }
               ]
             }
@@ -855,11 +1433,11 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Chargers",
-                  "price": 194
+                  "price": 190
                 },
                 {
                   "name": "Baltimore Ravens",
-                  "price": -235
+                  "price": -225
                 }
               ]
             },
@@ -868,13 +1446,13 @@
               "outcomes": [
                 {
                   "name": "Los Angeles Chargers",
-                  "price": -115,
-                  "point": 5.5
+                  "price": -110,
+                  "point": 4.5
                 },
                 {
                   "name": "Baltimore Ravens",
-                  "price": -105,
-                  "point": -5.5
+                  "price": -110,
+                  "point": -4.5
                 }
               ]
             },
@@ -889,6 +1467,55 @@
                 {
                   "name": "Under",
                   "price": -105,
+                  "point": 38.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "bovada",
+          "title": "Bovada",
+          "markets": [
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Chargers",
+                  "price": -108,
+                  "point": 4
+                },
+                {
+                  "name": "Baltimore Ravens",
+                  "price": -112,
+                  "point": -4
+                }
+              ]
+            },
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Los Angeles Chargers",
+                  "price": 176
+                },
+                {
+                  "name": "Baltimore Ravens",
+                  "price": -215
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -110,
+                  "point": 38.5
+                },
+                {
+                  "name": "Under",
+                  "price": -110,
                   "point": 38.5
                 }
               ]
