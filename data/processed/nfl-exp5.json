@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14T10:01:34.999Z",
+  "generatedAt": "2026-11-15T10:01:28.040Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,8 +95,8 @@
   ],
   "props": {
     "record": {
-      "wins": 671,
-      "losses": 401,
+      "wins": 672,
+      "losses": 400,
       "pushes": 7
     },
     "settled": 1079,
@@ -109,7 +109,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Elite target share (8.4/gm) and 73.2 avg recYds; Mahomes' top safety valve even vs tough defense.",
+        "rationale": "Elite target share (8.4 targets/gm) and 73.2 yd avg; reliable high-leverage target in big games.",
         "season": 2024,
         "week": 22
       },
@@ -120,7 +120,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Leads KC WRs with 9.3 targets/gm and 74 avg recYds, likely featured in game-script requiring more passing.",
+        "rationale": "Season avg 74.1 ypg with highest target share on KC; big-game veteran target.",
         "season": 2024,
         "week": 22
       },
@@ -131,7 +131,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Season avg 75 recYds/gm with 7.5 targets/gm, top WR1 role in high-scoring PHI offense, dome favors passing.",
+        "rationale": "Season avg 75.1 ypg with 7.6 targets/gm; top target in explosive PHI passing attack.",
         "season": 2024,
         "week": 22
       },
@@ -142,7 +142,7 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Consistent WR2 with 7 targets/gm and 63.9 avg recYds, strong dome passing environment.",
+        "rationale": "Avg 63.9 ypg, consistent WR2 role with solid target volume (7/gm).",
         "season": 2024,
         "week": 22
       },
@@ -153,7 +153,7 @@
         "threshold": 250,
         "side": "under",
         "result": "win",
-        "rationale": "Run-heavy offense, season avg only 193.6 yds/gm, far below threshold with no signal to change usage.",
+        "rationale": "Season avg only 193.6 ypg; PHI leans on run game (Saquon) and Hurts' legs, limiting air yards.",
         "season": 2024,
         "week": 22
       },
@@ -164,7 +164,7 @@
         "threshold": 1.5,
         "side": "over",
         "result": "win",
-        "rationale": "Season avg 2.18 TD/gm well above threshold; dome conditions favor efficient scoring passes.",
+        "rationale": "Avg 2.18 TD/gm, high-powered KC offense in dome, favorable scoring environment.",
         "season": 2024,
         "week": 22
       },
@@ -184,9 +184,9 @@
         "team": "KC",
         "stat": "passYds",
         "threshold": 250,
-        "side": "under",
-        "result": "loss",
-        "rationale": "PHI elite defense (PA 358, 17.9/g) and dome neutralizes weather edge; tougher matchup than season average suggests.",
+        "side": "over",
+        "result": "win",
+        "rationale": "Season avg 287 ypg, dome game, elite weapons, no weather impact; well above threshold.",
         "season": 2024,
         "week": 22
       }
