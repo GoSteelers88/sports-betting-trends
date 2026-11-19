@@ -1,47 +1,22 @@
 {
-  "generatedAt": "2026-11-18T21:54:56.205Z",
+  "generatedAt": "2026-11-19T03:52:11.820Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 14,
+  "recordCount": 12,
   "errors": [
-    "unmodeled: Away Goals @ Home Goals (bv_33855995)",
     "unmodeled: Dallas Stars @ Vegas Golden Knights (fd_36316678)"
   ],
   "data": {
-    "generatedAt": "2026-11-18T21:54:56.205Z",
+    "generatedAt": "2026-11-19T03:52:11.820Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 16,
+    "gameCount": 13,
     "results": [
-      {
-        "eventId": "fd_36316674",
-        "homeTeam": "Detroit Red Wings",
-        "awayTeam": "Boston Bruins",
-        "homeWinProb": 0.4944,
-        "awayWinProb": 0.5056,
-        "expectedMargin": -0.08,
-        "homeNetRtg": -0.25,
-        "awayNetRtg": 0.3,
-        "calibrated": false,
-        "startTime": "2026-11-19T00:40:00.000Z"
-      },
-      {
-        "eventId": "fd_36331482",
-        "homeTeam": "New Jersey Devils",
-        "awayTeam": "Montreal Canadiens",
-        "homeWinProb": 0.5328,
-        "awayWinProb": 0.4672,
-        "expectedMargin": 0.44,
-        "homeNetRtg": 1.3846153846153846,
-        "awayNetRtg": 0.9090909090909091,
-        "calibrated": false,
-        "startTime": "2026-11-19T00:40:00.000Z"
-      },
       {
         "eventId": "fd_36331483",
         "homeTeam": "Utah Mammoth",
@@ -58,11 +33,11 @@
         "eventId": "fd_36316686",
         "homeTeam": "Carolina Hurricanes",
         "awayTeam": "Montreal Canadiens",
-        "homeWinProb": 0.5658,
-        "awayWinProb": 0.4342,
-        "expectedMargin": 0.88,
+        "homeWinProb": 0.5724,
+        "awayWinProb": 0.4276,
+        "expectedMargin": 0.97,
         "homeNetRtg": 2.272727272727273,
-        "awayNetRtg": 0.9090909090909091,
+        "awayNetRtg": 0.7272727272727273,
         "calibrated": false,
         "startTime": "2026-11-20T00:00:00.000Z"
       },
@@ -94,10 +69,10 @@
         "eventId": "fd_36335749",
         "homeTeam": "Toronto Maple Leafs",
         "awayTeam": "Los Angeles Kings",
-        "homeWinProb": 0.477,
-        "awayWinProb": 0.523,
-        "expectedMargin": -0.31,
-        "homeNetRtg": -0.8125,
+        "homeWinProb": 0.4825,
+        "awayWinProb": 0.5175,
+        "expectedMargin": -0.23,
+        "homeNetRtg": -0.6666666666666666,
         "awayNetRtg": 0.2,
         "calibrated": false,
         "startTime": "2026-11-20T00:00:00.000Z"
@@ -178,11 +153,11 @@
         "eventId": "fd_36316680",
         "homeTeam": "Seattle Kraken",
         "awayTeam": "Vancouver Canucks",
-        "homeWinProb": 0.5704,
-        "awayWinProb": 0.4296,
-        "expectedMargin": 0.95,
-        "homeNetRtg": 0.09090909090909091,
-        "awayNetRtg": -1.4,
+        "homeWinProb": 0.5618,
+        "awayWinProb": 0.4382,
+        "expectedMargin": 0.83,
+        "homeNetRtg": -0.1,
+        "awayNetRtg": -1.3571428571428572,
         "calibrated": false,
         "startTime": "2026-11-20T02:40:00.000Z"
       }
