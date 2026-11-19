@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T10:01:38.858Z",
+  "generatedAt": "2026-11-19T10:01:37.244Z",
   "source": "nfl-quant-dryrun",
   "record": {
     "wins": 189,
@@ -95,8 +95,8 @@
   ],
   "props": {
     "record": {
-      "wins": 672,
-      "losses": 400,
+      "wins": 671,
+      "losses": 401,
       "pushes": 7
     },
     "settled": 1079,
@@ -109,7 +109,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Elite target share (8.4/gm) and career avg 73.2 recYds/gm; dome conditions support passing volume.",
+        "rationale": "Season avg 73.2 recYds, remains Mahomes' top target especially in high-stakes game script.",
         "season": 2024,
         "week": 22
       },
@@ -120,7 +120,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "High target volume (9.3/gm) and 74 recYds/gm average suggest steady production vs Eagles secondary.",
+        "rationale": "Season avg 74.1 recYds on 9.3 targets/game, high usage even against strong PHI secondary.",
         "season": 2024,
         "week": 22
       },
@@ -131,7 +131,7 @@
         "threshold": 50,
         "side": "over",
         "result": "loss",
-        "rationale": "Top target averaging 75 recYds/gm with heavy volume (7.5 targets), dome favors passing efficiency.",
+        "rationale": "Season avg 75.1 recYds, clear WR1 role in high-powered Eagles offense (28.4 ppg).",
         "season": 2024,
         "week": 22
       },
@@ -142,7 +142,7 @@
         "threshold": 50,
         "side": "over",
         "result": "win",
-        "rationale": "Consistent WR2 averaging 63.9 recYds/gm with steady 7 targets/gm in high-scoring Eagles offense.",
+        "rationale": "Season avg 63.9 recYds, consistent target share as #2 in prolific Eagles passing attack.",
         "season": 2024,
         "week": 22
       },
@@ -153,7 +153,7 @@
         "threshold": 250,
         "side": "under",
         "result": "win",
-        "rationale": "Hurts averages only 193.6 passYds/gm, run-heavy scheme with Barkley workhorse reduces pass volume.",
+        "rationale": "Season avg only 193.6 passYds; run-heavy Eagles offense built around Barkley reduces pass volume, dome neutral.",
         "season": 2024,
         "week": 22
       },
@@ -184,9 +184,9 @@
         "team": "KC",
         "stat": "passYds",
         "threshold": 250,
-        "side": "over",
-        "result": "win",
-        "rationale": "Season avg 287 ypg, dome conditions remove weather risk, but elite Eagles pass D tempers upside.",
+        "side": "under",
+        "result": "loss",
+        "rationale": "KC offense averaged only 23.2 ppg this season; facing Eagles' elite defense (358 PA, best scoring margin) could limit volume.",
         "season": 2024,
         "week": 22
       }
