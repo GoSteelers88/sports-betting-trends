@@ -1,24 +1,24 @@
 {
-  "fetchedAt": "2026-11-07T22:56:04.701Z",
+  "fetchedAt": "2026-11-19T01:24:43.186Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
-  "eventCount": 1,
+  "eventCount": 2,
   "sampleEvent": {
-    "id": "fd_36289991",
+    "id": "fd_36336702",
     "sport_key": "baseball_mlb",
-    "commence_time": "2026-11-08T05:00:00.000Z",
-    "home_team": "Samsung Lions",
-    "away_team": "KT Wiz"
+    "commence_time": "2026-11-19T08:30:00.000Z",
+    "home_team": "Adelaide Giants",
+    "away_team": "Brisbane Bandits"
   },
   "events": [
     {
-      "id": "fd_36289991",
+      "id": "fd_36336702",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
-      "commence_time": "2026-11-08T05:00:00.000Z",
-      "home_team": "Samsung Lions",
-      "away_team": "KT Wiz",
+      "commence_time": "2026-11-19T08:30:00.000Z",
+      "home_team": "Adelaide Giants",
+      "away_team": "Brisbane Bandits",
       "bookmakers": [
         {
           "key": "fanduel",
@@ -28,12 +28,12 @@
               "key": "h2h",
               "outcomes": [
                 {
-                  "name": "KT Wiz",
-                  "price": -122
+                  "name": "Brisbane Bandits",
+                  "price": 122
                 },
                 {
-                  "name": "Samsung Lions",
-                  "price": 100
+                  "name": "Adelaide Giants",
+                  "price": -156
                 }
               ]
             },
@@ -41,13 +41,72 @@
               "key": "spreads",
               "outcomes": [
                 {
-                  "name": "KT Wiz",
+                  "name": "Brisbane Bandits",
+                  "price": -176,
+                  "point": 1.5
+                },
+                {
+                  "name": "Adelaide Giants",
                   "price": 134,
+                  "point": -1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -120,
+                  "point": 8.5
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
+                  "point": 8.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36336701",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-11-19T11:00:00.000Z",
+      "home_team": "Perth Heat",
+      "away_team": "Sydney Blue Sox",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Sydney Blue Sox",
+                  "price": -170
+                },
+                {
+                  "name": "Perth Heat",
+                  "price": 132
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Sydney Blue Sox",
+                  "price": 104,
                   "point": -1.5
                 },
                 {
-                  "name": "Samsung Lions",
-                  "price": -168,
+                  "name": "Perth Heat",
+                  "price": -135,
                   "point": 1.5
                 }
               ]
@@ -57,12 +116,12 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -130,
+                  "price": -110,
                   "point": 8.5
                 },
                 {
                   "name": "Under",
-                  "price": 104,
+                  "price": -110,
                   "point": 8.5
                 }
               ]
