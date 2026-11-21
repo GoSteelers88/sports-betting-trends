@@ -1,56 +1,20 @@
 {
-  "generatedAt": "2026-11-21T03:29:10.781Z",
+  "generatedAt": "2026-11-21T20:31:14.252Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 8,
+  "recordCount": 6,
   "errors": [],
   "data": {
-    "generatedAt": "2026-11-21T03:29:10.781Z",
+    "generatedAt": "2026-11-21T20:31:14.252Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 30,
-    "gameCount": 8,
+    "gameCount": 6,
     "results": [
-      {
-        "eventId": "fd_36334578",
-        "homeTeam": "Utah Jazz",
-        "awayTeam": "Phoenix Suns",
-        "homeWinProb": 0.488,
-        "awayWinProb": 0.512,
-        "expectedMargin": -0.46,
-        "homeNetRtg": -8.75,
-        "awayNetRtg": -4.4,
-        "calibrated": false,
-        "startTime": "2026-11-21T02:42:00.000Z"
-      },
-      {
-        "eventId": "fd_36334577",
-        "homeTeam": "Los Angeles Lakers",
-        "awayTeam": "Sacramento Kings",
-        "homeWinProb": 0.768,
-        "awayWinProb": 0.232,
-        "expectedMargin": 11.4,
-        "homeNetRtg": 6,
-        "awayNetRtg": -16,
-        "calibrated": false,
-        "startTime": "2026-11-21T03:13:00.000Z"
-      },
-      {
-        "eventId": "fd_36334581",
-        "homeTeam": "Denver Nuggets",
-        "awayTeam": "Houston Rockets",
-        "homeWinProb": 0.4296,
-        "awayWinProb": 0.5704,
-        "expectedMargin": -2.7,
-        "homeNetRtg": -1.8333333333333333,
-        "awayNetRtg": 7.5,
-        "calibrated": false,
-        "startTime": "2026-11-21T03:14:00.000Z"
-      },
       {
         "eventId": "fd_36337802",
         "homeTeam": "Philadelphia 76ers",
@@ -61,7 +25,7 @@
         "homeNetRtg": 3.25,
         "awayNetRtg": -12.714285714285714,
         "calibrated": false,
-        "startTime": "2026-11-21T18:10:00.000Z"
+        "startTime": "2026-11-21T18:11:00.000Z"
       },
       {
         "eventId": "fd_36337806",
@@ -110,6 +74,18 @@
         "awayNetRtg": -13.166666666666666,
         "calibrated": false,
         "startTime": "2026-11-22T01:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36337805",
+        "homeTeam": "Sacramento Kings",
+        "awayTeam": "Boston Celtics",
+        "homeWinProb": 0.2975,
+        "awayWinProb": 0.7025,
+        "expectedMargin": -8.18,
+        "homeNetRtg": -12.88888888888889,
+        "awayNetRtg": 8.625,
+        "calibrated": false,
+        "startTime": "2026-11-22T03:10:00.000Z"
       }
     ]
   }

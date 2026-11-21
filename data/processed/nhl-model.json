@@ -1,21 +1,34 @@
 {
-  "generatedAt": "2026-11-21T03:29:30.441Z",
+  "generatedAt": "2026-11-21T20:31:38.048Z",
   "source": "nhl-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 14,
+  "recordCount": 16,
   "errors": [
-    "unmodeled: Alaska Anchorage Seawol @ Alaska Fairbanks Nanook (fd_36333333)"
+    "unmodeled: Connecticut Huskies @ New Hampshire Wildcats (fd_36344477)",
+    "unmodeled: Notre Dame Fighting Irish @ Ohio State Buckeyes (fd_36344478)",
+    "unmodeled: Robert Morris Colonials @ Sacred Heart Pioneers (fd_36344479)",
+    "unmodeled: Merrimack Warriors @ Boston University Terriers (fd_36344488)",
+    "unmodeled: Vermont Catamounts @ UMass Lowell R. Hawks (fd_36344486)",
+    "unmodeled: Augustana SD Vikings @ Bowling Green Falcons (fd_36344487)",
+    "unmodeled: Bemidji State Beavers @ Lake Superior State Lakers (fd_36344492)",
+    "unmodeled: Boston College Eagles @ Maine Black Bears (fd_36344509)",
+    "unmodeled: Niagara Purple Eagles @ Canisius Golden Griffins (fd_36344512)",
+    "unmodeled: Yale Bulldogs @ Rensselaer Engineers (fd_36344515)",
+    "unmodeled: Brown Bears @ Union Granet Chargers (fd_36344521)",
+    "unmodeled: Clarkson Golden Knights @ Colgate Raiders (fd_36344526)",
+    "unmodeled: Northern Michigan Wildcats @ Ferris State Bulldogs (fd_36344490)",
+    "unmodeled: Pittsburgh Penguins @ Dallas Stars (fd_36336510)"
   ],
   "data": {
-    "generatedAt": "2026-11-21T03:29:30.441Z",
+    "generatedAt": "2026-11-21T20:31:38.048Z",
     "constants": {
       "goalDiffToMargin": 0.5,
       "homeIceBonus": 0.2,
       "logisticSlope": 0.3
     },
     "teamCount": 31,
-    "gameCount": 15,
+    "gameCount": 30,
     "results": [
       {
         "eventId": "fd_36336487",
@@ -27,7 +40,7 @@
         "homeNetRtg": 2,
         "awayNetRtg": 1.9285714285714286,
         "calibrated": false,
-        "startTime": "2026-11-21T18:10:00.000Z"
+        "startTime": "2026-11-21T18:20:00.000Z"
       },
       {
         "eventId": "fd_36336491",
@@ -66,18 +79,6 @@
         "startTime": "2026-11-21T23:10:00.000Z"
       },
       {
-        "eventId": "fd_36336496",
-        "homeTeam": "Montreal Canadiens",
-        "awayTeam": "Philadelphia Flyers",
-        "homeWinProb": 0.5399,
-        "awayWinProb": 0.4601,
-        "expectedMargin": 0.53,
-        "homeNetRtg": -0.3333333333333333,
-        "awayNetRtg": -1,
-        "calibrated": false,
-        "startTime": "2026-11-22T00:09:00.000Z"
-      },
-      {
         "eventId": "fd_36336499",
         "homeTeam": "Boston Bruins",
         "awayTeam": "Washington Capitals",
@@ -87,7 +88,7 @@
         "homeNetRtg": 1.2307692307692308,
         "awayNetRtg": -0.125,
         "calibrated": false,
-        "startTime": "2026-11-22T00:09:00.000Z"
+        "startTime": "2026-11-22T00:07:00.000Z"
       },
       {
         "eventId": "fd_36336500",
@@ -99,19 +100,19 @@
         "homeNetRtg": -0.6875,
         "awayNetRtg": -1.1111111111111112,
         "calibrated": false,
-        "startTime": "2026-11-22T00:09:00.000Z"
+        "startTime": "2026-11-22T00:08:00.000Z"
       },
       {
-        "eventId": "fd_36336495",
-        "homeTeam": "Winnipeg Jets",
-        "awayTeam": "Vegas Golden Knights",
-        "homeWinProb": 0.4917,
-        "awayWinProb": 0.5083,
-        "expectedMargin": -0.11,
-        "homeNetRtg": -0.07692307692307693,
-        "awayNetRtg": 0.5454545454545454,
+        "eventId": "fd_36336501",
+        "homeTeam": "St. Louis Blues",
+        "awayTeam": "New Jersey Devils",
+        "homeWinProb": 0.5252,
+        "awayWinProb": 0.4748,
+        "expectedMargin": 0.34,
+        "homeNetRtg": 0.36363636363636365,
+        "awayNetRtg": 0.09090909090909091,
         "calibrated": false,
-        "startTime": "2026-11-22T00:10:00.000Z"
+        "startTime": "2026-11-22T00:09:00.000Z"
       },
       {
         "eventId": "fd_36336497",
@@ -126,16 +127,16 @@
         "startTime": "2026-11-22T00:10:00.000Z"
       },
       {
-        "eventId": "fd_36336501",
-        "homeTeam": "St. Louis Blues",
-        "awayTeam": "New Jersey Devils",
-        "homeWinProb": 0.5252,
-        "awayWinProb": 0.4748,
-        "expectedMargin": 0.34,
-        "homeNetRtg": 0.36363636363636365,
-        "awayNetRtg": 0.09090909090909091,
+        "eventId": "fd_36336496",
+        "homeTeam": "Montreal Canadiens",
+        "awayTeam": "Philadelphia Flyers",
+        "homeWinProb": 0.5399,
+        "awayWinProb": 0.4601,
+        "expectedMargin": 0.53,
+        "homeNetRtg": -0.3333333333333333,
+        "awayNetRtg": -1,
         "calibrated": false,
-        "startTime": "2026-11-22T00:10:00.000Z"
+        "startTime": "2026-11-22T00:11:00.000Z"
       },
       {
         "eventId": "fd_36336502",
@@ -147,7 +148,19 @@
         "homeNetRtg": 0.07692307692307693,
         "awayNetRtg": 0.2727272727272727,
         "calibrated": false,
-        "startTime": "2026-11-22T00:10:00.000Z"
+        "startTime": "2026-11-22T00:12:00.000Z"
+      },
+      {
+        "eventId": "fd_36336495",
+        "homeTeam": "Winnipeg Jets",
+        "awayTeam": "Vegas Golden Knights",
+        "homeWinProb": 0.4917,
+        "awayWinProb": 0.5083,
+        "expectedMargin": -0.11,
+        "homeNetRtg": -0.07692307692307693,
+        "awayNetRtg": 0.5454545454545454,
+        "calibrated": false,
+        "startTime": "2026-11-22T00:13:00.000Z"
       },
       {
         "eventId": "fd_36336503",
@@ -184,6 +197,30 @@
         "awayNetRtg": -0.6,
         "calibrated": false,
         "startTime": "2026-11-22T03:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36336507",
+        "homeTeam": "New York Rangers",
+        "awayTeam": "Carolina Hurricanes",
+        "homeWinProb": 0.5006,
+        "awayWinProb": 0.4994,
+        "expectedMargin": 0.01,
+        "homeNetRtg": 1.3846153846153846,
+        "awayNetRtg": 1.7692307692307692,
+        "calibrated": false,
+        "startTime": "2026-11-22T17:40:00.000Z"
+      },
+      {
+        "eventId": "fd_36336508",
+        "homeTeam": "Tampa Bay Lightning",
+        "awayTeam": "Buffalo Sabres",
+        "homeWinProb": 0.5708,
+        "awayWinProb": 0.4292,
+        "expectedMargin": 0.95,
+        "homeNetRtg": 1.4166666666666667,
+        "awayNetRtg": -0.08333333333333333,
+        "calibrated": false,
+        "startTime": "2026-11-22T22:10:00.000Z"
       }
     ]
   }
