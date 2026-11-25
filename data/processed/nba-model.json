@@ -1,44 +1,20 @@
 {
-  "generatedAt": "2026-11-24T23:31:00.527Z",
+  "generatedAt": "2026-11-25T05:03:33.174Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 7,
+  "recordCount": 10,
   "errors": [],
   "data": {
-    "generatedAt": "2026-11-24T23:31:00.527Z",
+    "generatedAt": "2026-11-25T05:03:33.174Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 30,
-    "gameCount": 7,
+    "gameCount": 10,
     "results": [
-      {
-        "eventId": "fd_36350563",
-        "homeTeam": "Orlando Magic",
-        "awayTeam": "Detroit Pistons",
-        "homeWinProb": 0.3759,
-        "awayWinProb": 0.6241,
-        "expectedMargin": -4.83,
-        "homeNetRtg": -7.666666666666667,
-        "awayNetRtg": 6.4,
-        "calibrated": false,
-        "startTime": "2026-11-25T00:11:00.000Z"
-      },
-      {
-        "eventId": "fd_36350564",
-        "homeTeam": "Washington Wizards",
-        "awayTeam": "Boston Celtics",
-        "homeWinProb": 0.4239,
-        "awayWinProb": 0.5761,
-        "expectedMargin": -2.92,
-        "homeNetRtg": -3.125,
-        "awayNetRtg": 6.7,
-        "calibrated": false,
-        "startTime": "2026-11-25T01:10:00.000Z"
-      },
       {
         "eventId": "fd_36350565",
         "homeTeam": "Denver Nuggets",
@@ -49,7 +25,7 @@
         "homeNetRtg": -0.2857142857142857,
         "awayNetRtg": -10.375,
         "calibrated": false,
-        "startTime": "2026-11-25T03:10:00.000Z"
+        "startTime": "2026-11-25T03:13:00.000Z"
       },
       {
         "eventId": "fd_36354204",
@@ -62,6 +38,18 @@
         "awayNetRtg": -3,
         "calibrated": false,
         "startTime": "2026-11-25T22:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36354198",
+        "homeTeam": "Charlotte Hornets",
+        "awayTeam": "Chicago Bulls",
+        "homeWinProb": 0.5193,
+        "awayWinProb": 0.4807,
+        "expectedMargin": 0.74,
+        "homeNetRtg": -13.25,
+        "awayNetRtg": -11.555555555555555,
+        "calibrated": false,
+        "startTime": "2026-11-26T00:10:00.000Z"
       },
       {
         "eventId": "fd_36354196",
@@ -88,6 +76,30 @@
         "startTime": "2026-11-26T00:40:00.000Z"
       },
       {
+        "eventId": "fd_36354197",
+        "homeTeam": "Memphis Grizzlies",
+        "awayTeam": "Los Angeles Clippers",
+        "homeWinProb": 0.7584,
+        "awayWinProb": 0.2416,
+        "expectedMargin": 10.89,
+        "homeNetRtg": 7.125,
+        "awayNetRtg": -13.75,
+        "calibrated": false,
+        "startTime": "2026-11-26T01:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36354199",
+        "homeTeam": "Milwaukee Bucks",
+        "awayTeam": "Brooklyn Nets",
+        "homeWinProb": 0.4646,
+        "awayWinProb": 0.5354,
+        "expectedMargin": -1.35,
+        "homeNetRtg": -13.11111111111111,
+        "awayNetRtg": -6.777777777777778,
+        "calibrated": false,
+        "startTime": "2026-11-26T01:10:00.000Z"
+      },
+      {
         "eventId": "fd_36354200",
         "homeTeam": "Houston Rockets",
         "awayTeam": "Phoenix Suns",
@@ -98,6 +110,30 @@
         "awayNetRtg": -1.1428571428571428,
         "calibrated": false,
         "startTime": "2026-11-26T01:40:00.000Z"
+      },
+      {
+        "eventId": "fd_36354201",
+        "homeTeam": "Golden State Warriors",
+        "awayTeam": "Sacramento Kings",
+        "homeWinProb": 0.8086,
+        "awayWinProb": 0.1914,
+        "expectedMargin": 13.73,
+        "homeNetRtg": 13.5,
+        "awayNetRtg": -13.666666666666666,
+        "calibrated": false,
+        "startTime": "2026-11-26T03:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36354203",
+        "homeTeam": "Portland Trail Blazers",
+        "awayTeam": "San Antonio Spurs",
+        "homeWinProb": 0.4375,
+        "awayWinProb": 0.5625,
+        "expectedMargin": -2.39,
+        "homeNetRtg": 5.6,
+        "awayNetRtg": 14.25,
+        "calibrated": false,
+        "startTime": "2026-11-26T03:10:00.000Z"
       }
     ]
   }
