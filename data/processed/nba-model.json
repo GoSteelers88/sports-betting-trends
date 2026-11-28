@@ -1,92 +1,20 @@
 {
-  "generatedAt": "2026-11-27T22:41:48.932Z",
+  "generatedAt": "2026-11-28T04:15:40.098Z",
   "source": "nba-efficiency-empirical",
   "status": "ok",
   "freshnessMins": 0,
-  "recordCount": 11,
+  "recordCount": 10,
   "errors": [],
   "data": {
-    "generatedAt": "2026-11-27T22:41:48.932Z",
+    "generatedAt": "2026-11-28T04:15:40.098Z",
     "constants": {
       "netRtgToPoints": 0.45,
       "homeCourtBonus": 1.5,
       "logisticSlope": 0.105
     },
     "teamCount": 30,
-    "gameCount": 11,
+    "gameCount": 10,
     "results": [
-      {
-        "eventId": "fd_36358262",
-        "homeTeam": "New York Knicks",
-        "awayTeam": "Miami Heat",
-        "homeWinProb": 0.6819,
-        "awayWinProb": 0.3181,
-        "expectedMargin": 7.26,
-        "homeNetRtg": 9.3,
-        "awayNetRtg": -3.5,
-        "calibrated": false,
-        "startTime": "2026-11-28T00:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36358260",
-        "homeTeam": "Detroit Pistons",
-        "awayTeam": "Milwaukee Bucks",
-        "homeWinProb": 0.6719,
-        "awayWinProb": 0.3281,
-        "expectedMargin": 6.82,
-        "homeNetRtg": 2.1666666666666665,
-        "awayNetRtg": -9.666666666666666,
-        "calibrated": false,
-        "startTime": "2026-11-28T00:40:00.000Z"
-      },
-      {
-        "eventId": "fd_36358265",
-        "homeTeam": "Indiana Pacers",
-        "awayTeam": "Philadelphia 76ers",
-        "homeWinProb": 0.456,
-        "awayWinProb": 0.544,
-        "expectedMargin": -1.68,
-        "homeNetRtg": -4.444444444444445,
-        "awayNetRtg": 2.625,
-        "calibrated": false,
-        "startTime": "2026-11-28T00:40:00.000Z"
-      },
-      {
-        "eventId": "fd_36358269",
-        "homeTeam": "Toronto Raptors",
-        "awayTeam": "Brooklyn Nets",
-        "homeWinProb": 0.6303,
-        "awayWinProb": 0.3697,
-        "expectedMargin": 5.08,
-        "homeNetRtg": 2.5555555555555554,
-        "awayNetRtg": -5.4,
-        "calibrated": false,
-        "startTime": "2026-11-28T00:40:00.000Z"
-      },
-      {
-        "eventId": "fd_36358258",
-        "homeTeam": "Boston Celtics",
-        "awayTeam": "Atlanta Hawks",
-        "homeWinProb": 0.626,
-        "awayWinProb": 0.374,
-        "expectedMargin": 4.91,
-        "homeNetRtg": 12.571428571428571,
-        "awayNetRtg": 5,
-        "calibrated": false,
-        "startTime": "2026-11-28T01:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36358264",
-        "homeTeam": "Minnesota Timberwolves",
-        "awayTeam": "Memphis Grizzlies",
-        "homeWinProb": 0.5553,
-        "awayWinProb": 0.4447,
-        "expectedMargin": 2.11,
-        "homeNetRtg": 11.666666666666666,
-        "awayNetRtg": 10.3,
-        "calibrated": false,
-        "startTime": "2026-11-28T01:40:00.000Z"
-      },
       {
         "eventId": "fd_36358263",
         "homeTeam": "Phoenix Suns",
@@ -97,31 +25,7 @@
         "homeNetRtg": -0.1111111111111111,
         "awayNetRtg": -7.111111111111111,
         "calibrated": false,
-        "startTime": "2026-11-28T02:10:00.000Z"
-      },
-      {
-        "eventId": "fd_36358261",
-        "homeTeam": "San Antonio Spurs",
-        "awayTeam": "Los Angeles Lakers",
-        "homeWinProb": 0.5815,
-        "awayWinProb": 0.4185,
-        "expectedMargin": 3.13,
-        "homeNetRtg": 10.5,
-        "awayNetRtg": 6.875,
-        "calibrated": false,
-        "startTime": "2026-11-28T02:40:00.000Z"
-      },
-      {
-        "eventId": "fd_36358266",
-        "homeTeam": "Portland Trail Blazers",
-        "awayTeam": "Golden State Warriors",
-        "homeWinProb": 0.7423,
-        "awayWinProb": 0.2577,
-        "expectedMargin": 10.08,
-        "homeNetRtg": 5.5,
-        "awayNetRtg": -13.555555555555555,
-        "calibrated": false,
-        "startTime": "2026-11-28T02:40:00.000Z"
+        "startTime": "2026-11-28T02:11:00.000Z"
       },
       {
         "eventId": "fd_36358267",
@@ -133,7 +37,7 @@
         "homeNetRtg": -8.2,
         "awayNetRtg": 3.625,
         "calibrated": false,
-        "startTime": "2026-11-28T02:40:00.000Z"
+        "startTime": "2026-11-28T02:41:00.000Z"
       },
       {
         "eventId": "fd_36358268",
@@ -145,7 +49,91 @@
         "homeNetRtg": 0.125,
         "awayNetRtg": -14.571428571428571,
         "calibrated": false,
-        "startTime": "2026-11-28T02:40:00.000Z"
+        "startTime": "2026-11-28T02:41:00.000Z"
+      },
+      {
+        "eventId": "fd_36358266",
+        "homeTeam": "Portland Trail Blazers",
+        "awayTeam": "Golden State Warriors",
+        "homeWinProb": 0.7423,
+        "awayWinProb": 0.2577,
+        "expectedMargin": 10.08,
+        "homeNetRtg": 5.5,
+        "awayNetRtg": -13.555555555555555,
+        "calibrated": false,
+        "startTime": "2026-11-28T02:42:00.000Z"
+      },
+      {
+        "eventId": "fd_36358261",
+        "homeTeam": "San Antonio Spurs",
+        "awayTeam": "Los Angeles Lakers",
+        "homeWinProb": 0.5815,
+        "awayWinProb": 0.4185,
+        "expectedMargin": 3.13,
+        "homeNetRtg": 10.5,
+        "awayNetRtg": 6.875,
+        "calibrated": false,
+        "startTime": "2026-11-28T02:44:00.000Z"
+      },
+      {
+        "eventId": "fd_36361509",
+        "homeTeam": "Washington Wizards",
+        "awayTeam": "Orlando Magic",
+        "homeWinProb": 0.5105,
+        "awayWinProb": 0.4895,
+        "expectedMargin": 0.4,
+        "homeNetRtg": -4.444444444444445,
+        "awayNetRtg": -2,
+        "calibrated": false,
+        "startTime": "2026-11-28T22:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36361510",
+        "homeTeam": "Charlotte Hornets",
+        "awayTeam": "Brooklyn Nets",
+        "homeWinProb": 0.4814,
+        "awayWinProb": 0.5186,
+        "expectedMargin": -0.71,
+        "homeNetRtg": -12,
+        "awayNetRtg": -7.090909090909091,
+        "calibrated": false,
+        "startTime": "2026-11-28T23:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36361507",
+        "homeTeam": "Chicago Bulls",
+        "awayTeam": "Indiana Pacers",
+        "homeWinProb": 0.5521,
+        "awayWinProb": 0.4479,
+        "expectedMargin": 1.99,
+        "homeNetRtg": -1.125,
+        "awayNetRtg": -2.2222222222222223,
+        "calibrated": false,
+        "startTime": "2026-11-29T01:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36361511",
+        "homeTeam": "Milwaukee Bucks",
+        "awayTeam": "Oklahoma City Thunder",
+        "homeWinProb": 0.4151,
+        "awayWinProb": 0.5849,
+        "expectedMargin": -3.27,
+        "homeNetRtg": -12.5,
+        "awayNetRtg": -1.9090909090909092,
+        "calibrated": false,
+        "startTime": "2026-11-29T01:10:00.000Z"
+      },
+      {
+        "eventId": "fd_36361508",
+        "homeTeam": "Houston Rockets",
+        "awayTeam": "Philadelphia 76ers",
+        "homeWinProb": 0.6006,
+        "awayWinProb": 0.3994,
+        "expectedMargin": 3.89,
+        "homeNetRtg": 10.3,
+        "awayNetRtg": 5,
+        "calibrated": false,
+        "startTime": "2026-11-29T01:40:00.000Z"
       }
     ]
   }
