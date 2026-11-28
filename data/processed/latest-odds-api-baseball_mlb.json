@@ -1,81 +1,22 @@
 {
-  "fetchedAt": "2026-11-26T04:25:30.945Z",
+  "fetchedAt": "2026-11-28T02:07:28.454Z",
   "league": "baseball_mlb",
   "regions": "us",
   "markets": "h2h,spreads,totals",
   "eventCount": 2,
   "sampleEvent": {
-    "id": "fd_36364410",
+    "id": "fd_36371723",
     "sport_key": "baseball_mlb",
-    "commence_time": "2026-11-26T08:00:00.000Z",
-    "home_team": "Sydney Blue Sox",
-    "away_team": "Adelaide Giants"
+    "commence_time": "2026-11-28T04:30:00.000Z",
+    "home_team": "Brisbane Bandits",
+    "away_team": "Perth Heat"
   },
   "events": [
     {
-      "id": "fd_36364410",
+      "id": "fd_36371723",
       "sport_key": "baseball_mlb",
       "sport_title": "MLB",
-      "commence_time": "2026-11-26T08:00:00.000Z",
-      "home_team": "Sydney Blue Sox",
-      "away_team": "Adelaide Giants",
-      "bookmakers": [
-        {
-          "key": "fanduel",
-          "title": "FanDuel",
-          "markets": [
-            {
-              "key": "h2h",
-              "outcomes": [
-                {
-                  "name": "Adelaide Giants",
-                  "price": 132
-                },
-                {
-                  "name": "Sydney Blue Sox",
-                  "price": -170
-                }
-              ]
-            },
-            {
-              "key": "spreads",
-              "outcomes": [
-                {
-                  "name": "Adelaide Giants",
-                  "price": -160,
-                  "point": 1.5
-                },
-                {
-                  "name": "Sydney Blue Sox",
-                  "price": 122,
-                  "point": -1.5
-                }
-              ]
-            },
-            {
-              "key": "totals",
-              "outcomes": [
-                {
-                  "name": "Over",
-                  "price": -125,
-                  "point": 8.5
-                },
-                {
-                  "name": "Under",
-                  "price": 105,
-                  "point": 8.5
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "fd_36364411",
-      "sport_key": "baseball_mlb",
-      "sport_title": "MLB",
-      "commence_time": "2026-11-26T08:30:00.000Z",
+      "commence_time": "2026-11-28T04:30:00.000Z",
       "home_team": "Brisbane Bandits",
       "away_team": "Perth Heat",
       "bookmakers": [
@@ -88,11 +29,11 @@
               "outcomes": [
                 {
                   "name": "Perth Heat",
-                  "price": -113
+                  "price": -170
                 },
                 {
                   "name": "Brisbane Bandits",
-                  "price": -113
+                  "price": 132
                 }
               ]
             },
@@ -101,12 +42,12 @@
               "outcomes": [
                 {
                   "name": "Perth Heat",
-                  "price": 138,
+                  "price": 100,
                   "point": -1.5
                 },
                 {
                   "name": "Brisbane Bandits",
-                  "price": -182,
+                  "price": -130,
                   "point": 1.5
                 }
               ]
@@ -116,12 +57,71 @@
               "outcomes": [
                 {
                   "name": "Over",
-                  "price": -110,
+                  "price": -120,
+                  "point": 7.5
+                },
+                {
+                  "name": "Under",
+                  "price": 100,
+                  "point": 7.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd_36371740",
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "commence_time": "2026-11-28T07:00:00.000Z",
+      "home_team": "Sydney Blue Sox",
+      "away_team": "Adelaide Giants",
+      "bookmakers": [
+        {
+          "key": "fanduel",
+          "title": "FanDuel",
+          "markets": [
+            {
+              "key": "h2h",
+              "outcomes": [
+                {
+                  "name": "Adelaide Giants",
+                  "price": -200
+                },
+                {
+                  "name": "Sydney Blue Sox",
+                  "price": 154
+                }
+              ]
+            },
+            {
+              "key": "spreads",
+              "outcomes": [
+                {
+                  "name": "Adelaide Giants",
+                  "price": -125,
+                  "point": -1.5
+                },
+                {
+                  "name": "Sydney Blue Sox",
+                  "price": -104,
+                  "point": 1.5
+                }
+              ]
+            },
+            {
+              "key": "totals",
+              "outcomes": [
+                {
+                  "name": "Over",
+                  "price": -125,
                   "point": 9.5
                 },
                 {
                   "name": "Under",
-                  "price": -110,
+                  "price": 105,
                   "point": 9.5
                 }
               ]
